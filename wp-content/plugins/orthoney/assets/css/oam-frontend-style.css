@@ -1,0 +1,43 @@
+.recipient-group-section #newCSVData table,
+.recipient-group-section #newCSVData table th, 
+.recipient-group-section #newCSVData table td,
+.recipient-group-section #duplicateCSVData table,
+.recipient-group-section #duplicateCSVData table th, 
+.recipient-group-section #duplicateCSVData table td,
+.recipient-group-section #successCSVData table,
+.recipient-group-section #successCSVData table th, 
+.recipient-group-section #successCSVData table td,
+.recipient-group-section #failCSVData table,
+.recipient-group-section #failCSVData table th, 
+.recipient-group-section #failCSVData table td{ 
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+#recipient-manage-popup{
+    overflow: auto;
+    background: #fff;
+    border: 1.678px solid hsla(0, 0%, 100%, .2);
+    border-radius: 20px;
+    margin: 0 auto;
+    max-width: 980px;
+    min-width: 980px;
+    padding: 72px 96px;
+}
+#recipient-manage-form form label{
+    display: block;
+}
+
+.swal2-container.swal2-center.swal2-backdrop-show{
+    z-index: 999999999;
+}
+
+/* Multi Step Form Start */
+  .step { padding: 20px; border: 1px solid #ccc; margin-top: 10px; }
+  #popupModal { background: rgba(0, 0, 0, 0.6); position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; }
+  .popup-content { background: #fff; padding: 20px; text-align: center; }
+  #stepNav { display: flex; justify-content: space-between; margin-bottom: 20px; }
+  .step-nav-item { padding: 10px 15px; background: #f0f0f0; border: 1px solid #ccc; cursor: pointer; }
+  .step-nav-item.active { background: #0073e6; color: white; font-weight: bold; }
+  .error-message { color: red; font-size: 14px; display: block; margin-top: 5px; }
+/* Multi Step Form End */
