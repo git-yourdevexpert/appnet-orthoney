@@ -24,11 +24,12 @@ class OAM_Scripts
         wp_enqueue_style('lity-css', 'https://cdn.jsdelivr.net/npm/lity@2.4.1/dist/lity.min.css', array(), '2.4.1');
         wp_enqueue_script('lity-js', 'https://cdn.jsdelivr.net/npm/lity@2.4.1/dist/lity.min.js', array('jquery'), '2.4.1', true);
 
+
         wp_enqueue_style(
             'oam-frontend-style',
             plugins_url( 'assets/css/oam-frontend-style.css', __DIR__ ),
             array(),
-            '1.0.0'
+            time()
         );
 
         wp_enqueue_script(

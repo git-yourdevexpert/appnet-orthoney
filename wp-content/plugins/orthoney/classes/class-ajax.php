@@ -4,98 +4,597 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+use Shuchkin\SimpleXLSX;
+use Shuchkin\SimpleXLS;
+
+
 class OAM_Ajax{
+    
     /**
 	 * Define class Constructor
 	 **/
 	public function __construct() {
-        add_action( 'wp_ajax_ort_honey_order_process_ajax', array( $this, 'ort_honey_order_process_ajax_handler' ) );
-        add_action( 'wp_ajax_ort_honey_order_step_process_ajax', array( $this, 'ort_honey_order_step_process_ajax_handler' ) );
+    
+        // Done 
+        add_action( 'wp_ajax_orthoney_order_process_ajax', array( $this, 'orthoney_order_process_ajax_handler' ) );
+        add_action( 'wp_ajax_orthoney_order_step_process_ajax', array( $this, 'orthoney_order_step_process_ajax_handler' ) );
+        add_action( 'wp_ajax_orthoney_insert_temp_recipient_ajax', array( $this, 'orthoney_insert_temp_recipient_ajax_handler' ) );
+        add_action( 'wp_ajax_orthoney_get_csv_recipient_ajax', array( $this, 'orthoney_get_csv_recipient_ajax_handler') );
+        add_action( 'wp_ajax_orthoney_single_address_data_save_ajax', array( $this, 'orthoney_single_address_data_save_ajax_handler') );
+		add_action( 'wp_ajax_manage_recipient_form', array( $this, 'orthoney_manage_recipient_form_handler' ) );
+		add_action( 'wp_ajax_download_failed_recipient', array( $this, 'orthoney_download_failed_recipient_handler'));
 
-        add_action( 'wp_ajax_create_group', array( $this, 'orthoney_create_group_handler' ) );
-
-		add_action( 'wp_ajax_deleted_group', array( $this, 'orthoney_deleted_group_handler' ) );
-        
-        add_action( 'wp_ajax_ort_honey_insert_recipient_ajax', array( $this, 'orthoney_insert_recipient_handler') );
-        
-        add_action( 'wp_ajax_ort_honey_get_recipient_ajax', array( $this, 'orthoney_get_recipient_handler') );
-        
 		add_action( 'wp_ajax_deleted_recipient', array( $this, 'orthoney_deleted_recipient_handler' ) );
-
 		add_action( 'wp_ajax_bulk_deleted_recipient', array( $this, 'orthoney_bulk_deleted_recipient_handler' ) );
-
 		add_action( 'wp_ajax_get_recipient_base_id', array( $this, 'orthoney_get_recipient_base_id_handler' ) );
 
-		add_action( 'wp_ajax_manage_recipient_form', array( $this, 'orthoney_manage_recipient_form_handler' ) );
 
-		add_action( 'wp_ajax_download_failed_recipient', array( $this, 'orthoney_download_failed_recipient_handler'));
+		add_action( 'wp_ajax_reverify_address_recipient', array( $this, 'orthoney_reverify_address_recipient_handler' ) );
+
+        add_action( 'wp_ajax_orthoney_order_step_process_completed_ajax', array( $this, 'orthoney_order_step_process_completed_ajax_handler') );
+        
+        add_action( 'wp_ajax_edit_process_name', array( $this, 'orthoney_edit_process_name_handler' ) );
+        // Done
+        
+        
+        // TODO
+        add_action( 'wp_ajax_keep_this_and_delete_others_recipient', array( $this, 'orthoney_keep_this_and_delete_others_recipient_handler' ) );
+        
+
+
+        add_action( 'wp_ajax_create_group', array( $this, 'orthoney_create_group_handler' ) );
+		add_action( 'wp_ajax_deleted_group', array( $this, 'orthoney_deleted_group_handler' ) );
+        // TODO
+
     }
 
-    public function ort_honey_order_step_process_ajax_handler() {
+    /**
+	 * AJAX handler function that edit process name
+	 *
+	 * @return JSON 
+     * 
+	 */ 
+    public function orthoney_keep_this_and_delete_others_recipient_handler() {
         check_ajax_referer('oam_nonce', 'security');
-        $process_id = intval($_POST['process_value']);
-        $currentStep = intval($_POST['currentStep']);
-
         global $wpdb;
-        $table = $wpdb->prefix . 'order_process';
+    
+        $delete_ids = isset($_POST['delete_ids']) ? $_POST['delete_ids'] : '';
+    
+        if (!empty($delete_ids)) {
+            // Convert string to an array
+            $delete_ids_array = explode(',', $delete_ids);
+            $delete_ids_array = array_map('intval', $delete_ids_array); // Ensure IDs are integers
+    
+            $recipient_table = OAM_Helper::$order_process_recipient_table;
+    
+            if (!empty($delete_ids_array)) {
+                // Convert array to a comma-separated list for SQL query
+                $placeholders = implode(',', array_fill(0, count($delete_ids_array), '%d'));
+    
+                // Prepare the SQL statement securely
+                $sql = $wpdb->prepare(
+                    "UPDATE $recipient_table SET visibility = 0 WHERE id IN ($placeholders)",
+                    ...$delete_ids_array // Spread operator for passing array values dynamically
+                );
+    
+                $result = $wpdb->query($sql);
+    
+                if ($result !== false) {
+                    wp_send_json_success(['message' => 'Records updated successfully.']);
+                } else {
+                    wp_send_json_error(['message' => 'Error updating records.']);
+                }
+            }
+        }
+    
+        wp_send_json_error(['message' => 'No valid IDs provided.']);
+    }
+    
+    /**
+	 * AJAX handler function that edit process name
+	 *
+	 * @return JSON 
+     * 
+	 */ 
+    public function orthoney_edit_process_name_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+    
+        $order_process_table   = OAM_Helper::$order_process_table;
 
-        $data = [
-            'step'    => sanitize_text_field($currentStep),
-        ];
-
+        $process_id  = isset($_POST['pid']) ? intval($_POST['pid']) : 0;
+        $name    = isset($_POST['group_name']) ? sanitize_text_field($_POST['group_name']) : 'unknown_'.$process_id;
         $result = $wpdb->update(
-            $table,
-            $data,
+            $order_process_table,
+            [
+                'name'     => sanitize_text_field($name),
+            ],
             ['id' => $process_id]
         );
-        if ($result !== false) {
-            wp_send_json_success([
-                'process_id' => $process_id,
-            ]);
-        } else {
-            wp_send_json_error(['message' => 'Database error occurred.']);
-        }
 
+        if ($result === false) {
+            wp_send_json_error(['message' => 'Group name is not updated, so please try again.']);
+        }
+        
+        wp_send_json_success(['message' => 'Group name has been updated successfully.']);
+        wp_die();
     }
-    // Callback function for download failed recipients data
-    public function ort_honey_order_process_ajax_handler() {
-        check_ajax_referer('oam_nonce', 'security');  
+
+    /**
+	 * AJAX handler function that completes the order process, saves the order, and moves it to the checkout.
+	 *
+	 * @return JSON 
+     * 
+	 */ 
+    public function orthoney_order_step_process_completed_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+    
+        $order_process_table           = OAM_Helper::$order_process_table;
+        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+        
+        $address_list = [];
+        $address_ids = [];
+        $process_id  = isset($_POST['pid']) ? intval($_POST['pid']) : 0;
+        $group_id    = isset($_POST['group_id']) ? intval($_POST['group_id']) : 0;
+        $user        = get_current_user_id();
+        $stepData    = $_POST ?? [];
+        $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
+    
+        if ($process_id === 0) {
+            wp_send_json_error(['message' => 'Invalid Process ID.']);
+        }
+    
+        // Update order process table
+        $result = $wpdb->update(
+            $order_process_table,
+            [
+                'data'     => wp_json_encode($stepData),
+                'step'     => sanitize_text_field($currentStep),
+            ],
+            ['id' => $process_id]
+        );
+    
+        if ($result === false) {
+            wp_send_json_error(['message' => 'Database update failed.']);
+        }
+    
+        // Verify recipient addresses if group_id is provided
+        if ($group_id) {
+            $recipients = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT id, address_1, address_2, city, state, zipcode FROM {$order_process_recipient_table} 
+                     WHERE user_id = %d AND pid = %d AND visibility = 1 AND verified = 1",
+                    $user, $process_id
+                )
+            );
+    
+            foreach ($recipients as $recipient) {
+                $street = trim(($data->address_1 ?? '') . ' ' . ($data->address_2 ?? ''));
+                $address_ids[] = $data->id;
+                $address_list[] = [
+                    "input_id"   => $data->id,
+                    "street"     => $street ?? '',
+                    "city"       => $data->city ?? '',
+                    "state"      => $data->state ?? '',
+                    "zipcode"    => $data->zipcode ?? '',
+                    "candidates" => 10,
+                ];
+
+            }
+
+            $multi_validate_address = OAM_Helper::multi_validate_address($address_list);
+            if(!empty($multi_validate_address)){
+                $multi_validate_address_result = json_decode($multi_validate_address, true);
+
+                if(!empty($multi_validate_address_result)){
+                    foreach($multi_validate_address_result as $data){
+                        $pid = $data['input_id'];
+
+                        $dpv_match_code = $data['analysis']['dpv_match_code'] ?? '';
+                        if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {    
+                            $update_result = $wpdb->update(
+                                $order_process_recipient_table,
+                                ['address_verified' => intval(1)],
+                                ['id' => $pid]
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    
+        wp_send_json_success(['message' => 'Process completed successfully.']);
+        wp_die();
+    }
+
 
     
-        $process_id = intval($_POST['process_value']);
+
+    /**
+	 * Ajax handle function that insert temp recipients
+	 *
+	 * @return JSON 
+     * 
+     * USE Helper function 
+     * validate_and_upload_csv(): This function validates the CSV file and saves the CSV upload activity log.
+     * 
+	 */
+    public function orthoney_insert_temp_recipient_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+
+        
+        $recipient_table = OAM_Helper::$order_process_recipient_table;
+        $order_process = OAM_Helper::$order_process_table;
+        $recipient_dir = OAM_Helper::$process_recipients_csv_dir;
+        
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        
+        $chunk_size = 2;
+        $current_chunk = isset($_POST['current_chunk']) ? intval($_POST['current_chunk']) : 0;
+        $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) : 0;
+        $process_id = isset($_POST['pid']) ? sanitize_text_field($_POST['pid']) : '';
+        $process_name = (isset($_POST['csv_name']) && !empty($_POST['csv_name'])) ? sanitize_text_field($_POST['csv_name']) : 'unknown_' . $process_id;
+        
+        // Retrieve existing CSV/XLSX file path if process exists
+        $csv_name_query = $wpdb->get_var($wpdb->prepare("SELECT csv_name FROM {$order_process} WHERE id = %d LIMIT 1", $process_id));
+        $file_path = $csv_name_query ? $recipient_dir . '/' . $csv_name_query : '';
+    
+        if ($current_chunk == 0) {
+            if ($csv_name_query && file_exists($file_path)) {
+                unlink($file_path);
+            }
+            $wpdb->delete($recipient_table, ['pid' => $process_id], ['%d']);
+        }
+        
+        // File upload processing for the first chunk
+        if ($current_chunk == 0 && isset($_FILES['csv_file']) && $_FILES['csv_file']['error'] === UPLOAD_ERR_OK) {
+            if (!file_exists($recipient_dir)) {
+                wp_mkdir_p($recipient_dir);
+            }
+
+             // Upload to /upload_csv/ first
+             $result = OAM_Helper::validate_and_upload_csv($_FILES['csv_file'], $current_chunk, $process_id, 'order_process');
+            
+             
+             if (!$result['success']) {
+                 wp_send_json_error(['message' => $result['message']]);
+                 wp_die();
+             }
+          
+            
+            $file_ext = pathinfo($_FILES['csv_file']['name'], PATHINFO_EXTENSION);
+            $unique_file_name = 'recipient_' . $process_id . '.' . $file_ext;
+            $recipient_file_path = trailingslashit($recipient_dir) . $unique_file_name;
+    
+            // Check if the file exists, and delete it before saving the new one
+            if (file_exists($recipient_file_path)) {
+                unlink($recipient_file_path);
+            }
+
+            if (!copy($result['file_path'], $recipient_file_path)) {
+                wp_send_json_error(['message' => 'Failed to move uploaded file.']);
+                wp_die();
+            }
+    
+            // Update database with the new file path
+            $wpdb->update(
+                $order_process,
+                ['csv_name' => $unique_file_name, 'user_id' => get_current_user_id(), 'name' => $process_name],
+                ['id' => $process_id]
+            );
+            
+            $file_path = $recipient_file_path;
+        }
+    
+        if (empty($file_path) || !file_exists($file_path) || !is_readable($file_path)) {
+            wp_send_json_error(['message' => 'File not found.']);
+            wp_die();
+        }
+    
+        $file_ext = pathinfo($file_path, PATHINFO_EXTENSION);
+        
+        if ($file_ext === 'csv') {
+            $handle = fopen($file_path, 'r');
+            $header = fgetcsv($handle);
+            fclose($handle);
+        } elseif ($file_ext === 'xlsx') {
+            require_once plugin_dir_path(__DIR__) . 'libs/SimpleXLSX/SimpleXLSX.php';
+        
+            $xlsx = SimpleXLSX::parse($file_path);
+            if (!$xlsx) {
+                wp_send_json_error(['message' => 'Invalid XLSX file: ' . SimpleXLSX::parseError()]);
+                wp_die();
+            }
+            $header = $xlsx->rows()[0];
+        } elseif ($file_ext === 'xls') {
+            require_once plugin_dir_path(__DIR__) . 'libs/SimpleXLS/SimpleXLS.php';
+        
+            $xls = SimpleXLS::parse($file_path);
+            if (!$xls) {
+                wp_send_json_error(['message' => 'Invalid XLS file: ' . SimpleXLS::parseError()]);
+                wp_die();
+            }
+            $header = $xls->rows()[0];
+        } else {
+            wp_send_json_error(['message' => 'Unsupported file type. Only CSV, XLSX, and XLS are allowed.']);
+            wp_die();
+        }
+        
+    
+        $required_columns = OH_REQUIRED_COLUMNS;
+        
+        $required_columns_lower = array_map('strtolower', $required_columns);
+        $header_lower = array_map('strtolower', $header);
+        
+        $missing_columns = array_diff($required_columns_lower, $header_lower);
+    
+        if (!empty($missing_columns)) {
+            wp_send_json_error(['message' => 'Missing required columns: ' . implode(', ', $missing_columns)]);
+            wp_die();
+        }
+        
+        $total_rows = 0;
+        if ($file_ext === 'csv') {
+            $lines = file($file_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $total_rows = $lines ? count($lines) - 1 : 0;
+        } elseif ($file_ext === 'xlsx') {
+            $xlsx = SimpleXLSX::parse($file_path);
+            $total_rows = count($xlsx->rows()) - 1;
+        } elseif ($file_ext === 'xls') {
+            $xls = SimpleXLS::parse($file_path); 
+            $total_rows = count($xls->rows()) - 1;
+        } 
+    
+        $wpdb->query('START TRANSACTION');
+        try {
+            $processed_rows = 0;
+            $error_rows = [];
+            $rows = [];
+            
+            if($file_ext === 'csv'){
+                $rows = [];
+            } elseif ($file_ext === 'xlsx') {
+                $rows = $xlsx->rows();
+            } elseif ($file_ext === 'xls') {
+                $rows = $xls->rows();
+            }
+
+            
+            for ($i = 0; $i < $chunk_size; $i++) {
+                $row = ($file_ext === 'csv') ? fgetcsv($handle) : ($rows[$current_chunk * $chunk_size + $i + 1] ?? false);
+                if ($row === false) break;
+                
+                if (count($row) !== count($header_lower)) {
+                    $error_rows[] = $current_chunk * $chunk_size + $processed_rows;
+                    continue;
+                }
+                
+                $data = array_combine($header_lower, $row);
+                $failure_reasons = [];
+                
+                $required_fields = [
+                    'full name' => 'Full name',
+                    'Mailing Address' => 'Mailing Address',
+                    'city' => 'City',
+                    'state' => 'State',
+                    'zipcode' => 'Zipcode',
+                    'quantity' => 'quantity',
+                    
+                ];
+                
+                foreach ($required_fields as $key => $field) {
+                    
+                    if ($key !== 'quantity' && empty($data[strtolower($key)])) {
+                        $failure_reasons[] = "Missing {$field}";
+                    } elseif ($key === 'quantity' && (!is_numeric($data[strtolower($key)]) || $data[strtolower($key)] <= 0)) {
+                        
+                    }
+                }
+
+    
+                $insert_data = [
+                    'user_id'          => get_current_user_id(),
+                    'pid'              => $process_id,
+                    'full_name'        => sanitize_text_field($data['full name']),
+                    'company_name'     => sanitize_text_field($data['company name']),
+                    'address_1'        => sanitize_textarea_field($data['mailing address']),
+                    'address_2'        => sanitize_textarea_field($data['suite/apt']),
+                    'city'             => sanitize_text_field($data['city']),
+                    'state'            => sanitize_text_field($data['state']),
+                    'zipcode'          => sanitize_text_field($data['zipcode']),
+                    'quantity'         => max(1, intval($data['quantity'] ?? 1)),
+                    'greeting'         => sanitize_textarea_field($data['greeting']),
+                    'verified'         => empty($failure_reasons) ? 1 : 0,
+                    'address_verified' => 0,
+                    'new'              => 0,
+                    'reasons'          => empty($failure_reasons) ? null : json_encode($failure_reasons),
+                ];
+                $wpdb->insert($recipient_table, $insert_data);
+                $processed_rows++;
+            }
+    
+            $wpdb->query('COMMIT');
+            
+            $order_process_table = OAM_Helper::$order_process_table;
+            
+            $currentStep++;
+
+            $data = [
+                'step'    => sanitize_text_field($currentStep),
+            ];
+        
+            $result = $wpdb->update(
+                $order_process_table,
+                $data,
+                ['id' => $process_id]
+            );
+
+            wp_send_json_success([
+                'message' => "Chunk processed successfully", 
+                'processed_rows' => $processed_rows, 
+                'error_rows' => $error_rows, 
+                'next_chunk' => $current_chunk + 1, 
+                'total_rows' => $total_rows, 
+                'progress' => min(100, round((($current_chunk + 1) * $chunk_size) / $total_rows * 100)), 
+                'finished' => (($current_chunk + 1) * $chunk_size) >= $total_rows, 'pid' => $process_id
+            ]);
+
+        } catch (Exception $e) {
+            $wpdb->query('ROLLBACK');
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+    
+    /**
+	 * An AJAX handler function that saves and verifies the address for a single-address order before redirecting to the checkout page.
+	 *
+	 * Starts the list before the elements are added.
+	 *
+	 * @return JSON
+     * 
+     * USE Helper function 
+     * validate_address(): This function checks address validation using the Smarty API.
+     * 
+     * 
+     * TODO: get dynamic product price base selected affiliate.
+     * 
+	 */
+    
+    public function orthoney_single_address_data_save_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+
+        $stepData = $_POST;
+        $user_id = get_current_user_id();
+
+        $process_id = !empty($stepData['pid']) ? $stepData['pid'] : '';
+        $currentStep = !empty($stepData['currentStep']) ? $stepData['currentStep'] : '';
+        $delivery_line_1 = !empty($stepData['single_order_address_1']) ? $stepData['single_order_address_1'] : '';
+        $delivery_line_2 = !empty($stepData['single_order_address_2']) ? $stepData['single_order_address_2'] : '';
+        $city = !empty($stepData['single_order_city']) ? $stepData['single_order_city'] : '';
+        $state = !empty($stepData['single_order_state']) ? $stepData['single_order_state'] : '';
+        $country = !empty($stepData['single_order_country']) ? $stepData['single_order_country'] : '';
+        $zipcode = !empty($stepData['single_order_zipcode']) ? $stepData['single_order_zipcode'] : '';
+        $quantity = !empty($stepData['single_address_quantity']) ? $stepData['single_address_quantity'] : '';
+
+        $validate_address_result =  OAM_Helper::validate_address($delivery_line_1, $delivery_line_2, $city, $state, $zipcode);
+
+        $data = json_decode($validate_address_result, true);
+        if(!empty($data)){
+            if($data['success'] === false){
+                wp_send_json_error(['message' => $data['message']]);
+            }else{
+                update_user_meta($user_id, 'shipping_address_1', $delivery_line_1);
+                update_user_meta($user_id, 'shipping_address_2', $delivery_line_2);
+                update_user_meta($user_id, 'shipping_city', $city);
+                update_user_meta($user_id, 'shipping_state', $state);
+                update_user_meta($user_id, 'shipping_country', $country);
+                update_user_meta($user_id, 'shipping_postcode', $zipcode);
+
+                //clear the cart
+                if (class_exists('WC_Cart')) {
+                    WC()->cart->empty_cart(); // First, clear the cart
+                    
+                    $product_id = 76;
+
+                    $custom_price = 50; // Set custom price per unit
+
+                    $product = wc_get_product($product_id);
+                    $custom_price = $custom_price;
+
+                    $custom_data = array(
+                        'custom_data' => array(
+                            'new_price' => $custom_price
+                        )
+                    );
+                    
+                    WC()->cart->add_to_cart($product_id, $quantity, 0, array(), $custom_data);
+
+                }
+              
+                // Get checkout page URL
+                $checkout_url = wc_get_checkout_url();
+
+                wp_send_json_success([
+                    'message' => 'Address is Verify',
+                    'checkout_url' => $checkout_url
+                ]);
+
+            }
+        }
+    }
+    
+    /**
+	 * An AJAX handler function that save order process activity.
+	 *
+	 * Starts the list before the elements are added.
+	 *
+	 * @return JSON
+     * 
+	 */
+   
+    public function orthoney_order_process_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');  
+
+        $process_id = intval($_POST['pid']);
         
         $stepData = $_POST;
+
         $currentStep = intval($_POST['currentStep']);
     
         global $wpdb;
-        $table = $wpdb->prefix . 'order_process';
     
+        $order_process_table = OAM_Helper::$order_process_table;
+        
+        
         // Ensure data is safely serialized as a JSON string
         $data = [
             'user_id' => get_current_user_id(),
             'data'    => wp_json_encode($stepData),
             'step'    => sanitize_text_field($currentStep),
+            'greeting'    => sanitize_text_field($stepData['greeting']),
         ];
-    
+
+        $processExistQuery = $wpdb->prepare("
+        SELECT id
+        FROM {$order_process_table}
+        WHERE user_id = %d 
+        AND id = %d 
+        ", get_current_user_id(), $process_id);
+
+        $processExistResult = $wpdb->get_row($processExistQuery);
+        if (!$processExistResult) {
+            $process_id = 0;
+        }
+
         if ($process_id == 0) {
-            $result = $wpdb->insert($table, $data);
+            $data['created']    = current_time('mysql');
+            $data['modified']   =  current_time('mysql');
+            $data['user_agent'] = OAM_Helper::get_user_agent();
+            $data['user_ip']    = OAM_Helper::get_user_ip();
+           
+            $result = $wpdb->insert( $order_process_table, $data);
     
             if ($result !== false) {
                 $process_id = $wpdb->insert_id;
     
                 $updateData = [
-                    'name' => sanitize_text_field('Group ' . $process_id)
+                    'name'        => sanitize_text_field('unknown_' . $process_id),
+                    'modified'    =>  current_time('mysql'),
                 ];
     
                 $wpdb->update(
-                    $table,
+                    $order_process_table,
                     $updateData,
                     ['id' => $process_id]
                 );
             }
         } else {
+            
             $result = $wpdb->update(
-                $table,
+                $order_process_table,
                 $data,
                 ['id' => $process_id]
             );
@@ -103,39 +602,300 @@ class OAM_Ajax{
     
         if ($result !== false) {
             wp_send_json_success([
-                'process_id' => $process_id,
+                'pid'     => $process_id,
+                'step'    => sanitize_text_field($currentStep),
             ]);
         } else {
             wp_send_json_error(['message' => 'Database error occurred.']);
         }
     }
-    
 
-    // Callback function for download failed recipients data
+    /**
+	 * An AJAX handler function that save step for order process form.
+	 *
+	 * Starts the list before the elements are added.
+	 *
+	 * @return JSON
+     * 
+	 */
+    public function orthoney_order_step_process_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        $process_id = intval($_POST['process_value']);
+        $currentStep = intval($_POST['currentStep']);
+
+        global $wpdb;
+        $order_process_table = OAM_Helper::$order_process_table;
+
+        $data = [
+            'step'    => sanitize_text_field($currentStep),
+        ];
+
+        $result = $wpdb->update(
+            $order_process_table,
+            $data,
+            ['id' => $process_id]
+        );
+
+        if ($result !== false) {
+            wp_send_json_success([
+                'pid' => $process_id,
+            ]);
+        } else {
+            wp_send_json_error(['message' => 'Database error occurred.']);
+        }
+
+    }
+
+
+     /**
+	 * An AJAX handler function that get recipients
+	 *
+	 * Starts the list before the elements are added.
+	 *
+	 * @return JSON and array depend to the parameter
+     * 
+     * USE Helper function 
+     * get_table_recipient_content(): This function retrieves recipient data in a table format.
+     * 
+	 */
+   
+    public function orthoney_get_csv_recipient_ajax_handler($userId = '', $processID = '') {
+        
+            
+        $exclude_ids = $process_id = $customGreeting = $addressPartsHtml = $successHtml = $newDataHtml = $failHtml = $duplicateHtml = '';
+        $successData = $newData = $failData = $duplicateGroups = [];
+
+
+        if($userId != ''){
+            $user = $userId;
+        }else{
+            // Verify nonce for security
+            check_ajax_referer('oam_nonce', 'security');    
+            $user = sanitize_text_field($_POST['user']);
+        }
+
+        if(isset($_POST['pid'])){
+            $process_id  = isset($_POST['pid'])? sanitize_text_field($_POST['pid']) : '';
+        }else{
+            $process_id = $processID;
+        }
+        
+        if($user != 0 OR $user != ''){
+            global $wpdb;
+
+            $tableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Verified</th><th>Custom Greeting</th><th style="width: 110px;">Action</th></tr></thead><tbody>';
+
+            $duplicateTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Verified</th><th>Custom Greeting</th><th>Delete Recipient</th><th style="width: 110px;">Action</th></tr></thead><tbody>';
+            
+            $tableEnd = '</tbody></table>';
+           
+            $recipient_table = OAM_Helper::$order_process_recipient_table;
+            
+            // Generate placeholders for each ID
+            
+            $query = '';
+            $includeQuery = '';
+
+            if($process_id != 0 OR $process_id != ''){
+                $query = $wpdb->prepare("
+                    SELECT * 
+                    FROM {$recipient_table}
+                    WHERE user_id = %d 
+                    AND pid = %d 
+                    AND visibility = 1
+                ", $user, $process_id);
+
+                $order_process_table = OAM_Helper::$order_process_table;
+                
+                $processQuery = $wpdb->prepare("
+                SELECT * 
+                FROM {$order_process_table}
+                WHERE user_id = %d 
+                AND id = %d 
+                ", $user, $process_id);
+
+                $processResult = $wpdb->get_row($processQuery);
+
+                if ($processResult) {
+                    $getData  = json_decode($processResult->data);
+                    $customGreeting = (!empty($getData->greeting)) ? $getData->greeting : '';    
+                }
+                
+            }
+            
+            $allRecords = $wpdb->get_results($query);
+            
+            // First pass: Group records by their unique combination
+            $recordMap = [];
+            
+            foreach ($allRecords as $record) {
+                // Create unique key for comparison
+                $key = $record->full_name . '|' . 
+                       $record->address_1 . '|' . 
+                       $record->state . '|' . 
+                       $record->zipcode;
+                
+                // Store record in the map
+                if (!isset($recordMap[$key])) {
+                    $recordMap[$key] = [];
+                }
+                $recordMap[$key][] = $record;
+            }
+    
+            // Second pass: Categorize records
+            foreach ($recordMap as $key => $records) {
+                if (count($records) > 1) {
+                    // This is a group of duplicates
+                    $duplicateGroups[] = $records;
+                } else {
+                    // Single record - add to success or fail based on verified status
+                    $record = $records[0];
+                    if ($record->new == 0) {
+                        if ($record->verified == 1) {
+                            $successData[] = $record;
+                        } else {
+                            $failData[] = $record;
+                        }
+                    }else{
+                        $newData[] = $record;
+                    }
+                }
+            }
+
+            // Generate new data HTML
+            if(!empty($newData)){
+                $newDataHtml .= '<div><h4>'.count($newData).' new Recipient(s)!</h4></div>';
+                $newDataHtml .= OAM_Helper::get_table_recipient_content($newData, $customGreeting);
+                
+            }
+    
+            // Generate Success HTML
+            if(!empty($successData)){
+                $successHtml .= '<div><h4>'.count($successData).' Recipient Successfully!</h4></div>';
+                $successHtml .=  OAM_Helper::get_table_recipient_content($successData , $customGreeting);
+            }
+    
+            // Generate Fail HTML
+            if(!empty($failData)){
+                $failHtml .= '<div><h4>'.count($failData).' Recipient failed!</h4></div>';
+                $failHtml .= OAM_Helper::get_table_recipient_content($failData , $customGreeting);
+            }
+    
+            // Generate Duplicate HTML - now showing grouped duplicates
+            if(!empty($duplicateGroups)){
+                $totalDuplicates = 0;
+                foreach ($duplicateGroups as $group) {
+                    $totalDuplicates += count($group);
+                }
+
+                $bulkMargeButtonHtml = '';
+                if($process_id != ''){
+                    $bulkMargeButtonHtml = '<button id="bulkMargeRecipient" class="next w-btn us-btn-style_1">Bulk Marge Recipient</button>';
+                }
+                
+                $duplicateHtml .= '<div><h4>'.$totalDuplicates.' Duplicate entries were found for '.count($duplicateGroups).' Recipient!</h4>'.$bulkMargeButtonHtml.'</div>';
+                
+                foreach ($duplicateGroups as $groupIndex => $group) {
+                    $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="'.($groupIndex + 1).'"><td colspan="12"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
+                    $duplicateHtml .= OAM_Helper::get_table_recipient_content($group , $customGreeting, 0 , 1);
+                    
+                }
+            }
+    
+            // Wrap tables with headers
+            if($newDataHtml != ''){
+                $newDataHtml = $tableStart.$newDataHtml.$tableEnd;
+            }
+            if($successHtml != ''){
+                $successHtml = $tableStart.$successHtml.$tableEnd;
+            }
+            if($failHtml != ''){
+                $failHtml = '<button id="download-failed-recipient-csv" class="w-btn us-btn-style_1">Download CSV for the Fail Recipient</button>'.$tableStart.$failHtml.$tableEnd;
+            }
+            if($duplicateHtml != ''){
+                $duplicateHtml = $duplicateTableStart.$duplicateHtml.$tableEnd;
+            }
+    
+            // Calculate total count of all records including duplicates
+            $totalDuplicates = 0;
+            foreach ($duplicateGroups as $group) {
+                $totalDuplicates += count($group);
+            }
+
+            $resultData = [
+                'newData'         => $newDataHtml,
+                'successData'     => $successHtml,
+                'failData'        => $failHtml,
+                'duplicateData'   => $duplicateHtml,
+                'duplicateGroups' => $duplicateGroups,
+                'totalCount'      => count($successData) + count($failData) + $totalDuplicates + count($newData),
+                'successCount'    => count($successData),
+                'newCount'        => count($newData),
+                'failCount'       => count($failData),
+                'duplicateCount'  => $totalDuplicates,
+                'groupCount'      => count($duplicateGroups)
+            ];
+
+            
+            if($userId != ''){
+                return json_encode(['success' => true, 'data'=> $resultData]);
+            }else{
+                wp_send_json_success( $resultData);
+            }
+           
+        }else {
+            if($userId != ''){
+                return json_encode(['success' => false, 'message' => 'No data found.']);
+            }else{
+                wp_send_json_error( ['message' => 'No data found.']);
+            }
+        }
+    
+        wp_die();
+    }
+    
+    /**
+	 * An AJAX handler function that download failed recipients data.
+	 *
+	 * Starts the list before the elements are added.
+	 *
+	 * @return JSON
+     * 
+     * TODO : remaining code for group
+	 */
+    
     public function orthoney_download_failed_recipient_handler() {
         global $wpdb;
     
+        $type = isset($_POST['type']) ? $_POST['type'] : '';
+        $id = isset($_POST['id']) ? $_POST['id'] : '';
+        
         // Assuming $user is defined somewhere, or you need to set the user_id.
         $user = get_current_user_id(); // For example, if user is not passed, use the logged-in user's ID.
-        
-        $recipient_table = $wpdb->prefix . 'recipient_temp';
-    
+        $recipient_table = '';
+
+        if($type == 'process'){
+            $recipient_table = OAM_Helper::$order_process_recipient_table;
+        }
         // Get all records
         $allRecords = $wpdb->get_results($wpdb->prepare("
-            SELECT * FROM $recipient_table WHERE user_id = %d
-        ", $user));
+            SELECT * FROM {$recipient_table} WHERE user_id = %d AND pid = %d AND verified = 0
+        ", $user, $id));
     
         $failData = [];
     
         // First pass: Group records by their unique combination
         $recordMap = [];
+
     
         foreach ($allRecords as $record) {
             // Create unique key for comparison
-            $key = $record->first_name . '|' . 
-                   $record->last_name . '|' . 
+            $key = $record->full_name . '|' . 
+                   $record->address_1 . '|' . 
+                   $record->city . '|' . 
                    $record->state . '|' . 
                    $record->country . '|' . 
+                   $record->quantity . '|' . 
                    $record->zipcode;
             
             // Store record in the map
@@ -160,7 +920,7 @@ class OAM_Ajax{
         // Generate Fail CSV if failData is not empty
         if (!empty($failData)) {
             $csvData = array(
-                array('first_name', 'last_name', 'address_1', 'address_2', 'city', 'state', 'country', 'zipcode', 'reasons'),
+                array('Full name', 'Company name', 'Mailing address', 'Suite/Apt', 'City', 'State', 'Zipcode', 'Quantity', 'Greeting' ,'Reasons'),
             );
     
             // Loop through the records and add each row to the CSV data
@@ -174,14 +934,15 @@ class OAM_Ajax{
     
                 // Add the record to the CSV data array
                 $csvData[] = array(
-                    $record->first_name,
-                    $record->last_name,
+                    $record->full_name,
+                    $record->company_name,
                     $record->address_1,
                     $record->address_2,
                     $record->city,
                     $record->state,
-                    $record->country,
                     $record->zipcode,
+                    $record->quantity,
+                    $record->greeting,
                     $reasons,
                 );
             }
@@ -293,549 +1054,30 @@ class OAM_Ajax{
             wp_send_json_error(['message' => 'Failed to delete group or group not found.']);
         }
     }
-   
-    // Callback function for get recipients
-    public function orthoney_get_recipient_handler($userId = '', $groupId = '') {
-        
-        $exclude_ids  = '';
-        $group_id = '';
-        if($userId != ''){
-            $user = $userId;
-        }else{
-            // Verify nonce for security
-            check_ajax_referer('oam_nonce', 'security');    
-            $user = sanitize_text_field($_POST['user']);
-            if(isset($_POST['newids']) AND $_POST['newids'] != ''){
-                $new_ids  = sanitize_text_field($_POST['newids']);
-                $exclude_ids = array_map('intval', explode(',', $new_ids));
-            }
-        }
 
-        if(isset($_POST['groupId'])){
-            $group_id  = isset($_POST['groupId'])? sanitize_text_field($_POST['groupId']) : '';
-        }else{
-            $group_id = $groupId;
-        }
-        
-        if($user != 0 OR $user != ''){
-            global $wpdb;
-
-            $tableStart ='<table><thead><tr><th>First Name</th><th>Last Name</th><th>Address 1</th><th>Address 2</th><th>City</th><th>State</th><th>Country</th><th>Zipcode</th><th>Action</th></tr></thead><tbody>';
-
-            $tableFailStart ='<button id="download-failed-recipient-csv">Download CSV for the Fail Recipient</button><table><thead><tr><th>First Name</th><th>Last Name</th><th>Address 1</th><th>Address 2</th><th>City</th><th>State</th><th>Country</th><th>Zipcode</th><th>Reasons</th><th>Action</th></tr></thead><tbody>';
-
-            $tableDuplicateStart ='<table><thead><tr><th>First Name</th><th>Last Name</th><th>Address 1</th><th>Address 2</th><th>City</th><th>State</th><th>Country</th><th>Zipcode</th><th>Verified</th><th>Action</th></tr></thead><tbody>';
-            
-            $tableEnd = '</tbody></table>';
-            $successHtml = '';
-            $newDataHtml = '';
-            $failHtml = '';
-            $duplicateHtml = '';
-            $successData = [];
-            $newData = [];
-            $failData = [];
-            $duplicateGroups = [];
-
-            $recipient_table = $wpdb->prefix . 'recipient_temp';
-            $group_relationships_table = $wpdb->prefix . 'recipient_group_relationships_temp';
-    
-           
-            // Get all records
-            if(empty($exclude_ids) ){
-                if($group_id != ''){
-                    $query = $wpdb->prepare("
-                        SELECT r.* 
-                        FROM $recipient_table r
-                        INNER JOIN $group_relationships_table rg 
-                            ON r.id = rg.recipient_id
-                        WHERE r.user_id = %d 
-                        AND r.visibility = %d 
-                        AND rg.group_id = %d
-                    ", $user, 1, $group_id);
-
-                    $allRecords = $wpdb->get_results($query);
-                }else{
-                    $query = $wpdb->prepare("
-                        SELECT r.* 
-                        FROM $recipient_table r
-                        INNER JOIN $group_relationships_table rg 
-                            ON r.id = rg.recipient_id
-                        WHERE r.user_id = %d 
-                        AND r.visibility = %d
-                    ", $user, 1);
-                    $allRecords = $wpdb->get_results($query);
-                }
-            }else{
-                // Generate placeholders for each ID
-                $placeholders = implode(',', array_fill(0, count($exclude_ids), '%d'));
-                $query = '';
-                $includeQuery = '';
-
-                if($group_id != 0 OR $group_id != ''){
-                    $query = $wpdb->prepare("
-                        SELECT r.* 
-                        FROM $recipient_table r
-                        INNER JOIN $group_relationships_table rg 
-                            ON r.id = rg.recipient_id
-                        WHERE r.user_id = %d 
-                        AND r.visibility = %d 
-                        AND rg.group_id = %d 
-                        AND r.id NOT IN ($placeholders)
-                    ", $user, 1, $group_id, ...$exclude_ids);
-
-                    $includeQuery = $wpdb->prepare("
-                        SELECT r.* 
-                        FROM $recipient_table r
-                        INNER JOIN $group_relationships_table rg 
-                            ON r.id = rg.recipient_id
-                        WHERE r.user_id = %d 
-                        AND rg.group_id = %d 
-                        AND r.id IN ($placeholders)
-                    ", array_merge([$user, $group_id], $exclude_ids));
-
-
-                }else{
-                    $query = $wpdb->prepare(
-                        "SELECT * 
-                        FROM $recipient_table 
-                        WHERE user_id = %d 
-                        AND visibility = %d 
-                        AND id NOT IN ($placeholders)",
-                        $user, 1, ...$exclude_ids
-                    );
-                    $includeQuery = $wpdb->prepare("
-                        SELECT * 
-                        FROM $recipient_table 
-                        WHERE user_id = %d 
-                        AND id IN ($placeholders)
-                    ", array_merge([$user], $exclude_ids));
-                }
-                
-                $allRecords = $wpdb->get_results($query);
-                $newAllRecords = $wpdb->get_results($includeQuery);
-
-                // Execute queries
-                $allRecords = $wpdb->get_results($query);
-                $newAllRecords = $wpdb->get_results($includeQuery);
-
-
-                // Generate new data HTML
-                if(!empty($newAllRecords)){
-                    $newDataHtml .= '<div><h4>'.count($newAllRecords).' new Recipient(s)!</h4></div>';
-                    foreach ($newAllRecords as $data) {
-                        $id = $data->id;
-                        $newDataHtml .= '<tr data-id="'.$id.'">';
-                        $newDataHtml .= '<td>'.$data->first_name.'</td>';
-                        $newDataHtml .= '<td>'.$data->last_name.'</td>';
-                        $newDataHtml .= '<td>'.$data->address_1.'</td>';
-                        $newDataHtml .= '<td>'.$data->address_2.'</td>';
-                        $newDataHtml .= '<td>'.$data->city.'</td>';
-                        $newDataHtml .= '<td>'.$data->state.'</td>';
-                        $newDataHtml .= '<td>'.$data->country.'</td>';
-                        $newDataHtml .= '<td>'.$data->zipcode.'</td>';
-                        $newDataHtml .= '<td><button class="editRecipient" data-popup="#recipient-manage-popup">Edit</button><button class="deleteRecipient">Delete</button></td>';
-                        $newDataHtml .= '</tr>';
-                    }
-                }
-            }
-            
-            // First pass: Group records by their unique combination
-            $recordMap = [];
-            
-            foreach ($allRecords as $record) {
-                // Create unique key for comparison
-                $key = $record->first_name . '|' . 
-                       $record->last_name . '|' . 
-                       $record->state . '|' . 
-                       $record->country . '|' . 
-                       $record->zipcode;
-                
-                // Store record in the map
-                if (!isset($recordMap[$key])) {
-                    $recordMap[$key] = [];
-                }
-                $recordMap[$key][] = $record;
-            }
-    
-            // Second pass: Categorize records
-            foreach ($recordMap as $key => $records) {
-                if (count($records) > 1) {
-                    // This is a group of duplicates
-                    $duplicateGroups[] = $records;
-                } else {
-                    // Single record - add to success or fail based on verified status
-                    $record = $records[0];
-                    if ($record->verified == 1) {
-                        $successData[] = $record;
-                    } else {
-                        $failData[] = $record;
-                    }
-                }
-            }
-    
-            // Generate Success HTML
-            if(!empty($successData)){
-                $successHtml .= '<div><h4>'.count($successData).' Recipient Successfully!</h4></div>';
-                foreach ($successData as $data) {
-                    $id = $data->id;
-                    $successHtml .= '<tr data-id="'.$id.'">';
-                    $successHtml .= '<td>'.$data->first_name.'</td>';
-                    $successHtml .= '<td>'.$data->last_name.'</td>';
-                    $successHtml .= '<td>'.$data->address_1.'</td>';
-                    $successHtml .= '<td>'.$data->address_2.'</td>';
-                    $successHtml .= '<td>'.$data->city.'</td>';
-                    $successHtml .= '<td>'.$data->state.'</td>';
-                    $successHtml .= '<td>'.$data->country.'</td>';
-                    $successHtml .= '<td>'.$data->zipcode.'</td>';
-                    $successHtml .= '<td><button class="editRecipient" data-popup="#recipient-manage-popup">Edit</button><button class="deleteRecipient">Delete</button></td>';
-                    $successHtml .= '</tr>';
-                }
-            }
-    
-            // Generate Fail HTML
-            if(!empty($failData)){
-                $failHtml .= '<div><h4>'.count($failData).' Recipient failed!</h4></div>';
-                foreach ($failData as $data) {
-                    $id = $data->id;
-                    $reasons = '';
-                    if (!empty($data->reasons)) {
-                        $reasons = implode(", ", json_decode($data->reasons, true));
-                    }
-                    
-                    $failHtml .= '<tr data-id="'.$id.'">';
-                    $failHtml .= '<td>'.$data->first_name.'</td>';
-                    $failHtml .= '<td>'.$data->last_name.'</td>';
-                    $failHtml .= '<td>'.$data->address_1.'</td>';
-                    $failHtml .= '<td>'.$data->address_2.'</td>';
-                    $failHtml .= '<td>'.$data->city.'</td>';
-                    $failHtml .= '<td>'.$data->state.'</td>';
-                    $failHtml .= '<td>'.$data->country.'</td>';
-                    $failHtml .= '<td>'.$data->zipcode.'</td>';
-                    $failHtml .= '<td>'.$reasons.'</td>';
-                    $failHtml .= '<td><button class="editRecipient" data-popup="#recipient-manage-popup">Edit</button><button class="deleteRecipient">Delete</button></td>';
-                    $failHtml .= '</tr>';
-                }
-            }
-    
-            // Generate Duplicate HTML - now showing grouped duplicates
-            if(!empty($duplicateGroups)){
-                $totalDuplicates = 0;
-                foreach ($duplicateGroups as $group) {
-                    $totalDuplicates += count($group);
-                }
-
-                $bulkMargeButtonHtml = '';
-                if($group_id != ''){
-                    $bulkMargeButtonHtml = '<button id="bulkMargeRecipient">Bulk Marge Recipient</button>';
-                }
-                
-                $duplicateHtml .= '<div><h4>'.$totalDuplicates.' Duplicate Entries Found in '.count($duplicateGroups).' Groups!</h4>'.$bulkMargeButtonHtml.'</div>';
-                
-                foreach ($duplicateGroups as $groupIndex => $group) {
-                    $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="'.($groupIndex + 1).'"><td colspan="10">Duplicate Group '.($groupIndex + 1).' ('. count($group).' records)</td></tr>';
-                    foreach ($group as $data) {
-                        $id = $data->id;
-                        $duplicateHtml .= '<tr data-verify="'.$data->verified.'" data-id="'.$id.'" data-group="'.($groupIndex + 1).'">';
-                        $duplicateHtml .= '<td>'.$data->first_name.'</td>';
-                        $duplicateHtml .= '<td>'.$data->last_name.'</td>';
-                        $duplicateHtml .= '<td>'.$data->address_1.'</td>';
-                        $duplicateHtml .= '<td>'.$data->address_2.'</td>';
-                        $duplicateHtml .= '<td>'.$data->city.'</td>';
-                        $duplicateHtml .= '<td>'.$data->state.'</td>';
-                        $duplicateHtml .= '<td>'.$data->country.'</td>';
-                        $duplicateHtml .= '<td>'.$data->zipcode.'</td>';
-                        $duplicateHtml .= '<td>'.(($data->verified == 0) ? 'NO': 'Yes').'</td>';
-                        $duplicateHtml .= '<td><button class="editRecipient" data-popup="#recipient-manage-popup">Edit</button><button class="deleteRecipient">Delete</button></td>';
-                        $duplicateHtml .= '</tr>';
-                    }
-                }
-            }
-    
-            // Wrap tables with headers
-            if($newDataHtml != ''){
-                $newDataHtml = $tableStart.$newDataHtml.$tableEnd;
-            }
-            if($successHtml != ''){
-                $successHtml = $tableStart.$successHtml.$tableEnd;
-            }
-            if($failHtml != ''){
-                $failHtml = $tableFailStart.$failHtml.$tableEnd;
-            }
-            if($duplicateHtml != ''){
-                $duplicateHtml = $tableDuplicateStart.$duplicateHtml.$tableEnd;
-            }
-    
-            // Calculate total count of all records including duplicates
-            $totalDuplicates = 0;
-            foreach ($duplicateGroups as $group) {
-                $totalDuplicates += count($group);
-            }
-
-            $resultData = [
-                'newData'         => $newDataHtml,
-                'successData'     => $successHtml,
-                'failData'        => $failHtml,
-                'duplicateData'   => $duplicateHtml,
-                'duplicateGroups' => $duplicateGroups, // Raw duplicate groups data
-                'totalCount'      => count($successData) + count($failData) + $totalDuplicates,
-                'successCount'    => count($successData),
-                'failCount'       => count($failData),
-                'duplicateCount'  => $totalDuplicates,
-                'groupCount'      => count($duplicateGroups)
-            ];
-
-            
-            if($userId != ''){
-                return json_encode(['success' => true, 'data'=> $resultData]);
-            }else{
-                wp_send_json_success( $resultData);
-            }
-           
-        }else {
-            if($userId != ''){
-                return json_encode(['success' => false, 'message' => 'No data found.']);
-            }else{
-                wp_send_json_error( ['message' => 'No data found.']);
-            }
-            
-        }
-    
-        wp_die();
-    }
-
-    // Callback function for insert recipient 
-    public function orthoney_insert_recipient_handler() {
-        // Verify nonce for security
-        check_ajax_referer('oam_nonce', 'security');
-    
-        global $wpdb;
-        $recipient_table = $wpdb->prefix . 'recipient_temp';
-        $group_table = $wpdb->prefix . 'recipient_group';
-        $group_relationships_table = $wpdb->prefix . 'recipient_group_relationships_temp';
-    
-        // Chunk processing parameters
-        $chunk_size = 2;
-        $current_chunk = isset($_POST['current_chunk']) ? intval($_POST['current_chunk']) : 0;
-        $group_name = isset($_POST['group_name']) && !empty($_POST['group_name'])  ? sanitize_text_field($_POST['group_name']) : (isset($_FILES['csv_file']) ? sanitize_file_name($_FILES['csv_file']['name']) : '');
-        $greeting = isset($_POST['greeting']) ? sanitize_text_field($_POST['greeting']) : '';
-    
-        // Ensure the file is uploaded successfully
-        if (isset($_FILES['csv_file']) && $_FILES['csv_file']['error'] === UPLOAD_ERR_OK) {
-            
-        // File upload code Start
-        // File upload directory setup
-        $csv_dir = WP_CONTENT_DIR . '/recipient_csv/';
-        
-        // Ensure directory exists
-        if (!file_exists($csv_dir)) {
-            wp_mkdir_p($csv_dir);
-        }
-
-        $file_name = sanitize_file_name($_FILES['csv_file']['name']);
-        $file_extension = pathinfo($file_name, PATHINFO_EXTENSION);
-
-        // Validate file extension
-        if (strtolower($file_extension) !== 'csv') {
-            wp_send_json_error(['message' => 'Invalid file type. Only CSV files are allowed.']);
-            wp_die();
-        }
-
-        $unique_file_name = uniqid('recipient_', true) . '.csv';
-        $file_path = $csv_dir . $unique_file_name;
-
-        // Move uploaded file securely
-        if (!move_uploaded_file($_FILES['csv_file']['tmp_name'], $file_path)) {
-            wp_send_json_error(['message' => 'Error saving the file on the server.']);
-            wp_die();
-        }
-
-        // File upload code End
-
-            // $file = sanitize_file_name($_FILES['csv_file']['name']);
-            if (($handle = fopen($file_path, 'r')) !== false) {
-                $header = fgetcsv($handle);
-    
-                $required_columns = ['first_name', 'last_name', 'address_1', 'address_2', 'city', 'state', 'country', 'zipcode'];
-    
-                foreach ($required_columns as $column) {
-                    if (!in_array($column, $header)) {
-                        fclose($handle);
-                        wp_send_json_error(['message' => 'Invalid CSV format. Missing required columns.']);
-                        wp_die();
-                    }
-                }
-    
-                if ($current_chunk == 0) {
-                    // Create the new group entry
-                    $wpdb->insert($group_table, [
-                        'name' => $group_name,
-                        'greeting' => $greeting,
-                        'csv_path' => WP_CONTENT_URL . '/recipient_csv/'.$unique_file_name,
-                        'user_id' => get_current_user_id(),
-                    ]);
-    
-                    // Get the newly created group_id
-                    $group_id = $wpdb->insert_id;
-    
-                    if (!$group_id) {
-                        fclose($handle);
-                        wp_send_json_error(['message' => 'Failed to create recipient group.']);
-                        wp_die();
-                    }
-    
-                } else {
-                    // Retrieve group_id from previous operations
-                    $group_id = intval($_POST['group_id']);
-                }
-    
-                $total_rows = count(file($file_path)) - 1;
-                
-                for ($i = 0; $i < ($current_chunk * $chunk_size); $i++) {
-                    if (fgetcsv($handle) === false) {
-                        wp_send_json_success([
-                            'message' => 'Import complete',
-                            'finished' => true,
-                            'total_rows' => $total_rows,
-                            'progress' => 100,
-                            'group_id' => $group_id,
-                        ]);
-                        wp_die();
-                    }
-                }
-    
-                $wpdb->query('START TRANSACTION');
-    
-                try {
-                    $processed_rows = 0;
-                    $error_rows = [];
-    
-                    for ($i = 0; $i < $chunk_size; $i++) {
-                        $row = fgetcsv($handle);
-    
-                        if ($row === false) {
-                            break;
-                        }
-    
-                        $failure_reasons = [];
-    
-                        if (count($row) !== count($header)) {
-                            $failure_reasons[] = 'Column count mismatch';
-                            $error_rows[] = $current_chunk * $chunk_size + $processed_rows;
-                            continue;
-                        }
-    
-                        $data = array_combine($header, $row);
-    
-                        foreach ($required_columns as $field) {
-                            if (empty($data[$field])) {
-                                $failure_reasons[] = "Missing {$field}";
-                            }
-                        }
-    
-                        if (!preg_match("/^[A-Za-z\s-]+$/", $data['first_name'])) {
-                            $failure_reasons[] = "Invalid first name format";
-                        }
-                        if (!preg_match("/^[A-Za-z\s-]+$/", $data['last_name'])) {
-                            $failure_reasons[] = "Invalid last name format";
-                        }
-                        if (strlen($data['zipcode']) < 5) {
-                            $failure_reasons[] = "Invalid zipcode length";
-                        }
-    
-                        $insert_data = [
-                            'user_id'    => get_current_user_id(),
-                            'first_name' => sanitize_text_field($data['first_name']),
-                            'last_name'  => sanitize_text_field($data['last_name']),
-                            'address_1'  => sanitize_textarea_field($data['address_1']),
-                            'address_2'  => sanitize_textarea_field($data['address_2']),
-                            'city'       => sanitize_text_field($data['city']),
-                            'state'      => sanitize_text_field($data['state']),
-                            'country'    => sanitize_text_field($data['country']),
-                            'zipcode'    => sanitize_text_field($data['zipcode']),
-                            'greeting'   => sanitize_text_field($data['greeting']),
-                            'timestamp'  => current_time('mysql'),
-                            'visibility' => 1,
-                            'verified'   => empty($failure_reasons) ? 1 : 0,
-                            'reasons'    => empty($failure_reasons) ? null : json_encode($failure_reasons),
-                        ];
-    
-                        $insert_result = $wpdb->insert($recipient_table, $insert_data);
-    
-                        if ($insert_result !== false) {
-                            $processed_rows++;
-                            $inserted_id = $wpdb->insert_id;
-                            $relationship_data = [
-                                'user_id'         => get_current_user_id(),
-                                'recipient_id'    => $inserted_id,
-                                'group_id'        => $group_id,
-                                'timestamp'       => current_time('mysql'),
-                            ];
-                            $relationship_result = $wpdb->insert($group_relationships_table, $relationship_data);
-
-                        } else {
-                            $error_rows[] = $current_chunk * $chunk_size + $processed_rows;
-                        }
-                    }
-    
-                    $wpdb->query('COMMIT');
-                    fclose($handle);
-    
-                    $next_chunk = $current_chunk + 1;
-                    $progress = min(100, round(($next_chunk * $chunk_size) / $total_rows * 100));
-                    $is_finished = ($next_chunk * $chunk_size) >= $total_rows;
-    
-                    wp_send_json_success([
-                        'message' => "Chunk processed successfully",
-                        'processed_rows' => $processed_rows,
-                        'error_rows' => $error_rows,
-                        'next_chunk' => $next_chunk,
-                        'total_rows' => $total_rows,
-                        'progress' => $progress,
-                        'finished' => $is_finished,
-                        'group_id' => $group_id,
-                        'user' => get_current_user_id(),
-                    ]);
-    
-                } catch (Exception $e) {
-                    $wpdb->query('ROLLBACK');
-                    fclose($handle);
-                    wp_send_json_error(['message' => $e->getMessage()]);
-                }
-            } else {
-                wp_send_json_error(['message' => 'Error opening the file.']);
-            }
-        } else {
-            wp_send_json_error(['message' => 'No file uploaded or upload error occurred.']);
-        }
-    
-        wp_die();
-    }
-    
     // Callback function for bulk deleted recipient 
     public function orthoney_bulk_deleted_recipient_handler() {
         
         if (isset($_POST['ids']) && is_array(json_decode(stripslashes($_POST['ids'])))) {
             global $wpdb;
-            $table = $wpdb->prefix . 'recipient_temp';
+            $table = OAM_Helper::$order_process_recipient_table;
             $ids = json_decode(stripslashes($_POST['ids']));
     
-            
-            global $wpdb;
-            $table = $wpdb->prefix . 'recipient_temp';
-            $ids = json_decode(stripslashes($_POST['ids']));
-            
             // Prepare the IDs for the IN clause, ensuring they are integers
             $ids_placeholder = implode(',', array_map('intval', $ids));
 
             // Update the records based on the IDs array
             $result = $wpdb->query(
                 $wpdb->prepare(
-                    "UPDATE $table SET visibility = 0 WHERE id IN ($ids_placeholder)",
+                    "UPDATE {$table} SET visibility = 0 WHERE id IN ($ids_placeholder)",
                     $ids
                 )
             );
 
             if ($result !== false) {
+                foreach ($ids as $key => $id) {
+                    OAM_Helper::order_process_recipient_activate_log($id, 'bulk deleted', '');
+                }
                 wp_send_json_success([
                     'message' => 'Recipient deleted successfully!',
                     'groupId' => $groupId,
@@ -854,20 +1096,16 @@ class OAM_Ajax{
     
     // Callback function for deleted recipient 
     public function orthoney_deleted_recipient_handler() {
-        $groupId = 0;
         // Check if the recipient id is provided
         if (empty($_POST['id'])) {
             wp_send_json_error(['message' => 'Recipient is required.']);
         }
     
         $id = sanitize_text_field($_POST['id']);
-        if(isset($_POST['groupId']) && $_POST['groupId'] != 'null'){
-            $groupId = sanitize_text_field($_POST['groupId']);
-        }
-    
+
         // Your logic to insert the recipient into the database
         global $wpdb;
-        $table = $wpdb->prefix . 'recipient_temp';
+        $table = OAM_Helper::$order_process_recipient_table;
 
         $result = $wpdb->update(
             $table,
@@ -876,9 +1114,9 @@ class OAM_Ajax{
         );
     
         if ($result) {
+            OAM_Helper::order_process_recipient_activate_log($id, 'deleted', '');
             wp_send_json_success([
                 'message' => 'Recipient deleted successfully!',
-                'groupId' => $groupId,
                 'user' => get_current_user_id(),
 
             ]);
@@ -900,12 +1138,11 @@ class OAM_Ajax{
         }
     
         // Table name
-        $recipient_table = $wpdb->prefix . 'recipient_temp';
+        $recipient_table = OAM_Helper::$order_process_recipient_table;
     
         // Fetch recipient record as an associative array
         $record = $wpdb->get_row(
-            $wpdb->prepare("SELECT * FROM $recipient_table WHERE id = %d", $recipientID),
-            ARRAY_A
+            $wpdb->prepare("SELECT * FROM $recipient_table WHERE id = %d", $recipientID), ARRAY_A
         );
     
         if (!empty($record)) {
@@ -919,84 +1156,196 @@ class OAM_Ajax{
 
     // Callback function for manually add new recipient and edit recipient
     public function orthoney_manage_recipient_form_handler() {
+        global $wpdb;
         
         // Check for required fields
-        $required_fields = ['first_name', 'last_name', 'address_1', 'city', 'state', 'country', 'zipcode'];
-        foreach ($required_fields as $field) {
-            if (!isset($_POST[$field]) || empty($_POST[$field])) {
-                wp_send_json_error([
-                    'message' => 'Missing required fields.',
-                ]);
+        $required_fields = [
+            'full_name' => 'Full Name',
+            'address_1' => 'Mailing Address',
+            'city' => 'City',
+            'state' => 'State',
+            'greeting' => 'Greeting',
+        ];
+        
+        $missing_fields = [];
+        
+        foreach ($required_fields as $key => $field) {
+            if (!isset($_POST[$key]) || empty($_POST[$key])) {
+                $missing_fields[] = $field;
             }
         }
-    
+        
+        if (!empty($missing_fields)) {
+            wp_send_json_error([
+                'message' => 'Missing required fields: '.implode(', ', $missing_fields)
+            ]);
+        }
+        
+        
         // Sanitize and prepare common data
         $data = [
-            'first_name' => sanitize_text_field($_POST['first_name']),
-            'last_name'  => sanitize_text_field($_POST['last_name']),
+            'full_name' => sanitize_text_field($_POST['full_name']),
+            'company_name'  => sanitize_text_field($_POST['company_name']),
             'address_1'  => sanitize_textarea_field($_POST['address_1']),
             'address_2'  => isset($_POST['address_2']) ? sanitize_textarea_field($_POST['address_2']) : '',
             'city'       => sanitize_text_field($_POST['city']),
             'state'      => sanitize_text_field($_POST['state']),
-            'country'    => sanitize_text_field($_POST['country']),
             'zipcode'    => sanitize_text_field($_POST['zipcode']),
-            'reasons'    => null,
+            'quantity'   => $_POST['quantity'],
+            'greeting'   => sanitize_textarea_field($_POST['greeting']),
+            'reasons'    => '',
             'verified'   => 1,
-            'visibility'  => 1,
+            'visibility' => 1,
             'timestamp'  => current_time('mysql'),
         ];
-    
-        global $wpdb;
-        $table = $wpdb->prefix . 'recipient_temp';
-        $group_relationships_table = $wpdb->prefix . 'recipient_group_relationships_temp';
-    
+        
+        $table = OAM_Helper::$order_process_recipient_table;
+        
+        $recipient_id = isset($_POST['recipient_id']) ? absint($_POST['recipient_id']) : null;
+        $process_id = isset($_POST['pid']) ? absint($_POST['pid']) : null;
+        
+        // Construct the key for checking existing records
+        $record_key = $data['full_name'] . '|' . 
+        $data['address_1'] . '|' . 
+        $data['state'] . '|' . 
+        $data['zipcode'];
+        
         $status = '';
-        $recipient_id = '';
-        // Determine if this is an update or insert operation
-        if (isset($_POST['recipient_id']) AND $_POST['recipient_id'] != '') {
-            // Update existing recipient
-            $recipient_id = absint($_POST['recipient_id']);
-            $result = $wpdb->update(
-                $table,
-                $data,
-                ['id' => $recipient_id]
+        $result = false;
+        
+        // Check if a record with the same key exists
+        $existing_recipient = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT id, visibility FROM $table WHERE full_name = %s AND address_1 = %s AND city = %s AND state = %s AND zipcode = %s AND pid = %d",
+                $data['full_name'], $data['address_1'], $data['city'], $data['state'], $data['zipcode'], $process_id
+                )
             );
-            $status = 'update';
-    
-            $success_message = 'Recipient details updated successfully!';
-        } else {
-            // Insert new recipient
-            $status = 'new';
-            $data['user_id'] = get_current_user_id();
             
-            $result = $wpdb->insert($table, $data);
-            $recipient_id = $wpdb->insert_id;
-
-            $relationship_data = [
-                'user_id'         => get_current_user_id(),
-                'recipient_id'    => $recipient_id,
-                'group_id'        => sanitize_text_field($_POST['group_id']),
-                'timestamp'       => current_time('mysql'),
-            ];
-    
-            $relationship_result = $wpdb->insert($group_relationships_table, $relationship_data);
-
-            $success_message = 'Recipient details added successfully!';
-        }
-
+            if (!$recipient_id && $existing_recipient) {
+                if ($existing_recipient->visibility == 1) {
+                    wp_send_json_error(['message' => 'A recipient with the same details already exists.']);
+                } else {
+                    // Only update visibility to 1
+                    $result = $wpdb->update($table, ['visibility' => 1], ['id' => $existing_recipient->id], ['address_verified' => 0]);
+                    if ($result !== false) {
+                        wp_send_json_success([
+                            'status'       => 'update',
+                            'recipient_id' => $existing_recipient->id,
+                            'message'      => 'Recipient reactivated successfully!',
+                        ]);
+                        OAM_Helper::order_process_recipient_activate_log($existing_recipient->id, 'reactivated', '');
+                    } else {
+                        wp_send_json_error(['message' => 'Failed to update visibility.']);
+                    }
+                }
+            }
+            
+            if ($recipient_id) {
+                // Update existing recipient
+                $existing_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $recipient_id), ARRAY_A);
+                $changes = [];
+                
+                foreach ($data as $key => $value) {
+                    if (isset($existing_data[$key]) && $existing_data[$key] != $value) {
+                        $changes[$key] = [
+                            'old' => $existing_data[$key],
+                            'new' => $value
+                        ];
+                    }
+                }
+                
+                $result = $wpdb->update($table, $data, ['id' => $recipient_id]);
+                $status = 'update';
+                
+                OAM_Helper::order_process_recipient_activate_log($recipient_id, $status, wp_json_encode($changes));
+                $success_message = 'Recipient details updated successfully!';
+                
+            } else {
+                // Insert new recipient
+                $data['user_id'] = get_current_user_id();
+                $data['pid'] = $_POST['pid'];
+                $data['new'] = 1;
+                $data['address_verified'] = 0;
+                $data['update_type'] = sanitize_text_field("add_manually");
+                $result = $wpdb->insert($table, $data);
+                $recipient_id = $wpdb->insert_id;
+                $status = 'new';
+                
+                OAM_Helper::order_process_recipient_activate_log($wpdb->insert_id, $status, 'manually added');
+                $success_message = 'Recipient details added successfully!';
+            }
+            
         // Handle the result
         if ($result !== false) {
             wp_send_json_success([
-                'status' => $status,
-                'user' => get_current_user_id(),
+                'status'       => $status,
+                'user'         => get_current_user_id(),
                 'recipient_id' => $recipient_id,
-                'message' => $success_message,
+                'message'      => $success_message,
             ]);
         } else {
             wp_send_json_error([
                 'message' => $wpdb->last_error ?: 'Database operation failed.',
             ]);
         }
+    }
+    
+    /**
+	 * An AJAX handler function that reverify address 
+	 *
+	 * Starts the list before the elements are added.
+	 *
+	 * @return JSON and array depend to the parameter
+     * 
+     * USE Helper function 
+     * validate_address(): This function verify address using the Smarty API
+     * 
+	 */
+    public function orthoney_reverify_address_recipient_handler() {
+        check_ajax_referer('oam_nonce', 'security');  
+        global $wpdb;
+    
+        $order_process_table           = OAM_Helper::$order_process_table;
+        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+        
+        $recipient_id  = isset($_POST['id']) ? intval($_POST['id']) : 0;
+        
+    
+        // Verify recipient addresses if group_id is provided
+        
+        $recipient = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT id, address_1, address_2, city, state, zipcode FROM {$order_process_recipient_table} 
+                WHERE id = %d",
+                $recipient_id
+            )
+        );
+        
+        if ($recipient) {
+            $validation_result = json_decode(OAM_Helper::validate_address(
+                $recipient->address_1, $recipient->address_2, $recipient->city, $recipient->state, $recipient->zipcode
+            ), true);
+        
+            if ($validation_result) {
+                $verified_status = $validation_result['success'] ? 1 : 0;
+        
+                $update_result = $wpdb->update(
+                    $order_process_recipient_table,
+                    ['address_verified' => $verified_status],
+                    ['id' => $recipient->id]
+                );
+        
+                if ($update_result == 0) {
+                    wp_send_json_error(['message' => 'The address is incorrect. Please enter the correct address.']);
+                }else{
+                    wp_send_json_success(['message' => 'The address is correct.']);
+                }
+            }
+        }        
+    
+        wp_send_json_success(['message' => 'The address is correct. ']);
+        
+        wp_die();
     }
     
 }

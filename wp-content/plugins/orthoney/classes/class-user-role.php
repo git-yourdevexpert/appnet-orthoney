@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 //      */
 //     public function custom_plugin_woocommerce_template($template, $template_name, $template_path) {
 //         // Define the custom template path
-//         $custom_path = plugin_dir_path(__FILE__) . '../templates/woocommerce/';
+//         $custom_path = OH_PLUGIN_DIR_PATH . '../templates/woocommerce/';
 
 //         // Check if the custom template exists
 //         if (file_exists($custom_path . $template_name)) {

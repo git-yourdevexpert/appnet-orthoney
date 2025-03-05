@@ -1,3 +1,16 @@
+/* Input Error Styling */
+.input-error {
+  border: 2px solid red !important;
+  background-color: #ffe6e6;
+}
+
+/* Recipient Group Section Table Styling */
+.recipient-group-section #unverifiedRecord table,
+.recipient-group-section #unverifiedRecord table th, 
+.recipient-group-section #unverifiedRecord table td,
+.recipient-group-section #verifyRecord table,
+.recipient-group-section #verifyRecord table th, 
+.recipient-group-section #verifyRecord table td,
 .recipient-group-section #newCSVData table,
 .recipient-group-section #newCSVData table th, 
 .recipient-group-section #newCSVData table td,
@@ -9,35 +22,202 @@
 .recipient-group-section #successCSVData table td,
 .recipient-group-section #failCSVData table,
 .recipient-group-section #failCSVData table th, 
-.recipient-group-section #failCSVData table td{ 
-    border: 1px solid black;
-    border-collapse: collapse;
+.recipient-group-section #failCSVData table td { 
+  border: 1px solid black;
+  border-collapse: collapse;
 }
 
-#recipient-manage-popup{
-    overflow: auto;
-    background: #fff;
-    border: 1.678px solid hsla(0, 0%, 100%, .2);
-    border-radius: 20px;
-    margin: 0 auto;
-    max-width: 980px;
-    min-width: 980px;
-    padding: 72px 96px;
-}
-#recipient-manage-form form label{
-    display: block;
+/* Recipient Management Popup */
+#recipient-manage-popup {
+  overflow: auto;
+  background: #fff;
+  border: 1.678px solid hsla(0, 0%, 100%, .2);
+  border-radius: 20px;
+  margin: 0 auto;
+  max-width: 980px;
+  min-width: 980px;
+  padding: 72px 96px;
 }
 
-.swal2-container.swal2-center.swal2-backdrop-show{
-    z-index: 999999999;
+/* Form Labels */
+#recipient-manage-form form label {
+  display: block;
 }
 
-/* Multi Step Form Start */
-  .step { padding: 20px; border: 1px solid #ccc; margin-top: 10px; }
-  #popupModal { background: rgba(0, 0, 0, 0.6); position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; }
-  .popup-content { background: #fff; padding: 20px; text-align: center; }
-  #stepNav { display: flex; justify-content: space-between; margin-bottom: 20px; }
-  .step-nav-item { padding: 10px 15px; background: #f0f0f0; border: 1px solid #ccc; cursor: pointer; }
-  .step-nav-item.active { background: #0073e6; color: white; font-weight: bold; }
-  .error-message { color: red; font-size: 14px; display: block; margin-top: 5px; }
-/* Multi Step Form End */
+/* SweetAlert2 Container */
+.swal2-container.swal2-center.swal2-backdrop-show {
+  z-index: 999999999;
+}
+
+/* Multi-Step Form Styling */
+.step {
+  padding: 20px;
+  border: 1px solid #ccc;
+  margin-top: 10px;
+}
+
+#popupModal {
+  background: rgba(0, 0, 0, 0.6);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-content {
+  background: #fff;
+  padding: 20px;
+  text-align: center;
+}
+
+#stepNav {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.step-nav-item {
+  padding: 10px 15px;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.step-nav-item.active {
+  background: #0073e6;
+  color: white;
+  font-weight: bold;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  display: block;
+  margin-top: 5px;
+}
+
+#multiStepForm button.far {
+  background-color: transparent;
+  margin-left: 5px;
+  margin-right: 5px;
+  display: inline-block;
+  padding: 5px;
+}
+
+#multiStepForm button.far:hover {
+  background-color: #e3e7f0;
+}
+
+/* WooCommerce Form Styling */
+.woocommerce-form-login__rememberme {
+  display: block !important;
+}
+
+/* Tooltip Styling */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 150px;
+  font-size: 80%;
+  line-height: 1.5;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  top: 150%;
+  left: 50%;
+  margin-left: -60px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent black transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+/* Shipping Fields - Read Only */
+#shipping input, 
+#shipping select {
+  pointer-events: none;
+  background-color: #f3f3f3; /* Grey out the fields */
+  opacity: 0.6; /* Reduce visibility */
+}
+
+/* Quantity Input Styling */
+.quantity {
+  display: flex;
+  border: 1px solid #ddd;
+  padding: 3px;
+  overflow: hidden;
+}
+
+.quantity button {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  width: 30px;
+  height: auto;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.quantity button:hover {
+  background-color: #555;
+}
+
+.input-box {
+  width: 40px;
+  text-align: center;
+  border: none;
+  padding: 8px 10px;
+  font-size: 16px;
+  outline: none;
+}
+
+/* Hide Number Input Spin Buttons */
+.input-box::-webkit-inner-spin-button,
+.input-box::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input-box[type="number"] {
+  appearance: textfield;      
+  -moz-appearance: textfield;
+  -webkit-appearance: none;  
+}
+
+
+/* SweetAlert2 Input Width */
+#swal2-input {
+  width: auto !important;
+}
+.swal2-select{
+  margin-left: 0 !important;
+    margin-right: 0 !important;
+}

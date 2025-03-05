@@ -1,16 +1,73 @@
-const greetingTextarea = document.getElementById("greeting");
-if(greetingTextarea){
-    const charCounter = document.getElementById("char-counter").querySelector('span');
-    const maxChars = 250;
-
-    greetingTextarea.addEventListener("input", () => {
-        const remainingChars = maxChars - greetingTextarea.value.length;
-        charCounter.textContent = `${remainingChars}`;
+(function () {
+    document.querySelectorAll(".quantity").forEach((quantityContainer) => {
+      const minusBtn = quantityContainer.querySelector(".minus");
+      const plusBtn = quantityContainer.querySelector(".plus");
+      const inputBox = quantityContainer.querySelector(".input-box");
+  
+      updateButtonStates();
+  
+      quantityContainer.addEventListener("click", handleButtonClick);
+      inputBox.addEventListener("input", handleQuantityChange);
+  
+      function updateButtonStates() {
+        const value = parseInt(inputBox.value);
+        minusBtn.disabled = value <= 1;
+        plusBtn.disabled = value >= parseInt(inputBox.max);
+      }
+  
+      function handleButtonClick(event) {
+        event.preventDefault();
+        if (event.target.classList.contains("minus")) {
+          decreaseValue();
+        } else if (event.target.classList.contains("plus")) {
+          increaseValue();
+        }
+      }
+  
+      function decreaseValue() {
+        let value = parseInt(inputBox.value);
+        value = isNaN(value) ? 1 : Math.max(value - 1, 1);
+        inputBox.value = value;
+        updateButtonStates();
+        handleQuantityChange();
+      }
+  
+      function increaseValue() {
+        let value = parseInt(inputBox.value);
+        value = isNaN(value) ? 1 : Math.min(value + 1, parseInt(inputBox.max));
+        inputBox.value = value;
+        updateButtonStates();
+        handleQuantityChange();
+      }
+  
+      function handleQuantityChange() {
+        let value = parseInt(inputBox.value);
+        value = isNaN(value) ? 1 : value;
+        
+        // Execute your code here based on the updated quantity value
+        console.log("Quantity changed:", value);
+      }
     });
+  })();
+  
 
+
+const greetingTextarea = document.querySelectorAll("#multiStepForm textarea, #recipient-manage-form form textarea");
+const maxChars = 250;
+if(greetingTextarea){
+greetingTextarea.forEach((textarea) => {
+    const charCounter = textarea.closest(".textarea-div").querySelector(".char-counter span");
+    if (charCounter) {
+        textarea.addEventListener("input", () => {
+            const remainingChars = maxChars - textarea.value.length;
+            charCounter.textContent = `${remainingChars}`;
+        });
+    }
+});
 }
 
 document.addEventListener('lity:open', function (event) {
+    event.preventDefault();
     const popupOverlay = document.querySelector('.lity-wrap');
     if (popupOverlay) {
         popupOverlay.addEventListener('click', function (e) {
@@ -38,52 +95,6 @@ function getURLParam(param) {
     return urlParams.get(param);
   }
 
-function getUploadData(user, groupId) {
-
-    const newCSVData = document.getElementById("newCSVData");
-    const newids = newCSVData.dataset.id || '';
-
-
-    fetch(oam_ajax.ajax_url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-            action: 'ort_honey_get_recipient_ajax',
-            user: user,
-            newids: newids,
-            groupId: groupId,
-            security: oam_ajax.nonce
-        }),
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            const successData = document.getElementById("successCSVData");
-            const failData = document.getElementById("failCSVData");
-            const duplicateData = document.getElementById("duplicateCSVData");
-            
-
-            duplicateData.innerHTML = data.data.duplicateData;
-            successData.innerHTML = data.data.successData;
-            failData.innerHTML = data.data.failData;
-            newCSVData.innerHTML = data.data.newData;
-
-        } else {
-            console.log( 'Error: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Fetch error:', error);
-        // msg.textContent = 'An error occurred while creating the group.';
-    });
-}
 /*
 Create new group Js Start
  */
@@ -208,103 +219,7 @@ if(deleteGroupButton.length > 0){
 /*
 Deleted group Js End
  */
-/*
-Upload CSV Start
- */
-document.addEventListener("DOMContentLoaded", function () {
-    const form = document.querySelector("#csv-upload-form");
-    if(form){
-    const progressWrapper = document.getElementById("progress-wrapper");
-    const progressBar = document.getElementById("progress-bar");
-    const progressPercentage = document.getElementById("progress-percentage");
-    const message = document.getElementById("message");
-   
-    form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        
-        const file = form.querySelector('input[type="file"]').files[0];
-        const group_name = form.querySelector('input[name="group_name"]').value;
-        const greeting = form.querySelector('textarea[name="greeting"]').value;
-        
-        let currentChunk = 0;
-        let totalRows = 0;
-        let groupId = null;
 
-        function uploadChunk() {
-            const formData = new FormData();
-            formData.append("action", "ort_honey_insert_recipient_ajax");
-            formData.append("csv_file", file);
-            formData.append("security", oam_ajax.nonce);
-            formData.append("group_name", group_name);
-            formData.append("greeting", greeting);
-            formData.append('current_chunk', currentChunk);
-
-            if (groupId !== null) {
-                formData.append("group_id", groupId);
-            }
-
-            progressWrapper.style.display = "block";
-
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", oam_ajax.ajax_url, true);
-
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    const response = JSON.parse(xhr.responseText);
-                    
-                    if (response.success) {
-                        // First chunk, get total rows
-                        if (currentChunk === 0) {
-                            totalRows = response.data.total_rows;
-                            groupId = response.data.group_id;
-                        }
-
-                        // Update progress
-                        const progress = response.data.progress;
-                        progressBar.value = progress;
-                        progressPercentage.textContent = `${progress}%`;
-
-                        // Log any row errors
-                        if (response.data.error_rows && response.data.error_rows.length > 0) {
-                            console.warn('Errors in rows:', response.data.error_rows);
-                        }
-
-                        // Continue or finish
-                        if (!response.data.finished) {
-                            currentChunk = response.data.next_chunk;
-                            uploadChunk(); // Process next chunk
-                        } else {
-                            
-                            //getUploadData(response.data.user, groupId);
-                            
-                            form.querySelector('input[name="recipient_group_id"]').value = groupId;
-                            
-                            form.submit();
-                            progressWrapper.style.display = "none";
-                        }
-                    } else {
-                        message.innerHTML = `<p style="color: red;">${response.data.message}</p>`;
-                        progressWrapper.style.display = "none";
-                    }
-                } else {
-                    message.innerHTML = `<p style="color: red;">An error occurred while processing the request.</p>`;
-                    progressWrapper.style.display = "none";
-                }
-            };
-
-            xhr.onerror = function () {
-                message.innerHTML = `<p style="color: red;">Network error during upload.</p>`;
-                progressWrapper.style.display = "none";
-            };
-
-            xhr.send(formData);
-        }
-
-        // Start the chunked upload
-        uploadChunk();
-    });
-    }
-});
 
 /*
 Upload CSV End
@@ -414,6 +329,7 @@ Bulk Deleted Recipient in table Js Start
  */
 document.addEventListener('click', function (event) {
     if (event.target.id === 'bulkMargeRecipient') {
+        event.preventDefault();
         
         const duplicateCSVData = document.querySelector('#duplicateCSVData');
         const groups = duplicateCSVData.querySelectorAll('.group-header');
@@ -460,15 +376,7 @@ document.addEventListener('click', function (event) {
             .then(data => {
                 // Handle the response from the server
                 if (data.success) {
-                        const form = document.querySelector("#csv-upload-form");
-                        let group_id ='';
-                        if(form){
-                            group_id = form.querySelector('input[name="recipient_group_id"]').value;
-                        }else{
-                            group_id = getURLParam('recipient_group_id');
-                        }
-                        getUploadData(data.data.user, group_id);
-
+                       
                         Swal.fire({
                             title: data.data.message,
                             icon: 'success',
@@ -477,6 +385,10 @@ document.addEventListener('click', function (event) {
                             timerProgressBar: true
                         });
                         
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1500);
+
                 } else {
                     Swal.fire({
                         title: 'Error',
@@ -515,17 +427,6 @@ document.addEventListener('click', function (event) {
         const target = event.target;
 
         const recipientTr = target.closest('tr');
-
-        
-        groupId = recipientTr.getAttribute('data-group');
-        if (groupId !== null && groupId !== '0' && groupId !== '') {
-            groupHeader = document.querySelector('.group-header[data-group="' + groupId + '"]');
-            if(groupHeader){
-                count = groupHeader.getAttribute('data-count');
-            }
-        }else{
-            groupId = getURLParam('recipient_group_id');
-        }
         const recipientID = recipientTr?.getAttribute('data-id');
 
         if (!recipientID) {
@@ -557,32 +458,11 @@ document.addEventListener('click', function (event) {
                     body: new URLSearchParams({
                         action: 'deleted_recipient',
                         id: recipientID,
-                        groupId: groupId,
                     }),
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-
-                        // if (data.data.groupId != 0) {
-                        //     groupHeader.setAttribute('data-count', count - 1);
-                        //     if ((count - 1) == 1) {
-                        //         const lastTr = document.querySelector('tr[data-group="' + data.data.groupId + '"]:not(.group-header)');
-                        //         if (lastTr) {
-                        //             // getUploadData(data.data.user);
-                        //         }
-                        //     }
-                        // }
-
-                        let group_id = '';
-                        const form = document.querySelector("#csv-upload-form");
-                        if(form){
-                            group_id = form.querySelector('input[name="recipient_group_id"]').value;
-                            getUploadData(data.data.user, group_id);
-                        }else{
-
-                            getUploadData(data.data.user, getURLParam('recipient_group_id'));
-                        }
                         
                         Swal.fire({
                             title: 'Recipient removed successfully!',
@@ -591,6 +471,10 @@ document.addEventListener('click', function (event) {
                             showConfirmButton: false,
                             timerProgressBar: true
                         });
+
+                        setTimeout(function() {
+                            window.location.reload();
+                          }, 1500);
                         
                         // recipientTr.remove();
                     } else {
@@ -621,12 +505,16 @@ Deleted group Js End
 Edit and add Recipient form JS start
  */
 
-
 const recipientManageForm = document.querySelector("#recipient-manage-form form");
 
 if (recipientManageForm) {
     recipientManageForm.addEventListener("submit", function (e) {
         e.preventDefault(); // Prevent form submission
+        let address_verified = 0;
+
+        if (document.getElementById("unverifiedRecord") || document.getElementById("verifiedRecord")) {
+            address_verified = 1;
+        }
 
         const form = document.querySelector("#csv-upload-form");
         let group_id = '';
@@ -642,6 +530,7 @@ if (recipientManageForm) {
         // Append action to the form data
         formData.append('action', 'manage_recipient_form'); 
         formData.append('group_id', group_id); 
+        formData.append('address_verified', address_verified); 
 
         // Perform the AJAX request
         fetch(oam_ajax.ajax_url, {
@@ -680,20 +569,16 @@ if (recipientManageForm) {
                 if (currentLity) {
                     currentLity.click();
                 }
-                let group_id ='';
-                const form = document.querySelector("#csv-upload-form");
-                if(form){
-                    group_id = form.querySelector('input[name="recipient_group_id"]').value;
-                }else{
-                    group_id = getURLParam('recipient_group_id');
-                }
-                getUploadData(data.data.user, group_id);
+               
+                setTimeout(function() {
+                    window.location.reload();
+                  }, 1500);
                 
             } else {
                 // Show error message using SweetAlert2
                 Swal.fire({
                     title: 'Error',
-                    text: data.data.message || 'Failed to update recipient details.11111',
+                    text: data.data.message || 'Failed to update recipient details.',
                     icon: 'error',
                 });
             }
@@ -703,17 +588,13 @@ if (recipientManageForm) {
             console.error('Error during AJAX request:', error);
             Swal.fire({
                 title: 'Error',
-                text: 'An error occurred while processing the request.1111',
+                text: 'An error occurred while processing the request.',
                 icon: 'error',
             });
         });
     });
 }
-
-
-/*
-Edit and add Recipient form JS END
- */
+                                                                                                                                                                                                               
 
 /*
 Edit button JS start
@@ -721,15 +602,20 @@ Edit button JS start
 
 document.addEventListener('click', function (event) {
     if (event.target.classList.contains('editRecipient')) {
+        event.preventDefault();
 
         const target = event.target;
 
-        event.preventDefault();
-
         const recipientTr = target.closest('tr');
+        let address_verified =  0;
 
         if(recipientTr){
             const recipientID = recipientTr.getAttribute('data-id');
+
+            if (recipientTr.hasAttribute('data-address_verified')) {
+                address_verified = recipientTr.getAttribute('data-address_verified');  
+            } 
+            
 
             fetch(oam_ajax.ajax_url, {
                 method: 'POST',
@@ -739,32 +625,37 @@ document.addEventListener('click', function (event) {
                 body: new URLSearchParams({
                     action: 'get_recipient_base_id',
                     id: recipientID,
+                    address_verified : address_verified
                 }),
             })
             .then(response => response.json())
             .then(data => {
+                console.log(data);
                 if (data.success) {
 
-                    const id = data.data.id;
-                    const first_name = data.data.first_name;
-                    const last_name = data.data.last_name;
-                    const address_1 = data.data.address_1;
-                    const address_2 = data.data.address_2;
-                    const city = data.data.city;
-                    const state = data.data.state;
-                    const country = data.data.country;
-                    const zipcode = data.data.zipcode;
+                    const id         = data.data.id;
+                    const full_name = data.data.full_name;
+                    const company_name  = data.data.company_name;
+                    const address_1  = data.data.address_1;
+                    const address_2  = data.data.address_2;
+                    const city       = data.data.city;
+                    const state      = data.data.state;
+                    const zipcode    = data.data.zipcode;
+                    const quantity    = data.data.quantity;
+                    const greeting    = data.data.greeting;
                     
                     const form = document.querySelector('#recipient-manage-form form');
                     form.querySelector('#recipient_id').value = id;
-                    form.querySelector('#first_name').value = first_name;
-                    form.querySelector('#last_name').value = last_name;
-                    form.querySelector('#address_1').value = address_1;
-                    form.querySelector('#address_2').value = address_2;
-                    form.querySelector('#city').value = city;
-                    form.querySelector('#state').value = state;
-                    form.querySelector('#country').value = country;
-                    form.querySelector('#zipcode').value = zipcode;
+                    form.querySelector('#full_name').value    = full_name;
+                    form.querySelector('#company_name').value = company_name;
+                    form.querySelector('#address_1').value    = address_1;
+                    form.querySelector('#address_2').value    = address_2;
+                    form.querySelector('#city').value         = city;
+                    form.querySelector('#state').value        = state;
+                    form.querySelector('#zipcode').value      = zipcode;
+                    form.querySelector('#quantity').value = quantity > 0 ? quantity : 1;
+                    form.querySelector('#greeting').value     = greeting;
+
                     setTimeout(function() {
                         lity(event.target.getAttribute('data-popup'));
                     }, 250);
@@ -791,40 +682,41 @@ document.addEventListener('click', function (event) {
 });
 
 
-
-
 /*
 Edit button JS END
 */
-
 document.addEventListener('click', function (event) {
-    // Check if the clicked element has the class 'download-csv'
     if (event.target.id === 'download-failed-recipient-csv') {
-
-        // Prevent the default behavior (like form submission)
         event.preventDefault();
 
-        // Send AJAX request
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', oam_ajax.ajax_url, true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                    // Create a temporary link to download the CSV file
-                    const a = document.createElement('a');
-                    a.href = response.data.url;
-                    a.download = response.data.filename; // Set filename
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                } else {
-                    alert('Error: ' + response.data.message);
-                }
+        const process_id = getURLParam('pid');
+        const recipient_group_id = getURLParam('recipient_group_id');
+        
+        const params = new URLSearchParams({
+            action: 'download_failed_recipient',
+            type: process_id ? 'process' : 'group',
+            id: process_id || recipient_group_id
+        });
+
+        fetch(oam_ajax.ajax_url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params.toString()
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const a = document.createElement('a');
+                a.href = data.data.url;
+                a.download = data.data.filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                alert('Error: ' + data.data.message);
             }
-        };
-        // Sending the AJAX request with the action 'download_failed_recipient'
-        xhr.send('action=download_failed_recipient');
+        })
+        .catch(error => console.error('AJAX Error:', error));
     }
 });
+
