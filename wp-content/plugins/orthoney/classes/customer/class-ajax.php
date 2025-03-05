@@ -302,7 +302,7 @@ class OAM_Ajax{
             $header = fgetcsv($handle);
             fclose($handle);
         } elseif ($file_ext === 'xlsx') {
-            require_once plugin_dir_path(__DIR__) . 'libs/SimpleXLSX/SimpleXLSX.php';
+            require_once OH_PLUGIN_DIR_PATH. 'libs/SimpleXLSX/SimpleXLSX.php';
         
             $xlsx = SimpleXLSX::parse($file_path);
             if (!$xlsx) {
@@ -311,7 +311,7 @@ class OAM_Ajax{
             }
             $header = $xlsx->rows()[0];
         } elseif ($file_ext === 'xls') {
-            require_once plugin_dir_path(__DIR__) . 'libs/SimpleXLS/SimpleXLS.php';
+            require_once OH_PLUGIN_DIR_PATH. 'libs/SimpleXLS/SimpleXLS.php';
         
             $xls = SimpleXLS::parse($file_path);
             if (!$xls) {

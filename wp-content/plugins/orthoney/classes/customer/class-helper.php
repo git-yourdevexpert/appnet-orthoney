@@ -294,7 +294,7 @@ class OAM_Helper{
                 }
             }
         } elseif ($file_extension === 'xlsx') {
-            require_once plugin_dir_path(__DIR__). 'libs/SimpleXLSX/SimpleXLSX.php';
+            require_once OH_PLUGIN_DIR_PATH. 'libs/SimpleXLSX/SimpleXLSX.php';
     
             if ($xlsx = SimpleXLSX::parse($file_path)) {
                 $header = $xlsx->rows()[0];
@@ -308,7 +308,7 @@ class OAM_Helper{
                 return self::log_and_return(false, $method, $process_id, 'Failed to parse XLSX file: ' . SimpleXLSX::parseError(), $file_path);
             }
         } elseif ($file_extension === 'xls') {
-            require_once plugin_dir_path(__DIR__). 'libs/SimpleXLS/SimpleXLS.php';
+            require_once OH_PLUGIN_DIR_PATH. 'libs/SimpleXLS/SimpleXLS.php';
     
             if ($xls = SimpleXLS::parse($file_path)) {
                 $rows = $xls->rows();
