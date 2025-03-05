@@ -58,54 +58,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 }
             }
 
-            $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
-            $address_list = [];
-            $address_ids = [];
-            $result = $wpdb->get_results($wpdb->prepare(
-                "SELECT * FROM {$order_process_recipient_table} WHERE  user_id = %d AND pid = %d AND visibility= %d",
-                $user,
-                intval($_GET['pid']),
-                1
-            ));
-        
-            if (!empty($result)) {
-                foreach ($result as $data) {
-                    $street = trim(($data->address_1 ?? '') . ' ' . ($data->address_2 ?? ''));
-                    $address_ids[] = $data->id;
-                    $address_list[] = [
-                        "input_id"   => $data->id,
-                        "street"     => $street ?? '',
-                        "city"       => $data->city ?? '',
-                        "state"      => $data->state ?? '',
-                        "zipcode"    => $data->zipcode ?? '',
-                        "candidates" => 10,
-                    ];
-                }
-            }
-            
-            $multi_validate_address = OAM_Helper::multi_validate_address($address_list);
-            
-            $multi_validate_address_result = json_decode($multi_validate_address, true);
-
-            if(!empty($multi_validate_address_result)){
-                foreach($multi_validate_address_result as $data){
-                    $pid = $data['input_id'];
-
-                    $dpv_match_code = $data['analysis']['dpv_match_code'] ?? '';
-                    if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {
-                        
-                    }else{
-                        
-                    }
-            
-
-                    // $update_result = $wpdb->update(
-                    //     $order_process_recipient_table,
-                    //     ['address_verified' => intval(1)],
-                    //     ['id' => $pid]
-                    // );
-                }
-            }
+    
         }
         
         ?>
@@ -153,6 +106,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         <div class="wpb_column vc_column_container">
                             <div>
                                 <h3>Select Organization.</h3>
+                                <?php 
+                            //   $affiliateList =  OAM_Helper::manage_affiliates_content('', 'unblocked');
+                            //   print($affiliateList);
+                                ?>
                                 <select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an affiliate.">
                                     <option <?php echo ($affiliate == 'OrtHoney') ? 'selected' : ''; ?> value="OrtHoney">OrtHoney (unaffiliated)</option>
                                     <option <?php echo ($affiliate == 'Jennifer King') ? 'selected' : ''; ?> value="Jennifer King">[JEK], Jennifer King, Alaska</option>
@@ -417,6 +374,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             if($result['data']['unverifiedRecordCount'] != 0){
                                 echo '<h3>Unverified Addresses</h3>';
                                 echo '<p>Out of '.$result['data']['totalCount'].' Recipients '.$result['data']['unverifiedRecordCount'].' Recipients are unverified</p>';
+                                echo "<button></button>";
                                 echo '<div id="unverifiedRecord">'.$result['data']['unverifiedData'].'</div>';
                             }
                             if($result['data']['verifiedRecordCount'] != 0){
@@ -429,7 +387,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             echo '<div style="margin-top:15px;">
                                 <button class="w-btn us-btn-style_2">Continue With Unverified Addresses</button>
                                 <button class="verifyRecipientAddressButton w-btn us-btn-style_2" >Proceed With Only Verified Addresses</button>
-                             </div>';
+                                </div>';
                             
                             echo '</div>';
                         }

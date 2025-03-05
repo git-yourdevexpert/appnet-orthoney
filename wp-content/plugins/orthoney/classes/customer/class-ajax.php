@@ -36,6 +36,7 @@ class OAM_Ajax{
         add_action( 'wp_ajax_edit_process_name', array( $this, 'orthoney_edit_process_name_handler' ) );
         // Done
         
+        add_action( 'wp_ajax_affiliate_status_toggle_block', array( $this, 'orthoney_affiliate_status_toggle_block_handler' ) );
         
         // TODO
         add_action( 'wp_ajax_keep_this_and_delete_others_recipient', array( $this, 'orthoney_keep_this_and_delete_others_recipient_handler' ) );
@@ -160,39 +161,38 @@ class OAM_Ajax{
         }
     
         // Verify recipient addresses if group_id is provided
-        if ($group_id) {
+        if ($process_id) {
             $recipients = $wpdb->get_results(
                 $wpdb->prepare(
                     "SELECT id, address_1, address_2, city, state, zipcode FROM {$order_process_recipient_table} 
-                     WHERE user_id = %d AND pid = %d AND visibility = 1 AND verified = 1",
-                    $user, $process_id
+                     WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d",
+                    $user, $process_id , 1 , 1
                 )
             );
     
             foreach ($recipients as $recipient) {
-                $street = trim(($data->address_1 ?? '') . ' ' . ($data->address_2 ?? ''));
-                $address_ids[] = $data->id;
+                $street = trim(($recipient->address_1 ?? '') . ' ' . ($recipient->address_2 ?? ''));
                 $address_list[] = [
-                    "input_id"   => $data->id,
+                    "input_id"   => $recipient->id,
                     "street"     => $street ?? '',
-                    "city"       => $data->city ?? '',
-                    "state"      => $data->state ?? '',
-                    "zipcode"    => $data->zipcode ?? '',
+                    "city"       => $recipient->city ?? '',
+                    "state"      => $recipient->state ?? '',
+                    "zipcode"    => $recipient->zipcode ?? '',
                     "candidates" => 10,
                 ];
 
             }
-
+         
             $multi_validate_address = OAM_Helper::multi_validate_address($address_list);
             if(!empty($multi_validate_address)){
                 $multi_validate_address_result = json_decode($multi_validate_address, true);
 
                 if(!empty($multi_validate_address_result)){
                     foreach($multi_validate_address_result as $data){
-                        $pid = $data['input_id'];
+                        echo $pid = $data['input_id'];
 
                         $dpv_match_code = $data['analysis']['dpv_match_code'] ?? '';
-                        if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {    
+                        if ($dpv_match_code !== 'N') {
                             $update_result = $wpdb->update(
                                 $order_process_recipient_table,
                                 ['address_verified' => intval(1)],
@@ -203,6 +203,7 @@ class OAM_Ajax{
                 }
             }
         }
+        
     
         wp_send_json_success(['message' => 'Process completed successfully.']);
         wp_die();
@@ -1346,6 +1347,35 @@ class OAM_Ajax{
         wp_send_json_success(['message' => 'The address is correct. ']);
         
         wp_die();
+    }
+
+    public function orthoney_affiliate_status_toggle_block_handler() {
+        global $wpdb;
+        $user_id = get_current_user_id();
+        $oh_affiliate_customer_relation_table = OAM_Helper::$oh_affiliate_customer_relation_table;
+
+        if (!is_user_logged_in() || !current_user_can('customer')) {
+            wp_send_json_error(['message' => 'Unauthorized']);
+        }
+
+        $affiliate_id = sanitize_text_field($_POST['affiliate_id']);
+        $status = sanitize_text_field($_POST['status']);
+
+        if ($status === 'block') {
+            $wpdb->insert($oh_affiliate_customer_relation_table, [
+                'user_id' => $user_id,
+                'affiliate_id' => $affiliate_id
+            ]);
+        } elseif ($status === 'unblock') {
+            $wpdb->delete($oh_affiliate_customer_relation_table, [
+                'user_id' => $user_id,
+                'affiliate_id' => $affiliate_id
+            ]);
+        } else {
+            wp_send_json_error(['message' => 'Invalid action']);
+        }
+
+        wp_send_json_success();
     }
     
 }

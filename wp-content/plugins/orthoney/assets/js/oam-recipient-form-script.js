@@ -362,10 +362,21 @@ document.addEventListener('DOMContentLoaded', function() {
               return;
             }
 
-            Swal.fire("Success", "Records processed successfully!", "success");
-            setTimeout(function() {
-              window.location.reload();
-            }, 1000);
+            Swal.fire({
+              title: "Verification is successfully!",
+              icon: 'success',
+              timer: 2000,
+              showConfirmButton: false,
+              timerProgressBar: true,
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              allowEnterKey: false,
+              showConfirmButton: false,
+            });
+
+            // setTimeout(function() {
+            //   window.location.reload();
+            // }, 1000);
 
           } catch (error) {
             console.error("AJAX error:", error);

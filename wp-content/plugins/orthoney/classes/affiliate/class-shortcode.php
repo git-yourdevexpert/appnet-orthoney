@@ -12,6 +12,9 @@ class OAM_AFFILIATE_Shortcode
 	 **/
 	public function __construct() {
         add_shortcode('affiliate_dashboard', array( $this, 'affiliate_dashboard_handler' ) );
+        
+
+        
     }
 
     
@@ -36,6 +39,10 @@ class OAM_AFFILIATE_Shortcode
             
         return ob_get_clean();
     }
+
+    
+
+  
    
 
 }

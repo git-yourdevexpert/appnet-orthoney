@@ -720,3 +720,65 @@ document.addEventListener('click', function (event) {
     }
 });
 
+
+document.addEventListener('click', function (event) {
+    if (event.target.classList.contains('affiliate-block-btn')) {
+        let isBlocked = event.target.getAttribute('data-blocked') === '1'; // Ensure it's compared as a string
+        let action = isBlocked ? 'unblock' : 'block';
+        let affiliateCode = event.target.getAttribute('data-affiliate');
+
+        Swal.fire({
+            title: 'Are you sure you want to ' + action + ' this affiliate?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, I want',
+            cancelButtonText: 'Cancel',
+            allowOutsideClick: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+               
+                fetch(oam_ajax.ajax_url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'affiliate_status_toggle_block',
+                        affiliate_id: affiliateCode,
+                        status: action
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Affiliate status changed successfully!',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timerProgressBar: false
+                        });
+
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.data.message || 'Failed to change status for affiliate.',
+                            icon: 'error',
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'An error occurred while changing status for affiliate.',
+                        icon: 'error',
+                    });
+                });
+            }
+        });
+    }
+});

@@ -33,8 +33,10 @@ function orthoney_create_custom_tables() {
     $files_upload_activity_log_table = $wpdb->prefix . 'oh_files_upload_activity_log';
     $order_process_table = $wpdb->prefix . 'oh_order_process';
     $order_process_recipient_activate_log_table = $wpdb->prefix . 'oh_order_process_recipient_activate_log';
+
     
-   
+    
+    $affiliate_customer_relation = $wpdb->prefix . 'oh_affiliate_customer_relation';
     
     $affiliate_table = $wpdb->prefix . 'oh_orm_affiliate';
 
@@ -48,7 +50,10 @@ function orthoney_create_custom_tables() {
         $wpdb->query("DROP TABLE IF EXISTS $recipient_table");
         $wpdb->query("DROP TABLE IF EXISTS $group_table");
         
+        $wpdb->query("DROP TABLE IF EXISTS $affiliate_customer_relation");
+
         $wpdb->query("DROP TABLE IF EXISTS $affiliate_table");
+
     }
 
 
@@ -166,6 +171,16 @@ function orthoney_create_custom_tables() {
     ) ENGINE=InnoDB {$wpdb->get_charset_collate()} AUTO_INCREMENT=10000;";
     
 
+     // SQL to create the affiliate_customer_relation table
+     $affiliate_customer_relation_sql = "CREATE TABLE $affiliate_customer_relation (
+        id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,        
+        user_id BIGINT(20) NOT NULL,
+        affiliate_id BIGINT(20) NOT NULL,
+        blocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id)
+    ) ENGINE=InnoDB {$wpdb->get_charset_collate()};";
+    // Execute the SQL for affiliate_customer_relation table
+
     // SQL query to create the table
     $affiliate_sql = "CREATE TABLE IF NOT EXISTS $affiliate_table (
         id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -183,6 +198,7 @@ function orthoney_create_custom_tables() {
         $order_process_recipient_activate_log_sql,
         $recipient_group_sql,
         $order_process_sql,
+        $affiliate_customer_relation_sql,
         
         $affiliate_sql,
     ];

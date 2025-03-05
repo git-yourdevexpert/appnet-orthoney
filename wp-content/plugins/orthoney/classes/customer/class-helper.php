@@ -18,6 +18,10 @@ class OAM_Helper{
     
     public static $group_table;
     public static $group_recipient_table;
+    public static $yith_wcaf_affiliates_table;
+    public static $oh_affiliate_customer_relation_table;
+
+    public static $users_table;
     
     // Define directories
     public static $all_uploaded_csv_dir;
@@ -37,6 +41,10 @@ class OAM_Helper{
         
         self::$group_table = $wpdb->prefix . 'oh_group';
         self::$group_recipient_table = $wpdb->prefix . 'oh_group_recipient';
+        self::$yith_wcaf_affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+        self::$oh_affiliate_customer_relation_table = $wpdb->prefix . 'oh_affiliate_customer_relation';
+
+        self::$users_table = $wpdb->prefix . 'users';
 
         self::$all_uploaded_csv_dir = WP_CONTENT_DIR . '/all-uploaded-files/';
         self::$process_recipients_csv_dir = WP_CONTENT_DIR . '/process-recipients-files/';
@@ -45,6 +53,80 @@ class OAM_Helper{
     }
 
 	public function __construct() {}
+
+    public static function manage_affiliates_content($search = '', $filter = '') {
+        global $wpdb;
+        $yith_wcaf_affiliates_table = self::$yith_wcaf_affiliates_table;
+        $oh_affiliate_customer_relation_table = self::$oh_affiliate_customer_relation_table;
+        $users_table = self::$users_table;
+
+        $user_id = get_current_user_id();
+
+        // Base SQL query
+        $queryParts = ["a.enabled = 1"];
+        $queryParams = [];
+
+        // Apply search filter if necessary
+        if (!empty($search)) {
+            $queryParts[] = "(a.token LIKE %s OR u.display_name LIKE %s)";
+            array_push($queryParams, '%' . $wpdb->esc_like($search) . '%', '%' . $wpdb->esc_like($search) . '%');
+        }
+
+        if (!empty($filter) && $filter!= 'All') {
+
+            // Get blocked affiliates for the logged-in user
+            $blocked_affiliates = $wpdb->get_col($wpdb->prepare(
+                "SELECT affiliate_id FROM $oh_affiliate_customer_relation_table WHERE user_id = %d",
+                $user_id
+            ));
+
+            // Ensure blocked_affiliates is an array
+            if (!is_array($blocked_affiliates)) {
+                $blocked_affiliates = [];
+            }
+
+            // Apply filter logic correctly
+            if ($filter === 'blocked') {
+                if (!empty($blocked_affiliates)) {
+                    $placeholders = implode(',', array_fill(0, count($blocked_affiliates), '%s'));
+                    $queryParts[] = "a.ID IN ($placeholders)";
+                    $queryParams = array_merge($queryParams, $blocked_affiliates);
+                }
+            } elseif ($filter === 'unblocked') {
+                if (!empty($blocked_affiliates)) {
+                    $placeholders = implode(',', array_fill(0, count($blocked_affiliates), '%s'));
+                    $queryParts[] = "a.ID NOT IN ($placeholders)";
+                    $queryParams = array_merge($queryParams, $blocked_affiliates);
+                }
+            }
+        }
+
+        // Build final SQL query
+        $sql = "SELECT a.ID, a.token, u.display_name 
+        FROM $yith_wcaf_affiliates_table AS a
+        JOIN $users_table AS u ON a.user_id = u.ID
+        WHERE " . implode(" AND ", $queryParts);
+
+        // Prepare and execute query
+        if (!empty($queryParams)) {
+            $query = $wpdb->prepare($sql, ...$queryParams);
+        } else {
+            $query = $sql;
+        }
+        $affiliates = $wpdb->get_results($query);
+
+        if (!$affiliates) {
+            return json_encode(['success' => false, 'message'=> 'No blocked affiliates found.']);
+        }
+
+        $resultData = [
+            'affiliates' => $affiliates,
+            'blocked_affiliates' => $blocked_affiliates,
+        ];
+
+        return json_encode(['success' => true, 'data'=> $resultData]);
+
+    }
 
     public static function get_user_agent() {
         return isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field($_SERVER['HTTP_USER_AGENT']) : 'Unknown';
@@ -302,8 +384,8 @@ class OAM_Helper{
         }
 
         $recipientQuery = $wpdb->prepare(
-            "SELECT * FROM {$order_process_recipient_table} WHERE pid = %d AND visibility = %d" ,
-            $order_process_id, 1
+            "SELECT * FROM {$order_process_recipient_table} WHERE pid = %d AND visibility = %d AND verified = %d" ,
+            $order_process_id, 1 , 1
         );
         
         $recipients = $wpdb->get_results($recipientQuery);

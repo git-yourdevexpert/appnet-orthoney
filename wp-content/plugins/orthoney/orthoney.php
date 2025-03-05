@@ -34,18 +34,21 @@ if ( ! defined( 'OH_PLUGIN_DIR_PATH' ) ) {
 
 // Include necessary files
 require_once OH_PLUGIN_DIR_PATH . 'includes/database.php';
-require_once OH_PLUGIN_DIR_PATH . 'classes/class-helper.php';
-require_once OH_PLUGIN_DIR_PATH . 'classes/class-scripts.php';
-require_once OH_PLUGIN_DIR_PATH . 'classes/class-ajax.php';
-require_once OH_PLUGIN_DIR_PATH . 'classes/class-shortcode.php';
+
 require_once OH_PLUGIN_DIR_PATH . 'classes/class-wc.php';
 require_once OH_PLUGIN_DIR_PATH . 'classes/class-hooks.php';
+require_once OH_PLUGIN_DIR_PATH . 'classes/class-custom.php';
 require_once OH_PLUGIN_DIR_PATH . 'classes/class-user-role.php';
 require_once OH_PLUGIN_DIR_PATH . 'classes/class-login-registration.php';
-require_once OH_PLUGIN_DIR_PATH . 'classes/class-recipient-multistep-form.php';
+
+
+
 
 // Affiliate
 require_once OH_PLUGIN_DIR_PATH . 'classes/affiliate/class-affiliate.php';
+
+// Customer
+require_once OH_PLUGIN_DIR_PATH . 'classes/customer/class-customer.php';
 
 // Register activation hook
 register_activation_hook(__FILE__, 'orthoney_create_custom_tables');
@@ -54,8 +57,6 @@ register_activation_hook(__FILE__, 'orthoney_create_custom_tables');
 if(isset($_GET['database_refresh']) && $_GET['database_refresh'] == 'okay' ){
     add_action('init', 'orthoney_create_custom_tables');
 }
-
-
 
 
 

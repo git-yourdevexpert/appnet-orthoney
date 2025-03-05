@@ -16,12 +16,13 @@ class OAM_AFFILIATE_CUSTOM {
      * Affiliate callback
      */
     public function custom_affiliate_endpoints() {
-        $affiliate_dashboard_id = get_page_by_path('affiliate-dashboard-2');
+        $affiliate_dashboard_id = get_page_by_path('affiliate-dashboard');
     
         if ($affiliate_dashboard_id) {
-            add_rewrite_rule('affiliate-dashboard-2/([^/]+)/?$', 'index.php?pagename=affiliate-dashboard-2&affiliate_endpoint=$matches[1]', 'top');
+            add_rewrite_rule('affiliate-dashboard/([^/]+)/?$', 'index.php?pagename=affiliate-dashboard&affiliate_endpoint=$matches[1]', 'top');
             add_rewrite_endpoint('affiliate_endpoint', EP_PAGES);
         }
+
     }
 }
 
