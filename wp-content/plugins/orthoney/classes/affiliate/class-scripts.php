@@ -3,7 +3,7 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-class OAM_affiliate_Scripts{
+class OAM_AFFILIATE_Scripts{
 
 
     /**
@@ -18,15 +18,15 @@ class OAM_affiliate_Scripts{
     public function enqueue_affiliate_profile_script() {
 
         wp_enqueue_script(
-            'affiliate-dashboard.js',
+            'affiliate-dashboard',
             OH_PLUGIN_DIR_URL. 'assets/js/affiliate-dashboard.js',
             array( 'sweetalert2', 'lity-js' ), 
-            '1.0.0',          
+            time(),          
             true 
         );
         wp_localize_script(
-            'affiliate-profile-script', 
-            'affiliateProfileAjax',
+            'affiliate-dashboard', 
+            'oam_ajax',
             array(
                 'ajax_url' => admin_url( 'admin-ajax.php' ),
                 'nonce'    => wp_create_nonce( 'oam_nonce' ),
@@ -35,3 +35,5 @@ class OAM_affiliate_Scripts{
     }
 
 }
+
+new OAM_AFFILIATE_Scripts();

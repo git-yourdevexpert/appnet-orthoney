@@ -65,6 +65,7 @@ class OAM_Helper{
         // Base SQL query
         $queryParts = ["a.enabled = 1"];
         $queryParams = [];
+        $blocked_affiliates = [];
 
         // Apply search filter if necessary
         if (!empty($search)) {

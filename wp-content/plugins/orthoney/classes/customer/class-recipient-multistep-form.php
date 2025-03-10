@@ -336,7 +336,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             
             <div style="margin-top:15px;">
             <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_2">Save Progress and Re Upload CSV</a>
-            <button data-popup="#verify-recipient-address-popup" class="verifyRecipientAddressButton w-btn us-btn-style_2" data-totalCount="<?php echo $result['data']['totalCount'] ?>" data-successCount="<?php echo $result['data']['successCount'] ?>" data-failCount="<?php echo $result['data']['failCount'] ?>" data-duplicateCount="<?php echo $result['data']['duplicateCount'] ?>">Proceed With Address Verification</button>
+            <button class="verifyRecipientAddressButton w-btn us-btn-style_2" data-totalCount="<?php echo $result['data']['totalCount'] ?>" data-successCount="<?php echo $result['data']['successCount'] ?>" data-failCount="<?php echo $result['data']['failCount'] ?>" data-duplicateCount="<?php echo $result['data']['duplicateCount'] ?>">Proceed With Address Verification</button>
             </div>
             <?php  } ?>
             
@@ -374,7 +374,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             if($result['data']['unverifiedRecordCount'] != 0){
                                 echo '<h3>Unverified Addresses</h3>';
                                 echo '<p>Out of '.$result['data']['totalCount'].' Recipients '.$result['data']['unverifiedRecordCount'].' Recipients are unverified</p>';
-                                echo "<button></button>";
+                                echo "<button id='verified-multiple-addresses' class=' w-btn us-btn-style_1'>Verified Multiple Addresses</button>";
                                 echo '<div id="unverifiedRecord">'.$result['data']['unverifiedData'].'</div>';
                             }
                             if($result['data']['verifiedRecordCount'] != 0){
@@ -385,8 +385,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             }
                             
                             echo '<div style="margin-top:15px;">
-                                <button class="w-btn us-btn-style_2">Continue With Unverified Addresses</button>
-                                <button class="verifyRecipientAddressButton w-btn us-btn-style_2" >Proceed With Only Verified Addresses</button>
+                                <button id="checkout_proceed_with_only_unverified_addresses"  class="w-btn us-btn-style_2">Continue With Unverified Addresses</button>
+                                <button id="checkout_proceed_with_only_verified_addresses" class="w-btn us-btn-style_2">Proceed With Only Verified Addresses</button>
                                 </div>';
                             
                             echo '</div>';

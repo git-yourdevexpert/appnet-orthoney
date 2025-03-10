@@ -28,27 +28,123 @@ class OAM_Ajax{
 		add_action( 'wp_ajax_bulk_deleted_recipient', array( $this, 'orthoney_bulk_deleted_recipient_handler' ) );
 		add_action( 'wp_ajax_get_recipient_base_id', array( $this, 'orthoney_get_recipient_base_id_handler' ) );
 
-
 		add_action( 'wp_ajax_reverify_address_recipient', array( $this, 'orthoney_reverify_address_recipient_handler' ) );
 
         add_action( 'wp_ajax_orthoney_order_step_process_completed_ajax', array( $this, 'orthoney_order_step_process_completed_ajax_handler') );
         
         add_action( 'wp_ajax_edit_process_name', array( $this, 'orthoney_edit_process_name_handler' ) );
+        add_action( 'wp_ajax_keep_this_and_delete_others_recipient', array( $this, 'orthoney_keep_this_and_delete_others_recipient_handler' ) );
+
+        add_action( 'wp_ajax_affiliate_status_toggle_block', array( $this, 'orthoney_affiliate_status_toggle_block_handler' ) );
         // Done
         
-        add_action( 'wp_ajax_affiliate_status_toggle_block', array( $this, 'orthoney_affiliate_status_toggle_block_handler' ) );
         
         // TODO
-        add_action( 'wp_ajax_keep_this_and_delete_others_recipient', array( $this, 'orthoney_keep_this_and_delete_others_recipient_handler' ) );
-        
-
-
+        add_action( 'wp_ajax_orthoney_process_to_checkout_ajax', array( $this, 'orthoney_process_to_checkout_ajax_handler' ) );
         add_action( 'wp_ajax_create_group', array( $this, 'orthoney_create_group_handler' ) );
 		add_action( 'wp_ajax_deleted_group', array( $this, 'orthoney_deleted_group_handler' ) );
         // TODO
 
     }
 
+    /**
+	 * AJAX handler function that edit process name
+	 *
+	 * @return JSON 
+     * 
+	 */ 
+    public function add_items_to_cart($data, $product_id) {
+        if (!function_exists('WC')) {
+            die('WooCommerce is not loaded.');
+        }
+    
+        if (!class_exists('WC_Cart') || WC()->cart === null) {
+            return;
+        }
+    
+        WC()->cart->empty_cart();
+    
+        foreach ($data as $customer) {
+            $full_name    = sanitize_text_field($customer['full_name']);
+            $company_name = sanitize_text_field($customer['company_name']);
+            $address_1    = sanitize_text_field($customer['address_1']);
+            $address_2    = sanitize_text_field($customer['address_2']);
+            $city         = sanitize_text_field($customer['city']);
+            $state        = sanitize_text_field($customer['state']);
+            $zipcode      = sanitize_text_field($customer['zipcode']);
+            $quantity     = (int) $customer['quantity'];
+            $custom_price = 50; // Set custom price
+    
+            // Unique key to ensure separate cart items
+            $unique_key = uniqid('custom_', true);
+
+            $full_address    = sanitize_text_field($customer['address_1']) . ' ' . sanitize_text_field($customer['address_2']). ' ' . sanitize_text_field($customer['city']). ' ' . sanitize_text_field($customer['state']) . ' ' . sanitize_text_field($customer['zipcode']) ;
+    
+            // Add product to cart with custom data
+            WC()->cart->add_to_cart($product_id, $quantity, 0, [], [
+                'new_price'    => $custom_price, // Custom price
+                'full_name'    => $full_name,
+                'company_name' => $company_name,
+                'address'      => $full_address,
+                'address_1'    => $address_1,
+                'address_2'    => $address_2,
+                'city'         => $city,
+                'state'        => $state,
+                'zipcode'      => $zipcode,
+                'unique_key'   => $unique_key,
+            ]);
+        }
+    }
+    
+    
+    
+    
+    public function orthoney_process_to_checkout_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+    
+        $product_id = 76;
+    
+        $status = isset($_POST['status']) ? $_POST['status'] : 1;
+        $pid = isset($_POST['pid']) ? intval($_POST['pid']) : 1; 
+        $user_id = get_current_user_id(); 
+    
+        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+    
+        // Fetch recipients
+        $recipients = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$order_process_recipient_table} 
+                 WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d",
+                $user_id, $pid, 1, 1
+            )
+        );
+    
+        $address_list = [];
+    
+        foreach ($recipients as $recipient) {
+            
+            $address_list[] = [
+                "recipient_id"   => $recipient->id,
+                "full_name"     => trim($recipient->full_name) ?? '',
+                "company_name"   => trim($recipient->company_name) ?? '',
+                "address_1"      => trim($recipient->address_1) ?? '',
+                "address_2"      => trim($recipient->address_2) ?? '',
+                "city"           => trim($recipient->city) ?? '',
+                "state"          => trim($recipient->state) ?? '',
+                "zipcode"        => trim($recipient->zipcode) ?? '',
+                "quantity"       => $recipient->quantity ?? 1,
+            ];
+        }
+    
+        // Add items to the cart
+        self::add_items_to_cart($address_list, $product_id);
+    
+        // Return success response
+        wp_send_json_success(['message' => 'Items added to cart']);
+    }
+    
+    
     /**
 	 * AJAX handler function that edit process name
 	 *
@@ -133,7 +229,7 @@ class OAM_Ajax{
     
         $order_process_table           = OAM_Helper::$order_process_table;
         $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
-        
+    
         $address_list = [];
         $address_ids = [];
         $process_id  = isset($_POST['pid']) ? intval($_POST['pid']) : 0;
@@ -150,8 +246,8 @@ class OAM_Ajax{
         $result = $wpdb->update(
             $order_process_table,
             [
-                'data'     => wp_json_encode($stepData),
-                'step'     => sanitize_text_field($currentStep),
+                'data' => wp_json_encode($stepData),
+                'step' => sanitize_text_field($currentStep),
             ],
             ['id' => $process_id]
         );
@@ -166,7 +262,7 @@ class OAM_Ajax{
                 $wpdb->prepare(
                     "SELECT id, address_1, address_2, city, state, zipcode FROM {$order_process_recipient_table} 
                      WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d",
-                    $user, $process_id , 1 , 1
+                    $user, $process_id, 1, 1
                 )
             );
     
@@ -180,30 +276,50 @@ class OAM_Ajax{
                     "zipcode"    => $recipient->zipcode ?? '',
                     "candidates" => 10,
                 ];
-
             }
-         
-            $multi_validate_address = OAM_Helper::multi_validate_address($address_list);
-            if(!empty($multi_validate_address)){
+    
+            // Process addresses in chunks of 80
+            $chunk_size = 80;
+            $address_chunks = array_chunk($address_list, $chunk_size);
+            $delay_time = 2; // Adjustable delay time in seconds
+    
+            foreach ($address_chunks as $index => $chunk) {
+                // Call API with the current chunk
+                $multi_validate_address = OAM_Helper::multi_validate_address($chunk);
+    
+                // Check if the API response is valid
+                if (empty($multi_validate_address) || !is_string($multi_validate_address)) {
+                    error_log("Address validation API failed or returned an invalid response.");
+                    continue; // Skip this chunk if API response is invalid
+                }
+    
                 $multi_validate_address_result = json_decode($multi_validate_address, true);
-
-                if(!empty($multi_validate_address_result)){
-                    foreach($multi_validate_address_result as $data){
-                        echo $pid = $data['input_id'];
-
+    
+                if (!empty($multi_validate_address_result)) {
+                    foreach ($multi_validate_address_result as $data) {
+                        $pid = $data['input_id'];
                         $dpv_match_code = $data['analysis']['dpv_match_code'] ?? '';
+    
                         if ($dpv_match_code !== 'N') {
                             $update_result = $wpdb->update(
                                 $order_process_recipient_table,
                                 ['address_verified' => intval(1)],
                                 ['id' => $pid]
                             );
+    
+                            if ($update_result === false) {
+                                error_log("Failed to update address verification for ID: $pid");
+                            }
                         }
                     }
                 }
+    
+                // Add delay between chunks (except after the last chunk)
+                if ($index < count($address_chunks) - 1) {
+                    sleep($delay_time);
+                }
             }
         }
-        
     
         wp_send_json_success(['message' => 'Process completed successfully.']);
         wp_die();
@@ -1165,7 +1281,8 @@ class OAM_Ajax{
             'address_1' => 'Mailing Address',
             'city' => 'City',
             'state' => 'State',
-            'greeting' => 'Greeting',
+            'quantity' => 'quantity',
+            'zipcode' => 'zipcode',
         ];
         
         $missing_fields = [];
@@ -1215,66 +1332,65 @@ class OAM_Ajax{
         $result = false;
         
         // Check if a record with the same key exists
-        $existing_recipient = $wpdb->get_row(
-            $wpdb->prepare(
-                "SELECT id, visibility FROM $table WHERE full_name = %s AND address_1 = %s AND city = %s AND state = %s AND zipcode = %s AND pid = %d",
-                $data['full_name'], $data['address_1'], $data['city'], $data['state'], $data['zipcode'], $process_id
-                )
-            );
+        $existing_recipient = $wpdb->get_row( $wpdb->prepare(
+            "SELECT id, visibility FROM $table WHERE full_name = %s AND address_1 = %s AND city = %s AND state = %s AND zipcode = %s AND pid = %d", 
+            $data['full_name'], $data['address_1'], $data['city'], $data['state'], $data['zipcode'], $process_id
+            )
+        );
             
-            if (!$recipient_id && $existing_recipient) {
-                if ($existing_recipient->visibility == 1) {
-                    wp_send_json_error(['message' => 'A recipient with the same details already exists.']);
-                } else {
-                    // Only update visibility to 1
-                    $result = $wpdb->update($table, ['visibility' => 1], ['id' => $existing_recipient->id], ['address_verified' => 0]);
-                    if ($result !== false) {
-                        wp_send_json_success([
-                            'status'       => 'update',
-                            'recipient_id' => $existing_recipient->id,
-                            'message'      => 'Recipient reactivated successfully!',
-                        ]);
-                        OAM_Helper::order_process_recipient_activate_log($existing_recipient->id, 'reactivated', '');
-                    } else {
-                        wp_send_json_error(['message' => 'Failed to update visibility.']);
-                    }
-                }
-            }
-            
-            if ($recipient_id) {
-                // Update existing recipient
-                $existing_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $recipient_id), ARRAY_A);
-                $changes = [];
-                
-                foreach ($data as $key => $value) {
-                    if (isset($existing_data[$key]) && $existing_data[$key] != $value) {
-                        $changes[$key] = [
-                            'old' => $existing_data[$key],
-                            'new' => $value
-                        ];
-                    }
-                }
-                
-                $result = $wpdb->update($table, $data, ['id' => $recipient_id]);
-                $status = 'update';
-                
-                OAM_Helper::order_process_recipient_activate_log($recipient_id, $status, wp_json_encode($changes));
-                $success_message = 'Recipient details updated successfully!';
-                
+        if (!$recipient_id && $existing_recipient) {
+            if ($existing_recipient->visibility == 1) {
+                wp_send_json_error(['message' => 'A recipient with the same details already exists.']);
             } else {
-                // Insert new recipient
-                $data['user_id'] = get_current_user_id();
-                $data['pid'] = $_POST['pid'];
-                $data['new'] = 1;
-                $data['address_verified'] = 0;
-                $data['update_type'] = sanitize_text_field("add_manually");
-                $result = $wpdb->insert($table, $data);
-                $recipient_id = $wpdb->insert_id;
-                $status = 'new';
-                
-                OAM_Helper::order_process_recipient_activate_log($wpdb->insert_id, $status, 'manually added');
-                $success_message = 'Recipient details added successfully!';
+                // Only update visibility to 1
+                $result = $wpdb->update($table, ['visibility' => 1], ['id' => $existing_recipient->id], ['address_verified' => 0]);
+                if ($result !== false) {
+                    wp_send_json_success([
+                        'status'       => 'update',
+                        'recipient_id' => $existing_recipient->id,
+                        'message'      => 'Recipient reactivated successfully!',
+                    ]);
+                    OAM_Helper::order_process_recipient_activate_log($existing_recipient->id, 'reactivated', '');
+                } else {
+                    wp_send_json_error(['message' => 'Failed to update visibility.']);
+                }
             }
+        }
+            
+        if ($recipient_id) {
+            // Update existing recipient
+            $existing_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $recipient_id), ARRAY_A);
+            $changes = [];
+            
+            foreach ($data as $key => $value) {
+                if (isset($existing_data[$key]) && $existing_data[$key] != $value) {
+                    $changes[$key] = [
+                        'old' => $existing_data[$key],
+                        'new' => $value
+                    ];
+                }
+            }
+            
+            $result = $wpdb->update($table, $data, ['id' => $recipient_id]);
+            $status = 'update';
+            
+            OAM_Helper::order_process_recipient_activate_log($recipient_id, $status, wp_json_encode($changes));
+            $success_message = 'Recipient details updated successfully!';
+            
+        } else {
+            // Insert new recipient
+            $data['user_id'] = get_current_user_id();
+            $data['pid'] = $_POST['pid'];
+            $data['new'] = 1;
+            $data['address_verified'] = 0;
+            $data['update_type'] = sanitize_text_field("add_manually");
+            $result = $wpdb->insert($table, $data);
+            $recipient_id = $wpdb->insert_id;
+            $status = 'new';
+            
+            OAM_Helper::order_process_recipient_activate_log($wpdb->insert_id, $status, 'manually added');
+            $success_message = 'Recipient details added successfully!';
+        }
             
         // Handle the result
         if ($result !== false) {

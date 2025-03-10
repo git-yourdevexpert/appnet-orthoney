@@ -5,28 +5,27 @@ if (!defined('ABSPATH')) {
 }
 
 
-// class OAM_Hooks {
-//     /**
-//      * Constructor to hook into WooCommerce template loading.
-//      */
-//     public function __construct() {
-//         add_filter('woocommerce_locate_template', array($this, 'custom_plugin_woocommerce_template'), 10, 3);
-//     }
+class OAM_USER_Role {
+    /**
+     * Constructor to hook into WooCommerce template loading.
+     */
+    public function __construct() {
+        add_action('init', array($this, 'create_user_roles'));
+    }
 
-//     /**
-//      * Template override callback
-//      */
-//     public function custom_plugin_woocommerce_template($template, $template_name, $template_path) {
-//         // Define the custom template path
-//         $custom_path = OH_PLUGIN_DIR_PATH . '../templates/woocommerce/';
+    /**
+     * Template override callback
+     */
 
-//         // Check if the custom template exists
-//         if (file_exists($custom_path . $template_name)) {
-//             $template = $custom_path . $template_name;
-//         }
+    public function create_user_roles() {
+     if (!get_role('affiliate_team_member')) {
+            add_role('affiliate_team_member', 'Affiliate Team Member', [
+                'read'         => true,
+                'edit_posts'   => false,
+                'delete_posts' => false,
+            ]);
+        }
+    }
+}
 
-//         return $template;
-//     }
-// }
-
-// new OAM_Hooks();
+new OAM_USER_Role();

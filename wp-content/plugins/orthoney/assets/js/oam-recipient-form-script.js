@@ -106,6 +106,96 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     });
+    document.querySelectorAll('#checkout_proceed_with_only_verified_addresses').forEach(button => { 
+      button.addEventListener('click', async function(event) {  
+          event.preventDefault();
+          let html = "<p>Are you sure you want to proceed with only verified addresses?</p>";
+          await process_to_checkout(html, 1);
+      });
+  });
+  
+  document.querySelectorAll('#checkout_proceed_with_only_unverified_addresses').forEach(button => { 
+      button.addEventListener('click', async function(event) {  
+          event.preventDefault();
+          let html = "<p>Are you sure you want to proceed with unverified addresses?</p>";
+          await process_to_checkout(html, 0);
+      });
+  });
+  
+  async function process_to_checkout(html, status) { // Ensure async function
+      try {
+          const result = await Swal.fire({
+              title: '',
+              html: html,
+              icon: 'question',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Yes, Proceed',
+              cancelButtonText: 'No, I Want to Add/Edit Records.',
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              allowEnterKey: false,
+              reverseButtons: false,
+              width: '650px',
+          });
+  
+          if (!result.isConfirmed) return; // Exit if user cancels
+  
+          if (typeof process_group_popup === "function") {
+              process_group_popup(); // Ensure the function exists
+          }
+  
+          const form = document.querySelector("#multiStepForm");
+          if (!form) {
+              Swal.fire("Error", "Form not found!", "error");
+              return;
+          }
+  
+          const formData = new FormData(form);
+          formData.append("action", "orthoney_process_to_checkout_ajax");
+          formData.append("currentStep", typeof currentStep !== "undefined" ? currentStep : "");
+          formData.append("security", oam_ajax.nonce);
+          formData.append("status", status); // Add status to distinguish the action
+  
+          const response = await fetch(oam_ajax.ajax_url, {
+              method: "POST",
+              body: formData,
+          });
+  
+          if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+  
+          const responseData = await response.json();
+  
+          if (!responseData.success) {
+              Swal.fire("Error", responseData.message || "An error occurred", "error");
+              return;
+          }
+  
+          Swal.fire({
+              title: "Verification is successful!",
+              icon: 'success',
+              timer: 2000,
+              showConfirmButton: false,
+              timerProgressBar: true,
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              allowEnterKey: false,
+          });
+  
+          setTimeout(() => window.location.reload(), 1000);
+  
+      } catch (error) {
+          console.error("AJAX error:", error);
+          Swal.fire("Error", `Request failed: ${error.message || "Unknown error"}`, "error");
+      }
+  }
+  
+
+
+
 
     document.querySelectorAll('.keep_this_and_delete_others').forEach(button => { 
       button.addEventListener('click', function(event) {
@@ -374,9 +464,9 @@ document.addEventListener('DOMContentLoaded', function() {
               showConfirmButton: false,
             });
 
-            // setTimeout(function() {
-            //   window.location.reload();
-            // }, 1000);
+            setTimeout(function() {
+              window.location.reload();
+            }, 1000);
 
           } catch (error) {
             console.error("AJAX error:", error);

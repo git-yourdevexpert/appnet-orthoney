@@ -24,10 +24,19 @@ class OAM_Scripts
         wp_enqueue_style('lity-css', 'https://cdn.jsdelivr.net/npm/lity@2.4.1/dist/lity.min.css', array(), '2.4.1');
         wp_enqueue_script('lity-js', 'https://cdn.jsdelivr.net/npm/lity@2.4.1/dist/lity.min.js', array('jquery'), '2.4.1', true);
 
+        wp_enqueue_style('select2-css', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css', array(), '2.4.1');
+        wp_enqueue_script('select2-js', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'), '2.4.1', true);
+
 
         wp_enqueue_style(
             'oam-frontend-style',
             OH_PLUGIN_DIR_URL. 'assets/css/oam-frontend-style.css',
+            array(),
+            time()
+        );
+        wp_enqueue_style(
+            'oam-frontend-style-1',
+            OH_PLUGIN_DIR_URL. 'assets/css/oam-frontend-style-1.css',
             array(),
             time()
         );
@@ -36,25 +45,26 @@ class OAM_Scripts
             'oam-recipient-form-script',
             OH_PLUGIN_DIR_URL. 'assets/js/oam-recipient-form-script.js',
             array( 'sweetalert2', 'lity-js' ), 
-            '1.0.0',          
+            time(),          
             true 
         );
 
         wp_enqueue_script(
             'oam-dev-frontend-script',
             OH_PLUGIN_DIR_URL. 'assets/js/oam-dev-frontend-script.js',
-            array( 'jquery' , 'lity-js', 'oam-recipient-form-script'), 
-            '1.0.0',          
+            array( 'oam-recipient-form-script'), 
+             time(),          
             true 
         );
 
         wp_enqueue_script(
             'oam-frontend-script',
             OH_PLUGIN_DIR_URL. 'assets/js/oam-frontend-script.js',
-            array( 'sweetalert2', 'lity-js', 'oam-recipient-form-script' ), 
-            '1.0.0',          
+            array( 'oam-recipient-form-script' ), 
+            time(),          
             true 
         );
+        
         wp_localize_script(
             'oam-frontend-script', 
             'oam_ajax',
@@ -64,8 +74,6 @@ class OAM_Scripts
             )
         );
 
-
-        
         wp_localize_script(
             'oam-recipient-form-script', 
             'oam_ajax',

@@ -1,116 +1,294 @@
-//Edit my profile js start
-// TODO
-document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("save-profile").addEventListener("click", function() {
-        let formData = {
-            action: "save_affiliate_profile",
-            first_name: document.getElementById("first_name").value,
-            last_name: document.getElementById("last_name").value,
-            billing_phone: document.getElementById("billing_phone").value,
-            billing_email: document.getElementById("billing_email").value,
-        };
+function validateForm(form) {
+    let isValid = true;
 
-        fetch(affiliateProfileAjax.ajax_url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams(formData),
-            })
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById("profile-message").innerHTML = data;
-            });
-    });
-});
-//Edit my profile js end
-// TODO
+    form.querySelectorAll("[required]").forEach((input) => {
+        let errorMessage = input.nextElementSibling;
+        let errorText = input.getAttribute("data-error-message") || "This field is required.";
 
-//add user js start
-
-document.getElementById("addUserForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    let formData = new FormData(this);
-    formData.append("action", "create_new_user"); // WordPress AJAX action
-
-    fetch(affiliateProfileAjax.ajax_url, {
-        method: "POST",
-        body: formData,
-    })
-    .then(response => response.json())
-    .then(data => {
-        let userMessage = document.getElementById("user-message");
-        userMessage.innerHTML = data.message;
-
-        if (data.success) {
-            userMessage.style.color = "green"; // Success message color
-            this.reset(); // Reset form after successful submission
-        } else {
-            userMessage.style.color = "red"; // Error message color
+        if (!errorMessage || !errorMessage.classList.contains("error-message")) {
+            return; // Skip if no error message container
         }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        document.getElementById("user-message").innerHTML = "An error occurred. Please try again.";
+
+        let value = input.value.trim();
+        input.style.border = ""; // Reset border
+        errorMessage.textContent = ""; // Reset error message
+
+        if (!value) {
+            isValid = false;
+            errorMessage.textContent = errorText;
+        } 
+        else if (input.type === "email" && !/^\S+@\S+\.\S+$/.test(value)) {
+            isValid = false;
+            errorMessage.textContent = "Please enter a valid email address.";
+        } 
+        else if (input.classList.contains("phone-input")) {
+            // Ensure only numbers and exactly 10 digits
+            if (!/^\d{10}$/.test(value)) {
+                isValid = false;
+                errorMessage.textContent = "Please enter a valid 10-digit phone number (numbers only).";
+            }
+        }
+
+        if (!isValid) {
+            input.style.border = "1px solid red";
+            errorMessage.style.color = "red";
+        }
     });
+
+    return isValid;
+}
+// Add user
+document.addEventListener("DOMContentLoaded", function () {
+    let addUserForm = document.getElementById("addUserForm");
+    if (addUserForm) {
+        addUserForm.setAttribute("novalidate", true);
+
+        addUserForm.addEventListener("submit", function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+            if (!validateForm(this)) return; // Stop submission if validation fails
+
+            let formData = new FormData(this);
+            formData.append("action", "manage_affiliate_team_member_users"); // WordPress AJAX action
+            formData.append("security", oam_ajax.nonce);  // nonce.
+            fetch(oam_ajax.ajax_url, {
+                method: "POST",
+                body: formData,
+            })
+            .then(response => response.json()) // Parse JSON response
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: data.message || "User created successfully!",
+                        icon: "success",
+                        timer: 2000,
+                        showConfirmButton: false,
+                        timerProgressBar: true
+                    });
+
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    Swal.fire({
+                        title: "Error",
+                        text: data.message || "Something went wrong.",
+                        icon: "error",
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Fetch error:", error); // Log error to console
+
+                Swal.fire({
+                    title: "Error",
+                    text: "An error occurred while processing the request.",
+                    icon: "error",
+                });
+            });
+        });
+    }
 });
 
-//add user js end
+//edit user
+document.addEventListener('click', function (event) {
+    if (event.target.classList.contains('edit-user-form-btn')) {
+        event.preventDefault();
 
+        const target = event.target;
+        const userTr = target.closest('tr');
 
-document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".edit-user").forEach(function (editButton) {
-        editButton.addEventListener("click", function (event) {
-            event.preventDefault();
+        if(userTr){
+            const userid = userTr.getAttribute('data-userid');
 
-            let userId = this.getAttribute("data-id");
-            let userName = this.getAttribute("data-name");
-            let userEmail = this.getAttribute("data-email");
-            let userPhone = this.getAttribute("data-phone");
-            let userRole = this.getAttribute("data-role");
+            fetch(oam_ajax.ajax_url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    action: 'get_affiliate_team_member_by_base_id',
+                    id: userid,
+                    security: oam_ajax.nonce,// nonce.
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                
+                    const userid = data.data.userid;
+                    const first_name = data.data.first_name;
+                    const last_name = data.data.last_name;
+                    const email = data.data.email;
+                    const phone = data.data.phone;
+                    const affiliate_type = data.data.affiliate_type;
+                 
+                    const form = document.querySelector('#edit-user-form form');
+                    form.querySelector('#user_id').value = userid;
+                    form.querySelector('#first_name').value = first_name;
+                    form.querySelector('#last_name').value = last_name;
+                    const emailField = form.querySelector('#email');emailField.value = email; emailField.readOnly = true;
+                    form.querySelector('#phone').value = phone;
+                    form.querySelector('#affiliate_type').value = affiliate_type;
+        
 
-            document.getElementById("edit-name").value = userName;
-            document.getElementById("edit-email").value = userEmail;
-            document.getElementById("edit-phone").value = userPhone;
-            document.getElementById("edit-role").value = userRole;
+                    setTimeout(function() {
+                        lity(event.target.getAttribute('data-popup'));
+                    }, 250);
+                    
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message || 'Failed to get User.',
+                        icon: 'error',
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while removing the User.',
+                    icon: 'error',
+                });
+            });
+        }else{
+            lity(event.target.getAttribute('data-popup'));
+        }
+        
+    }
+    if (event.target.matches('.lity-close, [data-lity-close]')) {
+            window.location.reload();
+    }
+});
 
-            document.getElementById("save-user").setAttribute("data-id", userId);
+//delete user
+document.addEventListener('click', function (event) {
+    if (event.target.classList.contains('delete-user')) {
+        event.preventDefault();
+
+        const target = event.target;
+        const userTr = target.closest('tr');
+        const userID = userTr?.getAttribute('data-userid');
+
+        if (!userID) {
+            Swal.fire({
+                title: 'Error',
+                text: 'User ID not found.',
+                icon: 'error',
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you really want to remove this User?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, remove!',
+            cancelButtonText: 'Cancel',
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(oam_ajax.ajax_url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'deleted_affiliate_team_member',
+                        id: userID,
+                        security: oam_ajax.nonce,// nonce.
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: 'The user has been removed successfully.',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false,
+                            timerProgressBar: true
+                        });
+
+                        // Remove row smoothly instead of full page reload
+                        setTimeout(() => {
+                            userTr.remove();
+                        }, 1500);
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.message || 'Failed to remove user.',
+                            icon: 'error',
+                        });
+                    }
+                })
+                .catch((error) => {
+                    console.error("Delete Error:", error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'An error occurred while removing the user.',
+                        icon: 'error',
+                    });
+                });
+            }
         });
-    });
+    }
+});
 
-    document.getElementById("save-user").addEventListener("click", function () {
-        let userId = this.getAttribute("data-id");
-        let updatedName = document.getElementById("edit-name").value;
-        let updatedEmail = document.getElementById("edit-email").value;
-        let updatedPhone = document.getElementById("edit-phone").value;
-        let updatedRole = document.getElementById("edit-role").value;
+//Edit my profile 
+document.addEventListener('click', function (event) {
+    if (event.target.id === 'save-profile') {
+        event.preventDefault();
+        
+        if (!validateForm(this)) return; // Stop submission if validation fails
 
-        let formData = new FormData();
-        formData.append("action", "update_affiliate_user");
-        formData.append("user_id", userId);
-        formData.append("name", updatedName);
-        formData.append("email", updatedEmail);
-        formData.append("phone", updatedPhone);
-        formData.append("role", updatedRole);
-        formData.append("security", ajax_object.security); // Nonce for security
+        const form = document.querySelector('#affiliate-profile-form');
+        const formData = new URLSearchParams();
+        formData.append('action', 'update_affiliate_profile');
+        formData.append('first_name', document.querySelector('#first_name').value);
+        formData.append('last_name', document.querySelector('#last_name').value);
+        formData.append('billing_phone', document.querySelector('#billing_phone').value);
+        formData.append("security", oam_ajax.nonce);  // nonce.
 
-        fetch(ajax_object.ajax_url, {
-            method: "POST",
-            body: formData
+
+        fetch(oam_ajax.ajax_url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData,
         })
         .then(response => response.json())
         .then(data => {
+            const messageDiv = document.querySelector('#profile-message');
             if (data.success) {
-                alert("User updated successfully!");
-                location.reload(); // Refresh to see updated data
+                Swal.fire({
+                    title: data.message || "Affiliate Profile updated successfully!",
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true
+                });
+
             } else {
-                alert("Error: " + data.message);
+                Swal.fire({
+                    title: "Error",
+                    text: data.message || "Something went wrong. Please try again",
+                    icon: "error",
+                });
             }
         })
-        .catch(error => console.error("Error:", error));
-    });
+        .catch(() => {
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while updating the Affiliate profile.',
+                icon: 'error',
+            });
+        });
+    }
 });
-
-//
-
+//Edit my profile

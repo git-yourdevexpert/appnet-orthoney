@@ -5,6 +5,94 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+
+add_action('woocommerce_order_item_meta_end', function ($item_id, $item, $order) {
+    // Retrieve saved order item meta
+    $full_name    = wc_get_order_item_meta($item_id, 'full_name', true);
+    $company_name = wc_get_order_item_meta($item_id, '_recipient_company_name', true);
+    $address_1    = wc_get_order_item_meta($item_id, '_recipient_address_1', true);
+    $address_2    = wc_get_order_item_meta($item_id, '_recipient_address_2', true);
+    $city         = wc_get_order_item_meta($item_id, '_recipient_city', true);
+    $state        = wc_get_order_item_meta($item_id, '_recipient_state', true);
+    $zipcode      = wc_get_order_item_meta($item_id, '_recipient_zipcode', true);
+
+    if (!empty($full_name)) {
+        echo '<p><strong>Recipient Name:</strong> ' . esc_html($full_name) . '</p>';
+    }
+    if (!empty($company_name)) {
+        echo '<p><strong>Company:</strong> ' . esc_html($company_name) . '</p>';
+    }
+    if (!empty($address_1)) {
+        echo '<p><strong>Address 1:</strong> ' . esc_html($address_1) . '</p>';
+    }
+    if (!empty($address_2)) {
+        echo '<p><strong>Address 2:</strong> ' . esc_html($address_2) . '</p>';
+    }
+    if (!empty($city)) {
+        echo '<p><strong>City:</strong> ' . esc_html($city) . '</p>';
+    }
+    if (!empty($state)) {
+        echo '<p><strong>State:</strong> ' . esc_html($state) . '</p>';
+    }
+    if (!empty($zipcode)) {
+        echo '<p><strong>Zipcode:</strong> ' . esc_html($zipcode) . '</p>';
+    }
+}, 10, 3);
+
+add_action('woocommerce_before_calculate_totals', function($cart) {
+    if (is_admin() && !defined('DOING_AJAX')) {
+        return;
+    }
+
+    foreach ($cart->get_cart() as $cart_item) {
+        if (isset($cart_item['new_price'])) {
+            $cart_item['data']->set_price($cart_item['new_price']);
+        }
+    }
+});
+
+// Save custom data in cart session
+add_filter('woocommerce_add_cart_item_data', function ($cart_item_data, $product_id, $variation_id) {
+    if (isset($cart_item_data['new_price'])) {
+        $cart_item_data['unique_key'] = uniqid('custom_', true);
+    }
+    return $cart_item_data;
+}, 10, 3);
+
+// Retrieve custom data from session
+add_filter('woocommerce_get_cart_item_from_session', function ($cart_item, $values, $key) {
+    if (isset($values['new_price'])) {
+        $cart_item['new_price'] = $values['new_price'];
+    }
+    if (isset($values['full_name'])) {
+        $cart_item['full_name'] = $values['full_name'];
+    }
+    return $cart_item;
+}, 10, 3);
+
+function display_cart_item_custom_meta($item_data, $cart_item) {
+    
+    if (!empty($cart_item['full_name'])) {
+        $item_data[] = [
+            'name'  => __('Full Name', 'woocommerce'),
+            'value' => sanitize_text_field($cart_item['full_name']),
+        ];
+    }
+ 
+    if (!empty($cart_item['address'])) {
+        $item_data[] = [
+            'name'  => __('Address', 'woocommerce'),
+            'value' => sanitize_text_field($cart_item['address']),
+        ];
+    }
+
+    return $item_data;
+}
+add_filter('woocommerce_get_item_data', 'display_cart_item_custom_meta', 10, 2);
+
+
+/////////////////////////////////////////////////////////////////////////////
+
 // Ensure WooCommerce Uses the New Price Start
 function apply_custom_price_in_cart($cart) {
     if (is_admin() && !defined('DOING_AJAX')) {
@@ -21,10 +109,6 @@ add_action('woocommerce_before_calculate_totals', 'apply_custom_price_in_cart');
 
 
 // Ensure WooCommerce Uses the New Price END
-
-
-
-
 
 add_action('template_redirect', 'handle_custom_order_form_submission');
 
@@ -99,99 +183,9 @@ function display_affiliate_in_backend($order) {
 }
 
 
-// 
 
-function add_items_to_cart($data, $product_id) {
-    if (!function_exists('WC')) {
-        die('WooCommerce is not loaded.');
-    }
 
-    // Ensure WooCommerce is active
-    if (!class_exists('WC_Cart') || WC()->cart === null) {
-        return;
-    }
 
-    // Empty the cart before adding new items
-    WC()->cart->empty_cart();
-
-    foreach ($data as $customer) {
-        $full_name    = sanitize_text_field($customer['Full Name']);
-        $company_name = sanitize_text_field($customer['Company Name']);
-        $address      = sanitize_text_field($customer['Address']);
-        $quantity     = (int) $customer['Quantity'];
-
-        // Generate a unique key to prevent WooCommerce from merging items
-        $unique_key = uniqid('custom_', true);
-
-        WC()->cart->add_to_cart($product_id, $quantity, 0, [], [
-            'full_name'    => $full_name,
-            'company_name' => $company_name,
-            'address'      => $address,
-            'unique_key'   => $unique_key, // Ensures each item is treated separately
-        ]);
-    }
-}
-
-// Sample data
-$data = [
-    [
-        "Full Name"    => "John Doe",
-        "Company Name" => "Nimbus Solutions",
-        "Address"      => "with new group, Los Angeles, CA, 90001",
-        "Quantity"     => 2
-    ],
-    [
-        "Full Name"    => "Jane Son",
-        "Company Name" => "Vertex Industries",
-        "Address"      => "101, Main St, New York, NY, 10001",
-        "Quantity"     => 3
-    ],
-    [
-        "Full Name"    => "Jane Son",
-        "Company Name" => "BlueHorizon Tech",
-        "Address"      => "101 Main St, New York, NY, 10001",
-        "Quantity"     => 4
-    ],
-    [
-        "Full Name"    => "Jane Son",
-        "Company Name" => "BlueHorizon Tech",
-        "Address"      => "101 Main St, New York, NY, 10001",
-        "Quantity"     => 4
-    ]
-];
-
-function rest() {
-    $product_id = 76; // Set your WooCommerce product ID
-    add_items_to_cart($GLOBALS['data'], $product_id);
-}
-
-// Ensure WooCommerce is fully loaded before running
-// add_action('wp_loaded', 'rest');
-
-// Display custom cart item meta in the cart page
-function display_cart_item_custom_meta($item_data, $cart_item) {
-    if (!empty($cart_item['full_name'])) {
-        $item_data[] = [
-            'name'  => 'Full Name',
-            'value' => sanitize_text_field($cart_item['full_name']),
-        ];
-    }
-    if (!empty($cart_item['company_name'])) {
-        $item_data[] = [
-            'name'  => 'Company Name',
-            'value' => sanitize_text_field($cart_item['company_name']),
-        ];
-    }
-    if (!empty($cart_item['address'])) {
-        $item_data[] = [
-            'name'  => 'Address',
-            'value' => sanitize_text_field($cart_item['address']),
-        ];
-    }
-
-    return $item_data;
-}
-add_filter('woocommerce_get_item_data', 'display_cart_item_custom_meta', 10, 2);
 
 //
 function create_sub_orders($main_order_id) {
@@ -214,8 +208,8 @@ function create_sub_orders($main_order_id) {
             $sub_order->set_customer_id($customer_id);
         }
 
-        // Get custom "Full Name" from the cart item
-        $custom_full_name = wc_get_order_item_meta($item_id, 'Full Name', true);
+        // Get custom "Full Name" from the cart item (HPOS-friendly)
+        $custom_full_name = $item->get_meta('full_name', true);
 
         // Use custom full name or fallback to main order's billing name
         $billing_data['first_name'] = !empty($custom_full_name) ? $custom_full_name : $billing_data['first_name'];
@@ -227,35 +221,55 @@ function create_sub_orders($main_order_id) {
         // Ensure sub-order uses the same email as the main order
         $sub_order->set_billing_email($customer_email);
 
-        // Add product to sub-order
+        // Add product to sub-order with a modified price
         $product_id = $item->get_product_id();
         $quantity   = $item->get_quantity();
-        $order_item = $sub_order->add_product(wc_get_product($product_id), $quantity);
+        $original_price = $item->get_total() / $quantity; // Get the price per unit
 
-        // Get custom "Address" from cart item meta for shipping
-        $custom_address = wc_get_order_item_meta($item_id, 'Address', true);
+        // Custom price (Example: 10% discount)
+        $custom_price = $original_price * 0.9; // Apply a 10% discount
 
+        // Add product with a modified price
+        $product = wc_get_product($product_id);
+        if ($product) {
+            $order_item = new WC_Order_Item_Product();
+            $order_item->set_product($product);
+            $order_item->set_quantity($quantity);
+            $order_item->set_subtotal($custom_price * $quantity);
+            $order_item->set_total($custom_price * $quantity);
+            $order_item->set_order_id($sub_order->get_id());
+            $sub_order->add_item($order_item);
+        }
+
+        // Get custom shipping details (HPOS-friendly)
+        $custom_address = $item->get_meta('address', true);
         if (!empty($custom_address)) {
-            // Convert custom address into WooCommerce shipping format
             $shipping_data = [
-                'first_name' => $custom_full_name, // Use Full Name in Shipping Name
-                'address_1'  => $custom_address,
-                'address_2'  => '',
-                'city'       => '',
-                'state'      => '',
-                'postcode'   => '',
-                'country'    => '',
+                'first_name' => !empty($custom_full_name) ? $custom_full_name : $billing_data['first_name'],
+                'last_name'  => '', // Keep last name empty
+                'company'    => $item->get_meta('company_name', true) ?? '',
+                'address_1'  => $item->get_meta('address_1', true) ?? '',
+                'address_2'  => $item->get_meta('address_2', true) ?? '',
+                'city'       => $item->get_meta('city', true) ?? '',
+                'state'      => $item->get_meta('state', true) ?? '',
+                'postcode'   => $item->get_meta('zipcode', true) ?? '',
+                'country'    => 'US', // Adjust dynamically if needed
             ];
 
-            // Set custom shipping address for the sub-order
-            $sub_order->set_address($shipping_data, 'shipping');
+            // Ensure minimum required fields exist
+            if (!empty($shipping_data['address_1']) && !empty($shipping_data['city'])) {
+                $sub_order->set_address($shipping_data, 'shipping');
+            }
         }
+
+        // Ensure the sub-order has a shipping method to save the shipping data
+        $sub_order->set_shipping_total(0); 
 
         // Set sub-order as a child of the main order
         $sub_order->set_parent_id($main_order_id);
 
-        // Set order total to zero
-        $sub_order->set_total(0);
+        // Calculate total for sub-order
+        $sub_order->calculate_totals();
 
         // Save the sub-order
         $sub_order->save();

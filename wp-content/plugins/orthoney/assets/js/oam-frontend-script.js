@@ -54,16 +54,20 @@
 
 const greetingTextarea = document.querySelectorAll("#multiStepForm textarea, #recipient-manage-form form textarea");
 const maxChars = 250;
-if(greetingTextarea){
-greetingTextarea.forEach((textarea) => {
-    const charCounter = textarea.closest(".textarea-div").querySelector(".char-counter span");
-    if (charCounter) {
-        textarea.addEventListener("input", () => {
-            const remainingChars = maxChars - textarea.value.length;
-            charCounter.textContent = `${remainingChars}`;
-        });
-    }
-});
+
+if (greetingTextarea) {
+    greetingTextarea.forEach((textarea) => {
+        const textareaDiv = textarea.closest(".textarea-div"); // Find closest parent
+        if (textareaDiv) {
+            const charCounter = textareaDiv.querySelector(".char-counter span");
+            if (charCounter) { // Ensure charCounter exists
+                textarea.addEventListener("input", () => {
+                    const remainingChars = maxChars - textarea.value.length;
+                    charCounter.textContent = `${remainingChars}`;
+                });
+            }
+        }
+    });
 }
 
 document.addEventListener('lity:open', function (event) {

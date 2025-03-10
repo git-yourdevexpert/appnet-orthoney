@@ -43,7 +43,7 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                             $is_blocked = in_array($affiliate['ID'], $blocked_affiliates);
                             ?>
                             <tr>
-                                <td><?php echo esc_html($affiliate['token']); ?></td>
+                                <td><?php echo isset($affiliate['token']) ? esc_html($affiliate['token']) : ''; ?></td>
                                 <td><?php echo esc_html($affiliate['display_name']); ?></td>
                                 <td>
                                     <button class="affiliate-block-btn w-btn <?php echo $is_blocked ? 'us-btn-style_2' : 'us-btn-style_1' ?>" 
