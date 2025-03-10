@@ -158,6 +158,8 @@ function orthoney_create_custom_tables() {
         id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
         user_id BIGINT(20) NOT NULL,
         group_id BIGINT(20) DEFAULT 0,
+        order_id BIGINT(20) UNSIGNED DEFAULT 0,
+        order_type TEXT NULL,
         name TEXT NULL,
         data LONGTEXT NULL,
         step VARCHAR(255) NULL,

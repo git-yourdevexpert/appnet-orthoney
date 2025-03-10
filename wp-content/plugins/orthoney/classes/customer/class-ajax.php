@@ -107,9 +107,12 @@ class OAM_Ajax{
     
         $status = isset($_POST['status']) ? $_POST['status'] : 1;
         $pid = isset($_POST['pid']) ? intval($_POST['pid']) : 1; 
+        $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
+        $stepData    = $_POST ?? [];
         $user_id = get_current_user_id(); 
     
         $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+        $order_process_table = OAM_Helper::$order_process_table;
     
         // Fetch recipients
         $recipients = $wpdb->get_results(
@@ -140,8 +143,50 @@ class OAM_Ajax{
         // Add items to the cart
         self::add_items_to_cart($address_list, $product_id);
     
-        // Return success response
-        wp_send_json_success(['message' => 'Items added to cart']);
+        $processQuery = $wpdb->prepare("
+        SELECT order_id
+        FROM {$order_process_table}
+        WHERE user_id = %d 
+        AND id = %d 
+        ", $user_id, $pid);
+
+        $processResult = $wpdb->get_row($processQuery);
+
+        
+        if(!empty($processResult)){
+            if($processResult->order_id != 0){
+                $order = wc_get_order( $processResult->order_id);
+                if ($order) {
+                    $order_key = $order->get_order_key();
+                    $order_url = wc_get_endpoint_url('view-order', $processResult->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order_key;
+                    wp_send_json_success([
+                        'message' => 'Address is Verify 1',
+                        'checkout_url' => $order_url
+                    ]);
+                }
+            }
+        }
+
+        $updateData = [
+            'data' => wp_json_encode($stepData),
+            'order_type'  => sanitize_text_field('multi-recipient-order'),
+            'step' => sanitize_text_field($currentStep),
+        ];
+
+        $wpdb->update(
+            $order_process_table,
+            $updateData,
+            ['id' => $pid]
+        );
+
+        // Get checkout page URL
+        $checkout_url = wc_get_checkout_url();
+
+        wp_send_json_success([
+            'message' => 'Address is Verify 11',
+            'checkout_url' => $checkout_url
+        ]);
+
     }
     
     
@@ -583,10 +628,38 @@ class OAM_Ajax{
     public function orthoney_single_address_data_save_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
 
+        global $wpdb;
+    
+        $order_process_table = OAM_Helper::$order_process_table;
         $stepData = $_POST;
         $user_id = get_current_user_id();
 
         $process_id = !empty($stepData['pid']) ? $stepData['pid'] : '';
+
+
+        $processQuery = $wpdb->prepare("
+        SELECT order_id
+        FROM {$order_process_table}
+        WHERE user_id = %d 
+        AND id = %d 
+        ", $user_id, $process_id);
+
+        $processResult = $wpdb->get_row($processQuery);
+
+        
+        if(!empty($processResult)){
+            $order = wc_get_order( $processResult->order_id);
+            if ($order) {
+                $order_key = $order->get_order_key();
+                $order_url = wc_get_endpoint_url('view-order', $processResult->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order_key;
+                wp_send_json_success([
+                    'message' => 'Address is Verify',
+                    'checkout_url' => $order_url
+                ]);
+            }
+        }
+        
+
         $currentStep = !empty($stepData['currentStep']) ? $stepData['currentStep'] : '';
         $delivery_line_1 = !empty($stepData['single_order_address_1']) ? $stepData['single_order_address_1'] : '';
         $delivery_line_2 = !empty($stepData['single_order_address_2']) ? $stepData['single_order_address_2'] : '';
@@ -623,14 +696,26 @@ class OAM_Ajax{
 
                     $custom_data = array(
                         'custom_data' => array(
-                            'new_price' => $custom_price
+                            'new_price' => $custom_price,
+                            'single_order' => 1,
+                            'process_id' => $process_id
                         )
                     );
                     
                     WC()->cart->add_to_cart($product_id, $quantity, 0, array(), $custom_data);
 
                 }
-              
+
+                $updateData = [
+                    'order_type'  => sanitize_text_field('single_order'),
+                ];
+    
+                $wpdb->update(
+                    $order_process_table,
+                    $updateData,
+                    ['id' => $process_id]
+                );
+
                 // Get checkout page URL
                 $checkout_url = wc_get_checkout_url();
 

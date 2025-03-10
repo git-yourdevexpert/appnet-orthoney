@@ -33,7 +33,7 @@ class OAM_YITH_Affilate {
         // Ensure uniqueness with fallback mechanism
         $attempts = 0;
         do {
-            $new_token = ($attempts == 0) ? $base_token : getRandomChars($random_part, 3);
+            $new_token = ($attempts == 0) ? $base_token : OAM_AFFILIATE_Helper::getRandomChars($random_part, 3);
     
             $existing = $wpdb->get_var($wpdb->prepare(
                 "SELECT COUNT(*) FROM $table_name WHERE token = %s",
@@ -58,6 +58,9 @@ class OAM_YITH_Affilate {
             ['%d']
         );
     
+        update_user_meta($token, 'associated_affiliate_id', $token);
+        update_user_meta($token, 'email_verified', 'true');
+
         return $new_token;
     }
 

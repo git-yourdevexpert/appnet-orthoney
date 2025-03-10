@@ -106,92 +106,134 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     });
+
     document.querySelectorAll('#checkout_proceed_with_only_verified_addresses').forEach(button => { 
       button.addEventListener('click', async function(event) {  
           event.preventDefault();
+          const form = document.querySelector("#multiStepForm");
+          event.target.closest('div').querySelector('input[name="checkout_proceed_with_multi_addresses_status"]').value = "only_verified";
           let html = "<p>Are you sure you want to proceed with only verified addresses?</p>";
-          await process_to_checkout(html, 1);
+          const processCheckoutStatus = document.querySelector('input[name="processCheckoutStatus"]');
+          const delivery_preference = document.querySelector('input[name="delivery_preference"]:checked');
+          const checkout_proceed_with_multi_addresses_status = document.querySelector('input[name="checkout_proceed_with_multi_addresses_status"]');
+          
+          if (processCheckoutStatus) {
+
+            if (processCheckoutStatus.value == 5 && delivery_preference.value == 'multiple_address' && checkout_proceed_with_multi_addresses_status.value == 'only_verified') {
+              await process_to_checkout_ajax_part(form, 1);
+            }else{
+
+              await process_to_checkout(form, html, 1);
+            }
+          }
       });
   });
   
   document.querySelectorAll('#checkout_proceed_with_only_unverified_addresses').forEach(button => { 
       button.addEventListener('click', async function(event) {  
           event.preventDefault();
+          const form = document.querySelector("#multiStepForm");
           let html = "<p>Are you sure you want to proceed with unverified addresses?</p>";
-          await process_to_checkout(html, 0);
+
+          const processCheckoutStatus = document.querySelector('input[name="processCheckoutStatus"]');
+          const delivery_preference = document.querySelector('input[name="delivery_preference"]:checked');
+          const checkout_proceed_with_multi_addresses_status = document.querySelector('input[name="checkout_proceed_with_multi_addresses_status"]');
+          
+          if (processCheckoutStatus) {
+
+            if (processCheckoutStatus.value == 5 && delivery_preference.value == 'multiple_address' && checkout_proceed_with_multi_addresses_status.value == 'only_verified') {
+              await process_to_checkout_ajax_part(form, 0);
+            }else{
+
+              await process_to_checkout(form, html, 0);
+            }
+          }
+          
       });
   });
   
-  async function process_to_checkout(html, status) { // Ensure async function
-      try {
-          const result = await Swal.fire({
-              title: '',
-              html: html,
-              icon: 'question',
-              showCancelButton: true,
-              confirmButtonColor: '#3085d6',
-              cancelButtonColor: '#d33',
-              confirmButtonText: 'Yes, Proceed',
-              cancelButtonText: 'No, I Want to Add/Edit Records.',
-              allowOutsideClick: false,
-              allowEscapeKey: false,
-              allowEnterKey: false,
-              reverseButtons: false,
-              width: '650px',
-          });
-  
-          if (!result.isConfirmed) return; // Exit if user cancels
-  
-          if (typeof process_group_popup === "function") {
-              process_group_popup(); // Ensure the function exists
-          }
-  
-          const form = document.querySelector("#multiStepForm");
-          if (!form) {
-              Swal.fire("Error", "Form not found!", "error");
-              return;
-          }
-  
-          const formData = new FormData(form);
-          formData.append("action", "orthoney_process_to_checkout_ajax");
-          formData.append("currentStep", typeof currentStep !== "undefined" ? currentStep : "");
-          formData.append("security", oam_ajax.nonce);
-          formData.append("status", status); // Add status to distinguish the action
-  
-          const response = await fetch(oam_ajax.ajax_url, {
-              method: "POST",
-              body: formData,
-          });
-  
-          if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-  
-          const responseData = await response.json();
-  
-          if (!responseData.success) {
-              Swal.fire("Error", responseData.message || "An error occurred", "error");
-              return;
-          }
-  
-          Swal.fire({
-              title: "Verification is successful!",
-              icon: 'success',
-              timer: 2000,
-              showConfirmButton: false,
-              timerProgressBar: true,
-              allowOutsideClick: false,
-              allowEscapeKey: false,
-              allowEnterKey: false,
-          });
-  
-          setTimeout(() => window.location.reload(), 1000);
-  
-      } catch (error) {
-          console.error("AJAX error:", error);
-          Swal.fire("Error", `Request failed: ${error.message || "Unknown error"}`, "error");
-      }
-  }
+  async function process_to_checkout(form, html, status) { 
+    try {
+        const result = await Swal.fire({
+            title: '',
+            html: html,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Proceed',
+            cancelButtonText: 'No, I Want to Add/Edit Records.',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+            reverseButtons: false,
+            width: '650px',
+        });
+
+        if (!result.isConfirmed) return; // Exit if user cancels
+
+        if (typeof process_group_popup === "function") {
+            process_group_popup(); // Ensure the function exists
+        }
+
+        
+        if (!form) {
+            Swal.fire("Error", "Form not found!", "error");
+            return;
+        }
+
+        await process_to_checkout_ajax_part(form, status);
+
+    } catch (error) {
+        console.error("AJAX error:", error);
+        Swal.fire("Error", `Request failed: ${error.message || "Unknown error"}`, "error");
+    }
+}
+
+  async function process_to_checkout_ajax_part(form, status) { // Ensure async
+    try {
+        const formData = new FormData(form);
+        formData.append("action", "orthoney_process_to_checkout_ajax");
+        formData.append("currentStep", typeof currentStep !== "undefined" ? currentStep : "");
+        formData.append("security", oam_ajax.nonce);
+        formData.append("status", status); // Use the passed status
+
+        const response = await fetch(oam_ajax.ajax_url, {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const responseData = await response.json();
+
+        if (!responseData.success) {
+            Swal.fire("Error", responseData.message || "An error occurred", "error");
+            return;
+        }
+
+        Swal.fire({
+            title: "Verification is successful!",
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false,
+            timerProgressBar: true,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+        });
+
+        setTimeout(() => {
+            window.location.href = responseData.data.checkout_url;
+        }, 1500);
+        
+    } catch (error) {
+        console.error("Fetch error:", error);
+        Swal.fire("Error", `Request failed: ${error.message || "Unknown error"}`, "error");
+    }
+}
   
 
 
@@ -925,6 +967,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (result === true) {
       const processCheckoutStatus = document.querySelector('input[name="processCheckoutStatus"]');
       const delivery_preference = document.querySelector('input[name="delivery_preference"]');
+      
       if (processCheckoutStatus) {
         if (processCheckoutStatus.value == 5 && delivery_preference.value == 'single_address') {
           let button = document.querySelector("#multiStepForm button#singleAddressCheckout");
@@ -932,6 +975,7 @@ document.addEventListener('DOMContentLoaded', function() {
             button.click();
           }
         }
+
       }
     }
 
@@ -961,6 +1005,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 function addRecipientManuallyPopup(reload){
+
+  const processCheckoutStatus = document.querySelector('input[name="processCheckoutStatus"]');
+  const delivery_preference = document.querySelector('input[name="delivery_preference"]:checked');
+  const checkout_proceed_with_multi_addresses_status = document.querySelector('input[name="checkout_proceed_with_multi_addresses_status"]');
+
+  if (processCheckoutStatus && checkout_proceed_with_multi_addresses_status) {
+
+    if (processCheckoutStatus.value == 5 && delivery_preference.value == 'multiple_address' && checkout_proceed_with_multi_addresses_status.value == 'only_verified') {
+      let button = document.querySelector("#multiStepForm button#checkout_proceed_with_only_verified_addresses");
+      if (button) {
+        button.click();
+      }
+    }
+
+  }
 
   if(reload == 1){
     setTimeout(function() {

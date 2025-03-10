@@ -48,11 +48,9 @@ add_action('woocommerce_before_calculate_totals', function($cart) {
     }
 
     foreach ($cart->get_cart() as $cart_item) {
-        if (isset($cart_item['custom_data']['new_price'])) {
-            $cart_item['data']->set_price(floatval($cart_item['custom_data']['new_price']));
+        if (isset($cart_item['new_price'])) {
+            $cart_item['data']->set_price(floatval($cart_item['new_price']));
         }
-       
-
         if (isset($cart_item['new_price'])) {
             $cart_item['data']->set_price($cart_item['new_price']);
         }
@@ -64,12 +62,8 @@ add_filter('woocommerce_add_cart_item_data', function ($cart_item_data, $product
     if (isset($cart_item_data['new_price'])) {
         $cart_item_data['unique_key'] = uniqid('custom_', true);
     }
-    
-    if (isset($cart_item['custom_data']['single_order'])) {
-        $cart_item_data['single_order'] = $cart_item['custom_data']['single_order'];
-    }
-    if (isset($cart_item['custom_data']['process_id'])) {
-        $cart_item_data['process_id'] = floatval($cart_item['custom_data']['process_id']);
+    if (isset($cart_item_data['single_order'])) {
+        $cart_item_data['single_order'] =  $_POST['single_order'];
     }
     return $cart_item_data;
 }, 10, 3);
@@ -80,9 +74,7 @@ add_filter('woocommerce_get_cart_item_from_session', function ($cart_item, $valu
     if (isset($values['new_price'])) {
         $cart_item['new_price'] = $values['new_price'];
     }
-    if (isset($values['single_order'])) {
-        $cart_item['single_order'] = $values['single_order'];
-    }
+    
     if (isset($values['full_name'])) {
         $cart_item['full_name'] = $values['full_name'];
     }
@@ -139,8 +131,6 @@ function display_cart_item_custom_meta($item_data, $cart_item) {
 add_filter('woocommerce_get_item_data', 'display_cart_item_custom_meta', 10, 2);
 
 
-/////////////////////////////////////////////////////////////////////////////
-
 
 
 
@@ -172,13 +162,6 @@ function handle_custom_order_form_submission() {
             wp_redirect(wc_get_checkout_url());
             exit;
         }
-        if (isset($_POST['order_type'])) {
-            if ($order_type !== 'single-order') {
-                wp_redirect(wc_get_checkout_url());
-                exit;
-            }
-
-        }
     }
 }
 
@@ -186,7 +169,6 @@ function handle_custom_order_form_submission() {
 add_action('woocommerce_checkout_create_order_line_item', 'save_affiliate_info_on_order_item', 10, 4);
 
 function save_affiliate_info_on_order_item($item, $cart_item_key, $values, $order) {
-
     // Check if affiliate information is available in the session
     $affiliate = WC()->session->get('affiliate');
     
@@ -200,13 +182,8 @@ function save_affiliate_info_on_order_item($item, $cart_item_key, $values, $orde
             $item->add_meta_data('Affiliate', $affiliates[0]->name, true);
         }
     }
-
-    if (isset($values['custom_data']['single_order'])) {
-        $item->add_meta_data('single_order', $values['custom_data']['single_order'], true);
-    }
-
-    if (isset($values['custom_data']['process_id'])) {
-        $item->add_meta_data('process_id', $values['custom_data']['process_id'], true);
+    if (isset($values['single_order'])) {
+        $item->add_meta_data('Single Order', $values['single_order'], true);
     }
 
     if (isset($values['full_name'])) {
@@ -232,6 +209,19 @@ function save_affiliate_info_on_order_item($item, $cart_item_key, $values, $orde
     }
 }
 
+add_action('woocommerce_thankyou', 'display_affiliate_on_thank_you_page', 10, 1);
+
+function display_affiliate_on_thank_you_page($order_id) {
+    $order = wc_get_order($order_id);
+
+    // Get the affiliate info from the order meta
+    $affiliate = $order->get_meta('Affiliate', true);
+
+
+    if ($affiliate) {
+        echo '<p><strong>Affiliate 00:</strong> ' . esc_html(OAM_Helper::getAffiliateList($affiliate)) . '</p>';
+    }
+}
 
 add_action('woocommerce_admin_order_data_after_billing_address', 'display_affiliate_in_backend', 10, 1);
 
@@ -246,46 +236,6 @@ function display_affiliate_in_backend($order) {
 
 
 //
-add_action('woocommerce_thankyou', 'process_order_suborders', 10, 1);
-
-function process_order_suborders($order_id) {
-    if (!$order_id) {
-        return;
-    }
-
-    global $wpdb;
-    
-    $order_process_table = OAM_Helper::$order_process_table;
-
-    $main_order = wc_get_order($order_id);
-    
-    $order_items = $main_order->get_items();
-
-    $single_order  = 0;
-    foreach ($order_items as $item_id => $item) {
-        $new_price = $item->get_meta('New Price', true);
-        $single_order = $item->get_meta('Single Order', true);
-        $process_id = $item->get_meta('Process ID', true);
-
-        error_log("Order ID: $order_id | Item ID: $item_id | New Price: $new_price | Single Order: $single_order | Process ID: $process_id");
-    }
-
-    $updateData = [
-        'order_type'  => $single_order == 1 ? 'single-order' : 'multi-recipient-order',
-        'order_id'  => $order_id,
-    ];
-
-    $wpdb->update(
-        $order_process_table,
-        $updateData,
-        ['id' => $process_id]
-    );
-    if($single_order == 0){
-        create_sub_orders($order_id);
-    }
-
-}
-
 function create_sub_orders($main_order_id) {
     $main_order = wc_get_order($main_order_id);
 
@@ -395,3 +345,47 @@ function create_sub_orders($main_order_id) {
     }
 }
 
+add_action('woocommerce_thankyou', 'process_order_suborders', 10, 1);
+
+function process_order_suborders($order_id) {
+    if (!$order_id) {
+        return;
+    }
+
+    $main_order = wc_get_order($order_id);
+
+    if (!$main_order) {
+        error_log("Order not found: " . $order_id);
+        return;
+    }
+
+    // Debugging: Log order ID
+    error_log("Processing order ID: " . $order_id);
+
+    $order_items = $main_order->get_items();
+
+    foreach ($order_items as $item_id => $item) {
+        $new_price = $item->get_meta('New Price', true);
+        $single_order = $item->get_meta('Single Order', true);
+        $unique_key = $item->get_meta('Unique Key', true);
+
+        // Log values
+        error_log("Item ID: $item_id | New Price: $new_price | Single Order: $single_order | Unique Key: $unique_key");
+    }
+
+    // Call your sub-order creation function if needed
+    // create_sub_orders($order_id);
+}
+
+
+
+
+// add_action('init', 'get_woocommerce_cart');
+// function get_woocommerce_cart() {
+//     if (class_exists('WooCommerce') && WC()->cart) {
+//         WC()->cart->calculate_totals(); // Ensure totals are updated
+//         echo "<pre>";
+//         print_r(print_r(WC()->cart->get_cart(), true)); // Debugging: Log cart contents
+//         echo "</pre>";
+//     }
+// }

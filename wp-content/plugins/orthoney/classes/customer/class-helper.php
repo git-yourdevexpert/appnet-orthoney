@@ -476,33 +476,32 @@ class OAM_Helper{
         return $states_html;
     }
 
-    public static function get_recipient_form(){
-        ?>
-       <div id="recipient-manage-form" class="">
-            <form method="POST" enctype="multipart/form-data">
+    public static function get_recipient_form(){ ?>
+        <div id="recipient-manage-form" class="site-form ">
+            <form method="POST" class="grid-two-col" enctype="multipart/form-data">
                 <input type="hidden" id="pid" name="pid" value="<?php echo isset($_GET['pid']) ? $_GET['pid'] : '' ?>">
                 <input type="hidden" id="recipient_id" name="recipient_id" value="">
-                <div>
+                <div class="form-row gfield--width-half">
                     <label for="full_name">Full Name:</label>
                     <input type="text" id="full_name" name="full_name" required>
                 </div>
-                <div>
+                <div class="form-row gfield--width-half">
                     <label for="company_name">Company Name:</label>
                     <input type="text" id="company_name" name="company_name" required>
                 </div>
-                <div>
+                <div class="form-row gfield--width-half">
                     <label for="address_1">Mailing Address:</label>
                     <input type="text" id="address_1" name="address_1" required>
                 </div>
-                <div>
+                <div class="form-row gfield--width-half">
                     <label for="address_2">Suite/Apt#:</label>
                     <input type="text" id="address_2" name="address_2">
                 </div>
-                <div>
+                <div class="form-row gfield--width-half">
                     <label for="city">City:</label>
                     <input type="text" id="city" name="city" required>
                 </div>
-                <div>
+                <div class="form-row gfield--width-half">
                     <label for="state">State:</label>
                     <select id="state" name="state" required>
                         <?php
@@ -510,33 +509,28 @@ class OAM_Helper{
                         ?>
                     </select>
                 </div>
-
-                <div>
+                <div class="form-row gfield--width-half">
                     <label for="zipcode">Zipcode:</label>
                     <input type="text" id="zipcode" name="zipcode" required>
                 </div>
-                <div>
+                <div class="form-row gfield--width-half">
                     <label for="quantity">Quantity:</label>
                     <div class="quantity">
                         <button class="minus" aria-label="Decrease">&minus;</button>
                         <input type="number" class="input-box"  min="1"  value="1" max="10000" required  id="quantity" name="quantity"  >
                         <button class="plus" aria-label="Increase">&plus;</button>
                     </div>
-                    
                 </div>
-
-                <div class="textarea-div">
+                <div class="textarea-div form-row  gfield--width-full">
                     <label for="greeting">Add a Greeting:</label>
                     <textarea id="greeting" name="greeting"></textarea>
                     <div class="char-counter"><span>250</span> characters remaining</div>
                 </div> 
-
-                <div>
+                <div class="footer-btn gfield--width-full">
                     <button type="submit">Submit</button>
                 </div>
             </form>
         </div>
-
         <?php
     }
 
@@ -552,7 +546,7 @@ class OAM_Helper{
     
     public static function manage_recipient_popup(){
         ?>
-        <div id="recipient-manage-popup" class="lity-hide black-mask full-popup">
+        <div id="recipient-manage-popup" class="lity-hide black-mask full-popup popup-show">
             <h2>Recipient Details</h2>
             <?php 
             echo self::get_recipient_form();
