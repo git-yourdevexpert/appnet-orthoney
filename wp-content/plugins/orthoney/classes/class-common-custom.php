@@ -26,22 +26,6 @@ class OAM_COMMON_Custom {
             $logged_in_user = wp_get_current_user();
         }
 
-        // Role-based logging
-        if (in_array('administrator', $roles)) {
-            if($logged_in_user != 0 ){
-                update_user_meta($user_id, 'email_verified', 'true');
-            }
-        } elseif (in_array('yith_affiliate', $roles)) {
-            if($logged_in_user != 0 ){
-                update_user_meta($user_id, 'email_verified', 'true');
-                update_user_meta($user_id, $logged_in_user, 'true');
-            }
-        } elseif (in_array('affiliate_team_member', $roles)) {
-            if($logged_in_user != 0 ){
-                // update_user_meta($user_id, 'email_verified', 'true');
-                update_user_meta($user_id, $logged_in_user, 'true');
-            }
-        }
     }
     
     public static function get_user_role_by_id($user_id) {

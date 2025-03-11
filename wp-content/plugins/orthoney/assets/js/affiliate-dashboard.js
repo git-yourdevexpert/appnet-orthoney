@@ -292,3 +292,44 @@ document.addEventListener('click', function (event) {
     }
 });
 //Edit my profile
+
+
+//Change Affiliate Admin user
+// TODO: Add Sweet Alert Pending
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("changeRoleBtn").addEventListener("click", function() {
+        var userDropdown = document.getElementById("userDropdown");
+        var selectedUserId = userDropdown.value;
+
+        console.log("Selected User ID:", selectedUserId);
+
+        if (!selectedUserId) {
+            alert("Please select a user.");
+            return;
+        }
+
+        let formData = new FormData();
+        formData.append("action", "change_user_role_logout"); // WordPress AJAX action
+        formData.append("security", oam_ajax.nonce);  // nonce.
+        formData.append("selected_user_id", selectedUserId);
+
+        fetch(oam_ajax.ajax_url, {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json()) // Directly parse JSON
+        .then(data => {
+            console.log("Parsed JSON:", data);
+            if (data.success) {
+                alert(data?.message || "Role changed...");
+                window.location.reload();
+            } else {
+                alert(data.data?.message || "Error occurred!");
+            }
+        })
+        .catch(error => {
+            console.error("AJAX Error:", error);
+            alert("Something went wrong. Please try again.");
+        });
+    });
+});

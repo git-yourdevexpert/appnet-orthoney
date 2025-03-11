@@ -57,11 +57,21 @@ class OAM_AFFILIATE_Shortcode
                 if ($endpoint === 'my-profile' && file_exists($template_path . 'my-profile.php')) {
                     include_once $template_path . 'my-profile.php';
                 } elseif ($endpoint === 'user-list' && file_exists($template_path . 'user-list.php')) {
-                    include_once $template_path . 'user-list.php';
+                    if(in_array( 'affiliate_team_member', $user_roles)){
+                        echo "You have not access for this page";
+                        return false;
+                    }else{
+                        include_once $template_path . 'user-list.php';
+                    }
                 } elseif ($endpoint === 'order-list' && file_exists($template_path . 'order-list.php')) {
                     include_once $template_path . 'order-list.php';
                 } elseif ($endpoint === 'change-admin' && file_exists($template_path . 'change-admin.php')) {
-                    include_once $template_path . 'change-admin.php';
+                    if(in_array( 'affiliate_team_member', $user_roles)){
+                        echo "You have not access for this page";
+                        return false;
+                    }else{
+                        include_once $template_path . 'change-admin.php';
+                    }
                 } else {
                     include_once $template_path . 'dashboard.php';
                 }

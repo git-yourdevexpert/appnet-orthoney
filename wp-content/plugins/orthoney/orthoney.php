@@ -39,7 +39,7 @@ require_once OH_PLUGIN_DIR_PATH . 'classes/class-wc.php';
 require_once OH_PLUGIN_DIR_PATH . 'classes/class-hooks.php';
 require_once OH_PLUGIN_DIR_PATH . 'classes/class-common-custom.php';
 require_once OH_PLUGIN_DIR_PATH . 'classes/class-user-role.php';
-require_once OH_PLUGIN_DIR_PATH . 'classes/class-login-registration.php';
+// require_once OH_PLUGIN_DIR_PATH . 'classes/class-login-registration.php';
 
 
 // YITH Affilate Plugin Custmization

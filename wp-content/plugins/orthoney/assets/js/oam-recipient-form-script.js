@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         Swal.fire({
-            title: "Verification is successful!",
+            title: "Please wait while we process your order properly.",
             icon: 'success',
             timer: 2000,
             showConfirmButton: false,

@@ -59,7 +59,7 @@ class OAM_YITH_Affilate {
         );
     
         update_user_meta($token, 'associated_affiliate_id', $token);
-        update_user_meta($token, 'email_verified', 'true');
+        
 
         return $new_token;
     }

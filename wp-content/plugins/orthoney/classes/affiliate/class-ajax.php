@@ -24,6 +24,82 @@ class OAM_AFFILIATE_Ajax{
         // Delete Affiliate user 
         add_action( 'wp_ajax_deleted_affiliate_team_member', array( $this, 'deleted_affiliate_team_member_handler' ) );
 
+        // Change Affiliate Admin user
+        add_action('wp_ajax_change_user_role_logout', array( $this, 'change_user_role_logout_handler' ));
+
+    }
+    // Change Affilate Admin user
+    public function change_user_role_logout_handler() {
+        check_ajax_referer('oam_nonce', 'security'); // Security check
+
+        $current_user_id = get_current_user_id();
+        $selected_user_id = isset($_POST['selected_user_id']) ? intval($_POST['selected_user_id']) : 0;
+
+        if ($selected_user_id <= 0 || $current_user_id <= 0) {
+            wp_send_json_error(['message' => 'Invalid user ID.']);
+        }
+
+        $selected_user = new WP_User($selected_user_id);
+        $current_user = new WP_User($current_user_id);
+
+        if ($selected_user && $current_user) {
+
+            // Backup existing roles
+            $selected_user_roles = $selected_user->roles;
+            $current_user_roles = $current_user->roles;
+
+            // Swap roles in a single loop
+            $all_roles = array_unique(array_merge($selected_user_roles, $current_user_roles));
+            
+            foreach ($all_roles as $role) {
+                if (in_array($role, $selected_user_roles)) {
+                    $selected_user->remove_role($role);
+                    $current_user->add_role($role);
+                }
+                if (in_array($role, $current_user_roles)) {
+                    $current_user->remove_role($role);
+                    $selected_user->add_role($role);
+                }
+            }
+
+            $afficated_id = $current_user_id; // Replace with actual value
+            $args = array(
+                'meta_key'   => 'associated_affiliate_id',
+                'meta_value' => $afficated_id,
+                'number'     => -1, // Retrieve all matching users
+            );
+            $users = get_users($args);
+            if (!empty($users)) {
+                foreach ($users as $user) {
+                    //echo 'User ID: ' . $user->ID . ' - Username: ' . $user->user_login . '<br>';
+                    update_user_meta($user->ID, 'associated_affiliate_id', $selected_user_id);
+                }
+            }
+
+            global $wpdb;
+            $yith_affiliate_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+
+            if ($wpdb->get_var("SHOW TABLES LIKE '{$yith_affiliate_table}'")) {
+                $wpdb->query($wpdb->prepare(
+                    "UPDATE {$yith_affiliate_table} SET user_id = %d WHERE user_id = %d",
+                    $selected_user_id, $current_user_id
+                ));
+            }
+
+            // Email Notification
+            $to = $selected_user->user_email;
+            $subject = 'Your Role Has Been Changed';
+            $message = "Hello " . $selected_user->display_name . ",\n\nYour user role has been updated. Please log in to check your new permissions.\n\nThank you.";
+            $headers = ['Content-Type: text/plain; charset=UTF-8'];
+
+            wp_mail($to, $subject, $message, $headers);
+
+            wp_logout();
+
+            wp_send_json_success(['message' => 'Role changed successfully, logging out...']);
+        } else {
+            wp_send_json_error(['message' => 'User not found.']);
+        }
     }
 
     // Affiliate Profile function
@@ -102,9 +178,10 @@ class OAM_AFFILIATE_Ajax{
             // Assign role
             $user = new WP_User($user_id);
             $user->set_role('affiliate_team_member');
+            $user->add_role('customer');
 
             // Email verification setup
-            update_user_meta($user_id, 'email_verified', 'false');
+            
             $verification_token = wp_generate_password(32, false);
             update_user_meta($user_id, 'email_verification_token', $verification_token);
 
@@ -139,7 +216,6 @@ class OAM_AFFILIATE_Ajax{
         update_user_meta($user_id, 'billing_phone', $phone);
         update_user_meta($user_id, 'shipping_phone', $phone);
         update_user_meta($user_id, 'user_field_type', $affiliate_type);
-        update_user_meta($user_id, 'email_verified', 'true');
         update_user_meta($user_id, 'associated_affiliate_id', $current_user);
 
         // Send success response

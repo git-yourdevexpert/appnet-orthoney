@@ -160,7 +160,7 @@ class OAM_Ajax{
                     $order_key = $order->get_order_key();
                     $order_url = wc_get_endpoint_url('view-order', $processResult->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order_key;
                     wp_send_json_success([
-                        'message' => 'Address is Verify 1',
+                        'message' => 'Address is Verify',
                         'checkout_url' => $order_url
                     ]);
                 }
@@ -183,7 +183,7 @@ class OAM_Ajax{
         $checkout_url = wc_get_checkout_url();
 
         wp_send_json_success([
-            'message' => 'Address is Verify 11',
+            'message' => 'Address is Verify',
             'checkout_url' => $checkout_url
         ]);
 
