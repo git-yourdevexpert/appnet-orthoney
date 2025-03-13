@@ -42,9 +42,17 @@ class OAM_Scripts
         );
 
         wp_enqueue_script(
+            'oam-frontend-script',
+            OH_PLUGIN_DIR_URL. 'assets/js/oam-frontend-script.js',
+            array( 'sweetalert2', 'lity-js' ), 
+            time(),          
+            true 
+        );
+
+        wp_enqueue_script(
             'oam-recipient-form-script',
             OH_PLUGIN_DIR_URL. 'assets/js/oam-recipient-form-script.js',
-            array( 'sweetalert2', 'lity-js' ), 
+            array( 'oam-frontend-script' ), 
             time(),          
             true 
         );
@@ -52,18 +60,12 @@ class OAM_Scripts
         wp_enqueue_script(
             'oam-dev-frontend-script',
             OH_PLUGIN_DIR_URL. 'assets/js/oam-dev-frontend-script.js',
-            array( 'oam-recipient-form-script'), 
+            array( 'oam-frontend-script'), 
              time(),          
             true 
         );
 
-        wp_enqueue_script(
-            'oam-frontend-script',
-            OH_PLUGIN_DIR_URL. 'assets/js/oam-frontend-script.js',
-            array( 'oam-recipient-form-script' ), 
-            time(),          
-            true 
-        );
+       
         
         wp_localize_script(
             'oam-frontend-script', 

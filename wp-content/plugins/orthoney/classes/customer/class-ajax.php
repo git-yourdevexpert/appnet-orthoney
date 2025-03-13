@@ -65,6 +65,9 @@ class OAM_Ajax{
         WC()->cart->empty_cart();
     
         foreach ($data as $customer) {
+            $recipient_id    = sanitize_text_field($customer['recipient_id']);
+            $process_id    = sanitize_text_field($customer['process_id']);
+            $order_type    = sanitize_text_field('multi-recipient-order');
             $full_name    = sanitize_text_field($customer['full_name']);
             $company_name = sanitize_text_field($customer['company_name']);
             $address_1    = sanitize_text_field($customer['address_1']);
@@ -83,6 +86,9 @@ class OAM_Ajax{
             // Add product to cart with custom data
             WC()->cart->add_to_cart($product_id, $quantity, 0, [], [
                 'new_price'    => $custom_price, // Custom price
+                'process_id'   => $process_id,
+                'order_type'   => $order_type,
+                'recipient_id' => $recipient_id,
                 'full_name'    => $full_name,
                 'company_name' => $company_name,
                 'address'      => $full_address,
@@ -97,95 +103,109 @@ class OAM_Ajax{
     }
     
     
-    
-    
     public function orthoney_process_to_checkout_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
     
-        $product_id = 76;
+        $product_id = OAM_COMMON_Custom::get_product_id();
     
-        $status = isset($_POST['status']) ? $_POST['status'] : 1;
-        $pid = isset($_POST['pid']) ? intval($_POST['pid']) : 1; 
+        $status      = isset($_POST['status']) ? $_POST['status'] : 1;
+        $pid         = isset($_POST['pid']) ? intval($_POST['pid']) : 1; 
         $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
         $stepData    = $_POST ?? [];
-        $user_id = get_current_user_id(); 
+        $user_id     = get_current_user_id(); 
     
         $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
         $order_process_table = OAM_Helper::$order_process_table;
     
-        // Fetch recipients
-        $recipients = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT * FROM {$order_process_recipient_table} 
-                 WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d",
-                $user_id, $pid, 1, 1
-            )
-        );
+        $recipients = [];
+        if($status == 1){
+            $recipients = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT * FROM {$order_process_recipient_table} 
+                    WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d AND address_verified = %d",
+                    $user_id, $pid, 1, 1, 1
+                )
+            );
+        }else{
+            $recipients = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT * FROM {$order_process_recipient_table} 
+                    WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d",
+                    $user_id, $pid, 1, 1
+                )
+            );
+        }
     
         $address_list = [];
     
-        foreach ($recipients as $recipient) {
-            
-            $address_list[] = [
-                "recipient_id"   => $recipient->id,
-                "full_name"     => trim($recipient->full_name) ?? '',
-                "company_name"   => trim($recipient->company_name) ?? '',
-                "address_1"      => trim($recipient->address_1) ?? '',
-                "address_2"      => trim($recipient->address_2) ?? '',
-                "city"           => trim($recipient->city) ?? '',
-                "state"          => trim($recipient->state) ?? '',
-                "zipcode"        => trim($recipient->zipcode) ?? '',
-                "quantity"       => $recipient->quantity ?? 1,
-            ];
-        }
-    
-        // Add items to the cart
-        self::add_items_to_cart($address_list, $product_id);
-    
-        $processQuery = $wpdb->prepare("
-        SELECT order_id
-        FROM {$order_process_table}
-        WHERE user_id = %d 
-        AND id = %d 
-        ", $user_id, $pid);
-
-        $processResult = $wpdb->get_row($processQuery);
-
+        if(!empty( $recipients)){
+            foreach ($recipients as $recipient) {
+                $address_list[] = [
+                    "recipient_id"   => $recipient->id,
+                    "process_id"     => trim($pid) ?? '',
+                    "full_name"      => trim($recipient->full_name) ?? '',
+                    "company_name"   => trim($recipient->company_name) ?? '',
+                    "address_1"      => trim($recipient->address_1) ?? '',
+                    "address_2"      => trim($recipient->address_2) ?? '',
+                    "city"           => trim($recipient->city) ?? '',
+                    "state"          => trim($recipient->state) ?? '',
+                    "zipcode"        => trim($recipient->zipcode) ?? '',
+                    "quantity"       => $recipient->quantity ?? 1,
+                ];
+            }
         
-        if(!empty($processResult)){
-            if($processResult->order_id != 0){
-                $order = wc_get_order( $processResult->order_id);
-                if ($order) {
-                    $order_key = $order->get_order_key();
-                    $order_url = wc_get_endpoint_url('view-order', $processResult->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order_key;
-                    wp_send_json_success([
-                        'message' => 'Address is Verify',
-                        'checkout_url' => $order_url
-                    ]);
+            // Add items to the cart
+            self::add_items_to_cart($address_list, $product_id);
+        
+            $processQuery = $wpdb->prepare("
+            SELECT order_id
+            FROM {$order_process_table}
+            WHERE user_id = %d 
+            AND id = %d 
+            ", $user_id, $pid);
+
+            $processResult = $wpdb->get_row($processQuery);
+            
+            if(!empty($processResult)){
+                if($processResult->order_id != 0){
+                    $order = wc_get_order( $processResult->order_id);
+                    if ($order) {
+                        $order_key = $order->get_order_key();
+                        $order_url = wc_get_endpoint_url('view-order', $processResult->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order_key;
+                        wp_send_json_success([
+                            'message' => 'Please wait, the order is in progress.',
+                            'checkout_url' => $order_url
+                        ]);
+                    }
                 }
             }
+
+            $updateData = [
+                'data' => wp_json_encode($stepData),
+                'order_type'  => sanitize_text_field('multi-recipient-order'),
+                'step' => sanitize_text_field($currentStep),
+            ];
+
+            $wpdb->update(
+                $order_process_table,
+                $updateData,
+                ['id' => $pid]
+            );
+
+            // Get checkout page URL
+            $checkout_url = wc_get_checkout_url();
+
+            wp_send_json_success([
+            'message' => 'Please wait, the order is in progress.',
+                'checkout_url' => $checkout_url
+            ]);
+        }else{
+            wp_send_json_error([
+                'message' => 'Failed to process the order. Please try again.',
+                'checkout_url' => $checkout_url
+            ]);
         }
-
-        $updateData = [
-            'data' => wp_json_encode($stepData),
-            'order_type'  => sanitize_text_field('multi-recipient-order'),
-            'step' => sanitize_text_field($currentStep),
-        ];
-
-        $wpdb->update(
-            $order_process_table,
-            $updateData,
-            ['id' => $pid]
-        );
-
-        // Get checkout page URL
-        $checkout_url = wc_get_checkout_url();
-
-        wp_send_json_success([
-            'message' => 'Address is Verify',
-            'checkout_url' => $checkout_url
-        ]);
 
     }
     
@@ -687,7 +707,7 @@ class OAM_Ajax{
                 if (class_exists('WC_Cart')) {
                     WC()->cart->empty_cart(); // First, clear the cart
                     
-                    $product_id = 76;
+                    $product_id = OAM_COMMON_Custom::get_product_id();
 
                     $custom_price = 50; // Set custom price per unit
 
@@ -863,10 +883,8 @@ class OAM_Ajax{
    
     public function orthoney_get_csv_recipient_ajax_handler($userId = '', $processID = '') {
         
-            
         $exclude_ids = $process_id = $customGreeting = $addressPartsHtml = $successHtml = $newDataHtml = $failHtml = $duplicateHtml = '';
         $successData = $newData = $failData = $duplicateGroups = [];
-
 
         if($userId != ''){
             $user = $userId;
@@ -885,9 +903,9 @@ class OAM_Ajax{
         if($user != 0 OR $user != ''){
             global $wpdb;
 
-            $tableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Verified</th><th>Custom Greeting</th><th style="width: 110px;">Action</th></tr></thead><tbody>';
+            $tableStart ='<table><thead><tr><th>Full Name</th><th>Address</th><th>Quantity</th><th>Verified</th><th>Custom Greeting</th><th>Action</th></tr></thead><tbody>';
 
-            $duplicateTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Verified</th><th>Custom Greeting</th><th>Delete Recipient</th><th style="width: 110px;">Action</th></tr></thead><tbody>';
+            $duplicateTableStart ='<table><thead><tr><th>Full Name</th><th>Address</th><th>Quantity</th><th>Verified</th><th>Custom Greeting</th><th>Action</th></tr></thead><tbody>';
             
             $tableEnd = '</tbody></table>';
            
@@ -933,7 +951,8 @@ class OAM_Ajax{
             foreach ($allRecords as $record) {
                 // Create unique key for comparison
                 $key = $record->full_name . '|' . 
-                       $record->address_1 . '|' . 
+                        str_replace($record->address_1, ',' , '' ). ' ' . str_replace($record->address_2 , ',' , '') . '|' . 
+                       $record->city . '|' . 
                        $record->state . '|' . 
                        $record->zipcode;
                 
@@ -964,38 +983,21 @@ class OAM_Ajax{
                 }
             }
 
-            // Generate new data HTML
-            if(!empty($newData)){
-                $newDataHtml .= '<div><h4>'.count($newData).' new Recipient(s)!</h4></div>';
-                $newDataHtml .= OAM_Helper::get_table_recipient_content($newData, $customGreeting);
-                
-            }
-    
-            // Generate Success HTML
-            if(!empty($successData)){
-                $successHtml .= '<div><h4>'.count($successData).' Recipient Successfully!</h4></div>';
-                $successHtml .=  OAM_Helper::get_table_recipient_content($successData , $customGreeting);
-            }
-    
-            // Generate Fail HTML
-            if(!empty($failData)){
-                $failHtml .= '<div><h4>'.count($failData).' Recipient failed!</h4></div>';
-                $failHtml .= OAM_Helper::get_table_recipient_content($failData , $customGreeting);
-            }
+           
     
             // Generate Duplicate HTML - now showing grouped duplicates
+            $totalDuplicates = 0;
             if(!empty($duplicateGroups)){
-                $totalDuplicates = 0;
                 foreach ($duplicateGroups as $group) {
                     $totalDuplicates += count($group);
                 }
 
                 $bulkMargeButtonHtml = '';
                 if($process_id != ''){
-                    $bulkMargeButtonHtml = '<button id="bulkMargeRecipient" class="next w-btn us-btn-style_1">Bulk Marge Recipient</button>';
+                    $bulkMargeButtonHtml = '<button id="bulkMargeRecipient" class="w-btn us-btn-style_1 outline-btn">Keep 1 Entry and Delete Other Duplicate Entries</button>';
                 }
                 
-                $duplicateHtml .= '<div><h4>'.$totalDuplicates.' Duplicate entries were found for '.count($duplicateGroups).' Recipient!</h4>'.$bulkMargeButtonHtml.'</div>';
+                $duplicateHtml .= '<div class="heading-title"><div><h4 class="table-title">Duplicate Recipient</h4><h5 class="sub-heading"> '.$totalDuplicates.' Duplicate entries were found for '.count($duplicateGroups).' Recipient!</h5> </div>'.$bulkMargeButtonHtml.'</div>';
                 
                 foreach ($duplicateGroups as $groupIndex => $group) {
                     $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="'.($groupIndex + 1).'"><td colspan="12"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
@@ -1003,7 +1005,28 @@ class OAM_Ajax{
                     
                 }
             }
+
+            $totalCount = count($successData) + count($failData) + $totalDuplicates + count($newData);
+            // Generate new data HTML
+            if(!empty($newData)){
+                $newDataHtml .= '<div class="heading-title"><h4 class="table-title">New Recipients</h4></div>';
+                $newDataHtml .= OAM_Helper::get_table_recipient_content($newData, $customGreeting);
+                
+            }
     
+            // Generate Success HTML
+            if(!empty($successData)){
+                $successHtml .= '<div class="heading-title"><div><h4 class="table-title">Verified Recipients</h4><h5 class="sub-heading"> Out of '.$totalCount.' Recipients, '.count($successData).' Recipients have been verified</h5></div></div>';
+                $successHtml .=  OAM_Helper::get_table_recipient_content($successData , $customGreeting);
+            }
+            
+            // Generate Fail HTML
+            if(!empty($failData)){
+                // $failHtml .= '<div><h3>Failed to Add Recipeints</h3><h4>'.count($failData).' Recipient failed!</h4></div>';
+                $failHtml .= OAM_Helper::get_table_recipient_content($failData , $customGreeting);
+            }
+    
+           
             // Wrap tables with headers
             if($newDataHtml != ''){
                 $newDataHtml = $tableStart.$newDataHtml.$tableEnd;
@@ -1012,7 +1035,7 @@ class OAM_Ajax{
                 $successHtml = $tableStart.$successHtml.$tableEnd;
             }
             if($failHtml != ''){
-                $failHtml = '<button id="download-failed-recipient-csv" class="w-btn us-btn-style_1">Download CSV for the Fail Recipient</button>'.$tableStart.$failHtml.$tableEnd;
+                $failHtml = '<div class="download-csv"><div class="heading-title"><div><h4 class="table-title">Failed to Add Recipeints</h4><h5 class="sub-heading">Out of '.$totalCount.' Recipients, '.count($failData).' Recipients have Failed to Upload</h5><p>To fix the failed data, edit the row and make the necessary changes OR upload a new CSV for failed recipients.</p></div></div> <div><p>Failed records, along with their respective reasons, will be stored in the database for future reference in case of any concerns or disputes.</p><button id="download-failed-recipient-csv" class="w-btn us-btn-style_1"><i class="far fa-download"></i> Download</button></div></div>'.$tableStart.$failHtml.$tableEnd;
             }
             if($duplicateHtml != ''){
                 $duplicateHtml = $duplicateTableStart.$duplicateHtml.$tableEnd;
@@ -1030,7 +1053,7 @@ class OAM_Ajax{
                 'failData'        => $failHtml,
                 'duplicateData'   => $duplicateHtml,
                 'duplicateGroups' => $duplicateGroups,
-                'totalCount'      => count($successData) + count($failData) + $totalDuplicates + count($newData),
+                'totalCount'      => $totalCount,
                 'successCount'    => count($successData),
                 'newCount'        => count($newData),
                 'failCount'       => count($failData),
@@ -1385,6 +1408,7 @@ class OAM_Ajax{
         }
         
         
+        $address_verified = $_POST['address_verified'] ? $_POST['address_verified'] : 0 ;
         // Sanitize and prepare common data
         $data = [
             'full_name' => sanitize_text_field($_POST['full_name']),
@@ -1410,6 +1434,7 @@ class OAM_Ajax{
         // Construct the key for checking existing records
         $record_key = $data['full_name'] . '|' . 
         $data['address_1'] . '|' . 
+        $data['city'] . '|' . 
         $data['state'] . '|' . 
         $data['zipcode'];
         
@@ -1455,8 +1480,33 @@ class OAM_Ajax{
                     ];
                 }
             }
+            if($address_verified == 1){
+
+                $validation_result = json_decode(OAM_Helper::validate_address(
+                    $data['address_1'], $data['address_2'], $data['city'], $data['state'], $data['zipcode']
+                ), true);
             
-            $result = $wpdb->update($table, $data, ['id' => $recipient_id]);
+                
+                if ($validation_result) {
+                    $verified_status = $validation_result['success'] ? 1 : 0;
+                    $data['address_verified'] = $verified_status;
+                    $result = $wpdb->update(
+                        $table,
+                        $data,
+                        ['id' => $recipient_id]
+                    );
+                    
+                    if ($verified_status == 0) {
+                        wp_send_json_error(['message' => 'The address is incorrect. Please enter the correct address.']);
+                    }else{
+                        // wp_send_json_success(['message' => 'The address is correct.']);
+                    }
+                }
+            }else{
+
+                $result = $wpdb->update($table, $data, ['id' => $recipient_id]);
+            }
+            
             $status = 'update';
             
             OAM_Helper::order_process_recipient_activate_log($recipient_id, $status, wp_json_encode($changes));
@@ -1473,10 +1523,11 @@ class OAM_Ajax{
             $recipient_id = $wpdb->insert_id;
             $status = 'new';
             
+
             OAM_Helper::order_process_recipient_activate_log($wpdb->insert_id, $status, 'manually added');
             $success_message = 'Recipient details added successfully!';
         }
-            
+        
         // Handle the result
         if ($result !== false) {
             wp_send_json_success([

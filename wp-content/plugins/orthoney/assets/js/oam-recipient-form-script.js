@@ -1,12 +1,88 @@
-function getURLParam(param) {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get(param);
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   const multiStepForm = document.querySelector('#multiStepForm');
 
   if (multiStepForm) {
+
+      document.querySelectorAll("table tbody").forEach(table => {
+        const rows = table.querySelectorAll("tr");
+        rows.forEach((row, index) => {
+            if (index >= 10) {
+                row.classList.add("hide");
+            }
+        });
+    });
+
+    document.querySelectorAll("button.view-all-recipients").forEach(button => {
+      button.addEventListener("click", function (event) {
+          event.preventDefault();
+  
+          let status = this.getAttribute('data-status');
+          const table = this.closest("div").querySelector("table");
+  
+          if (table) {
+              const rows = table.querySelectorAll("tr");
+              const totalRows = rows.length - 1; // Excluding the header
+  
+              if (status == 0) {
+                  // Show all rows when clicked
+                  rows.forEach((row, index) => {
+                      if (index > 0) row.classList.remove("hide");
+                  });
+                  this.textContent = "Hide Recipients";
+                  this.setAttribute('data-status', 1);
+              } else {
+                  // Hide rows beyond the first 10
+                  rows.forEach((row, index) => {
+                      if (index > 10) row.classList.add("hide");
+                  });
+                  this.textContent = "View All Recipients";
+                  this.setAttribute('data-status', 0);
+              }
+          }
+      });
+  });
+  
+  
+  
+        document.querySelectorAll(".scroll-section-btn").forEach(button => {
+            button.addEventListener("click", function (event) {
+                event.preventDefault();
+                const sectionId = this.getAttribute("data-section");
+                const targetSection = document.getElementById(sectionId);
+    
+                if (targetSection) {
+                  const offset = 100; // Adjust this value as needed
+                  const targetPosition = targetSection.getBoundingClientRect().top + window.scrollY - offset;
+  
+                  smoothScroll(targetPosition, 1000);
+              }
+            });
+        });
+        function smoothScroll(target, duration) {
+          const start = window.scrollY;
+          const distance = target - start;
+          let startTime = null;
+  
+          function animation(currentTime) {
+              if (!startTime) startTime = currentTime;
+              const timeElapsed = currentTime - startTime;
+              const progress = Math.min(timeElapsed / duration, 1);
+  
+              window.scrollTo(0, start + distance * easeOutQuad(progress));
+  
+              if (timeElapsed < duration) {
+                  requestAnimationFrame(animation);
+              }
+          }
+  
+          function easeOutQuad(t) {
+              return t * (2 - t); // Smooth deceleration
+          }
+  
+          requestAnimationFrame(animation);
+      }
+    
+
     let currentStep = 0;
     const steps = document.querySelectorAll('.step');
     const stepNavItems = document.querySelectorAll('.step-nav-item');
@@ -40,6 +116,28 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
 
+    
+    document.querySelectorAll('#multiStepForm .next-with-ortHoney-affiliates').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+    
+            // Find the selected value (assuming it comes from a radio or dropdown within the form)
+            let selectedAffiliate = 'OrtHoney';
+    
+            // Update the #affiliate_select select box if a value is found
+            if (selectedAffiliate) {
+                let affiliateSelect = document.querySelector('#affiliate_select');
+                if (affiliateSelect) {
+                    affiliateSelect.value = selectedAffiliate;
+                    affiliateSelect.dispatchEvent(new Event('change')); // Trigger change event if needed
+                }
+            }
+            currentStep++;
+            showStep(currentStep);
+            processDataSaveAjax(pid?.value || "0", currentStep);
+        });
+    });
+    
     document.querySelectorAll('#multiStepForm .next').forEach(button => {
       button.addEventListener('click', function(event) {
         event.preventDefault();
@@ -641,23 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    function process_group_popup(selectHtml = '') {
-      if (selectHtml == '') {
-        selectHtml = 'Please wait while we process your request.';
-      }
-      Swal.fire({
-        title: 'Processing...',
-        text: selectHtml,
-        icon: 'info',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        allowEnterKey: false,
-        showConfirmButton: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
-    }
+    
 
     function csv_upload(form) {
       if (form) {
@@ -709,6 +791,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Show progress bar popup only after a successful start
                     Swal.fire({
                       title: 'Processing...',
+                      text: 'Please wait, the recipient data upload is in progress.',
                       html: `
                         <div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
                           <div id="progress-bar" style="width: 0%; height: 10px; background-color: #3085d6;"></div>

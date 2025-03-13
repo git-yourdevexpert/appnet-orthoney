@@ -48,18 +48,20 @@ class OAM_AFFILIATE_Ajax{
             $selected_user_roles = $selected_user->roles;
             $current_user_roles = $current_user->roles;
 
-            // Swap roles in a single loop
-            $all_roles = array_unique(array_merge($selected_user_roles, $current_user_roles));
-            
-            foreach ($all_roles as $role) {
-                if (in_array($role, $selected_user_roles)) {
-                    $selected_user->remove_role($role);
-                    $current_user->add_role($role);
-                }
-                if (in_array($role, $current_user_roles)) {
-                    $current_user->remove_role($role);
-                    $selected_user->add_role($role);
-                }
+            // Remove all existing roles from both users
+            foreach ($selected_user_roles as $role) {
+                $selected_user->remove_role($role);
+            }
+            foreach ($current_user_roles as $role) {
+                $current_user->remove_role($role);
+            }
+
+            // Assign the swapped roles
+            foreach ($current_user_roles as $role) {
+                $selected_user->add_role($role);
+            }
+            foreach ($selected_user_roles as $role) {
+                $current_user->add_role($role);
             }
 
             $afficated_id = $current_user_id; // Replace with actual value
@@ -104,6 +106,7 @@ class OAM_AFFILIATE_Ajax{
 
     // Affiliate Profile function
     public function update_affiliate_profile_handler() {
+
         // Verify nonce for security
         check_ajax_referer('oam_nonce', 'security');
 
@@ -111,24 +114,70 @@ class OAM_AFFILIATE_Ajax{
             wp_send_json(['success' => false, 'message' => 'You must be logged in to update your profile.']);
             wp_die();
         }
-    
+
         $user_id = get_current_user_id();
-    
+
         // Validate and sanitize inputs
         $first_name = sanitize_text_field($_POST['first_name']);
         $last_name = sanitize_text_field($_POST['last_name']);
         $billing_phone = sanitize_text_field($_POST['billing_phone']);
-        $billing_email = sanitize_text_field($_POST['billing_email']);
-    
+        $email = sanitize_text_field($_POST['email']);
+
+        $organization_name = sanitize_text_field($_POST['organization_name']);
+        $organization_website = esc_url_raw($_POST['organization_website']);
+        $address = sanitize_text_field($_POST['address']);
+        $city = sanitize_text_field($_POST['city']);
+        $state = sanitize_text_field($_POST['state']);
+        $zipcode = sanitize_text_field($_POST['zipcode']);
+        $tax_id = sanitize_text_field($_POST['tax_id']);
+
+         // Ensure email is valid and not already taken
+        if (!is_email($email)) {
+            wp_send_json(['success' => false, 'message' => 'Invalid email address.']);
+            wp_die();
+        }
+
+        if (email_exists($email) && email_exists($email) != $user_id) {
+            wp_send_json(['success' => false, 'message' => 'This email is already taken.']);
+            wp_die();
+        }
+
+        // Update user profile data (including email)
+        $update_data = [
+            'ID'         => $user_id,
+            'first_name' => $first_name,
+            'last_name'  => $last_name,
+            'user_email' => $email, 
+        ];
+
+        $user_update = wp_update_user($update_data);
+
+        if (is_wp_error($user_update)) {
+            wp_send_json(['success' => false, 'message' => 'Error updating profile.']);
+            wp_die();
+        }
+
         // Update user meta
         update_user_meta($user_id, 'first_name', $first_name);
         update_user_meta($user_id, 'last_name', $last_name);
         update_user_meta($user_id, 'billing_phone', $billing_phone);
-        
-    
+
+        //affiliate Fields data update
+        update_user_meta($user_id, '_yith_wcaf_first_name', $organization_name);
+        update_user_meta($user_id, '_yith_wcaf_last_name', '');
+        update_user_meta($user_id, '_yith_wcaf_phone_number', $billing_phone);
+        update_user_meta($user_id, '_yith_wcaf_name_of_your_organization', $organization_name);
+        update_user_meta($user_id, '_yith_wcaf_your_organizations_website', $organization_website);
+        update_user_meta($user_id, '_yith_wcaf_address', $address);
+        update_user_meta($user_id, '_yith_wcaf_city', $city);
+        update_user_meta($user_id, '_yith_wcaf_state', $state);
+        update_user_meta($user_id, '_yith_wcaf_zipcode', $zipcode);
+        update_user_meta($user_id, '_yith_wcaf_tax_id', $tax_id);
+
+
         wp_send_json(['success' => true, 'message' => 'Affiliate Profile updated successfully!']);
-    
         wp_die();
+
     }
 
     //Manage Affiliate Team Member 

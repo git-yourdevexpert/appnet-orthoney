@@ -22,6 +22,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             return '<div class="login-block"><div class="login-container"><span>If you want to access this page, please</span><a href="' . esc_url(wc_get_page_permalink('myaccount')) . '" class="w-btn us-btn-style_1 login-btn">Log In </a></div><div class="animate-bee moveImgup"><div class="image-block"><img src="https://orthoney.backstagedev.com/wp-content/uploads/2025/02/honey-bee.png" /></div></div></div>';
         }
         echo "<div class='order-block-wrap'>";
+        echo "<div class='loader'></div>";
         echo "<div class='order-process-block'>";
          // $validate_address = OAM_Helper::validate_address('47 W 13th', 'St', 'New York', 'New York', '10011');
         // echo "<pre>";
@@ -61,18 +62,18 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         }
         ?>
 
-<form id="multiStepForm" method="POST" enctype="multipart/form-data">
-    <input type="hidden" id="pid" name="pid" value="<?php echo (isset($_GET['pid']) ? $_GET['pid'] : '') ?>">
-    <?php
-            self::step_nav($currentStep);
-            self::step_1($setData);
-            self::step_2($setData);
-            self::step_3($setData, $csv_name);
-            self::step_4($setData, $currentStep);
-            self::step_5($setData, $currentStep);
-            ?>
-</form>
-<?php
+        <form id="multiStepForm" method="POST" enctype="multipart/form-data">
+            <input type="hidden" id="pid" name="pid" value="<?php echo (isset($_GET['pid']) ? $_GET['pid'] : '') ?>">
+            <?php
+                    self::step_nav($currentStep);
+                    self::step_1($setData);
+                    self::step_2($setData);
+                    self::step_3($setData, $csv_name);
+                    self::step_4($setData, $currentStep);
+                    self::step_5($setData, $currentStep);
+                    ?>
+        </form>
+        <?php
         self::popups();
         echo "</div>";
         echo "<div class='animate-bee moveImgup'><div class='image-block'><img decoding='async' src='https://orthoney.backstagedev.com/wp-content/uploads/2025/02/honey-bee.png'></div>
@@ -82,71 +83,86 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     }
 
     public static function step_nav($currentStep = 0){ ?>
-<div id="stepNav" class="tab-selections">
-    <span class="step-nav-item <?php echo $currentStep == 0 ? 'active' : '' ?>" data-step="0">Step 1: Select
-        Affiliate</span>
-    <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Delivery
-        Preference</span>
-    <span class="step-nav-item <?php echo $currentStep == 2 ? 'active' : '' ?>" data-step="2">Step 3: Upload
-        Recipients</span>
-    <span class="step-nav-item <?php echo $currentStep == 3 ? 'active' : '' ?>" data-step="3">Step 4: Verify
-        Recipients</span>
-    <span class="step-nav-item <?php echo ($currentStep == 4 OR $currentStep == 5) ? 'active' : '' ?>"
-        data-step="4">Step 5: Verify Address</span>
-    <span class="step-nav-item" data-step="5">Step 6: Checkout</span>
-</div>
-<?php
+        <div id="stepNav" class="tab-selections">
+            <span class="step-nav-item <?php echo $currentStep == 0 ? 'active' : '' ?>" data-step="0">Step 1: Select Organization</span>
+            <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Delivery Preference</span>
+            <span class="step-nav-item <?php echo $currentStep == 2 ? 'active' : '' ?>" data-step="2">Step 3: Upload Recipients</span>
+            <span class="step-nav-item <?php echo $currentStep == 3 ? 'active' : '' ?>" data-step="3">Step 4: Verify Recipients</span>
+            <span class="step-nav-item <?php echo ($currentStep == 4 OR $currentStep == 5) ? 'active' : '' ?>" data-step="4">Step 5: Verify Address</span>
+            <span class="step-nav-item" data-step="5">Step 6: Checkout</span>
+        </div>
+    <?php
     }
 
-    public static function step_1($data){
+    public static function step_1($data)
+    {
         $affiliate = 'Orthoney';
-        if(!empty($data)){
+        if (!empty($data)) {
             $affiliate = $data->affiliate_select != '' ? $data->affiliate_select : 'Orthoney';
         }
-        ?>
+    ?>
         <div class="step" id="step1">
-            <div  class="g-cols wpb_row via_grid cols_2 laptops-cols_inherit tablets-cols_inherit mobiles-cols_1 valign_top type_default">
+            <div class="g-cols wpb_row via_grid laptops-cols_inherit tablets-cols_inherit mobiles-cols_1 valign_top type_default">
                 <div class="wpb_column vc_column_container steps-column">
                     <h3 class="block-title">Select Organization.</h3>
-                    <?php 
-                    //   $affiliateList =  OAM_Helper::manage_affiliates_content('', 'unblocked');
-                    //   print($affiliateList);
-                    ?>
-                    <select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an affiliate.">
-                        <option <?php echo ($affiliate == 'OrtHoney') ? 'selected' : ''; ?> value="OrtHoney">OrtHoney (unaffiliated)</option>
-                        <option <?php echo ($affiliate == 'Jennifer King') ? 'selected' : ''; ?> value="Jennifer King">[JEK], Jennifer King, Alaska</option>
-                        <option <?php echo ($affiliate == 'Joseph Adams') ? 'selected' : ''; ?> value="Joseph Adams">[JOA], Joseph Adams, Lowa</option>
-                        <option <?php echo ($affiliate == 'Brian Harris') ? 'selected' : ''; ?> value="Brian Harris">[BRH], Brian Harris, Alberta</option>
-                    </select>
-                    <span class="error-message"></span>
+                    <p>Your Affiliate is the participating organization that you want to benefit from your honey purchase.</p>
+                    <div>
+                        <?php 
+                        $affiliateList = OAM_Helper::manage_affiliates_content('', 'unblocked');
+                        $affiliateList =json_decode($affiliateList, true);
+                        
+
+                        if (!empty($affiliateList['data']['affiliates'])) {
+                            echo '<select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an affiliate.">';
+                            echo '<option ' . selected($affiliate, '0', false) . ' value="OrtHoney">OrtHoney (unaffiliated)</option>';
+                        
+                            foreach ($affiliateList['data']['affiliates']  as $data) {
+                                $user_id = $data['ID'];
+                                $states = WC()->countries->get_states('US');
+                                $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
+                                $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
+                                $state_name = isset($states[$state]) ? $states[$state] : $state;
+                                $value = '[' . $data['token'] . '] ' . $data['display_name'];
+                                if (!empty($city)) {
+                                    $value .= ', ' . $city;
+                                }
+                                if (!empty($state)) {
+                                    $value .= ', ' . $state_name;
+                                }
+                        
+                                echo '<option ' . selected($user_id, $affiliate, false) . ' value="' . esc_attr($user_id) . '">' . esc_html($value) . '</option>';
+                            }
+                        
+                            echo '</select>';
+                        }                      
+                        ?>
+                        <span class="error-message"></span>
+                    </div>
+                    
+                    <h3 class="block-title">Don't Have An Organization? <a href="javascript:;" class="next-with-ortHoney-affiliates">Click Here</a></h3>
+                    
                     <div class="block-btn"><button type="button" class="next w-btn us-btn-style_1">Next</button></div>
-                </div>
-                <div class="wpb_column vc_column_container steps-column">
-                        <h3 class="block-title">Not affiliated with a participating organization? Proceed with Ort Honey.</h3>
-                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the
-                            industry's standard dummy text ever since the 1500s</p>
-                        <div class="block-btn"><button type="button" class="next w-btn us-btn-style_1">Next</button></div>
                 </div>
             </div>
         </div>
-        <?php
+    <?php
     }
 
-    public static function step_2($data){
+    public static function step_2($data)
+    {
         $delivery_preference = '';
         $multiple_address_output = '';
         $single_address_quantity = '';
         $single_address_greeting = '';
         $upload_type_output = '';
-        if(!empty($data)){
+        if (!empty($data)) {
             $delivery_preference = (!empty($data->delivery_preference)) ? $data->delivery_preference : '';
             $multiple_address_output = $data->multiple_address_output ? $data->multiple_address_output : '';
             $upload_type_output = !empty($data->upload_type_output) ? $data->upload_type_output : '';
             $single_address_quantity = $data->single_address_quantity ? $data->single_address_quantity : '';
             $single_address_greeting = $data->single_address_greeting ? $data->single_address_greeting : '';
         }
-        ?>
-
+    ?>
         <div class="step" id="step2">
             <div class="wpb_column vc_column_container">
                 <div class="vc_column-inner">
@@ -157,20 +173,20 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 <label for="single_address">
                                     <input type="radio" id="single_address" name="delivery_preference" <?php echo $delivery_preference == 'single_address' ? 'checked' : '' ?> value="single_address" required
                                         data-error-message="Please select a delivery preference.">
-                                    <span>Deliver to My Address Only</span>
+                                    <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/address.png" alt="" class="address-icon">Ship to Single Address</span>
                                 </label>
                                 <label for="multiple_address">
                                     <input type="radio" id="multiple_address" name="delivery_preference" <?php echo $delivery_preference == 'multiple_address' ? 'checked' : '' ?> value="multiple_address" required
                                         data-error-message="Please select a delivery preference.">
-                                        <span>Deliver to Multiple Addresses</span>
+                                    <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/destination.png" alt="" class="address-icon">Ship to Multiple Addresses</span>
                                 </label>
                             </div>
-                            <div style="max-width:600pxwidth: 1000px;margin:25px auto;text-align:left">
+                            <div class="address-inner">
                                 <div class="single-address-order greeting-box"
                                     style="<?php echo  $delivery_preference == 'single_address'  ? '' : 'display:none' ?>">
                                     <div class="bg-card">
                                         <div class="flex-column quantity-block">
-                                         <span>Enter the Quantity:</span>
+                                            <span>Enter the Quantity:</span>
                                             <div class="quantity">
                                                 <button class="minus" aria-label="Decrease">&minus;</button>
                                                 <input type="number" class="input-box" min="1" max="10000"
@@ -191,19 +207,31 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         <div class="w-separator size_medium"></div>
                                     </div>
                                 </div>
-
-                                <div class="multiple-address-order"  style="<?php echo $delivery_preference == 'multiple_address' ? '' : 'display:none' ?>">
+                                <div class="multiple-address-order" style="<?php echo $delivery_preference == 'multiple_address' ? '' : 'display:none' ?>">
                                     <input type="hidden" id="multiple-address-output" name="multiple_address_output"
                                         value="<?php echo $multiple_address_output ?>">
                                     <div class="multiple-address-grid">
-                                        <label><input type="radio" name="upload_type_output" <?php echo $upload_type_output == 'select-group' ? 'checked' : '' ?> value="select-group"
-                                                data-error-message="Please select a delivery preference."> <span>Choose from existing recipient list</span></label>
-                                        <label><input type="radio" name="upload_type_output" <?php echo $upload_type_output == 'upload-csv' ? 'checked' : '' ?> value="upload-csv"
-                                                data-error-message="Please select a delivery preference."> <span>Do not have a recipient list/CSV & XLSX and would like to add one.</span></label>
-                                        <label><input type="radio" name="upload_type_output" <?php echo $upload_type_output == 'add-manually' ? 'checked' : '' ?> value="add-manually"
-                                                data-error-message="Please select a delivery preference."> <span>Do not have a CSV and would like to manually enter recipients.</span></label>
-                                        </div>
-                                        <div class="groups-wrapper input-wrapp" style="display:none">
+                                        <label>
+                                            <input type="radio" name="upload_type_output" <?php echo $upload_type_output == 'select-group' ? 'checked' : '' ?> value="select-group" data-error-message="Please select a delivery preference.">
+                                            <span>
+                                                <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/address.png" alt="" class="address-icon">
+                                                Choose from Existing Recipient List
+                                            </span>
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="upload_type_output" <?php echo $upload_type_output == 'upload-csv' ? 'checked' : '' ?> value="upload-csv" data-error-message="Please select a delivery preference."> 
+                                            <span>
+                                                <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/address.png" alt="" class="address-icon">
+                                                Upload New Recipient List
+                                            </span>
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="upload_type_output" <?php echo $upload_type_output == 'add-manually' ? 'checked' : '' ?> value="add-manually" data-error-message="Please select a delivery preference."> <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/address.png" alt="" class="address-icon">
+                                            Manually Add Recipient Addresses
+                                        </span></label>
+                                    </div>
+                                    <div class="groups-wrapper input-wrapp" style="display:none">
+                                        <h4>Choose from existing recipient list</h4>
                                         <div class="bg-card">
                                             <select name="groups[]" data-error-message="Please select a group." multiple>
                                                 <option value="Option 1">Option 1</option>
@@ -219,11 +247,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             </div>
             <div class="button-block">
                 <button type="button" class="back w-btn us-btn-style_2">Back</button>
-                <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>" 
-                class="next w-btn us-btn-style_2" style="float:right">Next</button>
+                <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>"
+                    class="next w-btn us-btn-style_1" style="float:right">Next</button>
             </div>
         </div>
-
     <?php
     }
 
@@ -246,17 +273,15 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     <div class="g-cols wpb_row via_grid cols_3-2 laptops-cols_inherit tablets-cols_inherit mobiles-cols_1 valign_top type_default">
                         <div class="wpb_column vc_column_container steps-column">
                             <div>
-                                <h3>Upload List</h3>
+                                <h3>Recipient List</h3>
                                 <div class="file-upload field-block">
-                                    <label><span class="title-block">File Upload: <small>(Accept: .csv, .xlsx,
-                                                .xls)</small></span></label>
+                                    <label><span class="title-block">File Upload: <small>(Accept: .csv, .xlsx, .xls)</small></span></label>
                                     <input type="file" accept=".csv, .xlsx, .xls" id="fileInput"
                                         value="<?php echo ($csv_name != '' ? $csv_dir . '' . $csv_name : '') ?>" name="csv_file"
                                         required data-error-message="Please upload a CSV file.">
                                 </div>
                                 <div class="rename-file field-block">
-                                    <label><span class="title-block">Rename your file here if you wish to change the name of the
-                                            file you will upload.:</span>
+                                    <label><span class="title-block">Rename your file here if you wish to change the name of the file you will upload.:</span>
                                     </label>
                                     <input type="text" name="csv_name" value="<?php echo $csvName ?>"
                                         data-error-message="Please add a name for the CSV.">
@@ -322,6 +347,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
 
     public static function step_4($data){
         $data = '';
+        $view_all_recipients_btn_html = '';
         $oam_ajax = new OAM_Ajax();
         
         if(isset($_GET['pid']) AND $_GET['pid'] != ''){
@@ -334,30 +360,50 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         ?>
         <div class="step" id="step4">
             <div class="block-row">
-            <h3 class="block-title">Verify Recipients</h3>
+            
                 <?php 
                 if($result['data']['totalCount'] != 0){
                     echo '<p class="num-count">Number of Recipients: <span>'.$result['data']['totalCount'].'</span> </p>';
                 }
+                
                 echo '</div>';
                 if(!empty( $result)){
-                    if($result['success'] == 1){
-                        echo '<div class="recipient-group-section">';
-                        echo '<div id="failCSVData" class="table-data">'.$result['data']['failData'].'</div>';
-                        echo '<div id="successCSVData" class="table-data">'.$result['data']['successData'].'</div>';
-                        echo '<div id="duplicateCSVData" class="table-data">'.$result['data']['duplicateData'].'</div>';
-                        echo '<div id="newCSVData" class="table-data">'.$result['data']['newData'].'</div>';
+                    if ($result['success'] == 1) {
+                        echo '<div class="recipient-group-nav">';
+                        $sections = ['fail' => 'Failed', 'success' => 'Success', 'duplicate' => 'Duplicate', 'new' => 'New'];
+                        
+                        foreach ($sections as $key => $label) {
+                            $countKey = $key . 'Count';
+                            if (!empty($result['data'][$countKey])) {
+                                echo '<button class="w-btn us-btn-style_1 scroll-section-btn" data-section="' . $key . 'CSVData">' . $label . ' Recipient (' . $result['data'][$countKey] . ')</button>';
+                            }
+                        }
                         echo '</div>';
                     
-                        if(isset($_GET['pid']) AND $_GET['pid'] != ''){
-                        echo '<button class="editRecipient  w-btn us-btn-style_1" data-popup="#recipient-manage-popup">Add new Recipient</button>';
+                        echo '<div class="recipient-group-section">';
+                        foreach ($sections as $key => $label) {
+                            $countKey = $key . 'Count';
+                            $dataKey = $key . 'Data';
+                            if (!empty($result['data'][$countKey])) {
+                                $viewAllBtn = '';
+                                if($key != 'duplicate'){
+                                    $viewAllBtn = ($result['data'][$countKey] > 10) ? '<button class="view-all-recipients w-btn us-btn-style_1" data-status="0">View All Recipients</button>' : '';
+                                }
+                                echo '<div id="' . $key . 'CSVData" class="table-data">' . $result['data'][$dataKey] . $viewAllBtn . '</div>';
+                            }
+                        }
+                        echo '</div>';
+                    
+                        if (!empty($_GET['pid'])) {
+                            echo '<button class="editRecipient w-btn us-btn-style_1" data-popup="#recipient-manage-popup">Add new Recipient</button>';
                         }
                     }
+                    
                 }
                 if($result['data']['totalCount'] != 0){ ?>
                 <div class="two-cta-block">
-                    <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_2">Save Progress and Re Upload CSV</a>
-                    <button class="verifyRecipientAddressButton w-btn us-btn-style_2"
+                    <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn">Save Progress and Re Upload CSV</a>
+                    <button class="verifyRecipientAddressButton w-btn us-btn-style_1 outline-btn"
                         data-totalCount="<?php echo $result['data']['totalCount'] ?>"
                         data-successCount="<?php echo $result['data']['successCount'] ?>"
                         data-failCount="<?php echo $result['data']['failCount'] ?>"
@@ -396,33 +442,55 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             }
                             
                             echo '<div class="block-row"><p class="group-name">Group Name: <strong>' . $process_name . '</strong><button class="editProcessName far fa-edit" data-name="' . $process_name . '"></button></p></div>';
+                            echo '<div class="recipient-group-nav">';
+                            if($result['data']['unverifiedRecordCount'] != 0){
+                                echo '<button class="w-btn us-btn-style_1 scroll-section-btn" data-section="unverified-block">Unverified Addresses ('.$result['data']['unverifiedRecordCount'].') </button>';
+                            }
+                            if($result['data']['verifiedRecordCount'] != 0){
+                                echo '<button class="w-btn us-btn-style_1 scroll-section-btn" data-section="verified-block">Verified Addresses ('.$result['data']['verifiedRecordCount'].') </button>';
+                            }
+                        
+                        echo '</div>';
                             echo '<div class="recipient-group-section">';
-                            echo '<div class="unverified-block">';
+                            echo '<div class="unverified-block" id="unverified-block">';
                             if ($result['data']['unverifiedRecordCount'] != 0) {
+                                $view_all_recipients_btn_html = '';
+                                if($result['data']['verifiedRecordCount'] > 10){
+                                   $view_all_recipients_btn_html = '<button class="view-all-recipients w-btn us-btn-style_1" data-status="0">View All Recipients</button>';
+                                }
                                 echo '<div class="block-row">';
                                 echo '<div class="block-inner"> <h3 class="title">Unverified Addresses</h3>';
                                 echo '<p>Out of ' . $result['data']['totalCount'] . ' Recipients ' . $result['data']['unverifiedRecordCount'] . ' Recipients are unverified</p> </div>';
-                                echo "<button id='verified-multiple-addresses' class=' w-btn us-btn-style_1'>Verified Multiple Addresses</button>";
+                                // echo "<button id='verified-multiple-addresses' class=' w-btn us-btn-style_1'>Verified Multiple Addresses</button>";
                                 echo '</div>';
-                                echo '<div id="unverifiedRecord">' . $result['data']['unverifiedData'] . '</div>';
+                                echo '<div id="unverifiedRecord">' . $result['data']['unverifiedData'] . $view_all_recipients_btn_html.'</div>';
                             }
                             echo '</div>';
-                            echo '<div class="verified-block">';
+                            echo '<div class="verified-block" id="verified-block">';
                             if ($result['data']['verifiedRecordCount'] != 0) {
+                                $view_all_recipients_btn_html = '';
+                                if($result['data']['verifiedRecordCount'] > 10){
+                                   $view_all_recipients_btn_html = '<button class="view-all-recipients w-btn us-btn-style_1" data-status="0">View All Recipients</button>';
+                                }
                                 echo '<div class="block-row">';
                                 echo '<div class="block-inner"> <h3 class="title">Verified Addresses</h3>';
                                 echo '<p>Out of ' . $result['data']['totalCount'] . ' Recipients ' . $result['data']['verifiedRecordCount'] . ' Recipients are verified</p> </div>';
                                 echo '</div>';
-                                echo '<div id="verifyRecord">' . $result['data']['verifiedData'] . '</div>';
+                                echo '<div id="verifyRecord">' . $result['data']['verifiedData'] . $view_all_recipients_btn_html. '</div>';
                             }
                             echo '</div>';
                             
                             echo '<div class="two-cta-block">
                             <input type="hidden" name="processCheckoutStatus" value="'.$currentStep.'">
-                            <input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="'.$checkout_proceed_with_multi_addresses_status.'">
-                            <button id="checkout_proceed_with_only_unverified_addresses"  class="w-btn us-btn-style_2">Continue With Unverified Addresses</button>
-                            <button id="checkout_proceed_with_only_verified_addresses" class="w-btn us-btn-style_2">Proceed With Only Verified Addresses</button>
-                            </div>';
+                            <input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="'.$checkout_proceed_with_multi_addresses_status.'">';
+                            if($result['data']['unverifiedRecordCount'] != 0){
+                            echo '<button id="checkout_proceed_with_only_unverified_addresses"  class="w-btn us-btn-style_1 outline-btn">Continue With Unverified Addresses</button>';
+                            }
+                            if($result['data']['verifiedRecordCount'] != 0){
+                                echo '<button id="checkout_proceed_with_only_verified_addresses" class="w-btn us-btn-style_1 outline-btn">Proceed With Only Verified Addresses</button>';
+                            }
+                            
+                            echo '</div>';
                         
                         echo '</div>';
                         }

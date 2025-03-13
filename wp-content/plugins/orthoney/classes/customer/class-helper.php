@@ -103,7 +103,7 @@ class OAM_Helper{
         }
 
         // Build final SQL query
-        $sql = "SELECT a.ID, a.token, u.display_name 
+        $sql = "SELECT a.ID, a.token, u.display_name , a.user_id
         FROM $yith_wcaf_affiliates_table AS a
         JOIN $users_table AS u ON a.user_id = u.ID
         WHERE " . implode(" AND ", $queryParts);
@@ -160,8 +160,8 @@ class OAM_Helper{
 						
                         $reasons = implode(", ", json_decode($data->reasons, true));
                         if($reasons != ''){
-							$reasonsHtml = '<div class="tooltip">No';
-                            $reasonsHtml .= '<span class="tooltiptext">'.$reasons.'</span>';
+							$reasonsHtml = '<div class="tooltip">Failed';
+                            $reasonsHtml .= '<span class="tooltiptext">'.$reasons.'</span></div>';
                         }
                     }
                     $reasonsHtml .= '</div>';
@@ -177,34 +177,39 @@ class OAM_Helper{
                 $greetingHtml = '<div>N/A</div>'; // Default value
 
                 if (!empty($data->greeting)) {
-                    $greetingHtml = '<div class="tooltip">Yes<span class="tooltiptext bottom">' . html_entity_decode($data->greeting) . '</span></div>';
+                    $greetingHtml = '<div>' . html_entity_decode($data->greeting) . '</div>';
                 } elseif (!empty($customGreeting)) {
-                    $greetingHtml = '<div class="tooltip">No<span class="tooltiptext bottom">' . $customGreeting . '</span></div>';
+                    $greetingHtml = '<div>' . $customGreeting . '</div>';
                 }
 
                 
                 $html .= '<tr data-id="'.$id.'">';
                 $html .= '<td><input type="hidden" name="recipientIds[]" value="'.$id.'">'.$data->full_name.'</td>';
-                $html .= '<td>'.$data->company_name.'</td>';
+                
                 $html .= $addressPartsHtml;
                 $html .= '<td>'.((empty($data->quantity) || $data->quantity <= 0) ? '0' : $data->quantity).'</td>';
                 if($reverify != 1){
-                    $html .= '<td>'.(($data->verified == 0) ? $reasonsHtml: 'Yes').'</td>';
+                    $html .= '<td>'.(($data->verified == 0) ? $reasonsHtml: 'Passed').'</td>';
                 }
                 $html .= '<td>'.$greetingHtml.'</td>';
                 
-                if($duplicate == 1){
-                    $html .= '<td><button class="keep_this_and_delete_others" data-popup="#recipient-manage-popup">Keep this and delete others</button></td>';
-                }
+                
 
                 if($reverify == 1){
-                   
-                    $html .= '<td>'.($data->address_verified == 0 ? ' <button class="editRecipient far fa-edit" data-popup="#recipient-manage-popup" data-address_verified="1"></button>' : '') .'<button class="deleteRecipient far fa-trash"></button></td>';
+                    $html .= '<td>';
                     if($data->address_verified == 0){
-                        $html .= '<td><button class="reverifyAddress w-btn us-btn-style_1" style="padding:10px"><small>Reverify Address</small></button></td>';
+                        // $html .= '<button class="reverifyAddress w-btn us-btn-style_1" style="padding:10px"><small>Reverify Address</small></button>';
                     }
+                    $html .= ($data->address_verified == 0 ? ' <button class="editRecipient w-btn us-btn-style_1" data-popup="#recipient-manage-popup" data-address_verified="1"><small>Reverify Address</small></button>' : '') .'<button class="deleteRecipient far fa-trash"></button>';
+                    $html .= '</td>';
+                    
                 }else{
-                    $html .= '<td><button class="editRecipient far fa-edit" data-popup="#recipient-manage-popup"></button><button class="deleteRecipient far fa-trash"></button></td>';
+                    $html .= '<td>';
+                    if($duplicate == 1){
+                        $html .= '<button class="keep_this_and_delete_others" data-popup="#recipient-manage-popup">Keep this and delete others</button>';
+                    }
+                    $html .= '<button class="editRecipient far fa-edit" data-popup="#recipient-manage-popup"></button><button class="deleteRecipient far fa-trash"></button>';
+                    $html .= '</td>';
                 }
                 $html .= '</tr>';
             }
@@ -363,9 +368,9 @@ class OAM_Helper{
         $verifyRecordHtml = '';
         $unverifiedRecordHtml = '';
         
-        $unverifiedTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Custom Greeting</th><th style="width: 110px;">Action</th><th style="width: 165px;">Verify Address</th></tr></thead><tbody>';
+        $unverifiedTableStart ='<table><thead><tr><th>Full Name</th><th>Address</th><th>Quantity</th><th>Custom Greeting</th><th>Action</th></tr></thead><tbody>';
 
-        $verifyTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Custom Greeting</th><th style="width: 110px;">Action</th></tr></thead><tbody>';
+        $verifyTableStart ='<table><thead><tr><th>Full Name</th><th>Address</th><th>Quantity</th><th>Custom Greeting</th><th>Action</th></tr></thead><tbody>';
 
 
         $tableEnd = '</tbody></table>';

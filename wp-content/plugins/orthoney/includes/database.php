@@ -28,17 +28,12 @@ function orthoney_create_custom_tables() {
     $recipient_table = $wpdb->prefix . 'oh_group_recipient';
     $group_table = $wpdb->prefix . 'oh_group';
 
-
     $order_process_recipient_table = $wpdb->prefix . 'oh_order_process_recipient';
     $files_upload_activity_log_table = $wpdb->prefix . 'oh_files_upload_activity_log';
     $order_process_table = $wpdb->prefix . 'oh_order_process';
     $order_process_recipient_activate_log_table = $wpdb->prefix . 'oh_order_process_recipient_activate_log';
 
-    
-    
     $affiliate_customer_relation = $wpdb->prefix . 'oh_affiliate_customer_relation';
-    
-    $affiliate_table = $wpdb->prefix . 'oh_orm_affiliate';
 
     if(isset($_GET['database_refresh']) && $_GET['database_refresh'] == 'okay' ){
         // Execute DROP TABLE queries
@@ -52,8 +47,6 @@ function orthoney_create_custom_tables() {
         
         $wpdb->query("DROP TABLE IF EXISTS $affiliate_customer_relation");
 
-        $wpdb->query("DROP TABLE IF EXISTS $affiliate_table");
-
     }
 
 
@@ -64,7 +57,9 @@ function orthoney_create_custom_tables() {
     $recipient_sql = "CREATE TABLE $recipient_table (
         id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
         user_id BIGINT(20) UNSIGNED NOT NULL,
+        recipient_id BIGINT(20) UNSIGNED NOT NULL,
         group_id BIGINT(20) UNSIGNED NOT NULL,
+        order_id BIGINT(20) UNSIGNED NOT NULL,
         full_name VARCHAR(255) NOT NULL,
         company_name VARCHAR(255) NOT NULL,
         address_1 TEXT NULL,    
@@ -86,6 +81,8 @@ function orthoney_create_custom_tables() {
         id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
         name VARCHAR(255) NOT NULL,
         user_id BIGINT(20) UNSIGNED NOT NULL,
+        pid BIGINT(20) UNSIGNED NOT NULL,
+        order_id BIGINT(20) UNSIGNED NOT NULL,
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (id)
     ) ENGINE=InnoDB {$wpdb->get_charset_collate()};";
@@ -98,6 +95,7 @@ function orthoney_create_custom_tables() {
         id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
         user_id BIGINT(20) UNSIGNED NOT NULL,
         pid BIGINT(20) UNSIGNED NOT NULL,
+        order_id BIGINT(20) UNSIGNED NOT NULL,
         full_name VARCHAR(255) NOT NULL,
         company_name VARCHAR(255) NOT NULL,
         address_1 TEXT NULL,    
@@ -182,15 +180,6 @@ function orthoney_create_custom_tables() {
         PRIMARY KEY (id)
     ) ENGINE=InnoDB {$wpdb->get_charset_collate()};";
     // Execute the SQL for affiliate_customer_relation table
-
-    // SQL query to create the table
-    $affiliate_sql = "CREATE TABLE IF NOT EXISTS $affiliate_table (
-        id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-        name VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL,
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id)
-    ) $charset_collate;";
     
 
     $sql_queries =[
@@ -201,8 +190,7 @@ function orthoney_create_custom_tables() {
         $recipient_group_sql,
         $order_process_sql,
         $affiliate_customer_relation_sql,
-        
-        $affiliate_sql,
+
     ];
 
     foreach ($sql_queries as $sql) {

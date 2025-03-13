@@ -1,3 +1,50 @@
+function process_group_popup(selectHtml = '') {
+    if (selectHtml == '') {
+      selectHtml = 'Please wait while we process your request.';
+    }
+    Swal.fire({
+      title: 'Processing...',
+      text: selectHtml,
+      icon: 'info',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+  }
+  
+  function getURLParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
+  
+jQuery('select').select2({
+    placeholder: 'This is my placeholder',
+    allowClear: false,
+    selectOnClose: false
+});
+
+jQuery(document).ready(function($) {
+    jQuery('#affiliate_select').select2({
+        matcher: function(params, data) {
+            if (jQuery.trim(params.term) === '') {
+                return data;
+            }
+
+            // Ensure "OrtHoney" always appears at the top
+            if (data.text.toLowerCase().includes(params.term.toLowerCase()) || data.id === 'OrtHoney') {
+                return data;
+            }
+
+            return null;
+        }
+    });
+});
+
+
 (function () {
     document.querySelectorAll(".quantity").forEach((quantityContainer) => {
       const minusBtn = quantityContainer.querySelector(".minus");
@@ -94,10 +141,6 @@ document.addEventListener('lity:close', function(event) {
     }
 });
 
-function getURLParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-  }
 
 /*
 Create new group Js Start
@@ -558,7 +601,7 @@ if (recipientManageForm) {
                 Swal.fire({
                     title: data.data.message, // Get message from the response
                     icon: 'success',
-                    timer: 2500,
+                    timer: 3500,
                     showConfirmButton: false,
                     timerProgressBar: true
                 }).then(() => {
@@ -574,9 +617,9 @@ if (recipientManageForm) {
                     currentLity.click();
                 }
                
-                setTimeout(function() {
-                    window.location.reload();
-                  }, 1500);
+                // setTimeout(function() {
+                //     window.location.reload();
+                //   }, 1500);
                 
             } else {
                 // Show error message using SweetAlert2

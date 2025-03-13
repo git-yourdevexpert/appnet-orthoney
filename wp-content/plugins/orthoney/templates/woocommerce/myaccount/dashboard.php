@@ -37,7 +37,6 @@ $allowed_html = array(
 		esc_url( wc_logout_url() )
 	);
 	?>
-	saddasd
 </p>
 
 <p>

@@ -58,7 +58,7 @@ class OAM_AFFILIATE_Shortcode
                     include_once $template_path . 'my-profile.php';
                 } elseif ($endpoint === 'user-list' && file_exists($template_path . 'user-list.php')) {
                     if(in_array( 'affiliate_team_member', $user_roles)){
-                        echo "You have not access for this page";
+                         echo '<div class="oam-access-denied-message">You do not have access to this page.</div>';
                         return false;
                     }else{
                         include_once $template_path . 'user-list.php';
@@ -67,7 +67,7 @@ class OAM_AFFILIATE_Shortcode
                     include_once $template_path . 'order-list.php';
                 } elseif ($endpoint === 'change-admin' && file_exists($template_path . 'change-admin.php')) {
                     if(in_array( 'affiliate_team_member', $user_roles)){
-                        echo "You have not access for this page";
+                         echo '<div class="oam-access-denied-message">You do not have access to this page.</div>';
                         return false;
                     }else{
                         include_once $template_path . 'change-admin.php';
@@ -77,7 +77,7 @@ class OAM_AFFILIATE_Shortcode
                 }
             }
         }else{
-            echo "<p>You have not access for this page</p>";
+            echo "<p>You do not have access to this page.</p>";
         }
             
         return ob_get_clean();

@@ -239,29 +239,23 @@ document.addEventListener('click', function (event) {
     }
 });
 
+//Change Affiliate Admin user
+// TODO: Add Sweet Alert Pending
 //Edit my profile 
 document.addEventListener('click', function (event) {
     if (event.target.id === 'save-profile') {
         event.preventDefault();
-        
         if (!validateForm(this)) return; // Stop submission if validation fails
-
         const form = document.querySelector('#affiliate-profile-form');
-        const formData = new URLSearchParams();
+        const formData = new FormData(form);
         formData.append('action', 'update_affiliate_profile');
-        formData.append('first_name', document.querySelector('#first_name').value);
-        formData.append('last_name', document.querySelector('#last_name').value);
-        formData.append('billing_phone', document.querySelector('#billing_phone').value);
         formData.append("security", oam_ajax.nonce);  // nonce.
-
 
         fetch(oam_ajax.ajax_url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
             body: formData,
         })
+
         .then(response => response.json())
         .then(data => {
             const messageDiv = document.querySelector('#profile-message');
@@ -273,7 +267,6 @@ document.addEventListener('click', function (event) {
                     showConfirmButton: false,
                     timerProgressBar: true
                 });
-
             } else {
                 Swal.fire({
                     title: "Error",
@@ -291,12 +284,13 @@ document.addEventListener('click', function (event) {
         });
     }
 });
+
 //Edit my profile
 
-
 //Change Affiliate Admin user
-// TODO: Add Sweet Alert Pending
 document.addEventListener("DOMContentLoaded", function() {
+    const changeRoleBtn =  document.getElementById("changeRoleBtn");
+    if(changeRoleBtn){
     document.getElementById("changeRoleBtn").addEventListener("click", function() {
         var userDropdown = document.getElementById("userDropdown");
         var selectedUserId = userDropdown.value;
@@ -332,4 +326,5 @@ document.addEventListener("DOMContentLoaded", function() {
             alert("Something went wrong. Please try again.");
         });
     });
+    }
 });
