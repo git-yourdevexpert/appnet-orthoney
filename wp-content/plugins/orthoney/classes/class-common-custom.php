@@ -14,6 +14,7 @@ class OAM_COMMON_Custom {
         add_filter('acf/settings/load_json', array($this, 'oh_acf_json_load_paths'));
         add_action('template_redirect', array($this, 'modify_passwordless_login_url'));
 
+        add_action('user_registration_after_submit_buttons', array($this, 'add_login_user_registration_after_submit_buttons'));
 
 
     }
@@ -36,6 +37,16 @@ class OAM_COMMON_Custom {
         return $paths;
     }
 
+    /**
+     * Add custom login URL in after the form button 
+     * NOTE: $form_id is https://appnet-dev.com/orthoney/registration/
+     */
+    function add_login_user_registration_after_submit_buttons($form_id) {
+        if($form_id == 475){
+            echo '<div class="registration-form-link">Existing Customers, <a href="'.esc_url( ur_get_login_url() ).'">Log In Here</a></div>';
+        }
+    
+    }
     function check_userrole_update_meta($user_id) {
         $user = get_userdata($user_id);
         $roles = $user->roles; // Get the user's roles (array)
