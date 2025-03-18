@@ -103,7 +103,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
 
 
                             echo '<select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an affiliate.">';
-                            echo '<option ' . selected($affiliate, '0', false) . ' value="OrtHoney">OrtHoney (unaffiliated)</option>';
+                            echo '<option ' . selected($affiliate, '0', false) . ' value="OrtHoney">Unaffiliated</option>';
                             
                             if (!empty($affiliateList['data']['affiliates'])) {
                                 foreach ($affiliateList['data']['affiliates']  as $data) {

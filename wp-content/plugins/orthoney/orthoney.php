@@ -61,54 +61,35 @@ if(isset($_GET['database_refresh']) && $_GET['database_refresh'] == 'okay' ){
 
 
 
+if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
+    function user_registration_pro_generate_magic_login_link( $email, $nonce, $redirect_url ) {
+        $user  = get_user_by( 'email', $email );
+        $token = ur_generate_onetime_token( $user->ID, 'ur_passwordless_login', 32, 60 );
 
-/**
- * affiliate team code
-*/
-function custom_lost_password_form() {
-    ob_start();
-    wc_get_template( 'myaccount/form-lost-password.php' );
-    return ob_get_clean();
-}
-add_shortcode('custom_reset_password', 'custom_lost_password_form');
+        update_user_meta( $user->ID, 'ur_passwordless_login_redirect_url' . $user->ID, $redirect_url );
 
-function user_has_role($user_id, $roles_to_check = []) {
-    $user = get_userdata($user_id);
-    
-    if ($user && !empty($roles_to_check)) {
-        $user_roles = (array) $user->roles; // Get the user's roles as an array
-        return array_intersect($roles_to_check, $user_roles) ? true : false;
+        $custom_url = ''; // Default login link
+        $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user->ID);
+
+        if (in_array('customer', $user_roles)) { 
+            $custom_url = home_url('/customer-dashboard/');
+        }
+        if (in_array('yith_affiliate', $user_roles) || in_array('affiliate_team_member', $user_roles)) { 
+            $custom_url = home_url('/affiliate-dashboard/');
+        } 
+        if (in_array('administrator', $user_roles)) { 
+            $custom_url = home_url('/wp-admin/');
+        }
+        $arr_params = array( 'action', 'uid', 'token', 'nonce' );
+        $url_params = array(
+            'uid'   => $user->ID,
+            'token' => $token,
+            'nonce' => $nonce,
+        );
+        $url = add_query_arg( $url_params, $custom_url );
+
+        return $url;
     }
-    return false;
-}
-
-function user_registration_pro_generate_magic_login_link( $email, $nonce, $redirect_url ) {
-    $user  = get_user_by( 'email', $email );
-    $token = ur_generate_onetime_token( $user->ID, 'ur_passwordless_login', 32, 60 );
-
-    update_user_meta( $user->ID, 'ur_passwordless_login_redirect_url' . $user->ID, $redirect_url );
-
-    $custom_url = ''; // Default login link
-    $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user->ID);
-
-    if (in_array('customer', $user_roles)) { 
-        $custom_url = home_url('/customer-dashboard/');
-    }
-    if (in_array('yith_affiliate', $user_roles) || in_array('affiliate_team_member', $user_roles)) { 
-        $custom_url = home_url('/affiliate-dashboard/');
-    } 
-    if (in_array('administrator', $user_roles)) { 
-        $custom_url = home_url('/wp-admin/');
-    }
-    $arr_params = array( 'action', 'uid', 'token', 'nonce' );
-    $url_params = array(
-        'uid'   => $user->ID,
-        'token' => $token,
-        'nonce' => $nonce,
-    );
-    $url = add_query_arg( $url_params, $custom_url );
-
-    return $url;
 }
 
 // if (!function_exists('user_has_role')) {
@@ -306,17 +287,6 @@ function create_sub_orders_ajax() {
 add_action('wp_ajax_orthoney_thank-you-sub-orders-creation_ajax', 'create_sub_orders_ajax');
 add_action('wp_ajax_nopriv_orthoney_thank-you-sub-orders-creation_ajax', 'create_sub_orders_ajax');
 
-
-// add_action( 'pre_get_posts', function( $query ) {
-//     if ( is_admin() || ! $query->is_main_query() ) {
-//         return;
-//     }
-
-//     // Example: Modify only WooCommerce product queries
-//     if ( $query->get('post_type') === 'product' ) {
-//         $query->set( 'suppress_filters', true );
-//     }
-// });
 
 add_filter( 'woocommerce_order_query_args', function( $query_args ) {
     $query_args['parent_order_id'] = 0;

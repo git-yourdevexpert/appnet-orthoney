@@ -106,7 +106,8 @@ class OAM_Helper{
         $sql = "SELECT a.ID, a.token, u.display_name , a.user_id
         FROM $yith_wcaf_affiliates_table AS a
         JOIN $users_table AS u ON a.user_id = u.ID
-        WHERE " . implode(" AND ", $queryParts);
+        WHERE " . implode(" AND ", $queryParts) . " 
+        ORDER BY u.display_name ASC";
 
         // Prepare and execute query
         if (!empty($queryParams)) {

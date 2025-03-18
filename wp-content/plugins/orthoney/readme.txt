@@ -37,3 +37,29 @@ group-recipients-csv
         "Quantity" => 4
     ]
 ];
+
+
+Feedback: 
+WooComm Shipping Services: 
+Hello Mike Doble,
+Thank you for choosing PluginHive. Our shipping plugin will help you automate shipping in the WooCommerce store, saving you time and money.
+If you don’t already have the plugin, visit: https://phive-basic-version-plugins.s3.amazonaws.com/pluginhive-woocommerce-shipping-services.zip?AWSAccessKeyId=AKIA3GZ4JCMOIMTVL2J3&Expires=1741709980&Signature=yLh8xv2IKq9Ae%2FB0iDwqGaj2lo4%3D
+You can set up the plugin by following the instructions below.
+1. How to Download & Install the plugin: https://www.pluginhive.com/knowledge-base/setting-up-woocommerce-shipping-services/#download_install_activate_plugin
+2. Add your preferred carrier & start shipping: https://www.pluginhive.com/knowledge-base/setting-up-woocommerce-shipping-services/#setup_shipping_carriers
+The team is available to have the onboarding zoom call. This call is intended to help you complete the shipping configuration on your store.
+Please reach out to us whenever you are available by replying to this email. 
+Request you install the plugin and keep carrier account details ready as a prerequisite.
+Best Regards,
+Team PluginHive
+
+2nd
+lisa@appnet.com
+93c63e4d-51a6-43ef-9021-377d7812bcfb
+I installed on the site and activated. 
+ 
+3rd:
+I installed on the site and activated. 
+
+Let me know if you need anything else. 
+Lisa

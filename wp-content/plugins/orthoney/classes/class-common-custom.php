@@ -41,12 +41,35 @@ class OAM_COMMON_Custom {
      * Add custom login URL in after the form button 
      * NOTE: $form_id is https://appnet-dev.com/orthoney/registration/
      */
-    function add_login_user_registration_after_submit_buttons($form_id) {
+    public static function add_login_user_registration_after_submit_buttons($form_id) {
         if($form_id == 475){
             echo '<div class="registration-form-link">Existing Customers, <a href="'.esc_url( ur_get_login_url() ).'">Log In Here</a></div>';
         }
     
     }
+
+
+    public static function message_design_block($message, $url = '', $btn_name = '') {    
+        if ($message != '') {
+            $buttonHtml = '';
+            if (!empty($url) && !empty($btn_name)) {
+                $buttonHtml = '<a href="' . $url . '" class="w-btn us-btn-style_1 login-btn">'. $btn_name .'</a>';
+            }
+    
+            return '<div class="login-block">
+                <div class="login-container">
+                    <span>' . $message . '</span>
+                    ' . $buttonHtml . '
+                </div>
+                <div class="animate-bee moveImgup">
+                    <div class="image-block">
+                        <img src="' . OH_PLUGIN_DIR_URL . 'assets/image/honey-bee.png" />
+                    </div>
+                </div>
+            </div>';
+        }
+    }
+
     function check_userrole_update_meta($user_id) {
         $user = get_userdata($user_id);
         $roles = $user->roles; // Get the user's roles (array)
