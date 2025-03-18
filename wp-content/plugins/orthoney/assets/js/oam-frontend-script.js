@@ -20,14 +20,20 @@ function process_group_popup(selectHtml = '') {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
   }
-  
-jQuery('select').select2({
-    placeholder: 'This is my placeholder',
-    allowClear: false,
-    selectOnClose: false
+
+  jQuery('select').each(function ($) {
+    var placeholderText = jQuery(this).data('error-message') || 'Select an option';
+    
+    jQuery(this).select2({
+        placeholder: placeholderText,
+        allowClear: true
+    });
 });
 
+
 jQuery(document).ready(function($) {
+    
+       
     jQuery('#affiliate_select').select2({
         matcher: function(params, data) {
             if (jQuery.trim(params.term) === '') {
@@ -99,23 +105,31 @@ jQuery(document).ready(function($) {
   
 
 
-const greetingTextarea = document.querySelectorAll("#multiStepForm textarea, #recipient-manage-form form textarea");
-const maxChars = 250;
-
-if (greetingTextarea) {
-    greetingTextarea.forEach((textarea) => {
-        const textareaDiv = textarea.closest(".textarea-div"); // Find closest parent
-        if (textareaDiv) {
-            const charCounter = textareaDiv.querySelector(".char-counter span");
-            if (charCounter) { // Ensure charCounter exists
-                textarea.addEventListener("input", () => {
-                    const remainingChars = maxChars - textarea.value.length;
-                    charCounter.textContent = `${remainingChars}`;
-                });
-            }
-        }
-    });
-}
+  const greetingTextareas = document.querySelectorAll("#multiStepForm textarea, #recipient-manage-form form textarea");
+  const maxChars = 250;
+  
+  if (greetingTextareas.length) {
+      greetingTextareas.forEach((textarea) => {
+          const textareaDiv = textarea.closest(".textarea-div"); // Find closest parent
+          if (textareaDiv) {
+              const charCounter = textareaDiv.querySelector(".char-counter span");
+              if (charCounter) { // Ensure charCounter exists
+                  textarea.addEventListener("input", () => {
+                      let currentLength = textarea.value.length;
+                      let remainingChars = maxChars - currentLength;
+  
+                      if (remainingChars < 0) {
+                          textarea.value = textarea.value.substring(0, maxChars); // Prevent exceeding max limit
+                          remainingChars = 0;
+                      }
+  
+                      charCounter.textContent = `${remainingChars}`;
+                  });
+              }
+          }
+      });
+  }
+  
 
 document.addEventListener('lity:open', function (event) {
     event.preventDefault();
@@ -551,78 +565,82 @@ Deleted group Js End
 /*
 Edit and add Recipient form JS start
  */
-
 const recipientManageForm = document.querySelector("#recipient-manage-form form");
+
+function validateRecipientManageForm(form) {
+    let isValid = true;
+    const requiredFields = form.querySelectorAll("input[required], select[required], textarea[required]");
+
+    requiredFields.forEach((field) => {
+        let parentDiv = field.closest('.form-row'); // Ensure correct parent
+        let errorMessage = parentDiv ? parentDiv.querySelector(".error-message") : null;
+
+        if (!field.value.trim()) {
+            field.style.border = "1px solid red";
+            if (errorMessage) {
+                errorMessage.textContent = field.getAttribute("data-error-message") || "This field is required.";
+                errorMessage.style.color = "red";
+                errorMessage.style.display = "block";
+            }
+            isValid = false;
+        } else {
+            field.style.border = "";
+            if (errorMessage) {
+                errorMessage.textContent = "";
+                errorMessage.style.display = "none";
+            }
+        }
+    });
+
+    return isValid;
+}
 
 if (recipientManageForm) {
     recipientManageForm.addEventListener("submit", function (e) {
         e.preventDefault(); // Prevent form submission
-        let address_verified = 0;
+        
+        if (!validateRecipientManageForm(this)) {
+            return; // Stop if validation fails
+        }
 
+        let address_verified = 0;
         if (document.getElementById("unverifiedRecord") || document.getElementById("verifiedRecord")) {
             address_verified = 1;
         }
 
-        const form = document.querySelector("#csv-upload-form");
         let group_id = '';
-        if(form){
-            group_id = form.querySelector('input[name="recipient_group_id"]').value;
-        }
-        let groupId = getURLParam('recipient_group_id');
-        if (groupId !== null && groupId !== '' && groupId !== '0') {
+        const groupId = getURLParam('recipient_group_id');
+        if (groupId && groupId !== '0') {
             group_id = groupId;
         }
+
         const formData = new FormData(this);
+        formData.append('action', 'manage_recipient_form');
+        formData.append('group_id', group_id);
+        formData.append('address_verified', address_verified);
 
-        // Append action to the form data
-        formData.append('action', 'manage_recipient_form'); 
-        formData.append('group_id', group_id); 
-        formData.append('address_verified', address_verified); 
-
-        // Perform the AJAX request
         fetch(oam_ajax.ajax_url, {
             method: 'POST',
             body: formData,
         })
-        .then(response => response.json())  // Parse the response as JSON
+        .then(response => response.json())  
         .then(data => {
             if (data.success) {
-                if (data.data.status === 'new') {
-                    const newData = document.querySelector("#newCSVData");
-                    if (newData) {
-                        const existingDataId = newData.dataset.id || '';
-                        newData.dataset.id = existingDataId
-                            ? `${existingDataId},${data.data.recipient_id}`
-                            : `${data.data.recipient_id}`;
-                    }
-                }
-
-                // Show success alert using SweetAlert2
                 Swal.fire({
-                    title: data.data.message, // Get message from the response
+                    title: data.data.message,
                     icon: 'success',
                     timer: 3500,
                     showConfirmButton: false,
                     timerProgressBar: true
                 }).then(() => {
-                    // Reset the form after success
                     recipientManageForm.reset();
-                    recipientManageForm.querySelector('#recipient_id').value = '';
                 });
 
-                // Close modal if lity is used
-                
                 const currentLity = document.querySelector('[data-lity-close]');
                 if (currentLity) {
                     currentLity.click();
                 }
-               
-                // setTimeout(function() {
-                //     window.location.reload();
-                //   }, 1500);
-                
             } else {
-                // Show error message using SweetAlert2
                 Swal.fire({
                     title: 'Error',
                     text: data.data.message || 'Failed to update recipient details.',
@@ -631,7 +649,6 @@ if (recipientManageForm) {
             }
         })
         .catch(error => {
-            // Handle any errors during the fetch request
             console.error('Error during AJAX request:', error);
             Swal.fire({
                 title: 'Error',
@@ -641,7 +658,7 @@ if (recipientManageForm) {
         });
     });
 }
-                                                                                                                                                                                                               
+
 
 /*
 Edit button JS start

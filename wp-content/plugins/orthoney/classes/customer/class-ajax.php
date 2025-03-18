@@ -19,6 +19,9 @@ class OAM_Ajax{
         add_action( 'wp_ajax_orthoney_order_process_ajax', array( $this, 'orthoney_order_process_ajax_handler' ) );
         add_action( 'wp_ajax_orthoney_order_step_process_ajax', array( $this, 'orthoney_order_step_process_ajax_handler' ) );
         add_action( 'wp_ajax_orthoney_insert_temp_recipient_ajax', array( $this, 'orthoney_insert_temp_recipient_ajax_handler' ) );
+        
+        add_action( 'wp_ajax_save_group_recipient_to_order_process', array( $this, 'orthoney_save_group_recipient_to_order_process_handler' ) );
+
         add_action( 'wp_ajax_orthoney_get_csv_recipient_ajax', array( $this, 'orthoney_get_csv_recipient_ajax_handler') );
         add_action( 'wp_ajax_orthoney_single_address_data_save_ajax', array( $this, 'orthoney_single_address_data_save_ajax_handler') );
 		add_action( 'wp_ajax_manage_recipient_form', array( $this, 'orthoney_manage_recipient_form_handler' ) );
@@ -100,6 +103,65 @@ class OAM_Ajax{
                 'unique_key'   => $unique_key,
             ]);
         }
+    }
+    
+    
+    public function orthoney_save_group_recipient_to_order_process_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+    
+        global $wpdb;
+        $status = true;
+    
+        $groups = $_POST['groups'] ?? '';
+        $pid = $_POST['pid'] ?? '';
+    
+        if (empty($groups) || empty($pid)) {
+            wp_send_json_error(['status' => false, 'message' => 'Missing parameters.']);
+        }
+    
+        $group_recipient_table = OAM_Helper::$group_recipient_table;
+        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+        $group_ids = array_map('intval', explode(',', $groups));
+    
+        if (!empty($group_ids)) {
+            $wpdb->delete($order_process_recipient_table, ['pid' => intval($pid)], ['%d']);
+    
+            $placeholders = implode(',', array_fill(0, count($group_ids), '%d'));
+            $query = $wpdb->prepare(
+                "SELECT * FROM {$group_recipient_table} WHERE group_id IN ($placeholders)",
+                ...$group_ids
+            );
+    
+            $results = $wpdb->get_results($query);
+    
+            if (!empty($results)) {
+                $user_id = get_current_user_id();
+    
+                foreach ($results as $data) {
+                    $insert_data = [
+                        'user_id'          => $user_id,
+                        'pid'              => intval($pid),
+                        'full_name'        => sanitize_text_field($data->full_name),
+                        'company_name'     => sanitize_text_field($data->company_name),
+                        'address_1'        => sanitize_textarea_field($data->address_1),
+                        'address_2'        => sanitize_textarea_field($data->address_2),
+                        'city'             => sanitize_text_field($data->city),
+                        'state'            => sanitize_text_field($data->state),
+                        'zipcode'          => sanitize_text_field($data->zipcode),
+                        'quantity'         => max(1, intval($data->quantity ?? 1)),
+                        'greeting'         => sanitize_textarea_field($data->greeting),
+                        'verified'         => 1,
+                        'address_verified' => 0,
+                        'new'              => 0,
+                        'reasons'          => null,
+                    ];
+    
+                    $wpdb->insert($order_process_recipient_table, $insert_data);
+                }
+            }
+        }
+    
+        wp_send_json_success(['status' => $status]);
     }
     
     
@@ -763,6 +825,11 @@ class OAM_Ajax{
         $process_id = intval($_POST['pid']);
         
         $stepData = $_POST;
+        
+        $groups = 0;
+        if(isset($_POST['groups']) && !empty($_POST['groups'])){
+            $groups = 1;
+        }
 
         $currentStep = intval($_POST['currentStep']);
     
@@ -773,10 +840,10 @@ class OAM_Ajax{
         
         // Ensure data is safely serialized as a JSON string
         $data = [
-            'user_id' => get_current_user_id(),
-            'data'    => wp_json_encode($stepData),
-            'step'    => sanitize_text_field($currentStep),
-            'greeting'    => sanitize_text_field($stepData['greeting']),
+            'user_id'  => get_current_user_id(),
+            'data'     => wp_json_encode($stepData),
+            'step'     => sanitize_text_field($currentStep),
+            'greeting' => sanitize_text_field($stepData['greeting']),
         ];
 
         $processExistQuery = $wpdb->prepare("
@@ -825,6 +892,7 @@ class OAM_Ajax{
         if ($result !== false) {
             wp_send_json_success([
                 'pid'     => $process_id,
+                'groups'     => $groups,
                 'step'    => sanitize_text_field($currentStep),
             ]);
         } else {
@@ -903,9 +971,9 @@ class OAM_Ajax{
         if($user != 0 OR $user != ''){
             global $wpdb;
 
-            $tableStart ='<table><thead><tr><th>Full Name</th><th>Address</th><th>Quantity</th><th>Verified</th><th>Custom Greeting</th><th>Action</th></tr></thead><tbody>';
+            $tableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Status</th><th>Action</th></tr></thead><tbody>';
 
-            $duplicateTableStart ='<table><thead><tr><th>Full Name</th><th>Address</th><th>Quantity</th><th>Verified</th><th>Custom Greeting</th><th>Action</th></tr></thead><tbody>';
+            $duplicateTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Status</th><th>Action</th></tr></thead><tbody>';
             
             $tableEnd = '</tbody></table>';
            
@@ -986,6 +1054,7 @@ class OAM_Ajax{
            
     
             // Generate Duplicate HTML - now showing grouped duplicates
+            //Keep 1 Entry and Delete Other Duplicate Entries
             $totalDuplicates = 0;
             if(!empty($duplicateGroups)){
                 foreach ($duplicateGroups as $group) {
@@ -994,10 +1063,10 @@ class OAM_Ajax{
 
                 $bulkMargeButtonHtml = '';
                 if($process_id != ''){
-                    $bulkMargeButtonHtml = '<button id="bulkMargeRecipient" class="w-btn us-btn-style_1 outline-btn">Keep 1 Entry and Delete Other Duplicate Entries</button>';
+                    $bulkMargeButtonHtml = '<div class="tooltip"><button id="bulkMargeRecipient" class="btn-underline">Bulk Marge</button><span class="tooltiptext">Keep 1 Entry and Delete Other Duplicate Entries</span></div>';
                 }
                 
-                $duplicateHtml .= '<div class="heading-title"><div><h4 class="table-title">Duplicate Recipient</h4><h5 class="sub-heading"> '.$totalDuplicates.' Duplicate entries were found for '.count($duplicateGroups).' Recipient!</h5> </div>'.$bulkMargeButtonHtml.'</div>';
+                $duplicateHtml .= '<div class="heading-title"><div><h5 class="table-title">Duplicate Recipient</h5> </div>'.$bulkMargeButtonHtml.'</div>';
                 
                 foreach ($duplicateGroups as $groupIndex => $group) {
                     $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="'.($groupIndex + 1).'"><td colspan="12"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
@@ -1009,14 +1078,14 @@ class OAM_Ajax{
             $totalCount = count($successData) + count($failData) + $totalDuplicates + count($newData);
             // Generate new data HTML
             if(!empty($newData)){
-                $newDataHtml .= '<div class="heading-title"><h4 class="table-title">New Recipients</h4></div>';
+                $newDataHtml .= '<div class="heading-title"><h5 class="table-title">New Recipients</h5></div>';
                 $newDataHtml .= OAM_Helper::get_table_recipient_content($newData, $customGreeting);
                 
             }
     
             // Generate Success HTML
             if(!empty($successData)){
-                $successHtml .= '<div class="heading-title"><div><h4 class="table-title">Verified Recipients</h4><h5 class="sub-heading"> Out of '.$totalCount.' Recipients, '.count($successData).' Recipients have been verified</h5></div></div>';
+                $successHtml .= '<div class="heading-title"><div><h5 class="table-title">Verified Recipients</h5></div></div>';
                 $successHtml .=  OAM_Helper::get_table_recipient_content($successData , $customGreeting);
             }
             
@@ -1035,7 +1104,7 @@ class OAM_Ajax{
                 $successHtml = $tableStart.$successHtml.$tableEnd;
             }
             if($failHtml != ''){
-                $failHtml = '<div class="download-csv"><div class="heading-title"><div><h4 class="table-title">Failed to Add Recipeints</h4><h5 class="sub-heading">Out of '.$totalCount.' Recipients, '.count($failData).' Recipients have Failed to Upload</h5><p>To fix the failed data, edit the row and make the necessary changes OR upload a new CSV for failed recipients.</p></div></div> <div><p>Failed records, along with their respective reasons, will be stored in the database for future reference in case of any concerns or disputes.</p><button id="download-failed-recipient-csv" class="w-btn us-btn-style_1"><i class="far fa-download"></i> Download</button></div></div>'.$tableStart.$failHtml.$tableEnd;
+                $failHtml = '<div class="download-csv"><div class="heading-title"><div><h5 class="table-title">Failed Recipeints</h5><p>To fix the failed data, edit the row and make the necessary changes OR upload a new CSV for failed recipients.</p></div><div><button id="download-failed-recipient-csv" class="btn-underline"><i class="far fa-download"></i> Download Failed Recipients</button></div></div> </div>'.$tableStart.$failHtml.$tableEnd;
             }
             if($duplicateHtml != ''){
                 $duplicateHtml = $duplicateTableStart.$duplicateHtml.$tableEnd;

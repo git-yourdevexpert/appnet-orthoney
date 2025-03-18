@@ -185,13 +185,14 @@ class OAM_Helper{
                 
                 $html .= '<tr data-id="'.$id.'">';
                 $html .= '<td><input type="hidden" name="recipientIds[]" value="'.$id.'">'.$data->full_name.'</td>';
+                $html .= '<td>'.($data->company_name != "" ? $data->company_name : '') .'</td>';
                 
                 $html .= $addressPartsHtml;
                 $html .= '<td>'.((empty($data->quantity) || $data->quantity <= 0) ? '0' : $data->quantity).'</td>';
                 if($reverify != 1){
                     $html .= '<td>'.(($data->verified == 0) ? $reasonsHtml: 'Passed').'</td>';
                 }
-                $html .= '<td>'.$greetingHtml.'</td>';
+                // $html .= '<td>'.$greetingHtml.'</td>';
                 
                 
 
@@ -368,9 +369,9 @@ class OAM_Helper{
         $verifyRecordHtml = '';
         $unverifiedRecordHtml = '';
         
-        $unverifiedTableStart ='<table><thead><tr><th>Full Name</th><th>Address</th><th>Quantity</th><th>Custom Greeting</th><th>Action</th></tr></thead><tbody>';
+        $unverifiedTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Action</th></tr></thead><tbody>';
 
-        $verifyTableStart ='<table><thead><tr><th>Full Name</th><th>Address</th><th>Quantity</th><th>Custom Greeting</th><th>Action</th></tr></thead><tbody>';
+        $verifyTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Action</th></tr></thead><tbody>';
 
 
         $tableEnd = '</tbody></table>';
@@ -482,55 +483,72 @@ class OAM_Helper{
     }
 
     public static function get_recipient_form(){ ?>
-        <div id="recipient-manage-form" class="site-form ">
-            <form method="POST" class="grid-two-col" enctype="multipart/form-data">
+        <div id="recipient-manage-form" class="site-form" >
+            <form class="grid-two-col" novalidate>
                 <input type="hidden" id="pid" name="pid" value="<?php echo isset($_GET['pid']) ? $_GET['pid'] : '' ?>">
                 <input type="hidden" id="recipient_id" name="recipient_id" value="">
+
                 <div class="form-row gfield--width-half">
                     <label for="full_name">Full Name:</label>
-                    <input type="text" id="full_name" name="full_name" required>
+                    <input type="text" id="full_name" name="full_name" required data-error-message="Please enter your full name.">
+                    <span class="error-message"></span>
                 </div>
+
                 <div class="form-row gfield--width-half">
                     <label for="company_name">Company Name:</label>
-                    <input type="text" id="company_name" name="company_name" required>
+                    <input type="text" id="company_name" name="company_name" required data-error-message="Please enter a company name.">
+                    <span class="error-message"></span>
                 </div>
+
                 <div class="form-row gfield--width-half">
                     <label for="address_1">Mailing Address:</label>
-                    <input type="text" id="address_1" name="address_1" required>
+                    <input type="text" id="address_1" name="address_1" required data-error-message="Please enter a mailing address.">
+                    <span class="error-message"></span>
                 </div>
+
                 <div class="form-row gfield--width-half">
                     <label for="address_2">Suite/Apt#:</label>
                     <input type="text" id="address_2" name="address_2">
+                    <span class="error-message"></span>
                 </div>
+
                 <div class="form-row gfield--width-half">
                     <label for="city">City:</label>
-                    <input type="text" id="city" name="city" required>
+                    <input type="text" id="city" name="city" required data-error-message="Please enter a city.">
+                    <span class="error-message"></span>
                 </div>
+
                 <div class="form-row gfield--width-half">
                     <label for="state">State:</label>
-                    <select id="state" name="state" required>
-                        <?php
-                        echo self::get_us_states_list(isset($shipping_address['state']) ? $shipping_address['state'] : "") 
-                        ?>
+                    <select id="state" name="state" required data-error-message="Please select a state.">
+                        <option value="" disable>Select state</option>
+                        <?php echo self::get_us_states_list(isset($shipping_address['state']) ? $shipping_address['state'] : ""); ?>
                     </select>
+                    <span class="error-message"></span>
                 </div>
+
                 <div class="form-row gfield--width-half">
                     <label for="zipcode">Zipcode:</label>
-                    <input type="text" id="zipcode" name="zipcode" required>
+                    <input type="text" id="zipcode" name="zipcode" required data-error-message="Please enter a valid zipcode.">
+                    <span class="error-message"></span>
                 </div>
+
                 <div class="form-row gfield--width-half">
                     <label for="quantity">Quantity:</label>
                     <div class="quantity">
-                        <button class="minus" aria-label="Decrease">&minus;</button>
-                        <input type="number" class="input-box"  min="1"  value="1" max="10000" required  id="quantity" name="quantity"  >
-                        <button class="plus" aria-label="Increase">&plus;</button>
+                        <button class="minus" aria-label="Decrease" type="button">&minus;</button>
+                        <input type="number" class="input-box" min="1" value="1" max="10000" required id="quantity" name="quantity" data-error-message="Please enter a valid quantity.">
+                        <button class="plus" aria-label="Increase" type="button">&plus;</button>
                     </div>
+                    <span class="error-message"></span>
                 </div>
-                <div class="textarea-div form-row  gfield--width-full">
+
+                <div class="textarea-div form-row gfield--width-full">
                     <label for="greeting">Add a Greeting:</label>
                     <textarea id="greeting" name="greeting"></textarea>
                     <div class="char-counter"><span>250</span> characters remaining</div>
-                </div> 
+                </div>
+
                 <div class="footer-btn gfield--width-full">
                     <button type="submit">Submit</button>
                 </div>
@@ -639,14 +657,14 @@ class OAM_Helper{
             $user_id = get_current_user_id();
         }
         // Table name
-        $recipient_group_table = $wpdb->prefix . 'recipient_group';
+        $group_table = self::$group_table;
 
         if($user_id == ''){
             $groups = $wpdb->get_results($wpdb->prepare("
-                SELECT * FROM $recipient_group_table"));
+                SELECT * FROM $group_table"));
         }else{
             $groups = $wpdb->get_results($wpdb->prepare("
-                SELECT * FROM $recipient_group_table WHERE user_id = %d
+                SELECT * FROM $group_table WHERE user_id = %d
             ", $user_id));
         }
         
