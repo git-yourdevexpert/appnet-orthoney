@@ -156,9 +156,7 @@ document.addEventListener('click', function (event) {
         }
         
     }
-    if (event.target.matches('.lity-close, [data-lity-close]')) {
-            window.location.reload();
-    }
+    
 });
 
 //delete user

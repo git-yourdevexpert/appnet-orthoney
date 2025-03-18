@@ -68,7 +68,7 @@
 .order-process-block .w-btn.back:before,
 .order-process-block .w-btn.next:before,
 .order-process-block .w-btn.next-step:before {
-  background-image: url(https://orthoney.backstagedev.com/wp-content/uploads/2025/03/direction-arrow.png);
+  background-image: url(../image/direction-arrow.png);
   background-repeat: no-repeat;
   background-size: contain;
   filter: brightness(0) saturate(100%) invert(99%) sepia(0%) saturate(0%)
@@ -312,6 +312,7 @@ body
   padding: 0 var(--inputs-padding, 1em);
   padding-inline-end: calc(var(--inputs-padding, 0.6em) * 2 + 0.8em);
   box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.15);
+  text-align: left;
 }
 
 .select2-container .select2-selection--multiple .select2-selection__rendered {
@@ -322,7 +323,7 @@ body
   padding-bottom: 5px;
   overflow-y: auto;
   align-items: center;
-  width: 100%;
+  /* width: 100%; */
 }
 .select2-container
   .select2-selection--multiple
@@ -412,6 +413,7 @@ body
   .select2-selection--multiple {
   border: 0px;
   box-shadow: 0px 0px 0px 1px #00afaa;
+  text-align: left;
 }
 
 .select2-container--default
@@ -471,6 +473,36 @@ body
 
 .popup-show form label {
   display: block;
+}
+
+.lity-close {
+  align-items: center;
+    -webkit-appearance: none;
+    background: 0 0;
+    background: 0 0;
+    border: 0;
+    border-radius: 9999px;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    cursor: pointer;
+    display: flex;
+    height: 40px;
+    justify-content: center;
+    margin: 0;
+    outline: 0;
+    padding: 0;
+    position: absolute;
+    right: 30px;
+    text-align: center;
+    text-decoration: none;
+    top: 20px;
+    width: 40px;
+    z-index: 9994;
+    color: #fff;
+    background: #333;
+}
+.lity-close:hover, .lity-close:focus, .lity-close:active, .lity-close:visited {
+  background: #333;
 }
 
 .site-form .form-row {
@@ -794,7 +826,7 @@ body .grid-two-col input:focus {
   height: 60px;
   /* top: -1px; */
   bottom: 0;
-  background-image: url(https://orthoney.backstagedev.com/wp-content/uploads/2025/02/footer-pattern.png);
+  background-image: url(../image/footer-pattern.png);
   transform: scale(-1);
 }
 .animate-bee {
@@ -814,7 +846,7 @@ body .grid-two-col input:focus {
 }
 
 .order-process-block input[type="file"] {
-  padding: 0;
+  padding: 0 !important;
 }
 .order-process-block input[type="file"]::file-selector-button {
   border: none;
@@ -1092,11 +1124,17 @@ body .grid-two-col input:focus {
 .custom-table button.far.fa-trash:hover {
   color: #ca3521;
 }
+.order-process-block table .editRecipient {
+  margin-right: 10px;
+}
 .order-process-block .block-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 30px;
+}
+.order-process-block .block-row > .block-row {
+  margin: 0;
 }
 .order-process-block .block-row .num-count span {
   font-weight: 600;
@@ -1187,7 +1225,8 @@ body .order-process-block input:focus {
   cursor: inherit;
 }
 
-.swal2-popup .swal2-title {
+.swal2-popup .swal2-title,
+.loader .swal2-title {
   text-align: center;
   font-size: 28px;
   padding-top: 25px;
@@ -1199,6 +1238,19 @@ body .order-process-block input:focus {
   width: 3.5em;
   height: 3.5em;
 }
+.swal2-popup .swal2-icon .swal2-x-mark .swal2-x-mark-line-left {
+  left: 0.7625em;
+}
+.swal2-popup .swal2-icon .swal2-x-mark .swal2-x-mark-line-right {
+  right: 0.8em;
+}
+.swal2-popup .swal2-icon .swal2-x-mark .swal2-x-mark-line-left,
+.swal2-popup .swal2-icon .swal2-x-mark .swal2-x-mark-line-right {
+  top: 1.6125em;
+  width: 1.9375em;
+  height: 0.3125em;
+}
+
 .swal2-popup .swal2-icon .swal2-icon-content {
   font-size: 2.75em;
 }
@@ -1246,7 +1298,7 @@ body .order-process-block input:focus {
   height: 60px;
   /* top: -1px; */
   bottom: 0;
-  background-image: url(https://orthoney.backstagedev.com/wp-content/uploads/2025/02/footer-pattern.png);
+  background-image: url(../image/footer-pattern.png);
   transform: scale(-1);
   left: 0;
   right: 0;
@@ -1325,7 +1377,7 @@ body .woocommerce input[type="checkbox"]:checked {
 .affiliate-dashboard-block .col-right {
   flex: 1 0 0;
 }
-.user-registration {
+ .user-registration {
   border: 1px solid #e3e7f0 !important;
   display: flex;
   flex-wrap: wrap;
@@ -1341,14 +1393,23 @@ body .woocommerce input[type="checkbox"]:checked {
 body.user-registration-page.user-registration-account .user-registration.ur-frontend-form {
   max-width: 850px !important;
 }
+.login-register-block .user-registration {
+  box-shadow: none !important;
+  border: none !important;
+  max-width: 100% !important;
+  padding: 0 50px !important;
+  overflow: visible;
+}
+.login-register-block .user-registration:before {
+  display: none;
+}
 .user-registration:before {
     content: "";
     position: absolute;
     width: 100%;
     height: 60px;
-    /* top: -1px; */
     bottom: 0;
-    background-image: url(https://orthoney.backstagedev.com/wp-content/uploads/2025/02/footer-pattern.png);
+    background-image: url(../image/footer-pattern.png);
     transform: scale(-1);
     left: 0;
     right: 0;
@@ -1479,6 +1540,9 @@ body.user-registration-page .user-registration:not(.user-registration-MyAccount)
 body.user-registration-page .user-registration:not(.user-registration-MyAccount) {
   margin: 94px auto !important;
 }
+body.user-registration-page .login-register-block  .user-registration:not(.user-registration-MyAccount) {
+  margin: 0 auto 60px !important;
+}
 .user-registration .login {
   width: 100%;
 }
@@ -1518,6 +1582,9 @@ body .user-registration .ur-frontend-form.login label {
 .user-registration .user-registration-register a {
   font-size: 16px !important;
 }
+.user-registration .lost_password {
+  transform: translateY(-93px);
+}
 .user-registration .register .ur-form-row .ur-form-grid label.ur-label[data-label="Checkbox"] {
   margin: 0 !important;
   display: none;
@@ -1546,8 +1613,71 @@ body .user-registration-social-connect-networks .ursc-login-media {
   width: auto !important;
 }
 body .user-registration-social-connect-networks .ursc-login-media a {
-background: transparent !important;
-box-shadow: var(--box-shadow)  !important;
+  background: transparent !important;
+  /* box-shadow: var(--box-shadow)  !important; */
+  display: flex !important;
+  position: relative;
+  gap: 10px;
+  justify-content: center;
+  padding: 13px 25px !important;
+  border: 1px solid #DB4437;
+  align-items: center;
+}
+/* body .user-registration-social-connect-networks .ursc-login-media a:after {
+  content: 'Google';
+  color: #DB4437;
+  display: flex;
+  line-height: 1;
+  font-size: 15px;
+  font-weight: 600;
+} */
+body .user-registration-social-connect-networks .ursc-login-media a .ursc-login-text{
+  color: #DB4437;
+  display: flex;
+  line-height: 1 !important;
+  font-size: 15px !important;
+  font-weight: 600;
+  padding: 0 !important;
+}
+.login-register-block .user-registration-passwordless-login {
+  display: none;
+}
+body .user-registration-social-connect-networks .ursc-login-media a .ursc-login-with-google {
+  background-image: url(../image/google-icon.svg) !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+body .user-registration-social-connect-networks .ursc-network-lists {
+  width: auto !important;
+}
+.register-social-block {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: center;
+}
+a.custom-passwordless-link {
+  display: flex !important  ;
+  position: relative;
+  gap: 10px;
+  justify-content: center;
+  padding: 7.6px 15px !important;
+  border: 1px solid #ccc;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  color: #333;
+  border-radius: 4px;
+}
+a.custom-passwordless-link::before {
+  background-image: url(../image/login-icon.svg);
+  background-repeat: no-repeat;
+  width: 30px !important;
+  height: 29px !important;
+  content: '';
+  background-size: contain;
+  background-position: center center;
 }
 .user-registration .ur-form-row span.input-wrapper .ur-icon {
   color: #333;
@@ -1595,4 +1725,127 @@ box-shadow: var(--box-shadow)  !important;
 }
 .order-process-block .btn-underline:hover {
   color: #00afaa;
+}
+.user-registration .register .ur-button-container {
+  flex-wrap: wrap;
+}
+.user-registration .register .ur-button-container .ur-submit-button {
+  width: auto;
+}
+.user-registration .register .ur-button-container .registration-form-link {
+  width: 100%;
+  margin-top: 15px;
+  font-size: 15px;
+  color: #333;
+}
+
+.login-register-block .g-cols {
+  box-shadow: var(--box-shadow);
+  border-radius: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  overflow: hidden;
+  gap: 0 !important;
+}
+.login-register-block .overlay-bg {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-color: var(--color-content-primary);
+  color: #fff;
+}
+.login-register-block .overlay-bg:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(0, 175, 170, 0.85);
+}
+.login-register-block .overlay-bg .vc_column-inner {
+  position: relative;
+  z-index: 1;
+}
+.login-register-block .overlay-bg h2 {
+  font-family: inherit !important;
+  color: #fff;
+  font-weight: 500;
+  margin: 0 0 15px;
+}
+.login-register-block .overlay-bg p {
+  font-size: 16px;
+  line-height: normal;
+}
+.login-register-block .overlay-bg a {
+  background: #fff !important;
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  font-weight: 600;
+  font-style: normal;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+  padding: 0.8em 2.4em !important;
+  border-radius: 4px;
+  display: inline-block;
+}
+.login-register-block .overlay-bg a:hover {
+  background: var(--color-content-secondary) !important;
+    color: #fff;
+}
+.login-register-block .login-title {
+  margin: 60px 0 40px;
+  padding: 0 50px 20px;
+}
+.login-register-block .login-title h2 {
+  font-family: inherit;
+  font-weight: 600;
+}
+.user-registration .custom-login-btn {
+  width: 100%;
+  text-align: center;
+  margin-top: 25px;
+}
+.user-registration .custom-login-btn a {
+  color: #333;
+  text-decoration: underline;
+  position: relative;
+  font-size: 16px;
+}
+.exceptions {
+    margin: 0 auto;
+}
+.exceptions ul {
+  margin: 0;
+}
+.exceptions strong {
+  margin-bottom: 15px;
+  color: #333;
+  display: block;
+}
+.exceptions ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.exceptions ul li {
+  list-style: none;
+  flex: 100% 0 0;
+  border: 1px solid #e4e7e9;
+  height: 100%;
+  margin: 0;
+  color: #00afaa !important;
+  font-size: 16px;
+  padding: 6px 10px;
+  display: flex;
+  background: #f7fbfd;
+  border-radius: 4px;
+  font-weight: 600;
+  align-items: center;
+}
+.exceptions ul li span {
+  color: #333;
+  display: inline-flex;
+  flex-grow: 1;
+  font-weight: 400;
+  font-size: 14px;
 }

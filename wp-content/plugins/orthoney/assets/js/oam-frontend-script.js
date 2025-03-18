@@ -137,12 +137,13 @@ document.addEventListener('lity:open', function (event) {
     if (popupOverlay) {
         popupOverlay.addEventListener('click', function (e) {
             if (e.target.classList.contains('lity-wrap')) {
-                e.stopPropagation(); // Prevents the default closing behavior
+                e.preventDefault(); // Prevents the default closing behavior
             }
         });
     }
 });
 document.addEventListener('lity:close', function(event) {
+    event.preventDefault();
     // Get the closed modal's element
     const closedModal = event.target;
     
@@ -290,6 +291,7 @@ const groupsList = document.querySelectorAll('.groups-list');
 if(groupsList.length > 0){
     groupsList.forEach(select => {
         select.addEventListener('change', function(event) {
+            event.preventDefault();
             const target = event.target; // This is the element that triggered the event
             const groupListWrapper = target.closest('.recipient-group-section');
             const editFormButton = groupListWrapper.querySelector('.editGroupFormButton');
@@ -321,6 +323,7 @@ const editGroupFormButton = document.querySelectorAll('.editGroupFormButton');
 if(editGroupFormButton.length > 0){
     editGroupFormButton.forEach(button => {
         button.addEventListener('click', function(event) {
+            event.preventDefault();
             const target = event.target; 
             target.style.display = 'none';
             
@@ -351,6 +354,7 @@ const createGroupFormButton = document.querySelectorAll('.createGroupFormButton'
 if(createGroupFormButton.length > 0){
     createGroupFormButton.forEach(button => {
         button.addEventListener('click', function(event) {
+            event.preventDefault();
             const target = event.target; 
             target.style.display = 'none';
             const groupListWrapper = target.closest('.recipient-group-section');
@@ -372,6 +376,7 @@ const uploadRecipientButton = document.querySelectorAll('.uploadRecipientButton'
 if(uploadRecipientButton.length > 0){
     uploadRecipientButton.forEach(button => {
         button.addEventListener('click', function(event) {
+            event.preventDefault();
             const target = event.target; 
             target.style.display = 'none';
             const groupListWrapper = target.closest('.recipient-group-section');
@@ -489,6 +494,8 @@ document.addEventListener('click', function (event) {
 
         const recipientTr = target.closest('tr');
         const recipientID = recipientTr?.getAttribute('data-id');
+        const recipientname = target.getAttribute('data-recipientname');
+        console.log(recipientname);
 
         if (!recipientID) {
             Swal.fire({
@@ -501,7 +508,7 @@ document.addEventListener('click', function (event) {
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'Remove this recipient',
+            text: 'You are removing ' + recipientname,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -633,6 +640,7 @@ if (recipientManageForm) {
                     showConfirmButton: false,
                     timerProgressBar: true
                 }).then(() => {
+                    window.location.reload();
                     recipientManageForm.reset();
                 });
 
@@ -664,10 +672,12 @@ if (recipientManageForm) {
 Edit button JS start
  */
 
+
 document.addEventListener('click', function (event) {
-    if (event.target.classList.contains('editRecipient')) {
+    if (event.target.classList.contains('editRecipient') || event.target.classList.contains('viewRecipient')) {
         event.preventDefault();
 
+        
         const target = event.target;
 
         const recipientTr = target.closest('tr');
@@ -707,19 +717,35 @@ document.addEventListener('click', function (event) {
                     const zipcode    = data.data.zipcode;
                     const quantity    = data.data.quantity;
                     const greeting    = data.data.greeting;
+                    if (event.target.classList.contains('editRecipient')){
                     
-                    const form = document.querySelector('#recipient-manage-form form');
-                    form.querySelector('#recipient_id').value = id;
-                    form.querySelector('#full_name').value    = full_name;
-                    form.querySelector('#company_name').value = company_name;
-                    form.querySelector('#address_1').value    = address_1;
-                    form.querySelector('#address_2').value    = address_2;
-                    form.querySelector('#city').value         = city;
-                    form.querySelector('#state').value        = state;
-                    form.querySelector('#zipcode').value      = zipcode;
-                    form.querySelector('#quantity').value = quantity > 0 ? quantity : 1;
-                    form.querySelector('#greeting').value     = greeting;
-
+                        const form = document.querySelector('#recipient-manage-form form');
+                        form.querySelector('#recipient_id').value = id;
+                        form.querySelector('#full_name').value    = full_name;
+                        form.querySelector('#company_name').value = company_name;
+                        form.querySelector('#address_1').value    = address_1;
+                        form.querySelector('#address_2').value    = address_2;
+                        form.querySelector('#city').value         = city;
+                        form.querySelector('#state').value        = state;
+                        form.querySelector('#zipcode').value      = zipcode;
+                        form.querySelector('#quantity').value = quantity > 0 ? quantity : 1;
+                        form.querySelector('#greeting').value     = greeting;
+                    }
+                    
+                    if (event.target.classList.contains('viewRecipient')){
+                        let html = '<ul>';
+                        html += "<li>Full Name: " + full_name+ "</li>";
+                        html += "<li>Company Name: " + company_name+ "</li>";
+                        html += "<li>Mailing Address: " + address_1+ "</li>";
+                        html += "<li>Suite/Apt#: " + address_2+ "</li>";
+                        html += "<li>City: " + city+ "</li>";
+                        html += "<li>State: " + state+ "</li>";
+                        html += "<li>Quantity: " + quantity+ "</li>";
+                        html += "<li>Greeting: " + greeting+ "</li>";
+                        html += "</ul>";
+                        const viewpopup = document.querySelector('#recipient-view-details-popup .recipient-view-details-wrapper');
+                        viewpopup.innerHTML = html;
+                    }
                     setTimeout(function() {
                         lity(event.target.getAttribute('data-popup'));
                     }, 250);
@@ -787,6 +813,7 @@ document.addEventListener('click', function (event) {
 
 document.addEventListener('click', function (event) {
     if (event.target.classList.contains('affiliate-block-btn')) {
+        event.preventDefault();
         let isBlocked = event.target.getAttribute('data-blocked') === '1'; // Ensure it's compared as a string
         let action = isBlocked ? 'unblock' : 'block';
         let affiliateCode = event.target.getAttribute('data-affiliate');

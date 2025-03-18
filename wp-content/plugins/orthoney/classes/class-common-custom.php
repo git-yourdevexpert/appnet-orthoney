@@ -16,6 +16,7 @@ class OAM_COMMON_Custom {
 
         add_action('user_registration_after_submit_buttons', array($this, 'add_login_user_registration_after_submit_buttons'));
 
+        add_action('user_registration_after_login_form', array($this, 'custom_login_link'));
 
     }
 
@@ -29,12 +30,33 @@ class OAM_COMMON_Custom {
         return OH_PLUGIN_DIR_PATH . 'acf-json';
     }
 
+    public static function custom_login_link() {
+        if (isset($_GET['pl']) && $_GET['pl'] == 'true'){
+            echo '<div class="custom-login-btn"><a href="' .esc_url( ur_get_login_url() ) . '">Back to Login</a></div>';
+        }
+    }
+
     /**
      * ACF JSON Load Paths.
      */
     public function oh_acf_json_load_paths($paths) {
         $paths[] = OH_PLUGIN_DIR_PATH . 'acf-json';
         return $paths;
+    }
+
+    public static function check_process_exist($csv_name, $process_id) {
+        global $wpdb;
+        $order_process_table = OAM_Helper::$order_process_table;
+        $processExistQuery = $wpdb->prepare("
+        SELECT id
+        FROM {$order_process_table}
+        WHERE user_id = %d 
+        AND name = %s 
+        AND id != %d 
+        ", get_current_user_id(), $csv_name, $process_id);
+        $processExistResult = $wpdb->get_var($processExistQuery);
+
+        return !empty($processExistResult);
     }
 
     /**

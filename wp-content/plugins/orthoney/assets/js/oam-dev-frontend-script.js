@@ -30,12 +30,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (currentChunk === 0) {
                             Swal.fire({
                                 title: "Please wait, the recipient's order is being created.",
-                                html: `
-                                    <div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
+                                html: `<div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
                                         <div id="progress-bar" style="width: 0%; height: 10px; background-color: #3085d6;"></div>
                                     </div>
-                                    <p id="progress-text">0%</p>
-                                `,
+                                    <p id="progress-text">0%</p>`,
                                 showConfirmButton: false,
                                 allowOutsideClick: false,
                                 allowEscapeKey: false,
@@ -81,5 +79,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
             uploadChunk(); // Start processing
         }, 500); // Delay to ensure popup is shown
+    }
+    
+    
+    //append new passwordless login button beside social icon
+    const socialNetworksDiv = document.querySelector('.user-registration-social-connect-networks');
+    const passwordlessLoginDiv = document.querySelector('.user-registration-passwordless-login a');
+
+    if (socialNetworksDiv && passwordlessLoginDiv) {
+        const loginLink = document.createElement('a');
+        const passwordlessUrl = passwordlessLoginDiv.getAttribute('href'); // Get URL from data-url attribute
+        loginLink.href = passwordlessUrl;
+        loginLink.textContent = 'Passwordless Login';
+        loginLink.classList.add('custom-passwordless-link');
+        socialNetworksDiv.appendChild(loginLink);
     }
 });

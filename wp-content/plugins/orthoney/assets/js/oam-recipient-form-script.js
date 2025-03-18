@@ -111,11 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    document.querySelectorAll("#multiStepForm a").forEach((a) => {
-      a.addEventListener("click", function (event) {
-        // event.preventDefault();
-      });
-    });
+   
 
     document.addEventListener("click", function (event) {
       if (event.target.id === "singleAddressCheckout") {
@@ -432,6 +428,8 @@ document.addEventListener("DOMContentLoaded", function () {
           // Find the closest <tr> to the clicked button
           let clickedRow = this.closest("tr");
           let clickedRowId = clickedRow.getAttribute("data-id");
+          let totalCount = 0;
+          let recipientname = this.getAttribute("data-recipientname");
 
           // Find the group header above the clicked row
           let groupHeader = clickedRow.previousElementSibling;
@@ -443,6 +441,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           if (groupHeader) {
+            totalCount = groupHeader.getAttribute("data-count");
             let groupId = groupHeader.getAttribute("data-group");
 
             // Collect all data-id values in the group
@@ -464,7 +463,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             Swal.fire({
               title: "Are you sure?",
-              text: "Keep this and delete others",
+              text: `Total ${totalCount} records found for ${recipientname}. Keep this record and delete the other ${totalCount - 1}`,
               icon: "warning",
               showCancelButton: true,
               confirmButtonColor: "#3085d6",
@@ -520,87 +519,93 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
 
-    document
-      .querySelectorAll("#multiStepForm .editProcessName")
-      .forEach((button) => {
-        button.addEventListener("click", function (event) {
-          event.preventDefault();
-          const process_name = event.target.getAttribute("data-name"); // Get process name
+      document
+  .querySelectorAll("#multiStepForm .editProcessName")
+  .forEach((button) => {
+    button.addEventListener("click", function (event) {
+      event.preventDefault();
+      const process_name = event.target.getAttribute("data-name"); // Get process name
 
-          Swal.fire({
-            title: "Enter group name",
-            text: "The group name will be used for the future.",
-            input: "text",
-            inputPlaceholder: "Enter group name",
-            inputAttributes: {
-              autocapitalize: "off",
+      Swal.fire({
+        title: "Enter group name",
+        text: "The group name will be used for the future.",
+        input: "text",
+        inputPlaceholder: "Enter group name",
+        inputAttributes: {
+          autocapitalize: "off",
+        },
+        inputValue: process_name,
+        showCancelButton: true,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        allowEnterKey: false,
+        confirmButtonText: "Save and Continue",
+        showLoaderOnConfirm: true,
+        reverseButtons: true,
+        preConfirm: async (groupName) => {
+          if (!groupName) {
+            Swal.showValidationMessage("Group name is required!");
+            return false; // Prevent proceeding if validation fails
+          }
+
+          process_group_popup();
+
+          return fetch(oam_ajax.ajax_url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
             },
-            inputValue: process_name,
-            showCancelButton: true,
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            allowEnterKey: false,
-            confirmButtonText: "Save and Continue",
-            showLoaderOnConfirm: true,
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            allowEnterKey: false,
-            reverseButtons: true,
-            preConfirm: async (groupName) => {
-              if (!groupName) {
-                Swal.showValidationMessage("Group name is required!");
-              }
-              process_group_popup();
-              fetch(oam_ajax.ajax_url, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams({
-                  action: "edit_process_name",
-                  group_name: groupName,
-                  security: oam_ajax.nonce,
-                  pid: getURLParam("pid"),
-                }),
-              })
-                .then((response) => response.json())
-                .then((data) => {
-                  if (data.success) {
-                    document.querySelectorAll(".editProcessName").forEach(editProcessName => {
-                      editProcessName.setAttribute("data-name", groupName);
-                      editProcessName.closest("p").querySelector("strong").innerHTML = groupName;
-                  });
-
-                    Swal.fire({
-                      title: data.data.message,
-                      icon: "success",
-                      timer: 2500,
-                      showConfirmButton: false,
-                      timerProgressBar: true,
-                      allowOutsideClick: false,
-                      allowEscapeKey: false,
-                      allowEnterKey: false,
-                      showConfirmButton: false,
-                    });
-                  } else {
-                    Swal.fire({
-                      title: "Error",
-                      text: data.data?.message || "Failed to remove recipient.",
-                      icon: "error",
-                    });
+            body: new URLSearchParams({
+              action: "edit_process_name",
+              group_name: groupName,
+              security: oam_ajax.nonce,
+              pid: getURLParam("pid"),
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                document.querySelectorAll(".editProcessName").forEach(editProcessName => {
+                  editProcessName.setAttribute("data-name", groupName);
+                  
+                  // Get the closest parent <p> tag safely
+                  let parentParagraph = editProcessName.closest(".group-name");
+                  
+                  if (parentParagraph) {
+                    let strongTag = parentParagraph.querySelector("strong");
+                    if (strongTag) {
+                      strongTag.innerHTML = groupName;
+                    }
                   }
-                })
-                .catch((error) => {
-                  Swal.fire({
-                    title: "Error",
-                    text: "An error occurred while removing the recipient.",
-                    icon: "error",
-                  });
                 });
-            },
-          });
-        });
+
+                Swal.fire({
+                  title: data.data.message,
+                  icon: "success",
+                  timer: 2500,
+                  showConfirmButton: false,
+                  timerProgressBar: true,
+                  allowOutsideClick: false,
+                  allowEscapeKey: false,
+                  allowEnterKey: false,
+                });
+              } else {
+                throw new Error(data.data?.message || "Failed to update group name.");
+              }
+            })
+            .catch((error) => {
+              Swal.fire({
+                title: "Error",
+                text: error.message || "An error occurred while updating the group name.",
+                icon: "error",
+              });
+            });
+        },
       });
+    });
+  });
+
+    
 
     document.querySelectorAll("#multiStepForm .back").forEach((button) => {
       button.addEventListener("click", function (event) {
@@ -632,32 +637,43 @@ document.addEventListener("DOMContentLoaded", function () {
             "data-duplicatecount"
           );
 
-          let html = `<p>Out of the ${totalCount} records uploaded via CSV, `;
-          if (successCount != 0) {
-            html += `${successCount} were successfully added. `;
+          let html = `<p>Out of the ${totalCount} records uploaded, `;
+
+          if (successCount !== 0) {
+            html += `${successCount} were successfully added.</p> `;
           }
-          if (failCount != 0 && duplicateCount != 0) {
-            html += "However, ";
+
+          if (failCount !== 0 || duplicateCount !== 0) {
+            html += "<div class='exceptions'><strong>Exceptions: </strong><ul>";
           }
-          if (failCount != 0) {
-            html += `${failCount} records failed to upload. `;
+
+          html += `<li><span>Total Records: </span> ${totalCount}</li>`;
+
+          if (successCount !== 0) {
+            html += `<li><span>Successful Records: </span> ${successCount}</li>`;
           }
-          if (duplicateCount != 0) {
-            // Fix this condition to correctly check duplicate count
-            html += `${duplicateCount} repeated orders. </p>`;
+          if (failCount !== 0) {
+            html += `<li><span>Failed Records: </span> ${failCount}</li>`;
           }
-          html += `<p>Please confirm if you would like to proceed with the successfully added records.</p>`;
+          if (duplicateCount !== 0) {
+            html += `<li><span>Duplicate Records: </span> ${duplicateCount}</li>`;
+          }
+
+          html += `</ul></div>`;
+          // html += `<p>Please confirm if you would like to proceed with the successfully added records.</p>`;
 
           const result = await Swal.fire({
             title: "",
             html: html,
             icon: "question",
             showCancelButton: true,
+            showDenyButton: true,
             confirmButtonColor: "#3085d6",
+            denyButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText:
-              "Yes, Proceed With Duplicate and Success Records.",
-            cancelButtonText: "No, I Want to Add/Edit Records.",
+            confirmButtonText: "Proceed With Duplicate Records",
+            cancelButtonText: "No, I Want to Update/Fix Records",
+            denyButtonText: "Proceed Without Duplicate Records",
             allowOutsideClick: false,
             allowEscapeKey: false,
             allowEnterKey: false,
@@ -665,7 +681,7 @@ document.addEventListener("DOMContentLoaded", function () {
             width: "650px",
           });
 
-          if (result.isConfirmed) {
+          if (result.isConfirmed || result.isDenied) {
             process_group_popup();
 
             const form = document.querySelector("#multiStepForm");
@@ -678,6 +694,12 @@ document.addEventListener("DOMContentLoaded", function () {
               "currentStep",
               typeof currentStep !== "undefined" ? currentStep : ""
             );
+
+            if(result.isDenied){
+              formData.append("duplicate", 0);
+            }else{
+              formData.append("duplicate", 1);
+            }
             formData.append("security", oam_ajax.nonce);
 
             try {
@@ -701,18 +723,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
               }
 
-              // Swal.fire({
-              //   title: "Verification is successfully!",
-              //   icon: "success",
-              //   timer: 2000,
-              //   showConfirmButton: false,
-              //   timerProgressBar: true,
-              //   allowOutsideClick: false,
-              //   allowEscapeKey: false,
-              //   allowEnterKey: false,
-              //   showConfirmButton: false,
-              // });
-
               setTimeout(function () {
                 window.location.reload();
               }, 1000);
@@ -725,6 +735,7 @@ document.addEventListener("DOMContentLoaded", function () {
               );
             }
           }
+          
         });
       });
 
@@ -797,8 +808,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document
       .querySelectorAll('input[name="delivery_preference"]')
       .forEach(function (radio) {
-        radio.addEventListener("click", function (event) {
-          // event.preventDefault();
+        radio.addEventListener("click", function () {
+          
           if (!singleAddress || !multipleAddress) return;
           const singleInput = singleAddress.querySelector(
             'input[name="single_address_quantity"]'

@@ -147,6 +147,8 @@ class OAM_Helper{
         return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : 'UNKNOWN';
     }
 
+    
+
     public static function get_table_recipient_content($dataArray, $customGreeting, $reverify = 0, $duplicate = 0) {
         $html = '';
         $reasonsHtml = '';
@@ -185,7 +187,7 @@ class OAM_Helper{
 
                 
                 $html .= '<tr data-id="'.$id.'">';
-                $html .= '<td><input type="hidden" name="recipientIds[]" value="'.$id.'">'.$data->full_name.'</td>';
+                $html .= '<td><input type="hidden" name="'.(($reverify == 1) ? "recipientAddressIds[]" : "recipientIds[]").'" value="'.$id.'">'.$data->full_name.'</td>';
                 $html .= '<td>'.($data->company_name != "" ? $data->company_name : '') .'</td>';
                 
                 $html .= $addressPartsHtml;
@@ -202,15 +204,15 @@ class OAM_Helper{
                     if($data->address_verified == 0){
                         // $html .= '<button class="reverifyAddress w-btn us-btn-style_1" style="padding:10px"><small>Reverify Address</small></button>';
                     }
-                    $html .= ($data->address_verified == 0 ? ' <button class="editRecipient w-btn us-btn-style_1" data-popup="#recipient-manage-popup" data-address_verified="1"><small>Reverify Address</small></button>' : '') .'<button class="deleteRecipient far fa-trash"></button>';
+                    $html .= ($data->address_verified == 0 ? ' <button class="editRecipient far fa-edit" data-popup="#recipient-manage-popup" data-address_verified="1"></button>' : '') .'<button data-recipientname="'.$data->full_name.'" class="deleteRecipient far fa-trash"></button>';
                     $html .= '</td>';
                     
                 }else{
                     $html .= '<td>';
                     if($duplicate == 1){
-                        $html .= '<button class="keep_this_and_delete_others" data-popup="#recipient-manage-popup">Keep this and delete others</button>';
+                        $html .= '<button class="keep_this_and_delete_others" data-recipientname="'.$data->full_name.'"  data-popup="#recipient-manage-popup">Keep this and delete others</button>';
                     }
-                    $html .= '<button class="editRecipient far fa-edit" data-popup="#recipient-manage-popup"></button><button class="deleteRecipient far fa-trash"></button>';
+                    $html .= '<button class="viewRecipient far fa-eye" data-popup="#recipient-view-details-popup"></button><button class="editRecipient far fa-edit" data-popup="#recipient-manage-popup"></button><button data-recipientname="'.$data->full_name.'" class="deleteRecipient far fa-trash"></button>';
                     $html .= '</td>';
                 }
                 $html .= '</tr>';
@@ -359,7 +361,7 @@ class OAM_Helper{
         
     }
     
-    public static function get_order_process_address_verified_recipient($order_process_id){
+    public static function get_order_process_address_verified_recipient($order_process_id, $duplicate = 1){
         global $wpdb;
         $order_process_table           = OAM_Helper::$order_process_table;
         $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
@@ -401,15 +403,43 @@ class OAM_Helper{
         $verifiedRecipients = [];
         $unverifiedRecipients = [];
         
-        foreach ($recipients as $recipient) {
+        if($duplicate == 0){
+            foreach ($recipients as $recipient) {
+                // Create unique key for comparison
+                $key = $recipient->full_name . '|' . 
+                        str_replace($recipient->address_1, ',' , '' ). ' ' . str_replace($recipient->address_2 , ',' , '') . '|' . 
+                    $recipient->city . '|' . 
+                    $recipient->state . '|' . 
+                    $recipient->zipcode;
+                
+                // Store record in the map
+                if (!isset($recordMap[$key])) {
+                    $recordMap[$key] = [];
+                }
+                $recordMap[$key][] = $recipient;
+            }
+    
+            foreach ($recordMap as $key => $records) {
+                if (count($records) > 1) {
+
+                } else {
+                    $finalrecipients[] = $records[0];
+                }
+            }
+        } else{
+            $finalrecipients = $recipients;
+        }
+        
+        
+        foreach ($finalrecipients as $recipient) {
             
             if ($recipient->address_verified == 1) {
-               
                 $verifiedRecipients[] = $recipient;
             } else {
                 $unverifiedRecipients[] = $recipient;
             }
         }
+        
         
         if (!empty($unverifiedRecipients)) {
             $unverifiedRecordHtml = self::get_table_recipient_content($unverifiedRecipients, $customGreeting, 1);
@@ -434,6 +464,7 @@ class OAM_Helper{
             'verifiedData'          => $verifyRecordHtml,
             'unverifiedData'        => $unverifiedRecordHtml,
             'totalCount'            => count($unverifiedRecipients) + count($verifiedRecipients),
+            'csvCount'            => count($recipients),
         ];
 
         return json_encode(
@@ -551,6 +582,7 @@ class OAM_Helper{
                 </div>
 
                 <div class="footer-btn gfield--width-full">
+                <button type='button' class=" w-btn us-btn-style_1" data-lity-close>Cancel</button>
                     <button type="submit">Submit</button>
                 </div>
             </form>
@@ -568,6 +600,15 @@ class OAM_Helper{
         <?php
     }
     
+    public static function view_details_recipient_popup(){
+        ?>
+        <div id="recipient-view-details-popup" class="lity-hide black-mask full-popup popup-show">
+            <h2>Recipient Details</h2>
+            <div class="recipient-view-details-wrapper"></div>
+            <button type='button' class="w-btn us-btn-style_1" data-lity-close>close</button>
+        </div>
+        <?php
+    }
     public static function manage_recipient_popup(){
         ?>
         <div id="recipient-manage-popup" class="lity-hide black-mask full-popup popup-show">

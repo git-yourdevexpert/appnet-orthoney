@@ -174,8 +174,10 @@ class OAM_Ajax{
         $status      = isset($_POST['status']) ? $_POST['status'] : 1;
         $pid         = isset($_POST['pid']) ? intval($_POST['pid']) : 1; 
         $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
+        $recipientIds = isset($_POST['recipientAddressIds']) ? $_POST['recipientAddressIds']  : [];
         $stepData    = $_POST ?? [];
         $user_id     = get_current_user_id(); 
+        $placeholders = implode(',', array_fill(0, count($recipientIds), '%d'));
     
         $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
         $order_process_table = OAM_Helper::$order_process_table;
@@ -185,16 +187,16 @@ class OAM_Ajax{
             $recipients = $wpdb->get_results(
                 $wpdb->prepare(
                     "SELECT * FROM {$order_process_recipient_table} 
-                    WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d AND address_verified = %d",
-                    $user_id, $pid, 1, 1, 1
+                    WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d AND address_verified = %d AND id IN ($placeholders)",
+                    array_merge([$user_id, $pid, 1, 1, 1], $recipientIds)
                 )
             );
         }else{
             $recipients = $wpdb->get_results(
                 $wpdb->prepare(
                     "SELECT * FROM {$order_process_recipient_table} 
-                    WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d",
-                    $user_id, $pid, 1, 1
+                    WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d AND id IN ($placeholders)",
+                    array_merge([$user_id, $pid, 1, 1], $recipientIds)
                 )
             );
         }
@@ -328,6 +330,14 @@ class OAM_Ajax{
 
         $process_id  = isset($_POST['pid']) ? intval($_POST['pid']) : 0;
         $name    = isset($_POST['group_name']) ? sanitize_text_field($_POST['group_name']) : 'unknown_'.$process_id;
+
+        $check_process_status = OAM_COMMON_Custom::check_process_exist($name, $process_id);
+        if ($check_process_status) {
+            wp_send_json_error(['message' => 'The group name already exists. Please enter a different name.']);
+        }
+
+        
+
         $result = $wpdb->update(
             $order_process_table,
             [
@@ -356,7 +366,8 @@ class OAM_Ajax{
     
         $order_process_table           = OAM_Helper::$order_process_table;
         $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
-    
+        $duplicate  = isset($_POST['duplicate']) ? intval($_POST['duplicate']) : 1;
+        
         $address_list = [];
         $address_ids = [];
         $process_id  = isset($_POST['pid']) ? intval($_POST['pid']) : 0;
@@ -392,7 +403,37 @@ class OAM_Ajax{
                     $user, $process_id, 1, 1
                 )
             );
-    
+        
+            //
+            // if($duplicate == 0){
+            //     foreach ($recipients as $recipient) {
+            //         // Create unique key for comparison
+            //         $key = $recipient->full_name . '|' . 
+            //                 str_replace($recipient->address_1, ',' , '' ). ' ' . str_replace($recipient->address_2 , ',' , '') . '|' . 
+            //             $recipient->city . '|' . 
+            //             $recipient->state . '|' . 
+            //             $recipient->zipcode;
+                    
+            //         // Store record in the map
+            //         if (!isset($recordMap[$key])) {
+            //             $recordMap[$key] = [];
+            //         }
+            //         $recordMap[$key][] = $recipient;
+            //     }
+        
+            //     foreach ($recordMap as $key => $records) {
+            //         if (count($records) > 1) {
+            //             // This is a group of duplicates
+            //             $duplicateGroups[] = $records;
+            //         } else {
+            //             $address_list[] = $records;
+            //         }
+            //     }
+            // }else{
+            
+                
+            // }    
+
             foreach ($recipients as $recipient) {
                 $street = trim(($recipient->address_1 ?? '') . ' ' . ($recipient->address_2 ?? ''));
                 $address_list[] = [
@@ -404,7 +445,6 @@ class OAM_Ajax{
                     "candidates" => 10,
                 ];
             }
-    
             // Process addresses in chunks of 80
             $chunk_size = 80;
             $address_chunks = array_chunk($address_list, $chunk_size);
@@ -479,9 +519,14 @@ class OAM_Ajax{
         $chunk_size = 2;
         $current_chunk = isset($_POST['current_chunk']) ? intval($_POST['current_chunk']) : 0;
         $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) : 0;
-        $process_id = isset($_POST['pid']) ? sanitize_text_field($_POST['pid']) : '';
+        $process_id = isset($_POST['pid']) ? intval($_POST['pid']) : '';
         $process_name = (isset($_POST['csv_name']) && !empty($_POST['csv_name'])) ? sanitize_text_field($_POST['csv_name']) : 'unknown_' . $process_id;
         
+        $check_process_status = OAM_COMMON_Custom::check_process_exist($process_name, $process_id);
+        
+        if ($check_process_status) {
+            wp_send_json_error(['message' => 'The recipient list name already exists. Please enter a different name.']);
+        }
         // Retrieve existing CSV/XLSX file path if process exists
         $csv_name_query = $wpdb->get_var($wpdb->prepare("SELECT csv_name FROM {$order_process} WHERE id = %d LIMIT 1", $process_id));
         $file_path = $csv_name_query ? $recipient_dir . '/' . $csv_name_query : '';
@@ -1078,7 +1123,7 @@ class OAM_Ajax{
             $totalCount = count($successData) + count($failData) + $totalDuplicates + count($newData);
             // Generate new data HTML
             if(!empty($newData)){
-                $newDataHtml .= '<div class="heading-title"><h5 class="table-title">New Recipients</h5></div>';
+                $newDataHtml .= '<div class="heading-title"><h5 class="table-title">New Recipients</h5><div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div></div>';
                 $newDataHtml .= OAM_Helper::get_table_recipient_content($newData, $customGreeting);
                 
             }

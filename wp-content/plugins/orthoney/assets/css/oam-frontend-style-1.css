@@ -10,7 +10,7 @@ table tr.hide{
 
 .loader{
     transition: all 0.5s ease-in-out;
-    display: none;
+    display: block;
     position: fixed;
     background-color: rgba(0, 0, 0, 0.5);
     left: 0;
