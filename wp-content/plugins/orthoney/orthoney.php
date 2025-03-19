@@ -60,8 +60,6 @@ if(isset($_GET['database_refresh']) && $_GET['database_refresh'] == 'okay' ){
     add_action('init', 'orthoney_create_custom_tables');
 }
 
-
-
 if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
     function user_registration_pro_generate_magic_login_link( $email, $nonce, $redirect_url ) {
         $user  = get_user_by( 'email', $email );
@@ -92,67 +90,6 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
         return $url;
     }
 }
-
-
-add_filter('render_block', function ($block_content, $block) {
-    if (!is_checkout()) {
-        return $block_content;
-    }
-
-    // Target the WooCommerce Checkout Order Summary Cart Items Block
-    if (isset($block['blockName']) && $block['blockName'] === 'woocommerce/checkout-order-summary-cart-items-block') {
-        
-        // Ensure WooCommerce session is available
-        if (!WC()->session) {
-            return $block_content;
-        }
-
-        $cart = WC()->session->get('cart', []);
-        $status = false;
-        $total_quantity = 0;
-        $table_content = "";
-
-        foreach ($cart as $cart_item) {
-            // Ensure 'quantity' exists before adding
-            if (isset($cart_item['quantity'])) {
-                $total_quantity += (int) $cart_item['quantity']; // Cast to integer to avoid unexpected issues
-            }
-
-            if (isset($cart_item['order_type']) && $cart_item['order_type'] === 'multi-recipient-order') {
-                $status = true;
-                $table_content .= '<tr>';
-                $table_content .= '<td>' . (isset($cart_item['full_name']) ? esc_html($cart_item['full_name']) : '-') . '</td>';
-                $table_content .= '<td>' . (isset($cart_item['company_name']) ? esc_html($cart_item['company_name']) : '-') . '</td>';
-                $table_content .= '<td>' . (isset($cart_item['address']) ? esc_html($cart_item['address']) : '-') . '</td>';
-                $table_content .= '<td>' . (isset($cart_item['quantity']) ? esc_html($cart_item['quantity']) : '0') . '</td>';
-                $table_content .= '</tr>';
-            }
-        }
-
-        if ($status) {
-            $custom_content = '<div class="viewAllRecipientsPopupCheckoutContent"><div class="item"><strong>Total Honey Jars:</strong> ' . esc_html($total_quantity) . '</div>';
-            $custom_content .= '<div class="item"><strong>Total Recipients:</strong> ' . esc_html(count($cart)) . '</div>';
-            $custom_content .= '<div class="item"><a href="#viewAllRecipientsPopupCheckout" class="viewAllRecipientsPopupCheckout btn-underline" data-lity>View All Recipients Details</a></div>';
-            // Popup Content
-            $custom_content .= '<div id="viewAllRecipientsPopupCheckout" class="lity-popup-normal lity-hide">
-                <div class="popup-show order-process-block">
-                    <h4>All Recipients Details</h4>
-                    <table>
-                        <thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th></tr></thead>
-                        <tbody>' . $table_content . '</tbody>
-                    </table>
-                </div>
-            </div></div>';
-
-            return $block_content . $custom_content;
-        }
-    }
-
-    return $block_content;
-}, 10, 2);
-
-
-
 
 
 
@@ -352,10 +289,7 @@ add_filter('render_block', function ($block_content, $block) {
 // add_action('wp_ajax_nopriv_orthoney_thank-you-sub-orders-creation_ajax', 'create_sub_orders_ajax');
 
 
-add_filter( 'woocommerce_order_query_args', function( $query_args ) {
-    $query_args['parent_order_id'] = 0;
-    return $query_args;
-});
+
 
 // function custom_woocommerce_myaccount_template($template, $template_name, $template_path) {
 //     // Check if it's the My Account dashboard template
