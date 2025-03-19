@@ -14,69 +14,74 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         add_shortcode('recipient_multistep_form', array($this, 'recipient_multistep_form_handler'));
     }
 
-    public function recipient_multistep_form_handler(){
-        ob_start();
+    public function recipient_multistep_form_handler() {
         if (!is_user_logged_in()) {
-            $message = 'If you want to access this page, please';
-            $url = ur_get_login_url();
-            $btn_name = 'Log In';
-            return OAM_COMMON_Custom::message_design_block($message, $url, $btn_name);
+            return OAM_COMMON_Custom::message_design_block(
+                'If you want to access this page, please',
+                ur_get_login_url(),
+                'Log In'
+            );
         }
-        
-        echo "<div class='order-block-wrap'>";
-        echo "<div class='loader multiStepForm'><div><h2 class='swal2-title' id='swal2-title'>Processing...</h2><div class='swal2-html-container'>Please wait while we process your request.</div><div class='loader-5'></div></div></div>";
-        echo "<div class='order-process-block heading-open-sans'>";
-        
-        $setData = [];
-        $csv_name = '';
-        $stepData_1 = [];
-        $currentStep = 0;
-        if (isset($_GET['pid']) && !empty($_GET['pid'])) {
-            global $wpdb;
-            $order_process_table = OAM_Helper::$order_process_table;
-            $user = get_current_user_id();
-            $result = $wpdb->get_row($wpdb->prepare(
-                "SELECT * FROM {$order_process_table} WHERE user_id = %d AND id = %d",
-                $user,
-                intval($_GET['pid'])
-            ));
-            if (!empty($result)) {
-                if (!empty(json_decode($result->data, true))) {
-                    $setData  = json_decode($result->data);
-                    // echo "<pre>";
-                    // print_r($setData );
-                    // echo "</pre>";
+    
+        ob_start();
+        echo "<div class='order-block-wrap'>
+                <div class='loader multiStepForm'>
+                    <div>
+                        <h2 class='swal2-title'>Processing...</h2>
+                        <div class='swal2-html-container'>Please wait while we process your request.</div>
+                        <div class='loader-5'></div>
+                    </div>
+                </div>
+                <div class='order-process-block heading-open-sans'>";
+    
+                $setData = [];
+                $csv_name = '';
+                $group_name = '';
+                $currentStep = 0;
+            
+                if (!empty($_GET['pid'])) {
+                    global $wpdb;
+                    $order_process_table = OAM_Helper::$order_process_table;
+                    $user = get_current_user_id();
+                    $result = $wpdb->get_row($wpdb->prepare(
+                        "SELECT * FROM {$order_process_table} WHERE user_id = %d AND id = %d",
+                        $user, intval($_GET['pid'])
+                    ));
+                    
+                    if ($result) {
+                        $setData = json_decode($result->data) ?? [];
+                        $currentStep = max(0, (int) $result->step);
+                        $csv_name = $result->csv_name ?? '';
+                        $group_name = $result->name ?? '';
+                    }
                 }
-                $currentStep  = $result->step;
-                $csv_name  = $result->csv_name;
-                $group_name  = $result->name;
-                if ($currentStep < 0) {
-                    $currentStep = 0;
-                }
-            }
-        }
-?>
-        <form id="multiStepForm" method="POST" enctype="multipart/form-data">
-            <input type="hidden" id="pid" name="pid" value="<?php echo (isset($_GET['pid']) ? $_GET['pid'] : '') ?>">
-            <?php
-            self::step_nav($currentStep);
-            self::step_1($setData);
-            self::step_2($setData);
-            self::step_3($setData, $csv_name);
-            self::step_4($setData, $currentStep, $group_name);
-            self::step_5($setData, $currentStep, $group_name);
-            ?>
-        </form>
-    <?php
-        self::popups();
-        echo "</div>";
-        echo "<div class='animate-bee moveImgup'><div class='image-block'><img decoding='async' src='https://orthoney.backstagedev.com/wp-content/uploads/2025/02/honey-bee.png'></div>
-        </div>";
-        echo "</div>";
+                ?>
+                <form id="multiStepForm" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" id="pid" name="pid" value="<?php echo $_GET['pid'] ?? ''; ?>">
+                    <?php
+                    self::step_nav($currentStep);
+                    self::step_1($setData);
+                    self::step_2($setData);
+                    self::step_3($setData, $csv_name);
+                    self::step_4($setData, $currentStep, $group_name);
+                    self::step_5($setData, $currentStep, $group_name);
+                    ?>
+                </form>
+                <?php
+                self::popups();
+                echo "</div>
+              <div class='animate-bee moveImgup'>
+                  <div class='image-block'>
+                      <img decoding='async' src='" . OH_PLUGIN_DIR_URL . "assets/image/honey-bee.png'>
+                  </div>
+              </div>
+          </div>";
+        
         return ob_get_clean();
     }
-    public static function step_nav($currentStep = 0)
-    { ?>
+
+    public static function step_nav($currentStep = 0){ 
+        ?>
         <div id="stepNav" class="tab-selections">
             <span class="step-nav-item <?php echo $currentStep == 0 ? 'active' : '' ?>" data-step="0">Step 1: Select Organization</span>
             <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Delivery Preference</span>
@@ -85,15 +90,15 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             <span class="step-nav-item <?php echo ($currentStep == 4 or $currentStep == 5) ? 'active' : '' ?>" data-step="4">Step 5: Verify Address</span>
             <span class="step-nav-item" data-step="5">Step 6: Checkout</span>
         </div>
-    <?php
+        <?php
     }
-    public static function step_1($data)
-    {
+
+    public static function step_1($data){
         $affiliate = 'Orthoney';
         if (!empty($data)) {
             $affiliate = $data->affiliate_select != '' ? $data->affiliate_select : 'Orthoney';
         }
-    ?>
+        ?>
         <div class="step" id="step1">
             <div class="g-cols wpb_row via_grid laptops-cols_inherit tablets-cols_inherit mobiles-cols_1 valign_top type_default step-one">
                 <div class="organization-step">
@@ -141,14 +146,14 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     <?php
     }
 
-    public static function step_2($data)
-    {
+    public static function step_2($data){
         $delivery_preference = '';
         $multiple_address_output = '';
         $single_address_quantity = '';
         $single_address_greeting = '';
         $upload_type_output = '';
         $groups = [];
+
         if (!empty($data)) {
             $delivery_preference = (!empty($data->delivery_preference)) ? $data->delivery_preference : '';
             $multiple_address_output = $data->multiple_address_output ? $data->multiple_address_output : '';
@@ -157,7 +162,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             $single_address_greeting = $data->single_address_greeting ? $data->single_address_greeting : '';
             $groups = isset($data->groups) ? $data->groups : [];
         }
-    ?>
+        ?>
         <div class="step" id="step2">
             <div class="wpb_column vc_column_container">
                 <div class="vc_column-inner">
@@ -265,8 +270,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     <?php
     }
 
-    public static function step_3($data, $csv_name = '')
-    {
+    public static function step_3($data, $csv_name = ''){
         $groups = [];
         $csv_dir = OAM_Helper::$process_recipients_csv_url;
         $greeting = '';
@@ -276,7 +280,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             $csvName = $data->csv_name != '' ? $data->csv_name : '';
             $greeting = (!empty($data->greeting)) ? $data->greeting : '';
         }
-    ?>
+        ?>
         <div class="step" id="step3">
             <div class="wpb_column vc_column_container">
                 <div class="vc_column-inner">
@@ -348,181 +352,173 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     <?php
     }
 
-    public static function step_4($data,$currentStep, $group_name)
-    {
-    
-
+    public static function step_4($data, $currentStep, $group_name){
         $data = '';
         $view_all_recipients_btn_html = '';
         $oam_ajax = new OAM_Ajax();
-
-        if (isset($_GET['pid']) and $_GET['pid'] != '') {
+    
+        // Fetch recipient data based on 'pid' parameter
+        if (isset($_GET['pid']) && $_GET['pid'] != '') {
             $data = $oam_ajax->orthoney_get_csv_recipient_ajax_handler(get_current_user_id(), $_GET['pid']);
         } else {
             $data = $oam_ajax->orthoney_get_csv_recipient_ajax_handler(get_current_user_id());
         }
-
+    
         $result = json_decode($data, true);
-    ?>
-        <div class="step" id="step4">
-        <div class="heading-title">
-            <div>
-            <?php
-                
-                echo '<div class="group-name">Group Name: <strong>' . $group_name . '</strong><button class="editProcessName far fa-edit" data-name="' . $group_name . '"></button></div>';
-               if ($result['data']['totalCount'] != 0) {
-                   echo '<p class="num-count">Number of Recipients: <span>' . $result['data']['totalCount'] . '</span> </p>';
-               }
-               ?>
-            </div>
-            <div>
-            <button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button>
-            </div>
-        </div>
-            <div class="block-row">
-            <?php
-                
-
-                echo '</div>';
-                if (!empty($result)) {
-                    if ($result['success'] == 1) {
-                        echo '<div class="recipient-group-nav">';
-                        $sections = ['fail' => 'Failed', 'success' => 'Success', 'duplicate' => 'Duplicate', 'new' => 'New'];
-
-                        foreach ($sections as $key => $label) {
-                            $countKey = $key . 'Count';
-                            if (!empty($result['data'][$countKey])) {
-                                echo '<button class="scroll-section-btn" data-section="' . $key . 'CSVData">' . $label . ' Recipient (' . $result['data'][$countKey] . ')</button>';
-                            }
-                        }
-                        echo '</div>';
-
-                        echo '<div class="recipient-group-section">';
-                        foreach ($sections as $key => $label) {
-                            $countKey = $key . 'Count';
-                            $dataKey = $key . 'Data';
-                            if (!empty($result['data'][$countKey])) {
-                                $viewAllBtn = '';
-                                if ($key != 'duplicate') {
-                                    $viewAllBtn = ($result['data'][$countKey] > 10) ? '<button class="view-all-recipients btn-underline" data-status="0">View All Recipients</button>' : '';
-                                }
-                                echo '<div id="' . $key . 'CSVData" class="table-data">' . $result['data'][$dataKey] . $viewAllBtn . '</div>';
-                            }
-                        }
-                        echo '</div>';
-
-                        if (!empty($_GET['pid']) && empty($result['data']['newCount'])) {
-                            ?>
-                            <div class="heading-title">
-                                <div><h5 class="table-title">New Recipients</h5></div>
-                                <div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div>
-                            </div>
-                            <?php
-                        }
-                    }
-                }
-                if ($result['data']['totalCount'] != 0) { ?>
-                    <div class="two-cta-block">
-                        <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn">Save Progress</a>
-                        <button class="verifyRecipientAddressButton w-btn us-btn-style_1 next-step"
-                            data-totalCount="<?php echo $result['data']['totalCount'] ?>"
-                            data-successCount="<?php echo $result['data']['successCount'] ?>"
-                            data-failCount="<?php echo $result['data']['failCount'] ?>"
-                            data-duplicateCount="<?php echo $result['data']['duplicateCount'] ?>">Next</button>
-                    </div>
-                <?php  } ?>
-            </div>
-            <!-- </div> -->
-        <?php
-    }
-
-    public static function step_5($data, $currentStep, $group_name)
-    {
-        $duplicate = isset($data->duplicate) ? $data->duplicate : 1;
-        $singleAddressCheckoutStatus = '';
-        if (!empty($data)) {
-            $singleAddressCheckoutStatus = (!empty($data->singleAddressCheckoutStatus)) ? $data->singleAddressCheckoutStatus : '';
-            $checkout_proceed_with_multi_addresses_status = (!empty($data->checkout_proceed_with_multi_addresses_status)) ? $data->checkout_proceed_with_multi_addresses_status : '';
-        }
         ?>
-            
-                <?php
-                if (!empty($data)) {
-                    if (!empty($data->delivery_preference) && $data->delivery_preference == 'single_address') {
-                        self::single_address_form($currentStep);
-                    }
-
-                    if (!empty($data->action) && $data->action == 'orthoney_order_step_process_completed_ajax' && !empty($data->pid)) {
-                        $data = OAM_Helper::get_order_process_address_verified_recipient($data->pid, $duplicate);
-
-                        $result = json_decode($data, true);
-
-                        if (!empty($result)) {
-                            if ($result['success'] == 1) {
-                                // echo $result['data']['csvCount'];
-                                echo '<div class="heading-title"><div><div class="group-name">Group Name: <strong>' . $group_name . '</strong><button class="editProcessName far fa-edit" data-name="' . $group_name . '"></button></div><p class="num-count">Number of Final Recipients: <span>'.$result['data']['totalCount'].'</span> </p>  </div></div>';
-                                echo '<div class="recipient-group-nav">';
-                                if ($result['data']['unverifiedRecordCount'] != 0) {
-                                    echo '<button class="scroll-section-btn" data-section="unverified-block">Unverified Addresses (' . $result['data']['unverifiedRecordCount'] . ') </button>';
-                                }
-                                if ($result['data']['verifiedRecordCount'] != 0) {
-                                    echo '<button class="scroll-section-btn" data-section="verified-block">Verified Addresses (' . $result['data']['verifiedRecordCount'] . ') </button>';
-                                }
-
-                                echo '</div>';
-                                echo '<div class="recipient-group-section">';
-                                echo '<div class="unverified-block" id="unverified-block">';
-                                if ($result['data']['unverifiedRecordCount'] != 0) {
-                                    $view_all_recipients_btn_html = '';
-                                    if ($result['data']['verifiedRecordCount'] > 10) {
-                                        $view_all_recipients_btn_html = '<button class="view-all-recipients btn-underline" data-status="0">View All Recipients</button>';
-                                    }
-                                    echo '<div class="block-row">';
-                                    echo '<div class="block-inner"> <h3 class="title">Unverified Addresses</h3>';
-                                    echo '<p>Out of ' . $result['data']['totalCount'] . ' Recipients ' . $result['data']['unverifiedRecordCount'] . ' Recipients are unverified</p> </div>';
-                                    // echo "<button id='verified-multiple-addresses' class=' w-btn us-btn-style_1'>Verified Multiple Addresses</button>";
-                                    echo '</div>';
-                                    echo '<div id="unverifiedRecord">' . $result['data']['unverifiedData'] . $view_all_recipients_btn_html . '</div>';
-                                }
-                                echo '</div>';
-                                echo '<div class="verified-block" id="verified-block">';
-                                if ($result['data']['verifiedRecordCount'] != 0) {
-                                    $view_all_recipients_btn_html = '';
-                                    if ($result['data']['verifiedRecordCount'] > 10) {
-                                        $view_all_recipients_btn_html = '<button class="view-all-recipients btn-underline" data-status="0">View All Recipients</button>';
-                                    }
-                                    echo '<div class="block-row">';
-                                    echo '<div class="block-inner"> <h3 class="title">Verified Addresses</h3>';
-                                    echo '<p>Out of ' . $result['data']['totalCount'] . ' Recipients ' . $result['data']['verifiedRecordCount'] . ' Recipients are verified</p> </div>';
-                                    echo '</div>';
-                                    echo '<div id="verifyRecord">' . $result['data']['verifiedData'] . $view_all_recipients_btn_html . '</div>';
-                                }
-                                echo '</div>';
-
-                                echo '<div class="two-cta-block">
-                            <input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">
-                            <input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkout_proceed_with_multi_addresses_status . '">';
-                                if ($result['data']['unverifiedRecordCount'] != 0) {
-                                    echo '<button id="checkout_proceed_with_only_unverified_addresses"  class="w-btn us-btn-style_1 outline-btn">Continue With Unverified Addresses</button>';
-                                }
-                                if ($result['data']['verifiedRecordCount'] != 0) {
-                                    echo '<button id="checkout_proceed_with_only_verified_addresses" class="w-btn us-btn-style_1 outline-btn">Proceed With Only Verified Addresses</button>';
-                                }
-
-                                echo '</div>';
-
-                                echo '</div>';
-                            }
+    
+        <div class="step" id="step4">
+            <div class="heading-title">
+                <div>
+                    <div class="group-name">
+                        Group Name: <strong><?php echo $group_name; ?></strong>
+                        <button class="editProcessName far fa-edit" data-name="<?php echo $group_name; ?>" data-tippy="Edit Group Name"></button>
+                    </div>
+                    <?php if ($result['data']['totalCount'] != 0) : ?>
+                        <p class="num-count">Number of Recipients: <span><?php echo $result['data']['totalCount']; ?></span></p>
+                    <?php endif; ?>
+                </div>
+                <div>
+                    <button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button>
+                </div>
+            </div>
+    
+            <div class="block-row"></div>
+    
+            <?php if (!empty($result) && $result['success'] == 1) : ?>
+                <div class="recipient-group-nav">
+                    <?php
+                    $sections = [
+                        'fail'     => 'Failed',
+                        'success'  => 'Success',
+                        'duplicate' => 'Duplicate',
+                        'new'      => 'New'
+                    ];
+    
+                    foreach ($sections as $key => $label) {
+                        $countKey = $key . 'Count';
+                        if (!empty($result['data'][$countKey])) {
+                            echo '<button class="scroll-section-btn" data-section="' . $key . 'CSVData">' 
+                                . $label . ' Recipient (' . $result['data'][$countKey] . ')</button>';
                         }
                     }
-                }
-                ?>
-            </div>
+                    ?>
+                </div>
+    
+                <div class="recipient-group-section">
+                    <?php
+                    foreach ($sections as $key => $label) {
+                        $countKey = $key . 'Count';
+                        $dataKey = $key . 'Data';
+                        if (!empty($result['data'][$countKey])) {
+                            $viewAllBtn = '';
+                            if ($key != 'duplicate' && $result['data'][$countKey] > 10) {
+                                $viewAllBtn = '<button class="view-all-recipients btn-underline" data-status="0">View All Recipients</button>';
+                            }
+                            echo '<div id="' . $key . 'CSVData" class="table-data">' . $result['data'][$dataKey] . $viewAllBtn . '</div>';
+                        }
+                    }
+                    ?>
+                </div>
+    
+                <?php if (!empty($_GET['pid']) && empty($result['data']['newCount'])) : ?>
+                    <div class="heading-title">
+                        <div><h5 class="table-title">New Recipients</h5></div>
+                        <div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div>
+                    </div>
+                <?php endif; ?>
+    
+            <?php endif; ?>
+    
+            <?php if ($result['data']['totalCount'] != 0) : ?>
+                <div class="two-cta-block">
+                    <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Save Progress">Save Progress</a>
+                    <button data-tippy="Move to Next Step" class="verifyRecipientAddressButton w-btn us-btn-style_1 next-step"
+                        data-totalCount="<?php echo $result['data']['totalCount']; ?>"
+                        data-successCount="<?php echo $result['data']['successCount']; ?>"
+                        data-failCount="<?php echo $result['data']['failCount']; ?>"
+                        data-duplicateCount="<?php echo $result['data']['duplicateCount']; ?>">
+                        Next
+                    </button>
+                </div>
+            <?php endif; ?>
+        </div>
+    
         <?php
     }
+    
 
-    public static function single_address_form($currentStep)
-    {
+    public static function step_5($data, $currentStep, $group_name){
+
+        $duplicate = $data->duplicate ?? 1;
+        $recipientAddressIds = $data->recipientAddressIds ?? [];
+        $singleAddressCheckoutStatus = $data->singleAddressCheckoutStatus ?? '';
+        $checkoutProceedStatus = $data->checkout_proceed_with_multi_addresses_status ?? '';
+
+        echo '<div class="step" id="step5">';
+
+        if (!empty($data->delivery_preference)) {
+            if ($data->delivery_preference == 'single_address') {
+                self::single_address_form($currentStep);
+            }
+
+            if ($data->delivery_preference == 'multiple_address' && !empty($data->pid)) {
+                $data = OAM_Helper::get_order_process_address_verified_recipient($data->pid, $duplicate, $recipientAddressIds);
+                $result = json_decode($data, true);
+
+                if (!empty($result) && $result['success'] == 1) {
+                    echo '<div class="heading-title"><div>';
+                    echo '<div class="group-name">Group Name: <strong>' . $group_name . '</strong>';
+                    echo '<button class="editProcessName far fa-edit" data-tippy="Edit Group Name" data-name="' . $group_name . '"></button></div>';
+                    echo '<p class="num-count">Number of Final Recipients: <span>' . $result['data']['totalCount'] . '</span></p>';
+                    echo '</div></div>';
+
+                    echo '<div class="recipient-group-nav">';
+                    if ($result['data']['unverifiedRecordCount'] > 0) {
+                        echo '<button class="scroll-section-btn" data-section="unverified-block">Unverified Addresses (' . $result['data']['unverifiedRecordCount'] . ')</button>';
+                    }
+                    if ($result['data']['verifiedRecordCount'] > 0) {
+                        echo '<button class="scroll-section-btn" data-section="verified-block">Verified Addresses (' . $result['data']['verifiedRecordCount'] . ')</button>';
+                    }
+                    echo '</div>';
+
+                    echo '<div class="recipient-group-section">';
+                    self::render_recipient_block('Unverified Addresses', 'unverified-block', 'unverifiedRecord', $result['data']['unverifiedRecordCount'], $result['data']['totalCount'], $result['data']['unverifiedData']);
+                    self::render_recipient_block('Verified Addresses', 'verified-block', 'verifyRecord', $result['data']['verifiedRecordCount'], $result['data']['totalCount'], $result['data']['verifiedData']);
+                    echo '</div>';
+
+                    echo '<div class="two-cta-block">';
+                    echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
+                    echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';
+                    if ($result['data']['unverifiedRecordCount'] > 0) {
+                        echo '<button id="checkout_proceed_with_only_unverified_addresses" class="w-btn us-btn-style_1 outline-btn">Continue With Unverified Addresses</button>';
+                    }
+                    if ($result['data']['verifiedRecordCount'] > 0) {
+                        echo '<button id="checkout_proceed_with_only_verified_addresses" class="w-btn us-btn-style_1 outline-btn">Proceed With Only Verified Addresses</button>';
+                    }
+                    echo '</div>';
+                }
+            }
+        }
+
+        echo '</div>';
+    }
+
+    private static function render_recipient_block($title, $block_id, $record_id, $recordCount, $totalCount, $data){
+        if ($recordCount > 0) {
+            $viewAllBtn = $recordCount > 10 ? '<button class="view-all-recipients btn-underline" data-status="0">View All Recipients</button>' : '';
+            echo '<div class="' . $block_id . '" id="' . $block_id . '">';
+            echo '<div class="block-row">';
+            echo '<div class="block-inner"><h3 class="title">' . $title . '</h3>';
+            echo '<p>Out of ' . $totalCount . ' Recipients, ' . $recordCount . ' are ' . strtolower($title) . '.</p></div>';
+            echo '</div>';
+            echo '<div id="' . $record_id . '">' . $data . $viewAllBtn . '</div>';
+            echo '</div>';
+        }
+    }
+
+
+    public static function single_address_form($currentStep){
         $user_id = get_current_user_id();
         $shipping_address = array(
             'address_1'  => get_user_meta($user_id, 'shipping_address_1', true),
@@ -575,8 +571,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 </div>
         <?php
     }
-    public static function popups()
-    {
+
+    public static function popups(){
         echo OAM_Helper::manage_recipient_popup();
         echo OAM_Helper::view_details_recipient_popup();
     }

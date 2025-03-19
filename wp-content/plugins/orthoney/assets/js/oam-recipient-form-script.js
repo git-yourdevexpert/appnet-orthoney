@@ -667,7 +667,8 @@ document.addEventListener("DOMContentLoaded", function () {
             html: html,
             icon: "question",
             showCancelButton: true,
-            showDenyButton: true,
+            showConfirmButton: duplicateCount !== 0 ? true : false,
+            showDenyButton: successCount !== 0 ? true : false,
             confirmButtonColor: "#3085d6",
             denyButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
@@ -1140,7 +1141,8 @@ document.addEventListener("DOMContentLoaded", function () {
           .then((response) => response.json())
           .then((data) => {
             if (data.success) {
-              let message = data.data.message;
+              // let message = data.data.message;
+              let message = '';
               const processCheckoutStatus = document.querySelector(
                 'input[name="processCheckoutStatus"]'
               );
@@ -1156,13 +1158,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 message = "Order is preparing.";
               }
 
-              Swal.fire({
-                title: message,
-                icon: "success",
-                timer: 2500,
-                showConfirmButton: false,
-                timerProgressBar: true,
-              });
+              if(message != ''){
+                Swal.fire({
+                  title: message,
+                  icon: "success",
+                  timer: 2500,
+                  showConfirmButton: false,
+                  timerProgressBar: true,
+                });
+              }
 
               // Redirect to checkout after a delay (uncomment if needed)
               setTimeout(() => {

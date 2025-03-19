@@ -1,0 +1,227 @@
+<?php 
+// Prevent direct access
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+function schedule_create_sub_order_cron($order_id) {
+    if (!$order_id) {
+        return;
+    }
+
+    global $wpdb;
+    
+    $order_process_table = OAM_Helper::$order_process_table;
+    $group_table = OAM_Helper::$group_table;
+    $group_recipient_table = OAM_Helper::$group_recipient_table;
+
+    $main_order = wc_get_order($order_id);
+    if (!$main_order) {
+        return;
+    }
+
+    $order_items = $main_order->get_items();
+    $order_items_count = count($order_items);
+    
+    $single_order = 0;
+    $process_id = 0;
+    $recipient_id = 0;
+
+    foreach ($order_items as $item) {   
+        $single_order_meta = $item->get_meta('single_order', true);
+        
+        if (!empty($single_order_meta) && $single_order_meta == 1) {
+            $single_order = 1;
+            $process_id = $item->get_meta('process_id', true) ?: 0;
+        } else {
+            $single_order = $item->get_meta('_recipient_order_type', true) ?: '';
+            $process_id = $item->get_meta('_recipient_process_id', true) ?: 0;
+            $recipient_id = $item->get_meta('_recipient_recipient_id', true) ?: 0;
+        }
+    }
+
+    $order_type = ($single_order == 1) ? 'single-order' : 'multi-recipient-order';
+
+    if ($process_id) {
+        $wpdb->update(
+            $order_process_table,
+            ['order_type' => $order_type, 'order_id' => $order_id],
+            ['id' => $process_id]
+        );
+    }
+
+    if ($order_type !== 'multi-recipient-order') {
+        return;
+    }
+
+    // Fetch process data only if needed
+    $processData = $wpdb->get_row($wpdb->prepare(
+        "SELECT user_id, name FROM {$order_process_table} WHERE id = %d",
+        $process_id
+    ));
+
+    if (!$processData) {
+        return;
+    }
+
+    // Check if group entry exists
+    $group_id = $wpdb->get_var($wpdb->prepare(
+        "SELECT id FROM {$group_table} WHERE order_id = %d AND pid = %d",
+        $order_id, $process_id
+    ));
+
+    // Insert if group does not exist
+    if (!$group_id) {
+        $wpdb->insert($group_table, [
+            'user_id'  => $processData->user_id,
+            'pid'      => $process_id,
+            'order_id' => $order_id,
+            'name'     => sanitize_text_field($processData->name),
+        ]);
+        $group_id = $wpdb->insert_id;
+    }
+
+    if ($group_id) {
+        $groupRecipientCount = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(id) FROM $group_recipient_table WHERE group_id = %d",
+            $group_id
+        ));
+
+        if ($groupRecipientCount !== $order_items_count && !wp_next_scheduled('create_sub_order', [$order_id, $group_id, $process_id, 0])) {
+            wp_schedule_single_event(time() + 300, 'create_sub_order', [$order_id, $group_id, $process_id, 0]);
+            error_log("Scheduled cron job for Order ID: $order_id");
+        }
+    }
+}
+add_action('woocommerce_thankyou', 'schedule_create_sub_order_cron', 10, 1);
+
+
+add_action('create_sub_order', 'process_sub_order_creation', 10, 4);
+function process_sub_order_creation($order_id, $group_id, $process_id) {
+    global $wpdb;
+
+    $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+    $group_recipient_table = OAM_Helper::$group_recipient_table;
+
+    if (!$order_id) {
+        error_log("Invalid Order ID in process_sub_order_creation");
+        return;
+    }
+
+    $main_order = wc_get_order($order_id);
+    if (!$main_order) {
+        error_log("Main order not found for Order ID: $order_id");
+        return;
+    }
+
+    $customer_id = $main_order->get_customer_id();
+    $billing_data = [
+        'first_name' => $main_order->get_billing_first_name(),
+        'last_name'  => $main_order->get_billing_last_name(),
+        'company'    => $main_order->get_billing_company(),
+        'address_1'  => $main_order->get_billing_address_1(),
+        'address_2'  => $main_order->get_billing_address_2(),
+        'city'       => $main_order->get_billing_city(),
+        'state'      => $main_order->get_billing_state(),
+        'postcode'   => $main_order->get_billing_postcode(),
+        'country'    => $main_order->get_billing_country(),
+        'email'      => $main_order->get_billing_email(),
+        'phone'      => $main_order->get_billing_phone(),
+    ];
+
+    $order_items = $main_order->get_items();
+
+    // ✅ Process all items in ONE cron execution with 10s delay
+    foreach ($order_items as $item_id => $item) {
+        $recipient_id = $item->get_meta('_recipient_recipient_id', true);
+        $company_name = $item->get_meta('_recipient_company_name', true);
+
+        $recipientQuery = $wpdb->prepare(
+            "SELECT * FROM {$order_process_recipient_table} WHERE id = %d",
+            $recipient_id
+        );
+
+        $recipients = $wpdb->get_row($recipientQuery);
+
+        if ($recipients && $recipients->order_id == 0) {
+            $sub_order = wc_create_order();
+
+            if ($customer_id) {
+                $sub_order->set_customer_id($customer_id);
+            }
+
+            $custom_full_name = $item->get_meta('full_name', true);
+            $sub_order->set_address($billing_data, 'billing');
+            $sub_order->set_billing_email($billing_data['email']);
+
+            $product_id = $item->get_product_id();
+            $quantity   = $item->get_quantity();
+
+            $product = wc_get_product($product_id);
+            if ($product) {
+                $order_item = new WC_Order_Item_Product();
+                $order_item->set_product($product);
+                $order_item->set_quantity($quantity);
+                $order_item->set_subtotal(0);
+                $order_item->set_total(0);
+                $order_item->set_order_id($sub_order->get_id());
+
+                // ✅ Add custom meta to sub-order item
+                $order_item->add_meta_data('_recipient_recipient_id', $recipient_id, true);
+                $order_item->add_meta_data('_recipient_company_name', $company_name, true);
+
+                $sub_order->add_item($order_item);
+            }
+
+            $shipping_data = [
+                'first_name' => $custom_full_name ?: $billing_data['first_name'],
+                'last_name'  => '',
+                'address_1'  => $item->get_meta('_recipient_address_1', true) ?? '',
+                'address_2'  => $item->get_meta('_recipient_address_2', true) ?? '',
+                'city'       => $item->get_meta('_recipient_city', true) ?? '',
+                'state'      => $item->get_meta('_recipient_state', true) ?? '',
+                'postcode'   => $item->get_meta('_recipient_zipcode', true) ?? '',
+                'country'    => 'US',
+            ];
+
+            $sub_order->set_address($shipping_data, 'shipping');
+            $sub_order->set_shipping_total(0);
+            $sub_order->set_parent_id($order_id);
+            $sub_order->calculate_totals();
+            $sub_order->set_status('processing');
+            $sub_order->save();
+
+            // ✅ Update main order item with recipient info
+            wc_update_order_item_meta($item_id, '_recipient_recipient_id', $recipient_id);
+            wc_update_order_item_meta($item_id, '_recipient_company_name', $company_name);
+
+            $wpdb->update(
+                $order_process_recipient_table,
+                ['order_id' => $sub_order->get_id()],
+                ['id' => $recipient_id]
+            );
+
+            $wpdb->insert($group_recipient_table, [
+                'user_id'       => $recipients->user_id ?? 0,
+                'recipient_id'  => $recipient_id,
+                'group_id'      => $group_id,
+                'order_id'      => $sub_order->get_id(),
+                'full_name'     => sanitize_text_field($custom_full_name),
+                'company_name'  => sanitize_text_field($recipients->company_name),
+                'address_1'     => sanitize_text_field($recipients->address_1),
+                'address_2'     => sanitize_text_field($recipients->address_2),
+                'city'          => sanitize_text_field($recipients->city),
+                'state'         => sanitize_text_field($recipients->state),
+                'zipcode'       => sanitize_text_field($recipients->zipcode),
+                'quantity'      => sanitize_text_field($recipients->quantity),
+                'verified'      => sanitize_text_field($recipients->address_verified),
+                'greeting'      => sanitize_text_field($recipients->greeting),
+            ]);
+
+            // 🕒 10-second delay before creating the next sub-order
+            sleep(10);
+        }
+    }
+
+    error_log("All sub-orders created for Order ID: $order_id with 10-second intervals.");
+}

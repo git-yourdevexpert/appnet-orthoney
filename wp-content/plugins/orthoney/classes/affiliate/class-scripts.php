@@ -4,8 +4,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 class OAM_AFFILIATE_Scripts{
-
-
+    
     /**
 	 * Define class Constructor
 	 **/

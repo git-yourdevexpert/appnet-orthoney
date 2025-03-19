@@ -30,7 +30,6 @@ function process_group_popup(selectHtml = '') {
     });
 });
 
-
 jQuery(document).ready(function($) {
     
        
@@ -48,7 +47,20 @@ jQuery(document).ready(function($) {
             return null;
         }
     });
+
 });
+
+document.addEventListener("DOMContentLoaded", function() {
+    tippy('[data-tippy]', {
+        content: (reference) => reference.getAttribute('data-tippy'),
+        theme: 'translucent',
+        animation: 'fade',
+        arrow: true,
+        allowHTML: true,
+        followCursor: true,
+    });
+});
+
 
 
 (function () {

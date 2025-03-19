@@ -163,8 +163,7 @@ class OAM_Helper{
 						
                         $reasons = implode(", ", json_decode($data->reasons, true));
                         if($reasons != ''){
-							$reasonsHtml = '<div class="tooltip">Failed';
-                            $reasonsHtml .= '<span class="tooltiptext">'.$reasons.'</span></div>';
+							$reasonsHtml = '<div class="tooltip" data-tippy="'.$reasons.'">Failed</span></div>';
                         }
                     }
                     $reasonsHtml .= '</div>';
@@ -204,15 +203,15 @@ class OAM_Helper{
                     if($data->address_verified == 0){
                         // $html .= '<button class="reverifyAddress w-btn us-btn-style_1" style="padding:10px"><small>Reverify Address</small></button>';
                     }
-                    $html .= ($data->address_verified == 0 ? ' <button class="editRecipient far fa-edit" data-popup="#recipient-manage-popup" data-address_verified="1"></button>' : '') .'<button data-recipientname="'.$data->full_name.'" class="deleteRecipient far fa-trash"></button>';
+                    $html .= ($data->address_verified == 0 ? ' <button class="editRecipient far fa-edit" data-tippy="Edit Recipient Details" data-popup="#recipient-manage-popup" data-address_verified="1"></button>' : '') .'<button data-recipientname="'.$data->full_name.'" class="deleteRecipient far fa-trash" data-tippy="Remove Recipient"></button>';
                     $html .= '</td>';
                     
                 }else{
                     $html .= '<td>';
                     if($duplicate == 1){
-                        $html .= '<button class="keep_this_and_delete_others" data-recipientname="'.$data->full_name.'"  data-popup="#recipient-manage-popup">Keep this and delete others</button>';
+                        $html .= '<button class="keep_this_and_delete_others" data-recipientname="'.$data->full_name.'"  data-popup="#recipient-manage-popup" data-tippy="Keep this and delete others">Keep this and delete others</button>';
                     }
-                    $html .= '<button class="viewRecipient far fa-eye" data-popup="#recipient-view-details-popup"></button><button class="editRecipient far fa-edit" data-popup="#recipient-manage-popup"></button><button data-recipientname="'.$data->full_name.'" class="deleteRecipient far fa-trash"></button>';
+                    $html .= '<button class="viewRecipient far fa-eye" data-tippy="View Recipient Details" data-popup="#recipient-view-details-popup"></button><button class="editRecipient far fa-edit" data-tippy="Edit Recipient Details" data-popup="#recipient-manage-popup"></button><button data-recipientname="'.$data->full_name.'" data-tippy="Remove Recipient" class="deleteRecipient far fa-trash"></button>';
                     $html .= '</td>';
                 }
                 $html .= '</tr>';
@@ -361,7 +360,7 @@ class OAM_Helper{
         
     }
     
-    public static function get_order_process_address_verified_recipient($order_process_id, $duplicate = 1){
+    public static function get_order_process_address_verified_recipient($order_process_id, $duplicate = 1 , $recipientAddressIds = []){
         global $wpdb;
         $order_process_table           = OAM_Helper::$order_process_table;
         $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
@@ -371,6 +370,8 @@ class OAM_Helper{
 
         $verifyRecordHtml = '';
         $unverifiedRecordHtml = '';
+
+       
         
         $unverifiedTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Action</th></tr></thead><tbody>';
 
@@ -393,45 +394,26 @@ class OAM_Helper{
             $customGreeting = $getGreeting->greeting;
         }
 
-        $recipientQuery = $wpdb->prepare(
-            "SELECT * FROM {$order_process_recipient_table} WHERE pid = %d AND visibility = %d AND verified = %d" ,
-            $order_process_id, 1 , 1
-        );
+        if(!empty($recipientAddressIds)){
+            $placeholders = implode(',', array_fill(0, count($recipientAddressIds), '%d'));
+            $recipientQuery = $wpdb->prepare(
+                "SELECT * FROM {$order_process_recipient_table} WHERE pid = %d AND id IN ($placeholders)" ,
+                array_merge([$order_process_id], $recipientAddressIds)
+            );
+        }else{
+
+            $recipientQuery = $wpdb->prepare(
+                "SELECT * FROM {$order_process_recipient_table} WHERE pid = %d AND visibility = %d AND verified = %d" ,
+                $order_process_id, 1 , 1
+            );
+        }
         
         $recipients = $wpdb->get_results($recipientQuery);
         // Separate verified and unverified recipients in PHP
         $verifiedRecipients = [];
         $unverifiedRecipients = [];
         
-        if($duplicate == 0){
-            foreach ($recipients as $recipient) {
-                // Create unique key for comparison
-                $key = $recipient->full_name . '|' . 
-                        str_replace($recipient->address_1, ',' , '' ). ' ' . str_replace($recipient->address_2 , ',' , '') . '|' . 
-                    $recipient->city . '|' . 
-                    $recipient->state . '|' . 
-                    $recipient->zipcode;
-                
-                // Store record in the map
-                if (!isset($recordMap[$key])) {
-                    $recordMap[$key] = [];
-                }
-                $recordMap[$key][] = $recipient;
-            }
-    
-            foreach ($recordMap as $key => $records) {
-                if (count($records) > 1) {
-
-                } else {
-                    $finalrecipients[] = $records[0];
-                }
-            }
-        } else{
-            $finalrecipients = $recipients;
-        }
-        
-        
-        foreach ($finalrecipients as $recipient) {
+        foreach ($recipients as $recipient) {
             
             if ($recipient->address_verified == 1) {
                 $verifiedRecipients[] = $recipient;
@@ -464,7 +446,7 @@ class OAM_Helper{
             'verifiedData'          => $verifyRecordHtml,
             'unverifiedData'        => $unverifiedRecordHtml,
             'totalCount'            => count($unverifiedRecipients) + count($verifiedRecipients),
-            'csvCount'            => count($recipients),
+            'csvCount'              => count($recipients),
         ];
 
         return json_encode(

@@ -1108,7 +1108,7 @@ class OAM_Ajax{
 
                 $bulkMargeButtonHtml = '';
                 if($process_id != ''){
-                    $bulkMargeButtonHtml = '<div class="tooltip"><button id="bulkMargeRecipient" class="btn-underline">Bulk Marge</button><span class="tooltiptext">Keep 1 Entry and Delete Other Duplicate Entries</span></div>';
+                    $bulkMargeButtonHtml = '<div class="tooltip" data-tippy="Keep 1 Entry and Delete Other Duplicate Entries"><button id="bulkMargeRecipient" class="btn-underline">Bulk Marge</button></div>';
                 }
                 
                 $duplicateHtml .= '<div class="heading-title"><div><h5 class="table-title">Duplicate Recipient</h5> </div>'.$bulkMargeButtonHtml.'</div>';
