@@ -132,7 +132,7 @@ add_filter('render_block', function ($block_content, $block) {
         if ($status) {
             $custom_content = '<div class="viewAllRecipientsPopupCheckoutContent"><div class="item"><strong>Total Honey Jars:</strong> ' . esc_html($total_quantity) . '</div>';
             $custom_content .= '<div class="item"><strong>Total Recipients:</strong> ' . esc_html(count($cart)) . '</div>';
-            $custom_content .= '<div class="item"><a href="#viewAllRecipientsPopupCheckout" class="viewAllRecipientsPopupCheckout btn-underline" data-lity>View all Recipients Details</a></div>';
+            $custom_content .= '<div class="item"><a href="#viewAllRecipientsPopupCheckout" class="viewAllRecipientsPopupCheckout btn-underline" data-lity>View All Recipients Details</a></div>';
             // Popup Content
             $custom_content .= '<div id="viewAllRecipientsPopupCheckout" class="lity-popup-normal lity-hide">
                 <div class="popup-show order-process-block">

@@ -14,9 +14,10 @@ class OAM_COMMON_Custom {
         add_filter('acf/settings/load_json', array($this, 'oh_acf_json_load_paths'));
         add_action('template_redirect', array($this, 'modify_passwordless_login_url'));
 
-        add_action('user_registration_after_submit_buttons', array($this, 'add_login_user_registration_after_submit_buttons'));
+        // add_action('user_registration_after_submit_buttons', array($this, 'add_login_user_registration_after_submit_buttons'));
 
-        add_action('user_registration_after_login_form', array($this, 'custom_login_link'));
+       add_action('user_registration_after_login_form', array($this, 'custom_login_link'));
+        add_action('user_registration_lostpassword_form', array($this, 'custom_login_btn'));
 
     }
 
@@ -32,10 +33,13 @@ class OAM_COMMON_Custom {
 
     public static function custom_login_link() {
         if (isset($_GET['pl']) && $_GET['pl'] == 'true'){
-            echo '<div class="custom-login-btn"><a href="' .esc_url( ur_get_login_url() ) . '">Back to Login</a></div>';
+            echo '<div class="custom-login-btn"><a href="' .esc_url( ur_get_login_url() ) . '">Login with Password</a></div>';
         }
     }
 
+    public static function custom_login_btn() {
+        echo '<div class="custom-login-btn"><a href="' .esc_url( ur_get_login_url() ) . '">Back to Login</a></div>';
+    }
     /**
      * ACF JSON Load Paths.
      */
