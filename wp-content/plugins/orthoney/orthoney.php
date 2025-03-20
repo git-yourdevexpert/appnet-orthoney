@@ -31,6 +31,9 @@ if ( ! defined( 'OH_PLUGIN_DIR_URL' ) ) {
 if ( ! defined( 'OH_PLUGIN_DIR_PATH' ) ) {
 	define( 'OH_PLUGIN_DIR_PATH', plugin_dir_path(__FILE__)  );
 }
+if ( ! defined( 'OH_DOMAIN' ) ) {
+	define( 'OH_DOMAIN', 'ORTHONEY'  );
+}
 
 // Include necessary files
 require_once OH_PLUGIN_DIR_PATH . 'includes/database.php';
@@ -287,22 +290,3 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 
 // add_action('wp_ajax_orthoney_thank-you-sub-orders-creation_ajax', 'create_sub_orders_ajax');
 // add_action('wp_ajax_nopriv_orthoney_thank-you-sub-orders-creation_ajax', 'create_sub_orders_ajax');
-
-
-
-
-// function custom_woocommerce_myaccount_template($template, $template_name, $template_path) {
-//     // Check if it's the My Account dashboard template
-//     if ($template_name === 'myaccount/dashboard.php') {
-//         // Define the new custom template path
-//         $new_template = WP_PLUGIN_DIR . '/orthoney/templates/customer/customer-dashboard/dashboard.php';
-        
-//         // Check if the custom template file exists
-//         if (file_exists($new_template)) {
-//             return $new_template;
-//         }
-//     }
-    
-//     return $template;
-// }
-// add_filter('woocommerce_locate_template', 'custom_woocommerce_myaccount_template', 10, 3);

@@ -26,7 +26,7 @@ function process_group_popup(selectHtml = '') {
     
     jQuery(this).select2({
         placeholder: placeholderText,
-        allowClear: true
+        allowClear: false
     });
 });
 
@@ -883,5 +883,116 @@ document.addEventListener('click', function (event) {
                 });
             }
         });
+    }
+});
+
+// affiliates manage
+document.addEventListener("DOMContentLoaded", function () {
+    let affiliateFilterButton = document.getElementById("affiliate-filter-button");
+    let searchInput = document.getElementById("search-affiliates");
+    let filterSelect = document.getElementById("filter-block-status");
+    let affiliateResults = document.getElementById("affiliate-results");
+
+    if(affiliateFilterButton){
+        // Get the AJAX URL from localized script
+        
+        function fetchAffiliates() {
+            process_group_popup();
+            let searchValue = searchInput.value.trim();
+            let filterValue = filterSelect.value;
+
+            let requestData = new URLSearchParams();
+            requestData.append("action", "search_affiliates");
+            requestData.append("search", searchValue);
+            requestData.append("filter", filterValue);
+
+            fetch(oam_ajax.ajax_url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: requestData.toString(),
+            })
+            .then(response => response.text())
+            .then(data => {
+                affiliateResults.innerHTML = data;
+                setTimeout(() => {
+                    Swal.close();
+                }, 500);
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Error fetching affiliates: " + error.message,
+                });
+            });
+        }
+
+
+        // // Event listeners for search and filter
+        affiliateFilterButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            fetchAffiliates();
+        });
+    }
+});
+
+//incomplete order process code
+document.addEventListener("DOMContentLoaded", function () {
+    function fetchOrders(page = 1) {
+        process_group_popup();
+        const params = new URLSearchParams();
+        params.append("action", "orthoney_incomplete_order_process_ajax");
+        params.append("page", page);
+        params.append("security", oam_ajax.nonce);
+
+        fetch(oam_ajax.ajax_url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: params
+        })
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.getElementById("order-process-data");
+            const paginationDiv = document.getElementById("io-pagination");
+
+            if (data.success) {
+                const responseData = data.data;
+                tableBody.innerHTML = responseData.table_content;
+                paginationDiv.innerHTML = responseData.pagination;
+                document.querySelectorAll('#io-pagination a').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const page = this.getAttribute('data-page');
+                        fetchOrders(page);
+                    });
+                });
+
+            } else {
+                Swal.fire({
+                    title: "Error",
+                    text: data.data?.message || "Something went wrong. Please try again",
+                    icon: "error",
+                });
+            }
+            setTimeout(() => {
+                Swal.close();
+            }, 500);
+        })
+        .catch(() => {
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while updating the Incomplete Order.',
+                icon: 'error',
+            });
+        });
+    }
+
+    const Incomplete_orders = document.querySelector(".order-process-block #order-process-data");
+    if (Incomplete_orders) {
+        fetchOrders();
     }
 });

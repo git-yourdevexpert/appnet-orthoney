@@ -19,7 +19,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             return OAM_COMMON_Custom::message_design_block(
                 'If you want to access this page, please',
                 ur_get_login_url(),
-                'Log In'
+                'Login'
             );
         }
     

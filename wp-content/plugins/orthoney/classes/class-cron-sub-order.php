@@ -97,9 +97,9 @@ class OAM_WC_CRON_Suborder {
                 $group_id
             ));
     
-            if ($groupRecipientCount !== $order_items_count && !wp_next_scheduled('create_sub_order', [$order_id, $group_id, $process_id, 0])) {
-                wp_schedule_single_event(time() + 300, 'create_sub_order', [$order_id, $group_id, $process_id, 0]);
-                error_log("Scheduled cron job for Order ID: $order_id");
+            if ($groupRecipientCount !== $order_items_count && !wp_next_scheduled('create_sub_order', [$order_id, $group_id, $process_id])) {
+                wp_schedule_single_event(time() + 300, 'create_sub_order', [$order_id, $group_id, $process_id]);
+                OAM_COMMON_Custom::sub_order_error_log("Scheduled cron job for Order ID: $order_id");
             }
         }
     }
@@ -111,13 +111,13 @@ class OAM_WC_CRON_Suborder {
         $group_recipient_table = OAM_Helper::$group_recipient_table;
     
         if (!$order_id) {
-            error_log("Invalid Order ID in process_sub_order_creation");
+            OAM_COMMON_Custom::sub_order_error_log("Invalid Order ID in process_sub_order_creation");
             return;
         }
     
         $main_order = wc_get_order($order_id);
         if (!$main_order) {
-            error_log("Main order not found for Order ID: $order_id");
+            OAM_COMMON_Custom::sub_order_error_log("Main order not found for Order ID: $order_id");
             return;
         }
     
@@ -138,7 +138,7 @@ class OAM_WC_CRON_Suborder {
     
         $order_items = $main_order->get_items();
     
-        // ✅ Process all items in ONE cron execution with 10s delay
+        // Process all items in ONE cron execution with 10s delay
         foreach ($order_items as $item_id => $item) {
             $recipient_id = $item->get_meta('_recipient_recipient_id', true);
             $company_name = $item->get_meta('_recipient_company_name', true);
@@ -173,7 +173,7 @@ class OAM_WC_CRON_Suborder {
                     $order_item->set_total(0);
                     $order_item->set_order_id($sub_order->get_id());
     
-                    // ✅ Add custom meta to sub-order item
+                    // Add custom meta to sub-order item
                     $order_item->add_meta_data('_recipient_recipient_id', $recipient_id, true);
                     $order_item->add_meta_data('_recipient_company_name', $company_name, true);
     
@@ -198,7 +198,7 @@ class OAM_WC_CRON_Suborder {
                 $sub_order->set_status('processing');
                 $sub_order->save();
     
-                // ✅ Update main order item with recipient info
+                // Update main order item with recipient info
                 wc_update_order_item_meta($item_id, '_recipient_recipient_id', $recipient_id);
                 wc_update_order_item_meta($item_id, '_recipient_company_name', $company_name);
     
@@ -225,12 +225,12 @@ class OAM_WC_CRON_Suborder {
                     'greeting'      => sanitize_text_field($recipients->greeting),
                 ]);
     
-                // 🕒 10-second delay before creating the next sub-order
-                sleep(10);
+                // 2-second delay before creating the next sub-order
+                sleep(2);
             }
         }
     
-        error_log("All sub-orders created for Order ID: $order_id with 10-second intervals.");
+        OAM_COMMON_Custom::sub_order_error_log("All sub-orders created for Order ID: $order_id with 2-second intervals.");
     }
 }
 new OAM_WC_CRON_Suborder();

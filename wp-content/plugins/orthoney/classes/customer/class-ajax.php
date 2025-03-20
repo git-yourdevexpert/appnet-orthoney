@@ -39,6 +39,10 @@ class OAM_Ajax{
         add_action( 'wp_ajax_keep_this_and_delete_others_recipient', array( $this, 'orthoney_keep_this_and_delete_others_recipient_handler' ) );
 
         add_action( 'wp_ajax_affiliate_status_toggle_block', array( $this, 'orthoney_affiliate_status_toggle_block_handler' ) );
+        
+        add_action('wp_ajax_search_affiliates', array( $this,'search_affiliates_handler'));
+
+        add_action( 'wp_ajax_orthoney_incomplete_order_process_ajax', array( $this, 'orthoney_incomplete_order_process_ajax_handler' ) );
         // Done
         
         
@@ -1720,19 +1724,16 @@ class OAM_Ajax{
         $user_id = get_current_user_id();
         $oh_affiliate_customer_relation_table = OAM_Helper::$oh_affiliate_customer_relation_table;
 
-        if (!is_user_logged_in() || !current_user_can('customer')) {
-            wp_send_json_error(['message' => 'Unauthorized']);
-        }
 
         $affiliate_id = sanitize_text_field($_POST['affiliate_id']);
         $status = sanitize_text_field($_POST['status']);
 
-        if ($status === 'block') {
+        if ($status == 'block') {
             $wpdb->insert($oh_affiliate_customer_relation_table, [
                 'user_id' => $user_id,
                 'affiliate_id' => $affiliate_id
             ]);
-        } elseif ($status === 'unblock') {
+        } elseif ($status == 'unblock') {
             $wpdb->delete($oh_affiliate_customer_relation_table, [
                 'user_id' => $user_id,
                 'affiliate_id' => $affiliate_id
@@ -1744,5 +1745,106 @@ class OAM_Ajax{
         wp_send_json_success();
     }
     
+    
+    public function search_affiliates_handler() {
+        $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+        $filter = isset($_POST['filter']) ? sanitize_text_field($_POST['filter']) : 'all';
+
+        $affiliates_content = OAM_Helper::manage_affiliates_content($search, $filter, 1);
+
+        $affiliates_data = json_decode($affiliates_content, true);
+
+        $affiliates = $affiliates_data['data']['affiliates'];
+        $blocked_affiliates = $affiliates_data['data']['blocked_affiliates'];
+        
+        ?>
+        <table>
+            <thead><tr><th>Affiliate Code</th><th>Affiliate Name</th><th>Block/Unblock</th></tr></thead>
+            <tbody>
+                <?php foreach ($affiliates as $affiliate): 
+                        $is_blocked = in_array($affiliate['ID'], $blocked_affiliates);
+                    ?>
+                <tr>
+                    <td><?php echo esc_html($affiliate['token']); ?></td>
+                    <td><?php echo esc_html($affiliate['display_name']); ?></td>
+                    <td>
+                    <button class="affiliate-block-btn w-btn <?php echo $is_blocked ? 'us-btn-style_2' : 'us-btn-style_1' ?>" 
+                        data-affiliate="<?php echo esc_attr($affiliate['token']); ?>"
+                            data-blocked="<?php echo $is_blocked ? '1' : '0'; ?>">
+                            <?php echo $is_blocked ? 'Unblock' : 'Block'; ?>
+                        </button>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php 
+
+        wp_die();
+    }
+
+    public function orthoney_incomplete_order_process_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+        $user_id = get_current_user_id();
+        $current_page = isset($_POST['page']) ? max(1, intval($_POST['page'])) : 1;
+        $items_per_page = 10;
+        $offset = ($current_page - 1) * $items_per_page;
+    
+        $order_process_table = OAM_Helper::$order_process_table;
+        // Get total items and pages
+        $total_items = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$order_process_table} WHERE user_id = %d AND step != %d",
+            $user_id, 5
+        ));
+        $total_pages = (int) ceil($total_items / $items_per_page);
+        // Fetch process data
+        $processQuery = $wpdb->prepare(
+            "SELECT * FROM {$order_process_table} WHERE user_id = %d AND step != %d ORDER BY created DESC LIMIT %d OFFSET %d",
+            $user_id, 5 ,$items_per_page, $offset
+        );
+
+    
+        $results = $wpdb->get_results($processQuery);
+        $table_content = '';
+    
+        if (!empty($results)) {
+            foreach ($results as $data) {
+                $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->created));
+                $resume_url = esc_url(home_url("/order-process?pid=$data->id"));
+                $download_button = '';
+    
+                if (!empty($data->csv_name)) {
+                    $download_url = esc_url(OAM_Helper::$process_recipients_csv_url . $data->csv_name);
+                    $download_button = "<a href='".esc_url($download_url)."' class='w-btn us-btn-style_1 outline-btn' download><i class='far fa-download'></i></a>";
+                }
+    
+                $table_content .= "<tr>
+                    <td>" . esc_html($data->id) . "</td>
+                    <td>". esc_html($created_date). "</td>
+                    <td>" . esc_html($data->name) . "</td>
+                    <td>".$download_button." <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn'>Resume Order</a></td>
+                </tr>";
+            }
+        } else {
+            $table_content = '<tr><td colspan="4">No data available</td></tr>';
+        }
+    
+        $pagination = '';
+        if ($total_pages > 1) {
+            for ($i = 1; $i <= $total_pages; $i++) {
+                $active_class = ($current_page == $i) ? 'active' : '';
+                $pagination .= "<a href='javascript:;' class='".$active_class."' data-page='".$i."'>".$i."</a> ";
+            }
+        }
+        wp_send_json_success([
+            'table_content' => $table_content,
+            'pagination' => $pagination,
+            'current_page' => $current_page,
+            'total_pages' => $total_pages,
+        ]);
+        wp_die();
+    }
+
 }
 new OAM_Ajax();

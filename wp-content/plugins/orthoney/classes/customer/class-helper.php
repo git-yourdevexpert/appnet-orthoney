@@ -28,8 +28,8 @@ class OAM_Helper{
     public static $process_recipients_csv_dir;
     public static $process_recipients_csv_url;
     public static $group_recipients_csv_dir;
-
-
+    public static $date_format;
+    public static $time_format;
 
     public static function init() {
         global $wpdb;
@@ -50,11 +50,14 @@ class OAM_Helper{
         self::$process_recipients_csv_dir = WP_CONTENT_DIR . '/process-recipients-files/';
         self::$process_recipients_csv_url = WP_CONTENT_URL . '/process-recipients-files/';
         self::$group_recipients_csv_dir = WP_CONTENT_DIR . '/group-recipients-files/';
+
+        self::$date_format = get_option('date_format');
+        self::$time_format = get_option('time_format');
     }
 
 	public function __construct() {}
 
-    public static function manage_affiliates_content($search = '', $filter = '') {
+    public static function manage_affiliates_content($search = '', $filter = '', $return_type = 0) {
         global $wpdb;
         $yith_wcaf_affiliates_table = self::$yith_wcaf_affiliates_table;
         $oh_affiliate_customer_relation_table = self::$oh_affiliate_customer_relation_table;
@@ -73,19 +76,12 @@ class OAM_Helper{
             array_push($queryParams, '%' . $wpdb->esc_like($search) . '%', '%' . $wpdb->esc_like($search) . '%');
         }
 
-        if (!empty($filter) && $filter!= 'All') {
-
-            // Get blocked affiliates for the logged-in user
-            $blocked_affiliates = $wpdb->get_col($wpdb->prepare(
-                "SELECT affiliate_id FROM $oh_affiliate_customer_relation_table WHERE user_id = %d",
-                $user_id
-            ));
-
-            // Ensure blocked_affiliates is an array
-            if (!is_array($blocked_affiliates)) {
-                $blocked_affiliates = [];
-            }
-
+        // Get blocked affiliates for the logged-in user
+        $blocked_affiliates = $wpdb->get_col($wpdb->prepare(
+            "SELECT affiliate_id FROM $oh_affiliate_customer_relation_table WHERE user_id = %d",
+            $user_id
+        ));
+        if (!empty($filter) && $filter != 'All') {
             // Apply filter logic correctly
             if ($filter === 'blocked') {
                 if (!empty($blocked_affiliates)) {
@@ -127,6 +123,7 @@ class OAM_Helper{
         ];
 
         return json_encode(['success' => true, 'data'=> $resultData]);
+        wp_die();
 
     }
 
@@ -146,8 +143,6 @@ class OAM_Helper{
 
         return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : 'UNKNOWN';
     }
-
-    
 
     public static function get_table_recipient_content($dataArray, $customGreeting, $reverify = 0, $duplicate = 0) {
         $html = '';
@@ -219,7 +214,6 @@ class OAM_Helper{
         }
         return $html;
     }
-
 
     public static function log_and_return($status, $method,$process_id, $message, $file_path = '') {
         global $wpdb;
@@ -587,10 +581,11 @@ class OAM_Helper{
         <div id="recipient-view-details-popup" class="lity-hide black-mask full-popup popup-show">
             <h3>Recipient Details</h3>
             <div class="recipient-view-details-wrapper"></div>
-            <button type='button' class="w-btn us-btn-style_1" data-lity-close>close</button>
+            
         </div>
         <?php
     }
+    
     public static function manage_recipient_popup(){
         ?>
         <div id="recipient-manage-popup" class="lity-hide black-mask full-popup popup-show">

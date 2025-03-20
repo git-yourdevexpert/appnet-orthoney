@@ -16,14 +16,30 @@ class OAM_COMMON_Custom {
 
         // add_action('user_registration_after_submit_buttons', array($this, 'add_login_user_registration_after_submit_buttons'));
 
-       add_action('user_registration_after_login_form', array($this, 'custom_login_link'));
-        add_action('user_registration_lostpassword_form', array($this, 'custom_login_btn'));
+        add_action('user_registration_after_login_form', array($this, 'add_login_link_pl_login_form'));
+        add_action('user_registration_before_customer_login_form', array($this, 'add_content_pl_login_form'));
 
     }
 
     public static function init() {
         // Add any initialization logic here
     }
+
+    public static function sub_order_error_log($message) {
+        $log_file = WP_CONTENT_DIR . '/logs/sub-order-error.log';
+        
+        // Ensure log directory exists
+        if (!file_exists(dirname($log_file))) {
+            mkdir(dirname($log_file), 0755, true);
+        }
+    
+        // Format the error message
+        $log_message = "[" . date("Y-m-d H:i:s") . "] " . $message . PHP_EOL;
+    
+        // Write to the log file
+        file_put_contents($log_file, $log_message, FILE_APPEND);
+    }
+
     /**
      * ACF JSON Save Path.
      */
@@ -31,14 +47,16 @@ class OAM_COMMON_Custom {
         return OH_PLUGIN_DIR_PATH . 'acf-json';
     }
 
-    public static function custom_login_link() {
+    public static function add_login_link_pl_login_form() {
         if (isset($_GET['pl']) && $_GET['pl'] == 'true'){
             echo '<div class="custom-login-btn"><a href="' .esc_url( ur_get_login_url() ) . '">Login with Password</a></div>';
         }
     }
 
-    public static function custom_login_btn() {
-        echo '<div class="custom-login-btn"><a href="' .esc_url( ur_get_login_url() ) . '">Back to Login</a></div>';
+    public static function add_content_pl_login_form() {
+        if (isset($_GET['pl']) && $_GET['pl'] == 'true'){
+            echo '<div class="custom-login-paragraph"><p>Please enter your email in the field below. A login link will be sent to your email, allowing you to log in automatically without a password.</p></div>';
+        }
     }
     /**
      * ACF JSON Load Paths.

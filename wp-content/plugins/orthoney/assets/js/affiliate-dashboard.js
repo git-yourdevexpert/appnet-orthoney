@@ -289,7 +289,8 @@ document.addEventListener('click', function (event) {
 document.addEventListener("DOMContentLoaded", function() {
     const changeRoleBtn =  document.getElementById("changeRoleBtn");
     if(changeRoleBtn){
-    document.getElementById("changeRoleBtn").addEventListener("click", function() {
+    document.getElementById("changeRoleBtn").addEventListener("click", function(event) {
+        event.preventDefault();
         var userDropdown = document.getElementById("userDropdown");
         var selectedUserId = userDropdown.value;
 

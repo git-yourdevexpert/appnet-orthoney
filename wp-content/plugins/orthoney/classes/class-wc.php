@@ -27,6 +27,29 @@ class OAM_WC_Customizer {
 
         add_filter( 'woocommerce_package_rates', array($this,'conditional_shipping_based_on_acf_date'), 10, 2 );
 
+        add_filter('woocommerce_email_enabled_new_order', array($this,'disable_wc_order_mail'), 10, 2);
+        add_filter('woocommerce_email_enabled_customer_processing_order', array($this,'disable_wc_order_mail'), 10, 2);
+        add_filter('woocommerce_email_enabled_cancelled_order', array($this,'disable_wc_order_mail'), 10, 2);
+        add_filter('woocommerce_email_enabled_failed_order', array($this,'disable_wc_order_mail'), 10, 2);
+        add_filter('woocommerce_email_enabled_customer_failed_order', array($this,'disable_wc_order_mail'), 10, 2);
+        add_filter('woocommerce_email_enabled_customer_on_hold_order', array($this,'disable_wc_order_mail'), 10, 2);
+        add_filter('woocommerce_email_enabled_customer_completed_order', array($this,'disable_wc_order_mail'), 10, 2);
+        add_filter('woocommerce_email_enabled_customer_refunded_order', array($this,'disable_wc_order_mail'), 10, 2);
+
+    }
+
+    /**
+     * Disable Email for Sub Order 
+     */
+
+    public function disable_wc_order_mail($enabled, $order) {
+        if (is_a($order, 'WC_Order')) {
+            // Check if the order has a parent order
+            if ($order->get_parent_id() != 0) {
+                return false;
+            }
+        }
+        return $enabled;
     }
 
     /**
@@ -65,8 +88,8 @@ class OAM_WC_Customizer {
             : 'shop_order';
     
         add_meta_box(
-            'custom',
-            'Custom Meta Box',
+            'recipient_sub_order',
+            'Recipients Sub Order lists',
             array ($this, 'admin_sub_order_metabox_callback'),
             $screen,
             'normal',
@@ -93,6 +116,7 @@ class OAM_WC_Customizer {
             echo '<p>No items found in this order.</p>';
             return;
         }
+
         global $wpdb;
         $group_recipient_table = OAM_Helper::$group_recipient_table;
         ?>
@@ -110,44 +134,44 @@ class OAM_WC_Customizer {
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($items as $item_id => $item): 
-                   
-                    // Retrieve meta data
-                    $recipient_id    = wc_get_order_item_meta($item_id, '_recipient_recipient_id', true);
-                    $full_name    = wc_get_order_item_meta($item_id, 'full_name', true);
-                    $company_name = wc_get_order_item_meta($item_id, '_recipient_company_name', true);
-                    $address_1    = wc_get_order_item_meta($item_id, '_recipient_address_1', true);
-                    $address_2    = wc_get_order_item_meta($item_id, '_recipient_address_2', true);
-                    $city         = wc_get_order_item_meta($item_id, '_recipient_city', true);
-                    $state        = wc_get_order_item_meta($item_id, '_recipient_state', true);
-                    $zipcode      = wc_get_order_item_meta($item_id, '_recipient_zipcode', true);
-                    $quantity     = $item->get_quantity();
+                <?php foreach ($items as $item_id => $item){
 
+                    $recipient_id   = wc_get_order_item_meta($item_id, '_recipient_recipient_id', true);
                     $groupRecipientCount = $wpdb->get_row($wpdb->prepare(
                         "SELECT order_id FROM $group_recipient_table WHERE recipient_id = %d",
                         $recipient_id
                     ));
 
-                    $sub_order = wc_get_order($groupRecipientCount->order_id);
-                    
-    
-                    // Format address
-                    $address_parts = array_filter([$address_1, $address_2, $city, $state, $zipcode]);
-                    $formatted_address = !empty($address_parts) ? implode(', ', array_map('esc_html', $address_parts)) : '-';
+                    if ($groupRecipientCount && !empty($groupRecipientCount->order_id)) {
+                        $sub_order = wc_get_order($groupRecipientCount->order_id);
+                        // Retrieve meta data
+                        $full_name    = wc_get_order_item_meta($item_id, 'full_name', true);
+                        $company_name = wc_get_order_item_meta($item_id, '_recipient_company_name', true);
+                        $address_1    = wc_get_order_item_meta($item_id, '_recipient_address_1', true);
+                        $address_2    = wc_get_order_item_meta($item_id, '_recipient_address_2', true);
+                        $city         = wc_get_order_item_meta($item_id, '_recipient_city', true);
+                        $state        = wc_get_order_item_meta($item_id, '_recipient_state', true);
+                        $zipcode      = wc_get_order_item_meta($item_id, '_recipient_zipcode', true);
+                        $quantity     = $item->get_quantity();
+        
+                        // Format address
+                        $address_parts = array_filter([$address_1, $address_2, $city, $state, $zipcode]);
+                        $formatted_address = !empty($address_parts) ? implode(', ', array_map('esc_html', $address_parts)) : '-';
+                        ?>
+                        <tr>
+                            <td><a href="<?php echo admin_url() ?>admin.php?page=wc-orders&action=edit&id="<?php echo $groupRecipientCount->order_id; ?>><?php echo $groupRecipientCount->order_id; ?></a></td>
+                            <td><?php echo !empty($full_name) ? esc_html($full_name) : '-'; ?></td>
+                            <td><?php echo !empty($company_name) ? esc_html($company_name) : '-'; ?></td>
+                            <td><?php echo $formatted_address; ?></td>
+                            <td><?php echo esc_html($quantity); ?></td>
+                            <td class="order_status column-order_status"><mark class="order-status status-<?php echo esc_attr(sanitize_title( $sub_order->get_status())); ?> tips"><span><?php echo esc_html( $sub_order->get_status()); ?></span></mark></td>
+                            <td><a href="<?php echo admin_url() ?>admin.php?page=wc-orders&action=edit&id="<?php echo $groupRecipientCount->order_id; ?>><span data-tippy="View Order" class="dashicons dashicons-visibility"></span></a></td>
+                        </tr>
+                    <?php } 
+                    } 
                 ?>
-                    <tr>
-                        <td><a href="<?php echo admin_url() ?>admin.php?page=wc-orders&action=edit&id="<?php echo $groupRecipientCount->order_id; ?>><?php echo $groupRecipientCount->order_id; ?></a></td>
-                        <td><?php echo !empty($full_name) ? esc_html($full_name) : '-'; ?></td>
-                        <td><?php echo !empty($company_name) ? esc_html($company_name) : '-'; ?></td>
-                        <td><?php echo $formatted_address; ?></td>
-                        <td><?php echo esc_html($quantity); ?></td>
-                        <td class="order_status column-order_status"><mark class="order-status status-<?php echo esc_attr(sanitize_title( $sub_order->get_status())); ?> tips"><span><?php echo esc_html( $sub_order->get_status()); ?></span></mark></td>
-                        <td><a href="<?php echo admin_url() ?>admin.php?page=wc-orders&action=edit&id="<?php echo $groupRecipientCount->order_id; ?>><span data-tippy="View Order" class="dashicons dashicons-visibility"></span></a></td>
-                    </tr>
-                <?php endforeach; ?>
             </tbody>
         </table>
-    
         <?php
     }
     
