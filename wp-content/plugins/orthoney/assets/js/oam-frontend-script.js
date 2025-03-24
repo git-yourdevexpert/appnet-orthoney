@@ -253,43 +253,73 @@ Create new group Js END
 /*
 Deleted group Js Start
  */
-const deleteGroupButton = document.querySelectorAll('.deleteGroupButton');
-if(deleteGroupButton.length > 0){
-    deleteGroupButton.forEach(button => {
+const deleteGroupButtons = document.querySelectorAll('.deleteGroupButton');
+
+if (deleteGroupButtons.length > 0) {
+    deleteGroupButtons.forEach(button => {
         button.addEventListener('click', function(event) {
-            const target = event.target; 
-            const groupID = target.closest('.recipient-group-list').querySelector('select').value;
-            // Send AJAX request
-            const msg = target.closest('.recipient-group-list').querySelector('.response-msg');
-            msg.textContent = '';
-            fetch(oam_ajax.ajax_url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'deleted_group',
-                    group_id: groupID,
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    msg.textContent = 'Group deleted successfully!';
-                    target.closest('.recipient-group-list').querySelector('form').reset();
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 300);
-                } else {
-                    msg.textContent = 'Error: ' + data.message;
+            event.preventDefault();
+            const target = event.target;
+            const groupID = target.getAttribute('data-groupid');
+            const groupName = target.getAttribute('data-groupname') || 'this recipient';
+
+            Swal.fire({
+                title: 'Are you sure?',
+                html: 'You are removing <strong>' + groupName + '</strong> group.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, I want',
+                cancelButtonText: 'Cancel',
+                allowOutsideClick: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    process_group_popup(); // Call the popup function before deleting
+
+                    fetch(oam_ajax.ajax_url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            action: 'deleted_group',
+                            group_id: groupID,
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: data.message,
+                                icon: 'success',
+                                showConfirmButton: false,
+                                timerProgressBar: false
+                            });
+                            setTimeout(function() {
+                                window.location.reload();
+                            }, 1500);
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.message,
+                                icon: 'error',
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'An error occurred while deleting the group.',
+                            icon: 'error',
+                        });
+                    });
                 }
-            })
-            .catch(error => {
-                msg.textContent = 'An error occurred while creating the group.';
             });
         });
     });
-    }
+}
+
 /*
 Deleted group Js End
  */
@@ -408,14 +438,15 @@ Bulk Deleted Recipient in table Js Start
 document.addEventListener('click', function (event) {
     if (event.target.id === 'bulkMargeRecipient') {
         event.preventDefault();
-        
+        process_group_popup();
+
         const duplicateCSVData = document.querySelector('#duplicateCSVData');
         const groups = duplicateCSVData.querySelectorAll('.group-header');
 
         const ids = []; // Store all IDs
-
         groups.forEach(function (group) {
             const groupId = group.getAttribute('data-group');
+            console.log(groupId);
             const dataGroupTrs = duplicateCSVData.querySelectorAll(
                 'tr[data-group="' + groupId + '"]:not(.group-header)'
             );
@@ -429,6 +460,7 @@ document.addEventListener('click', function (event) {
 
             const firstId = selectedData ? selectedData.getAttribute('data-id') : null;
 
+            console.log(firstId);
             // Collect all other IDs except the first
             const remainingIds = Array.from(dataGroupTrs)
                 .map(data => data.getAttribute('data-id'))
@@ -436,6 +468,7 @@ document.addEventListener('click', function (event) {
 
             ids.push(...remainingIds);
         });
+        console.log(ids);
 
 
         // AJAX request to pass the IDs to the 'bulkdelete' action
@@ -507,7 +540,7 @@ document.addEventListener('click', function (event) {
         const recipientTr = target.closest('tr');
         const recipientID = recipientTr?.getAttribute('data-id');
         const recipientname = target.getAttribute('data-recipientname');
-        console.log(recipientname);
+        
 
         if (!recipientID) {
             Swal.fire({
@@ -744,20 +777,23 @@ document.addEventListener('click', function (event) {
                         form.querySelector('#greeting').value     = greeting;
                     }
                     
-                    if (event.target.classList.contains('viewRecipient')){
+                    if (event.target.classList.contains('viewRecipient')) {
                         let html = '<ul>';
-                        html += "<li>Full Name: " + full_name+ "</li>";
-                        html += "<li>Company Name: " + company_name+ "</li>";
-                        html += "<li>Mailing Address: " + address_1+ "</li>";
-                        html += "<li>Suite/Apt#: " + address_2+ "</li>";
-                        html += "<li>City: " + city+ "</li>";
-                        html += "<li>State: " + state+ "</li>";
-                        html += "<li>Quantity: " + quantity+ "</li>";
-                        html += "<li>Greeting: " + greeting+ "</li>";
+                        html += "<li><label>Full Name:</label><span> " + (full_name ? full_name : '') + "</span></li>";
+                        html += "<li><label>Company Name: </label><span>" + (company_name ? company_name : '') + "</span></li>";
+                        html += "<li><label>Mailing Address: </label><span>" + (address_1 ? address_1 : '') + "</span></li>";
+                        html += "<li><label>Suite/Apt#: </label><span>" + (address_2 ? address_2 : '') + "</span></li>";
+                        html += "<li><label>City: </label><span>" + (city ? city : '') + "</span></li>";
+                        html += "<li><label>State: </label><span>" + (state ? state : '') + "</span></li>";
+                        html += "<li><label>Quantity: </label><span>" + (quantity ? quantity : '') + "</span></li>";
+                        
                         html += "</ul>";
+                        html += "<div class='recipient-view-greeting-box'><label>Greeting: </label><span>" + (greeting ? greeting : '') + "</span></div>";
+                    
                         const viewpopup = document.querySelector('#recipient-view-details-popup .recipient-view-details-wrapper');
                         viewpopup.innerHTML = html;
                     }
+                    
                     setTimeout(function() {
                         lity(event.target.getAttribute('data-popup'));
                     }, 250);
@@ -831,7 +867,7 @@ document.addEventListener('click', function (event) {
         let affiliateCode = event.target.getAttribute('data-affiliate');
 
         Swal.fire({
-            title: 'Are you sure you want to ' + action + ' this affiliate?',
+            title: 'Are you sure you want to ' + action + ' this organization?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -857,7 +893,7 @@ document.addEventListener('click', function (event) {
                 .then(data => {
                     if (data.success) {
                         Swal.fire({
-                            title: 'Affiliate status changed successfully!',
+                            title: 'Organization status changed successfully!',
                             icon: 'success',
                             showConfirmButton: false,
                             timerProgressBar: false
@@ -869,7 +905,7 @@ document.addEventListener('click', function (event) {
                     } else {
                         Swal.fire({
                             title: 'Error',
-                            text: data.data.message || 'Failed to change status for affiliate.',
+                            text: data.data.message || 'Failed to change status for organization.',
                             icon: 'error',
                         });
                     }
@@ -877,7 +913,7 @@ document.addEventListener('click', function (event) {
                 .catch(() => {
                     Swal.fire({
                         title: 'Error',
-                        text: 'An error occurred while changing status for affiliate.',
+                        text: 'An error occurred while changing status for organization.',
                         icon: 'error',
                     });
                 });
@@ -952,25 +988,18 @@ document.addEventListener("DOMContentLoaded", function () {
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"
             },
-            body: params
+            body: params.toString()
         })
         .then(response => response.json())
         .then(data => {
-            const tableBody = document.getElementById("order-process-data");
-            const paginationDiv = document.getElementById("io-pagination");
+            const tableBody = document.getElementById("incomplete-order-data");
+            const paginationDiv = document.getElementById("incomplete-order-pagination");
 
             if (data.success) {
                 const responseData = data.data;
                 tableBody.innerHTML = responseData.table_content;
                 paginationDiv.innerHTML = responseData.pagination;
-                document.querySelectorAll('#io-pagination a').forEach(link => {
-                    link.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const page = this.getAttribute('data-page');
-                        fetchOrders(page);
-                    });
-                });
-
+               
             } else {
                 Swal.fire({
                     title: "Error",
@@ -991,8 +1020,16 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    const Incomplete_orders = document.querySelector(".order-process-block #order-process-data");
+    const Incomplete_orders = document.querySelector(".incomplete-order-block #incomplete-order-data");
     if (Incomplete_orders) {
         fetchOrders();
+        
+        document.querySelectorAll('#incomplete-order-pagination a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.getAttribute('data-page');
+                fetchOrders(page);
+            });
+        });
     }
 });

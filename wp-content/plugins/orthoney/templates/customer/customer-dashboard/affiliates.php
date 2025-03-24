@@ -29,15 +29,16 @@ $result = json_decode($manage_affiliates_content, true);
 if (!empty($result) && isset($result['success']) && $result['success']) {
     $affiliates = $result['data']['affiliates'];
     $blocked_affiliates = $result['data']['blocked_affiliates'];
+
     if(!empty($affiliates)){
     ?>
         <div class="affiliate-dashboard order-process-block">
-            <h3>All Affiliates</h3>
+            <h3>All Organizations</h3>
             <!-- Search and filter options -->
             <div class="filter-container">
-                <input type="text" id="search-affiliates" placeholder="Search Affiliates">
+                <input type="text" id="search-affiliates" placeholder="Search Organization">
                 <select id="filter-block-status">
-                    <option value="all">All Affiliates</option>
+                    <option value="all">All organization</option>
                     <option value="blocked">Blocked</option>
                     <option value="unblocked">Unblocked</option>
                 </select>
@@ -47,26 +48,26 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                 <table>
                     <thead>
                         <tr>
-                            <th>Affiliate Code</th>
-                            <th>Affiliate Name</th>
+                            <th>Token</th>
+                            <th>Name</th>
                             <th>Block/Unblock</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($affiliates as $affiliate):
-                            $is_blocked = in_array($affiliate['ID'], $blocked_affiliates);
+                    <?php foreach ($affiliates as $affiliate): 
+                        $is_blocked = in_array($affiliate['ID'], $blocked_affiliates);
                             ?>
-                            <tr>
-                                <td><?php echo isset($affiliate['token']) ? esc_html($affiliate['token']) : ''; ?></td>
-                                <td><?php echo esc_html($affiliate['display_name']); ?></td>
-                                <td>
-                                    <button class="affiliate-block-btn w-btn <?php echo $is_blocked ? 'us-btn-style_2' : 'us-btn-style_1' ?>" 
-                                        data-affiliate="<?php echo esc_attr($affiliate['ID']); ?>"
-                                        data-blocked="<?php echo esc_attr($is_blocked ? '1' : '0'); ?>">
-                                        <?php echo $is_blocked ? 'Unblock' : 'Block'; ?>
-                                    </button>
-                                </td>
-                            </tr>
+                        <tr>
+                            <td><?php echo esc_html($affiliate['token']); ?></td>
+                            <td><?php echo esc_html($affiliate['display_name']); ?></td>
+                            <td>
+                            <button class="affiliate-block-btn w-btn <?php echo $is_blocked ? 'us-btn-style_2' : 'us-btn-style_1' ?>" 
+                                data-affiliate="<?php echo esc_attr($affiliate['ID']); ?>"
+                                    data-blocked="<?php echo $is_blocked ? '1' : '0'; ?>">
+                                    <?php echo $is_blocked ? 'Unblock' : 'Block'; ?>
+                                </button>
+                            </td>
+                        </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>

@@ -86,6 +86,7 @@ class OAM_WC_CRON_Suborder {
                 'user_id'  => $processData->user_id,
                 'pid'      => $process_id,
                 'order_id' => $order_id,
+                'visibility' => 1,
                 'name'     => sanitize_text_field($processData->name),
             ]);
             $group_id = $wpdb->insert_id;
@@ -98,7 +99,7 @@ class OAM_WC_CRON_Suborder {
             ));
     
             if ($groupRecipientCount !== $order_items_count && !wp_next_scheduled('create_sub_order', [$order_id, $group_id, $process_id])) {
-                wp_schedule_single_event(time() + 300, 'create_sub_order', [$order_id, $group_id, $process_id]);
+                wp_schedule_single_event(time() + 90, 'create_sub_order', [$order_id, $group_id, $process_id]);
                 OAM_COMMON_Custom::sub_order_error_log("Scheduled cron job for Order ID: $order_id");
             }
         }
@@ -209,20 +210,25 @@ class OAM_WC_CRON_Suborder {
                 );
     
                 $wpdb->insert($group_recipient_table, [
-                    'user_id'       => $recipients->user_id ?? 0,
-                    'recipient_id'  => $recipient_id,
-                    'group_id'      => $group_id,
-                    'order_id'      => $sub_order->get_id(),
-                    'full_name'     => sanitize_text_field($custom_full_name),
-                    'company_name'  => sanitize_text_field($recipients->company_name),
-                    'address_1'     => sanitize_text_field($recipients->address_1),
-                    'address_2'     => sanitize_text_field($recipients->address_2),
-                    'city'          => sanitize_text_field($recipients->city),
-                    'state'         => sanitize_text_field($recipients->state),
-                    'zipcode'       => sanitize_text_field($recipients->zipcode),
-                    'quantity'      => sanitize_text_field($recipients->quantity),
-                    'verified'      => sanitize_text_field($recipients->address_verified),
-                    'greeting'      => sanitize_text_field($recipients->greeting),
+                    'user_id'           => $recipients->user_id ?? 0,
+                    'recipient_id'      => $recipient_id,
+                    'group_id'          => $group_id,
+                    'order_id'          => $sub_order->get_id(),
+                    'full_name'         => sanitize_text_field($custom_full_name),
+                    'company_name'      => sanitize_text_field($recipients->company_name),
+                    'address_1'         => sanitize_text_field($recipients->address_1),
+                    'address_2'         => sanitize_text_field($recipients->address_2),
+                    'city'              => sanitize_text_field($recipients->city),
+                    'state'             => sanitize_text_field($recipients->state),
+                    'zipcode'           => sanitize_text_field($recipients->zipcode),
+                    'quantity'          => sanitize_text_field($recipients->quantity),
+                    'verified'          => sanitize_text_field($recipients->verified),
+                    'address_verified'  => sanitize_text_field($recipients->address_verified),
+                    'visibility'        => 0,
+                    'new'               => 0,
+                    'update_type'       => 0,
+                    'reasons'           => sanitize_text_field($recipients->reasons),
+                    'greeting'          => sanitize_text_field($recipients->greeting),
                 ]);
     
                 // 2-second delay before creating the next sub-order

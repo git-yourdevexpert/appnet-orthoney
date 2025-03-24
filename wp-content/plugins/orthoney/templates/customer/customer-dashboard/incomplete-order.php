@@ -21,7 +21,7 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
     return;
 }
 ?>
-<div class="order-process-block">
+<div class="incomplete-order-block">
     <h3>All Incomplete Orders</h3>
     <table>
         <thead>
@@ -32,9 +32,9 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
                 <th style="width:300px">Action</th>
             </tr>
         </thead>
-        <tbody id="order-process-data"></tbody>
+        <tbody id="incomplete-order-data"></tbody>
     </table>
-    <div class="order-process-pagination">
-        <div id="io-pagination"></div>
+    <div class="incomplete-order-pagination">
+        <div id="incomplete-order-pagination"></div>
     </div>
 </div>

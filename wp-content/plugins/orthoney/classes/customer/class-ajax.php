@@ -45,11 +45,11 @@ class OAM_Ajax{
         add_action( 'wp_ajax_orthoney_incomplete_order_process_ajax', array( $this, 'orthoney_incomplete_order_process_ajax_handler' ) );
         // Done
         
+		add_action( 'wp_ajax_deleted_group', array( $this, 'orthoney_deleted_group_handler' ) );
         
         // TODO
         add_action( 'wp_ajax_orthoney_process_to_checkout_ajax', array( $this, 'orthoney_process_to_checkout_ajax_handler' ) );
         add_action( 'wp_ajax_create_group', array( $this, 'orthoney_create_group_handler' ) );
-		add_action( 'wp_ajax_deleted_group', array( $this, 'orthoney_deleted_group_handler' ) );
         // TODO
 
     }
@@ -1000,8 +1000,8 @@ class OAM_Ajax{
    
     public function orthoney_get_csv_recipient_ajax_handler($userId = '', $processID = '') {
         
-        $exclude_ids = $process_id = $customGreeting = $addressPartsHtml = $successHtml = $newDataHtml = $failHtml = $duplicateHtml = '';
-        $successData = $newData = $failData = $duplicateGroups = [];
+        $exclude_ids = $process_id = $customGreeting = $addressPartsHtml = $successHtml = $newDataHtml = $alreadyOrderHtml  = $failHtml = $duplicateHtml = '';
+        $successData = $newData = $failData = $duplicateGroups = $alreadyOrderGroups = [];
 
         if($userId != ''){
             $user = $userId;
@@ -1019,10 +1019,15 @@ class OAM_Ajax{
         
         if($user != 0 OR $user != ''){
             global $wpdb;
+            $group_recipient_table = OAM_Helper::$group_recipient_table;
+            $start_date = get_field('free_shipping_start_date', 'option');
+            $end_date = get_field('free_shipping_end_date', 'option');
 
             $tableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Status</th><th>Action</th></tr></thead><tbody>';
 
             $duplicateTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+
+            $alreadyOrderTableStart ='<table><thead><tr><th>Order Id</th><th>Order Date</th><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th></tr></thead><tbody>';
             
             $tableEnd = '</tbody></table>';
            
@@ -1078,6 +1083,37 @@ class OAM_Ajax{
                     $recordMap[$key] = [];
                 }
                 $recordMap[$key][] = $record;
+
+
+                // Fetch records using `DATETIME` format for filtering
+                $result = $wpdb->get_results($wpdb->prepare(
+                    "SELECT * FROM {$group_recipient_table} 
+                    WHERE full_name = %s 
+                    AND city = %s 
+                    AND state = %s 
+                    AND zipcode = %s 
+                    AND `timestamp` BETWEEN %s AND %s",
+                    $record->full_name, $record->city, $record->state,  $record->zipcode, $start_date, $end_date
+                ));
+
+                // Normalize and merge input address values
+                $search_address = $record->address_1 . $record->address_2; // Merge address_1 and address_2
+                $search_address = str_replace([',', '.'], '', $search_address);
+                $search_address = trim($search_address);
+
+                // Filter results by merging address_1 and address_2 in the database
+                $filtered_results = array_filter($result, function ($record) use ($search_address) {
+                    // Merge database address_1 and address_2
+                    $merged_address = trim($record->address_1 . ' ' . $record->address_2);
+                    $merged_address = str_replace([',', '.'], '', $merged_address);
+
+                    // Compare merged values
+                    return strcasecmp($search_address, $merged_address) === 0;
+                });
+
+
+                $alreadyOrderGroups = $filtered_results;
+
             }
     
             // Second pass: Categorize records
@@ -1118,8 +1154,8 @@ class OAM_Ajax{
                 $duplicateHtml .= '<div class="heading-title"><div><h5 class="table-title">Duplicate Recipient</h5> </div>'.$bulkMargeButtonHtml.'</div>';
                 
                 foreach ($duplicateGroups as $groupIndex => $group) {
-                    $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="'.($groupIndex + 1).'"><td colspan="12"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
-                    $duplicateHtml .= OAM_Helper::get_table_recipient_content($group , $customGreeting, 0 , 1);
+                    $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="99'.($groupIndex + 1).'"><td colspan="12"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
+                    $duplicateHtml .= OAM_Helper::get_table_recipient_content($group , $customGreeting, 0 , '99'.$groupIndex + 1);
                     
                 }
             }
@@ -1143,6 +1179,11 @@ class OAM_Ajax{
                 // $failHtml .= '<div><h3>Failed to Add Recipeints</h3><h4>'.count($failData).' Recipient failed!</h4></div>';
                 $failHtml .= OAM_Helper::get_table_recipient_content($failData , $customGreeting);
             }
+
+            if(!empty($alreadyOrderGroups)){
+                $alreadyOrderHtml .= '<div class="heading-title"><div><h5 class="table-title">Already Ordered</h5><p> Honey is already ordered for '.count($alreadyOrderGroups).' Recipients this year</p></div></div>';
+                $alreadyOrderHtml .= OAM_Helper::get_table_recipient_content($alreadyOrderGroups , $customGreeting, 0 , 0 , 1);
+            }
     
            
             // Wrap tables with headers
@@ -1152,8 +1193,11 @@ class OAM_Ajax{
             if($successHtml != ''){
                 $successHtml = $tableStart.$successHtml.$tableEnd;
             }
+            if($alreadyOrderHtml != ''){
+                $alreadyOrderHtml = $alreadyOrderTableStart.$alreadyOrderHtml.$tableEnd;
+            }
             if($failHtml != ''){
-                $failHtml = '<div class="download-csv"><div class="heading-title"><div><h5 class="table-title">Failed Recipeints</h5><p>To fix the failed data, edit the row and make the necessary changes OR upload a new CSV for failed recipients.</p></div><div><button id="download-failed-recipient-csv" class="btn-underline"><i class="far fa-download"></i> Download Failed Recipients</button></div></div> </div>'.$tableStart.$failHtml.$tableEnd;
+                $failHtml = '<div class="download-csv"><div class="heading-title"><div><h5 class="table-title">Failed Recipeints</h5><p>To fix the failed data, edit the row and make the necessary changes OR upload a new CSV for failed recipients.</p></div><div><button data-tippy="Failed records can be downloaded" id="download-failed-recipient-csv" class="btn-underline" ><i class="far fa-download"></i> Download Failed Recipients</button></div></div> </div>'.$tableStart.$failHtml.$tableEnd;
             }
             if($duplicateHtml != ''){
                 $duplicateHtml = $duplicateTableStart.$duplicateHtml.$tableEnd;
@@ -1169,12 +1213,14 @@ class OAM_Ajax{
                 'newData'         => $newDataHtml,
                 'successData'     => $successHtml,
                 'failData'        => $failHtml,
+                'alreadyOrderData'=> $alreadyOrderHtml,
                 'duplicateData'   => $duplicateHtml,
                 'duplicateGroups' => $duplicateGroups,
                 'totalCount'      => $totalCount,
                 'successCount'    => count($successData),
                 'newCount'        => count($newData),
                 'failCount'       => count($failData),
+                'alreadyOrderCount'   => count($alreadyOrderGroups),
                 'duplicateCount'  => $totalDuplicates,
                 'groupCount'      => count($duplicateGroups)
             ];
@@ -1383,12 +1429,12 @@ class OAM_Ajax{
     
         // Your logic to insert the group into the database
         global $wpdb;
-        $table = $wpdb->prefix . 'recipient_group';
+        $group_table = OAM_Helper::$group_table;
     
-        $result = $wpdb->delete(
-            $table,
-            ['id' => $group_id],
-            ['%d']
+        $result = $wpdb->update(
+            $group_table,
+            ['visibility' => 0],
+            ['id' => $group_id]
         );
     
         if ($result) {
@@ -1761,7 +1807,9 @@ class OAM_Ajax{
         <table>
             <thead><tr><th>Affiliate Code</th><th>Affiliate Name</th><th>Block/Unblock</th></tr></thead>
             <tbody>
-                <?php foreach ($affiliates as $affiliate): 
+                <?php 
+                if(!empty($affiliates)){
+                foreach ($affiliates as $affiliate){
                         $is_blocked = in_array($affiliate['ID'], $blocked_affiliates);
                     ?>
                 <tr>
@@ -1775,7 +1823,9 @@ class OAM_Ajax{
                         </button>
                     </td>
                 </tr>
-                <?php endforeach; ?>
+                <?php } }else{
+                    echo '<tr><td colspan="3">Not Affiliate Found!</td></tr>';
+                } ?>
             </tbody>
         </table>
         <?php 

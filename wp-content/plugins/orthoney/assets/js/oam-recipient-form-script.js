@@ -249,6 +249,104 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
 
+      document
+      .querySelectorAll("#checkout_proceed_with_addresses_button")
+      .forEach((button) => {
+        button.addEventListener("click", async function (event) {
+           event.preventDefault();
+          const unverifiedButton = document.querySelector("#checkout_proceed_with_only_unverified_addresses");
+          const verifiedButton = document.querySelector("#checkout_proceed_with_only_verified_addresses");
+    
+          const unverified_table = document.querySelector("#unverified-block"); // Select a single element
+          const verified_table = document.querySelector("#verified-block"); // Select a single element
+    
+          let html = ``;
+          if (!unverifiedButton && verifiedButton) {
+            html = `All recipients have been successfully validated!`;
+          }
+          if (unverifiedButton && !verifiedButton) {
+            html = `All recipients have been unsuccessfully validated!`;
+          }
+    
+         
+          if (unverifiedButton && verifiedButton) {
+            const unverifiedCount = unverified_table.getAttribute("data-count");
+            const verifiedCount = verified_table.getAttribute("data-count");
+           html = ` Out of the ${(parseInt(verifiedCount) + parseInt(unverifiedCount))} recipients uploaded via CSV ${(parseInt(verifiedCount))} were successfully added.`;
+
+            html += `<div class='exceptions'><strong>Exceptions: </strong><ul>`;
+            
+            if (verified_table) {
+              if (verifiedCount != 0) {
+                html += `<li><span>Verified Recipients: </span> ${verifiedCount}</li>`;
+              }
+            }
+            if (unverified_table) {
+              if (unverifiedCount != 0) {
+                html += `<li><span>Unverified Recipients: </span> ${unverifiedCount}</li>`;
+              }
+            }
+            
+            html += `<li class="total-recipients"><span>Total Recipients: </span> ${(parseInt(verifiedCount) + parseInt(unverifiedCount))}</li></ul>`;
+          }
+          
+
+          
+
+          
+          const result = await Swal.fire({
+            title: "",
+            html: html,
+            icon: "question",
+            showCancelButton: true,
+            showConfirmButton: false,
+            showDenyButton: false,
+            confirmButtonColor: "#3085d6",
+            denyButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Proceed With All Records",
+            cancelButtonText: "No, I Want to Update/Fix Records",
+            denyButtonText: "Proceed With Only Verified Records",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+            reverseButtons: true,
+            width: "970px",
+            willOpen: () => {
+              if (unverifiedButton) {  
+                Swal.getConfirmButton().style.display = "inline-block";
+          
+                if (unverifiedButton && !verifiedButton) {
+                  Swal.getConfirmButton().textContent = "Yes, Proceed"; 
+                }
+              }
+          
+              if (verifiedButton) {  
+                Swal.getDenyButton().style.display = "inline-block";
+                
+                if (!unverifiedButton && verifiedButton) {
+                  Swal.getConfirmButton().textContent = "Yes, Proceed"; 
+                }
+              }
+            },
+          });
+
+          if (result.isConfirmed) {
+            process_group_popup();
+              event.target.closest("div").querySelector('input[name="checkout_proceed_with_multi_addresses_status"]').value = "only_verified";
+              const form = document.querySelector("#multiStepForm");
+              await process_to_checkout_ajax_part(form, 0);
+            }
+          if (result.isDenied) {
+            process_group_popup();
+            event.target.closest("div").querySelector('input[name="checkout_proceed_with_multi_addresses_status"]').value = "unverified";
+            const form = document.querySelector("#multiStepForm");
+            await process_to_checkout_ajax_part(form, 1);
+          }
+        });
+      });
+
+
     document
       .querySelectorAll("#checkout_proceed_with_only_verified_addresses")
       .forEach((button) => {
@@ -294,6 +392,11 @@ document.addEventListener("DOMContentLoaded", function () {
         button.addEventListener("click", async function (event) {
           event.preventDefault();
           const form = document.querySelector("#multiStepForm");
+          event.target
+            .closest("div")
+            .querySelector(
+              'input[name="checkout_proceed_with_multi_addresses_status"]'
+            ).value = "unverified";
           let html =
             "<p>Are you sure you want to proceed with unverified addresses?</p>";
 
@@ -337,7 +440,7 @@ document.addEventListener("DOMContentLoaded", function () {
           allowOutsideClick: false,
           allowEscapeKey: false,
           allowEnterKey: false,
-          reverseButtons: false,
+          reverseButtons: true,
           width: "650px",
         });
 
@@ -527,10 +630,10 @@ document.addEventListener("DOMContentLoaded", function () {
       const process_name = event.target.getAttribute("data-name"); // Get process name
 
       Swal.fire({
-        title: "Enter group name",
-        text: "The group name will be used for the future.",
+        title: "Enter Recipient List Name",
+        text: "The recipient list name for easy future reference.",
         input: "text",
-        inputPlaceholder: "Enter group name",
+        inputPlaceholder: "Enter Recipient List Name",
         inputAttributes: {
           autocapitalize: "off",
         },
@@ -632,43 +735,57 @@ document.addEventListener("DOMContentLoaded", function () {
 
           const totalCount = event.target.getAttribute("data-totalcount");
           const successCount = event.target.getAttribute("data-successcount");
+          const newCount = event.target.getAttribute("data-newcount");
           const failCount = event.target.getAttribute("data-failcount");
-          const duplicateCount = event.target.getAttribute(
-            "data-duplicatecount"
-          );
+          const alreadyOrderCount = event.target.getAttribute("data-alreadyOrderCount");
+          const duplicateCount = event.target.getAttribute("data-duplicatecount");
+          let html = ``;
 
-          let html = `<p>Out of the ${totalCount} records uploaded, `;
+          if((parseInt(successCount) + parseInt(newCount)) ==  totalCount){
+            html = `All recipients have been successfully validated!`;
+          }else{
 
-          if (successCount !== 0) {
-            html += `${successCount} were successfully added.</p> `;
+          html += `Out of ${totalCount} recipients, `;
+
+          if (successCount != 0) {
+            html += `${parseInt(successCount) + parseInt(newCount)} have been successfully validated. `;
           }
+          
 
-          if (failCount !== 0 || duplicateCount !== 0) {
+          if (failCount != 0 || duplicateCount != 0 || newCount != 0) {
             html += "<div class='exceptions'><strong>Exceptions: </strong><ul>";
           }
 
-          html += `<li><span>Total Records: </span> ${totalCount}</li>`;
+         
 
-          if (successCount !== 0) {
-            html += `<li><span>Successful Records: </span> ${successCount}</li>`;
+          if (successCount != 0) {
+            html += `<li><span>Successful Recipients: </span> ${successCount}</li>`;
           }
-          if (failCount !== 0) {
-            html += `<li><span>Failed Records: </span> ${failCount}</li>`;
+          if (failCount != 0) {
+            html += `<li><span>Failed Recipients: </span> ${failCount}</li>`;
           }
-          if (duplicateCount !== 0) {
-            html += `<li><span>Duplicate Records: </span> ${duplicateCount}</li>`;
+          if (parseInt(alreadyOrderCount) !== 0) {
+            html += `<li><span>Already Order Recipients: </span> ${alreadyOrderCount}</li>`;
           }
+          if (parseInt(newCount) !== 0) {
+            html += `<li><span>New Recipient: </span> ${newCount}</li>`;
+          }
+          if (duplicateCount != 0) {
+            html += `<li><span>Duplicate Recipients: </span> ${duplicateCount}</li>`;
+          } 
+          html += `<li class="total-recipients"><span>Total Recipients: </span> ${totalCount}</li>`;
 
           html += `</ul></div>`;
+        }
           // html += `<p>Please confirm if you would like to proceed with the successfully added records.</p>`;
 
           const result = await Swal.fire({
-            title: "",
-            html: html,
+            title: html,
+            // html: html,
             icon: "question",
             showCancelButton: true,
-            showConfirmButton: duplicateCount !== 0 ? true : false,
-            showDenyButton: successCount !== 0 ? true : false,
+            showConfirmButton: false,
+            showDenyButton: false,
             confirmButtonColor: "#3085d6",
             denyButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
@@ -679,8 +796,24 @@ document.addEventListener("DOMContentLoaded", function () {
             allowEscapeKey: false,
             allowEnterKey: false,
             reverseButtons: true,
-            width: "650px",
+            width: "970px",
+            willOpen: () => {
+              if (duplicateCount > 0) {
+                Swal.getConfirmButton().style.display = "inline-block";
+                if (successCount == 0) {
+                  Swal.getConfirmButton().textContent = "Yes, Proceed"; 
+                }
+              }
+              if (successCount > 0 || newCount != 0) {
+                Swal.getDenyButton().style.display = "inline-block";
+                if (duplicateCount == 0) {
+                  Swal.getDenyButton().textContent = "Yes, Proceed"; 
+                }
+              }
+            },
           });
+
+  
 
           if (result.isConfirmed || result.isDenied) {
             process_group_popup();

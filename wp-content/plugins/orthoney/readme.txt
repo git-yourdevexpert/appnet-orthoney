@@ -37,3 +37,10 @@ group-recipients-csv
         "Quantity" => 4
     ]
 ];
+
+
+
+SET NAMES utf8mb4;
+
+INSERT INTO `wp_oh_group` (`id`, `name`, `user_id`, `pid`, `order_id`, `visibility`, `timestamp`) VALUES
+(1,	'Diwali Gift',	1,	10001,	554,	1,	'2025-03-21 13:10:50');

@@ -21,7 +21,9 @@ class OAM_WC_Customizer {
 
         add_filter('woocommerce_order_again_cart_item_data' , array($this,'woocommerce_order_again_cart_item_data_handler'), 10, 3);
         add_filter('render_block' , array($this,'checkout_order_summary_render_block_handler'), 10, 2);
-        add_filter('woocommerce_order_query_args' , array($this,'only_show_main_order_handler'), 10, 2);
+        
+        // Hide sub order 
+        // add_filter('woocommerce_order_query_args' , array($this,'only_show_main_order_handler'), 10, 2);
 
         add_action( 'add_meta_boxes', array($this, 'admin_sub_order_metabox') );
 
@@ -159,13 +161,13 @@ class OAM_WC_Customizer {
                         $formatted_address = !empty($address_parts) ? implode(', ', array_map('esc_html', $address_parts)) : '-';
                         ?>
                         <tr>
-                            <td><a href="<?php echo admin_url() ?>admin.php?page=wc-orders&action=edit&id="<?php echo $groupRecipientCount->order_id; ?>><?php echo $groupRecipientCount->order_id; ?></a></td>
+                            <td><a href="<?php echo admin_url() ?>admin.php?page=wc-orders&action=edit&id=<?php echo $groupRecipientCount->order_id; ?>"><?php echo $groupRecipientCount->order_id; ?></a></td>
                             <td><?php echo !empty($full_name) ? esc_html($full_name) : '-'; ?></td>
                             <td><?php echo !empty($company_name) ? esc_html($company_name) : '-'; ?></td>
                             <td><?php echo $formatted_address; ?></td>
                             <td><?php echo esc_html($quantity); ?></td>
                             <td class="order_status column-order_status"><mark class="order-status status-<?php echo esc_attr(sanitize_title( $sub_order->get_status())); ?> tips"><span><?php echo esc_html( $sub_order->get_status()); ?></span></mark></td>
-                            <td><a href="<?php echo admin_url() ?>admin.php?page=wc-orders&action=edit&id="<?php echo $groupRecipientCount->order_id; ?>><span data-tippy="View Order" class="dashicons dashicons-visibility"></span></a></td>
+                            <td><a href="<?php echo admin_url() ?>admin.php?page=wc-orders&action=edit&id=<?php echo $groupRecipientCount->order_id; ?>"><span data-tippy="View Order" class="dashicons dashicons-visibility"></span></a></td>
                         </tr>
                     <?php } 
                     } 
@@ -490,109 +492,109 @@ new OAM_WC_Customizer();
 
 // add_action('woocommerce_thankyou', 'process_order_suborders', 10, 1);
 
-function process_order_suborders($order_id) {
-    if (!$order_id) {
-        return;
-    }
-    $group_id = 0;
+// function process_order_suborders($order_id) {
+//     if (!$order_id) {
+//         return;
+//     }
+//     $group_id = 0;
 
-    global $wpdb;
+//     global $wpdb;
     
-    $order_process_table = OAM_Helper::$order_process_table;
-    $group_table = OAM_Helper::$group_table;
-    $group_recipient_table = OAM_Helper::$group_recipient_table;
+//     $order_process_table = OAM_Helper::$order_process_table;
+//     $group_table = OAM_Helper::$group_table;
+//     $group_recipient_table = OAM_Helper::$group_recipient_table;
 
    
-    $main_order = wc_get_order($order_id);
+//     $main_order = wc_get_order($order_id);
 
-    $order_items = $main_order->get_items();
-    $order_items_count = count($order_items);
+//     $order_items = $main_order->get_items();
+//     $order_items_count = count($order_items);
 
-    $single_order  = '';
-    foreach ($order_items as $item_id => $item) {
-        $single_order = '';
-        $process_id = '';
+//     $single_order  = '';
+//     foreach ($order_items as $item_id => $item) {
+//         $single_order = '';
+//         $process_id = '';
 
-        if($item->get_meta('single_order', true)){
-            $single_order = $item->get_meta('single_order', true);
-        }
-        if($item->get_meta('process_id', true)){
-            $process_id = $item->get_meta('process_id', true);
-        }
+//         if($item->get_meta('single_order', true)){
+//             $single_order = $item->get_meta('single_order', true);
+//         }
+//         if($item->get_meta('process_id', true)){
+//             $process_id = $item->get_meta('process_id', true);
+//         }
 
-        if($item->get_meta('_recipient_order_type', true)){
-            $single_order = $item->get_meta('_recipient_order_type', true);
-        }
-        if($item->get_meta('_recipient_process_id', true)){
-            $process_id = $item->get_meta('_recipient_process_id', true);
-        }
-        if($item->get_meta('_recipient_recipient_id', true)){
-           $recipient_id = $item->get_meta('_recipient_recipient_id', true);
-        }
+//         if($item->get_meta('_recipient_order_type', true)){
+//             $single_order = $item->get_meta('_recipient_order_type', true);
+//         }
+//         if($item->get_meta('_recipient_process_id', true)){
+//             $process_id = $item->get_meta('_recipient_process_id', true);
+//         }
+//         if($item->get_meta('_recipient_recipient_id', true)){
+//            $recipient_id = $item->get_meta('_recipient_recipient_id', true);
+//         }
         
-    }
+//     }
     
-    $processQuery = $wpdb->prepare(
-        "SELECT * FROM {$order_process_table} WHERE id = %d" ,
-        $process_id
-    );
+//     $processQuery = $wpdb->prepare(
+//         "SELECT * FROM {$order_process_table} WHERE id = %d" ,
+//         $process_id
+//     );
     
-    $processData = $wpdb->get_row($processQuery);
+//     $processData = $wpdb->get_row($processQuery);
 
-    if($processData){
-        $recipientQuery = $wpdb->prepare(
-            "SELECT id FROM {$group_table} WHERE order_id = %d AND pid = %d" ,
-            $order_id, $process_id
-        );
+//     if($processData){
+//         $recipientQuery = $wpdb->prepare(
+//             "SELECT id FROM {$group_table} WHERE order_id = %d AND pid = %d" ,
+//             $order_id, $process_id
+//         );
         
-        $recipients = $wpdb->get_row($recipientQuery);
+//         $recipients = $wpdb->get_row($recipientQuery);
 
-        if(!$recipients){
-            $insert_data = [
-                'user_id'  => $processData->user_id,
-                'pid'      => $processData->id,
-                'order_id' => $order_id,
-                'name'     => sanitize_text_field($processData->name),
-            ];
-            $wpdb->insert($group_table, $insert_data);
-            $group_id = $wpdb->insert_id;
-        }else{
-            $group_id = $recipients->id;
-        }
-    }
+//         if(!$recipients){
+//             $insert_data = [
+//                 'user_id'  => $processData->user_id,
+//                 'pid'      => $processData->id,
+//                 'order_id' => $order_id,
+//                 'name'     => sanitize_text_field($processData->name),
+//             ];
+//             $wpdb->insert($group_table, $insert_data);
+//             $group_id = $wpdb->insert_id;
+//         }else{
+//             $group_id = $recipients->id;
+//         }
+//     }
 
-    //TODO
-    $groupRecipientQuery = $wpdb->prepare(
-        "SELECT COUNT(id) FROM $group_recipient_table WHERE group_id = %d",
-        $group_id
-    );
+//     //TODO
+//     $groupRecipientQuery = $wpdb->prepare(
+//         "SELECT COUNT(id) FROM $group_recipient_table WHERE group_id = %d",
+//         $group_id
+//     );
 
-    $groupRecipientData = $wpdb->get_var($groupRecipientQuery);
+//     $groupRecipientData = $wpdb->get_var($groupRecipientQuery);
 
-    //TODO
+//     //TODO
     
-    $order_type = 'multi-recipient-order';
+//     $order_type = 'multi-recipient-order';
 
-    if($single_order == 1){
-        $order_type = 'single-order';
-    }
+//     if($single_order == 1){
+//         $order_type = 'single-order';
+//     }
 
-    $updateData = [
-        'order_type'  => $order_type,
-        'order_id'  => $order_id,
-    ];
+//     $updateData = [
+//         'order_type'  => $order_type,
+//         'order_id'  => $order_id,
+//     ];
 
-    if($process_id != ''){
-        $wpdb->update(
-            $order_process_table,
-            $updateData,
-            ['id' => $process_id]
-        );
-    }
-    if($single_order == 'multi-recipient-order'){
+//     if($process_id != ''){
+//         $wpdb->update(
+//             $order_process_table,
+//             $updateData,
+//             ['id' => $process_id]
+//         );
+//     }
+//     if($single_order == 'multi-recipient-order'){
         
-        if($groupRecipientData != $order_items_count){
-            // echo "<div id='thank-you-sub-orders-creation' data-order_id='".$order_id."' data-group_id='".$group_id."'></div>";
-        }
-    }
-}
+//         if($groupRecipientData != $order_items_count){
+//             // echo "<div id='thank-you-sub-orders-creation' data-order_id='".$order_id."' data-group_id='".$group_id."'></div>";
+//         }
+//     }
+// }

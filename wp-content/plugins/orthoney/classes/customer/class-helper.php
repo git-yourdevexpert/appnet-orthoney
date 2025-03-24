@@ -81,23 +81,27 @@ class OAM_Helper{
             "SELECT affiliate_id FROM $oh_affiliate_customer_relation_table WHERE user_id = %d",
             $user_id
         ));
+
+        if ($filter == 'unblocked' && empty($blocked_affiliates)) {
+            return json_encode(['success' => false, 'message'=> 'No blocked organization found.']);
+        }
         if (!empty($filter) && $filter != 'All') {
+            if (!empty($blocked_affiliates)) {
+                $placeholders = implode(',', array_fill(0, count($blocked_affiliates), '%d'));
+            }
             // Apply filter logic correctly
-            if ($filter === 'blocked') {
-                if (!empty($blocked_affiliates)) {
-                    $placeholders = implode(',', array_fill(0, count($blocked_affiliates), '%s'));
-                    $queryParts[] = "a.ID IN ($placeholders)";
-                    $queryParams = array_merge($queryParams, $blocked_affiliates);
-                }
-            } elseif ($filter === 'unblocked') {
-                if (!empty($blocked_affiliates)) {
-                    $placeholders = implode(',', array_fill(0, count($blocked_affiliates), '%s'));
-                    $queryParts[] = "a.ID NOT IN ($placeholders)";
-                    $queryParams = array_merge($queryParams, $blocked_affiliates);
-                }
+            if ($filter == 'blocked' && !empty($blocked_affiliates)) {
+                $queryParts[] = "a.ID NOT IN ($placeholders)";
+            } 
+            if ($filter == 'unblocked' && !empty($blocked_affiliates)) {
+                $queryParts[] = "a.ID IN ($placeholders)";                    
+            }
+            if(!empty($blocked_affiliates)){
+                $queryParams = array_merge($queryParams, $blocked_affiliates);
             }
         }
-
+        
+        
         // Build final SQL query
         $sql = "SELECT a.ID, a.token, u.display_name , a.user_id
         FROM $yith_wcaf_affiliates_table AS a
@@ -105,6 +109,7 @@ class OAM_Helper{
         WHERE " . implode(" AND ", $queryParts) . " 
         ORDER BY u.display_name ASC";
 
+        
         // Prepare and execute query
         if (!empty($queryParams)) {
             $query = $wpdb->prepare($sql, ...$queryParams);
@@ -144,7 +149,7 @@ class OAM_Helper{
         return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : 'UNKNOWN';
     }
 
-    public static function get_table_recipient_content($dataArray, $customGreeting, $reverify = 0, $duplicate = 0) {
+    public static function get_table_recipient_content($dataArray, $customGreeting, $reverify = 0, $duplicate = 0, $alreadyOrder = 0) {
         $html = '';
         $reasonsHtml = '';
         if(!empty($dataArray)){
@@ -180,34 +185,41 @@ class OAM_Helper{
                 }
 
                 
-                $html .= '<tr data-id="'.$id.'">';
+
+                $html .= '<tr data-id="'.$id.'" '.(($duplicate != 1)? 'data-verify="'.$data->verified.'" data-group="'.$duplicate.'"': '').'>';
+                if($alreadyOrder != 0){
+                    $html .= '<td>'.($data->order_id != "" ? $data->order_id : '') .'</td>';
+                    $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->timestamp));
+                    $html .= '<td>'.$created_date.'</td>';
+                }
                 $html .= '<td><input type="hidden" name="'.(($reverify == 1) ? "recipientAddressIds[]" : "recipientIds[]").'" value="'.$id.'">'.$data->full_name.'</td>';
                 $html .= '<td>'.($data->company_name != "" ? $data->company_name : '') .'</td>';
                 
                 $html .= $addressPartsHtml;
                 $html .= '<td>'.((empty($data->quantity) || $data->quantity <= 0) ? '0' : $data->quantity).'</td>';
-                if($reverify != 1){
-                    $html .= '<td>'.(($data->verified == 0) ? $reasonsHtml: 'Passed').'</td>';
-                }
+               
                 // $html .= '<td>'.$greetingHtml.'</td>';
-                
-                
 
-                if($reverify == 1){
-                    $html .= '<td>';
-                    if($data->address_verified == 0){
-                        // $html .= '<button class="reverifyAddress w-btn us-btn-style_1" style="padding:10px"><small>Reverify Address</small></button>';
+                if($alreadyOrder == 0){
+                    if($reverify != 1){
+                        $html .= '<td>'.(($data->verified == 0) ? $reasonsHtml: 'Passed').'</td>';
                     }
-                    $html .= ($data->address_verified == 0 ? ' <button class="editRecipient far fa-edit" data-tippy="Edit Recipient Details" data-popup="#recipient-manage-popup" data-address_verified="1"></button>' : '') .'<button data-recipientname="'.$data->full_name.'" class="deleteRecipient far fa-trash" data-tippy="Remove Recipient"></button>';
-                    $html .= '</td>';
-                    
-                }else{
-                    $html .= '<td>';
-                    if($duplicate == 1){
-                        $html .= '<button class="keep_this_and_delete_others" data-recipientname="'.$data->full_name.'"  data-popup="#recipient-manage-popup" data-tippy="Keep this and delete others">Keep this and delete others</button>';
+                    if($reverify == 1){
+                        $html .= '<td>';
+                        if($data->address_verified == 0){
+                            // $html .= '<button class="reverifyAddress w-btn us-btn-style_1" style="padding:10px"><small>Reverify Address</small></button>';
+                        }
+                        $html .= ($data->address_verified == 0 ? ' <button class="editRecipient far fa-edit" data-tippy="Edit Recipient Details" data-popup="#recipient-manage-popup" data-address_verified="1"></button>' : '') .'<button data-recipientname="'.$data->full_name.'" class="deleteRecipient far fa-trash" data-tippy="Remove Recipient"></button>';
+                        $html .= '</td>';
+                        
+                    }else{
+                        $html .= '<td>';
+                        if($duplicate == 1){
+                            $html .= '<button class="keep_this_and_delete_others" data-recipientname="'.$data->full_name.'"  data-popup="#recipient-manage-popup" data-tippy="Keep this and delete others">Keep this and delete others</button>';
+                        }
+                        $html .= '<button class="viewRecipient far fa-eye" data-tippy="View Recipient Details" data-popup="#recipient-view-details-popup"></button><button class="editRecipient far fa-edit" data-tippy="Edit Recipient Details" data-popup="#recipient-manage-popup"></button><button data-recipientname="'.$data->full_name.'" data-tippy="Remove Recipient" class="deleteRecipient far fa-trash"></button>';
+                        $html .= '</td>';
                     }
-                    $html .= '<button class="viewRecipient far fa-eye" data-tippy="View Recipient Details" data-popup="#recipient-view-details-popup"></button><button class="editRecipient far fa-edit" data-tippy="Edit Recipient Details" data-popup="#recipient-manage-popup"></button><button data-recipientname="'.$data->full_name.'" data-tippy="Remove Recipient" class="deleteRecipient far fa-trash"></button>';
-                    $html .= '</td>';
                 }
                 $html .= '</tr>';
             }
@@ -579,7 +591,7 @@ class OAM_Helper{
     public static function view_details_recipient_popup(){
         ?>
         <div id="recipient-view-details-popup" class="lity-hide black-mask full-popup popup-show">
-            <h3>Recipient Details</h3>
+            <h2>Recipient Details</h2>
             <div class="recipient-view-details-wrapper"></div>
             
         </div>
@@ -589,7 +601,7 @@ class OAM_Helper{
     public static function manage_recipient_popup(){
         ?>
         <div id="recipient-manage-popup" class="lity-hide black-mask full-popup popup-show">
-            <h3>Recipient Details</h3>
+            <h2>Recipient Details</h2>
             <?php 
             echo self::get_recipient_form();
             ?>
@@ -680,11 +692,11 @@ class OAM_Helper{
 
         if($user_id == ''){
             $groups = $wpdb->get_results($wpdb->prepare("
-                SELECT * FROM $group_table"));
+                SELECT * FROM $group_table WHERE visibility = %d", 1));
         }else{
             $groups = $wpdb->get_results($wpdb->prepare("
-                SELECT * FROM $group_table WHERE user_id = %d
-            ", $user_id));
+                SELECT * FROM $group_table WHERE user_id = %d AND visibility = %d
+            ", $user_id, 1));
         }
         
         return $groups;

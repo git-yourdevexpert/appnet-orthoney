@@ -107,7 +107,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         <p>Your Affiliate is the participating organization that you want to benefit from your honey purchase.</p>
                         <div>
                             <?php
-                            $affiliateList = OAM_Helper::manage_affiliates_content('', 'unblocked');
+                            $affiliateList = OAM_Helper::manage_affiliates_content('', 'blocked');
                             $affiliateList = json_decode($affiliateList, true);
 
 
@@ -365,14 +365,18 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         }
     
         $result = json_decode($data, true);
+
+        // echo "<pre>";
+        // print_r($result['data']['alreadyOrderData']);
+        // echo "</pre>";
         ?>
     
         <div class="step" id="step4">
             <div class="heading-title">
                 <div>
                     <div class="group-name">
-                        Group Name: <strong><?php echo $group_name; ?></strong>
-                        <button class="editProcessName far fa-edit" data-name="<?php echo $group_name; ?>" data-tippy="Edit Group Name"></button>
+                    Recipient List Name: <strong><?php echo $group_name; ?></strong>
+                        <button class="editProcessName far fa-edit" data-name="<?php echo $group_name; ?>" data-tippy="Edit Recipient List Name"></button>
                     </div>
                     <?php if ($result['data']['totalCount'] != 0) : ?>
                         <p class="num-count">Number of Recipients: <span><?php echo $result['data']['totalCount']; ?></span></p>
@@ -392,6 +396,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         'fail'     => 'Failed',
                         'success'  => 'Success',
                         'duplicate' => 'Duplicate',
+                        'alreadyOrder' => 'Already Ordered',
                         'new'      => 'New'
                     ];
     
@@ -410,6 +415,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     foreach ($sections as $key => $label) {
                         $countKey = $key . 'Count';
                         $dataKey = $key . 'Data';
+                   
                         if (!empty($result['data'][$countKey])) {
                             $viewAllBtn = '';
                             if ($key != 'duplicate' && $result['data'][$countKey] > 10) {
@@ -432,11 +438,13 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     
             <?php if ($result['data']['totalCount'] != 0) : ?>
                 <div class="two-cta-block">
-                    <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Save Progress">Save Progress</a>
-                    <button data-tippy="Move to Next Step" class="verifyRecipientAddressButton w-btn us-btn-style_1 next-step"
+                    <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save Progress</a>
+                    <button class="verifyRecipientAddressButton w-btn us-btn-style_1 next-step"
                         data-totalCount="<?php echo $result['data']['totalCount']; ?>"
                         data-successCount="<?php echo $result['data']['successCount']; ?>"
+                        data-newCount="<?php echo $result['data']['newCount']; ?>"
                         data-failCount="<?php echo $result['data']['failCount']; ?>"
+                        data-alreadyOrderCount="<?php echo $result['data']['alreadyOrderCount']; ?>"
                         data-duplicateCount="<?php echo $result['data']['duplicateCount']; ?>">
                         Next
                     </button>
@@ -468,8 +476,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
 
                 if (!empty($result) && $result['success'] == 1) {
                     echo '<div class="heading-title"><div>';
-                    echo '<div class="group-name">Group Name: <strong>' . $group_name . '</strong>';
-                    echo '<button class="editProcessName far fa-edit" data-tippy="Edit Group Name" data-name="' . $group_name . '"></button></div>';
+                    echo '<div class="group-name">Recipient List Name: <strong>' . $group_name . '</strong>';
+                    echo '<button class="editProcessName far fa-edit" data-tippy="Edit Recipient List Name" data-name="' . $group_name . '"></button></div>';
                     echo '<p class="num-count">Number of Final Recipients: <span>' . $result['data']['totalCount'] . '</span></p>';
                     echo '</div></div>';
 
@@ -488,13 +496,14 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     echo '</div>';
 
                     echo '<div class="two-cta-block">';
+                    echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step">Next</button>';
                     echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
                     echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';
                     if ($result['data']['unverifiedRecordCount'] > 0) {
-                        echo '<button id="checkout_proceed_with_only_unverified_addresses" class="w-btn us-btn-style_1 outline-btn">Continue With Unverified Addresses</button>';
+                        echo '<button id="checkout_proceed_with_only_unverified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Continue With Unverified Addresses</button>';
                     }
                     if ($result['data']['verifiedRecordCount'] > 0) {
-                        echo '<button id="checkout_proceed_with_only_verified_addresses" class="w-btn us-btn-style_1 outline-btn">Proceed With Only Verified Addresses</button>';
+                        echo '<button id="checkout_proceed_with_only_verified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Proceed With Only Verified Addresses</button>';
                     }
                     echo '</div>';
                 }
@@ -507,7 +516,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     private static function render_recipient_block($title, $block_id, $record_id, $recordCount, $totalCount, $data){
         if ($recordCount > 0) {
             $viewAllBtn = $recordCount > 10 ? '<button class="view-all-recipients btn-underline" data-status="0">View All Recipients</button>' : '';
-            echo '<div class="' . $block_id . '" id="' . $block_id . '">';
+            echo '<div class="' . $block_id . '" id="' . $block_id . '" data-count="'.$recordCount.'">';
             echo '<div class="block-row">';
             echo '<div class="block-inner"><h3 class="title">' . $title . '</h3>';
             echo '<p>Out of ' . $totalCount . ' Recipients, ' . $recordCount . ' are ' . strtolower($title) . '.</p></div>';
@@ -560,13 +569,13 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     <label for="single_order_zipcode">Zipcode:</label>
                     <input type="text" id="single_order_zipcode" name="single_order_zipcode"
                         value="<?php echo isset($shipping_address['postcode']) ? $shipping_address['postcode'] : "" ?>" required
-                        data-error-message="Please select to zipcode.">
+                        data-error-message="Please enter a zip code">
                     <span class="error-message"></span>
                 </div>
-                <div class="form-row">
-                    <div style="margin-top:15px;">
+                <div class="form-row text-right">
+                    <div>
                         <input type="hidden" name="processCheckoutStatus" value="<?php echo $currentStep; ?>">
-                        <button class="w-btn us-btn-style_2" id="singleAddressCheckout">Proceed CheckOut</button>
+                        <button class="w-btn us-btn-style_2  text-right" id="singleAddressCheckout">Proceed To CheckOut</button>
                     </div>
                 </div>
         <?php

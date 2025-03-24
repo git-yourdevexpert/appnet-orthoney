@@ -59,7 +59,7 @@ class OAM_CUSTOM {
             'incomplete-order' => __('Incomplete Order', OH_DOMAIN),
             'orders'           => __('Orders', OH_DOMAIN),
             'groups'           => __('Groups', OH_DOMAIN),
-            'affiliates'       => __('Affiliates', OH_DOMAIN),
+            'affiliates'       => __('Organizations', OH_DOMAIN),
             'edit-account'     => __('My Profile', OH_DOMAIN),
             'edit-address'     => __('Edit Address', OH_DOMAIN),
         ];
