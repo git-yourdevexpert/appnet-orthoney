@@ -4594,8 +4594,12 @@ html body .w-btn.outline-btn.round-btn {
   border: none;
 }
 
-html body .w-btn.outline-btn.round-btn i {
+html body .w-btn.outline-btn.round-btn:hover i {
   color: #007bff;
+}
+
+.incomplete-order-block .w-btn.sm-btn {
+  margin-right: 5px;
 }
 
 .pagination {
@@ -4622,7 +4626,7 @@ html body .w-btn.outline-btn.round-btn i {
   border-color: var(--color-content-link);
 }
 
-.pagination a:hover:not(.active){
+.pagination a:hover:not(.active) {
   background: var(--color-content-link);
   color: #fff;
   border-color: var(--color-content-link);
