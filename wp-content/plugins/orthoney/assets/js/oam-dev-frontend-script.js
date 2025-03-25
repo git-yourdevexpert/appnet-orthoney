@@ -8,12 +8,36 @@ document.addEventListener('DOMContentLoaded', function () {
         #recipient-manage-form input[type='text'], 
         #recipient-manage-form input[type='search'], 
         input[name='csv_name'], 
-        .swal2-input
+        .swal2-input,
+        #single_order_zipcode,
+        #single_order_address
     `).forEach(input => {
         input.addEventListener("input", () => {
-            input.value = input.value.replace(/[^a-zA-Z0-9, .]/g, '');
+            if (input.id === 'single_order_zipcode') {
+                // Remove all non-numeric characters
+                let zip = input.value.replace(/\D/g, '');
+    
+                // Format ZIP code
+                if (zip.length > 5) {
+                    zip = zip.slice(0, 5) + '-' + zip.slice(5, 9);
+                }
+    
+                // Limit ZIP code length
+                if (zip.length > 10) {
+                    zip = zip.slice(0, 10);
+                }
+    
+                input.value = zip;
+            } else if (input.id === 'single_order_address') {
+                // Address: Allow only letters, numbers, commas, dots, and hyphens
+                input.value = input.value.replace(/[^0-9, .-]/g, '');
+            } else {
+                // General validation for other fields
+                input.value = input.value.replace(/[^a-zA-Z0-9, .]/g, '');
+            }
         });
     });
+    
     
 
     //append new passwordless login button beside social icon

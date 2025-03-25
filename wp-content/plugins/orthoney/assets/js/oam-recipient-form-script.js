@@ -113,13 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
    
 
-    document.addEventListener("click", function (event) {
-      if (event.target.id === "singleAddressCheckout") {
-        event.preventDefault(); // Only prevent default for this specific button
-        processStepSaveAjax(pid?.value || "0", 5);
-        singleAddressDataSaveAjax();
-      }
-    });
+    
 
     document
       .querySelectorAll("#multiStepForm .next-with-ortHoney-affiliates")
@@ -1263,18 +1257,71 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
+
       return missingFields.length > 0 ? missingFields : true;
     }
 
-    function singleAddressDataSaveAjax() {
-      let result = checkAddressMissingField();
+    document.addEventListener("click", function (event) {
+      if (event.target.id === "singleAddressCheckout") {
+        event.preventDefault(); // Only prevent default for this specific button
+        processStepSaveAjax(pid?.value || "0", 5);
+        
+        let result = checkAddressMissingField();
+        
+        if (result === true) {
+          process_group_popup("Please wait while we verify the address");
+          
 
-      if (result === true) {
-        process_group_popup("Please wait while we verify the address");
+          const formData = collectFormData();
+          formData.append("action", "orthoney_single_address_data_save_ajax");
+          formData.append("security", oam_ajax.nonce);
+
+          fetch(oam_ajax.ajax_url, {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                console.log('success');
+                  singleAddressDataSaveAjax(1);
+                
+              } else {
+                Swal.fire({
+                  title: "Address Not Verified!",
+                  text: 'The shipping address you entered could not be verified. Unverified addresses may result in delivery issues or delays. Would you like to proceed with this address?',
+                  showCancelButton: true,
+                  showConfirmButton: true,
+                  confirmButtonColor: "#3085d6",
+                  cancelButtonColor: "#d33",
+                  confirmButtonText: "Yes, proceed",
+                  cancelButtonText: "No, I don't want to",
+                  
+                  allowOutsideClick: false,
+                  allowEscapeKey: false,
+                  allowEnterKey: false,
+                  reverseButtons: true,
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    singleAddressDataSaveAjax(1);
+                  }
+                });
+              }
+            })
+            .catch((error) => console.error("Fetch error:", error));
+        }
+      }
+    });
+
+   
+    function singleAddressDataSaveAjax($status = 0) {
+      process_group_popup("Please wait while we prepare your order.");
 
         const formData = collectFormData();
         formData.append("action", "orthoney_single_address_data_save_ajax");
         formData.append("security", oam_ajax.nonce);
+        formData.append("status", $status);
+        console.log( $status);
 
         fetch(oam_ajax.ajax_url, {
           method: "POST",
@@ -1284,7 +1331,7 @@ document.addEventListener("DOMContentLoaded", function () {
           .then((data) => {
             if (data.success) {
               // let message = data.data.message;
-              let message = '';
+              
               const processCheckoutStatus = document.querySelector(
                 'input[name="processCheckoutStatus"]'
               );
@@ -1297,40 +1344,36 @@ document.addEventListener("DOMContentLoaded", function () {
                 processCheckoutStatus.value == 5 &&
                 delivery_preference.value == "single_address"
               ) {
-                message = "Order is preparing.";
+                // message = "Order is preparing.";
+                // if(message != ''){
+              //   Swal.fire({
+              //     title: message,
+              //     icon: "success",
+              //     timer: 2500,
+              //     showConfirmButton: false,
+              //     timerProgressBar: true,
+              //   });
+              // }
               }
 
-              if(message != ''){
-                Swal.fire({
-                  title: message,
-                  icon: "success",
-                  timer: 2500,
-                  showConfirmButton: false,
-                  timerProgressBar: true,
-                });
-              }
+              
 
               // Redirect to checkout after a delay (uncomment if needed)
               setTimeout(() => {
                 window.location.href = data.data.checkout_url;
               }, 1500);
+
             } else {
-              console.log(data.data.message);
               Swal.fire({
                 title: "Error",
                 text: data.data.message || "Error fetching address validation.",
                 icon: "error",
               });
+              
             }
           })
           .catch((error) => console.error("Fetch error:", error));
-      } else {
-        // Swal.fire({
-        //     title: 'Error',
-        //     text: "The following fields are missing:\n" + result.join("\n"),
-        //     icon: 'error'
-        // });
-      }
+      
     }
 
     function processDataSaveAjax(pid, currentStep) {
