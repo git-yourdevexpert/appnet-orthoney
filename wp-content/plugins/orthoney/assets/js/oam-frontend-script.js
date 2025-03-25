@@ -48,9 +48,6 @@ jQuery(document).ready(function($) {
         }
     });
 
-});
-
-document.addEventListener("DOMContentLoaded", function() {
     tippy('[data-tippy]', {
         content: (reference) => reference.getAttribute('data-tippy'),
         theme: 'translucent',
