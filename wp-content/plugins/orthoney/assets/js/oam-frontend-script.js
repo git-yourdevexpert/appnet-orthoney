@@ -5,7 +5,7 @@ function process_group_popup(selectHtml = '') {
     Swal.fire({
       title: 'Processing...',
       text: selectHtml,
-      icon: 'info',
+    //   icon: 'info',
       allowOutsideClick: false,
       allowEscapeKey: false,
       allowEnterKey: false,
@@ -1024,12 +1024,14 @@ document.addEventListener("DOMContentLoaded", function () {
     if (Incomplete_orders) {
         fetchOrders();
         
-        document.querySelectorAll('#incomplete-order-pagination a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const page = this.getAttribute('data-page');
-                fetchOrders(page);
-            });
+        document.addEventListener('click', function (event) {
+            if (event.target.matches('#incomplete-order-pagination a')) {
+                event.preventDefault();
+                const page = event.target.getAttribute('data-page');
+                if (page) {
+                    fetchOrders(page);
+                }
+            }
         });
     }
 });

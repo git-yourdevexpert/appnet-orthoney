@@ -272,7 +272,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (unverifiedButton && verifiedButton) {
             const unverifiedCount = unverified_table.getAttribute("data-count");
             const verifiedCount = verified_table.getAttribute("data-count");
-           html = ` Out of the ${(parseInt(verifiedCount) + parseInt(unverifiedCount))} recipients uploaded via CSV ${(parseInt(verifiedCount))} were successfully added.`;
+           html = `Out of the ${(parseInt(verifiedCount) + parseInt(unverifiedCount))} recipients, ${(parseInt(verifiedCount))}  have been successfully verified.`;
 
             html += `<div class='exceptions'><strong>Exceptions: </strong><ul>`;
             
@@ -295,9 +295,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
           
           const result = await Swal.fire({
-            title: "",
-            html: html,
-            icon: "question",
+            title:  html,
+            // html: html,
+            //icon: "question",
             showCancelButton: true,
             showConfirmButton: false,
             showDenyButton: false,
@@ -431,7 +431,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const result = await Swal.fire({
           title: "",
           html: html,
-          icon: "question",
+          //icon: "question",
           showCancelButton: true,
           confirmButtonColor: "#3085d6",
           cancelButtonColor: "#d33",
@@ -782,7 +782,7 @@ document.addEventListener("DOMContentLoaded", function () {
           const result = await Swal.fire({
             title: html,
             // html: html,
-            icon: "question",
+            //icon: "question",
             showCancelButton: true,
             showConfirmButton: false,
             showDenyButton: false,

@@ -496,7 +496,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     echo '</div>';
 
                     echo '<div class="two-cta-block">';
-                    echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step">Next</button>';
+                    echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step">Proceed To CheckOut</button>';
                     echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
                     echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';
                     if ($result['data']['unverifiedRecordCount'] > 0) {
@@ -575,7 +575,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 <div class="form-row text-right">
                     <div>
                         <input type="hidden" name="processCheckoutStatus" value="<?php echo $currentStep; ?>">
-                        <button class="w-btn us-btn-style_2  text-right" id="singleAddressCheckout">Proceed To CheckOut</button>
+                        <button class="w-btn us-btn-style_1 next-step" id="singleAddressCheckout">Proceed To CheckOut</button>
                     </div>
                 </div>
         <?php

@@ -3660,7 +3660,7 @@ body .user-registration-social-connect-networks .ursc-network-lists {
 
   flex: 100% 0 0;
 
-  border: 1px solid #e4e7e9;
+  border-bottom: 1px solid #e4e7e9;
 
   height: 100%;
 
@@ -3674,14 +3674,20 @@ body .user-registration-social-connect-networks .ursc-network-lists {
 
   display: flex;
 
-  background: #f7fbfd;
+  background: transparent;
 
-  border-radius: 4px;
+  border-radius: 0px;
 
   font-weight: 600;
 
   align-items: center;
 
+}
+
+.exceptions ul li.total-recipients, .exceptions ul li.total-recipients span {
+  font-weight: bold;
+  font-size: 20px;
+  border: 0px;
 }
 
 .exceptions ul li span {
@@ -4033,7 +4039,8 @@ body .forgot-block .custom-login-btn:hover {
 .wc-block-components-text-input input[type=password],
 .wc-block-components-text-input input[type=tel],
 .wc-block-components-text-input input[type=text],
-.wc-block-components-text-input input[type=url] {
+.wc-block-components-text-input input[type=url],
+.wc-block-checkout__form .wc-blocks-components-select .wc-blocks-components-select__select {
 
   border-color: rgba(0, 0, 0, 0.15) !important;
 
@@ -4343,7 +4350,9 @@ body.user-registration-page .user-registration.ur-frontend-form form .user-regis
 .wc-block-checkout__form .wc-block-components-text-input.is-active input[type=password],
 .wc-block-checkout__form .wc-block-components-text-input.is-active input[type=tel],
 .wc-block-checkout__form .wc-block-components-text-input.is-active input[type=text],
-.wc-block-checkout__form .wc-block-components-text-input.is-active input[type=url] {
+.wc-block-checkout__form .wc-block-components-text-input.is-active input[type=url],
+.wc-block-checkout__form .wc-blocks-components-select .wc-blocks-components-select__select,
+.wc-block-checkout__form.wc-block-components-form .wc-block-components-text-input input[type=text] {
   padding: 0 var(--inputs-padding, .6em) !important;
   min-height: 39px !important;
   line-height: 39px !important;
@@ -4355,7 +4364,9 @@ body.user-registration-page .user-registration.ur-frontend-form form .user-regis
 .wc-block-checkout__form .wc-block-components-form .wc-block-components-text-input input:-webkit-autofill+label,
 .wc-block-checkout__form .wc-block-components-form .wc-block-components-text-input.is-active label,
 .wc-block-components-text-input input:-webkit-autofill+label,
-.wc-block-checkout__form .wc-block-components-text-input.is-active label {
+.wc-block-checkout__form .wc-block-components-text-input.is-active label,
+.wc-block-checkout__form .wc-blocks-components-select .wc-blocks-components-select__container .wc-blocks-components-select__label,
+.wc-block-checkout__form.wc-block-components-form .wc-block-components-text-input label {
   transform: inherit !important;
   position: initial;
   display: flex;
@@ -4366,6 +4377,17 @@ body.user-registration-page .user-registration.ur-frontend-form form .user-regis
   display: block;
   color: #333;
   cursor: inherit;
+}
+
+.wc-block-components-form .wc-block-components-validation-error {
+  order: 2;
+  position: absolute;
+  bottom: -18px;
+}
+
+.wc-block-checkout__form .wc-blocks-components-select .wc-blocks-components-select__container {
+  height: auto;
+  border-radius: 0;
 }
 
 .wc-block-checkout__form .wc-block-components-textarea {
@@ -4383,6 +4405,10 @@ body.user-registration-page .user-registration.ur-frontend-form form .user-regis
   border-style: solid;
   width: 100%;
   transition: all 0.2s;
+}
+
+.wc-block-checkout__form  .wc-blocks-components-select .wc-blocks-components-select__expand{
+  top: calc(50% + 12px);
 }
 
 .wc-block-checkout__form .wc-block-checkout__add-note .wc-block-components-textarea:focus {
@@ -4440,6 +4466,15 @@ body .wc-block-components-radio-control .wc-block-components-radio-control__inpu
 }
 body .wc-block-components-radio-control .wc-block-components-radio-control__input:checked:before{
   background: #00afaa;
+}
+
+.swal2-popup .exceptions {
+  margin-top: 20px;
+}
+.swal2-popup .exceptions strong {
+  margin-bottom: 20px;
+  font-size: 22px;
+  font-weight: 400;
 }
 
 
