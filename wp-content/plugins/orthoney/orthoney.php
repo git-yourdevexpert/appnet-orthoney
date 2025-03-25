@@ -55,6 +55,9 @@ require_once OH_PLUGIN_DIR_PATH . 'classes/affiliate/class-affiliate.php';
 // Customer
 require_once OH_PLUGIN_DIR_PATH . 'classes/customer/class-customer.php';
 
+// Sales Representative
+require_once OH_PLUGIN_DIR_PATH . 'classes/sales-representative/class-sales-representative.php';
+
 // Register activation hook
 register_activation_hook(__FILE__, 'orthoney_create_custom_tables');
 
