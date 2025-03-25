@@ -20,42 +20,44 @@ if ($select_organization === 'all') {
     // Get specific organizations
     $organizations = get_users(['include' => $choose_organization]);
 } else {
-    echo '<p>No organizations selected.</p>';
+    echo '<div class="no-organizations">No organizations selected.</div>';
     return;
 }
 
-if (!empty($organizations)) {
-?>
-    <table>
-        <thead>
-            <tr>
-                <th>Organization Name</th>
-                <th>City</th>
-                <th>State</th>
-                <th>Code</th>
-                <th>Login</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($organizations as $organization) {
-                $organization_name = get_user_meta($organization->ID, '_yith_wcaf_name_of_your_organization', true);
-                $city = get_user_meta($organization->ID, '_yith_wcaf_city', true);
-                $state = get_user_meta($organization->ID, '_yith_wcaf_state', true);
-                $code = get_user_meta($organization->ID, '_yith_wcaf_zipcode', true);
-                $login_url = wp_login_url();
-            ?>
-            <tr>
-                <td><?php echo esc_html($organization_name ?: 'N/A'); ?></td>
-                <td><?php echo esc_html($city ?: 'N/A'); ?></td>
-                <td><?php echo esc_html($state ?: 'N/A'); ?></td>
-                <td><?php echo esc_html($code ?: 'N/A'); ?></td>
-                <td><a href="<?php echo esc_url($login_url) . '?user=' . urlencode($organization->user_login); ?>" target="_blank">Login</a></td>
-            </tr>
-            <?php } ?>
-        </tbody>
-    </table>
+if (!empty($organizations)) { ?>
+    <div class="organization-list-wrapper custom-table">
+        <h2 class="heading-title">Organization List</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Organization Name</th>
+                    <th>City</th>
+                    <th>State</th>
+                    <th>Code</th>
+                    <th>Login</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($organizations as $organization) {
+                    $organization_name = get_user_meta($organization->ID, '_yith_wcaf_name_of_your_organization', true);
+                    $city = get_user_meta($organization->ID, '_yith_wcaf_city', true);
+                    $state = get_user_meta($organization->ID, '_yith_wcaf_state', true);
+                    $code = get_user_meta($organization->ID, '_yith_wcaf_zipcode', true);
+                    ?>
+                <tr>
+                    <td><?php echo esc_html($organization_name ?: 'N/A'); ?></td>
+                    <td><?php echo esc_html($city ?: 'N/A'); ?></td>
+                    <td><?php echo esc_html($state ?: 'N/A'); ?></td>
+                    <td><?php echo esc_html($code ?: 'N/A'); ?></td>
+                    <td><button class="organization-login-btn w-btn us-btn-style_1" data-user-id="<?php echo esc_attr($organization->ID); ?>" data-nonce="<?php echo esc_attr(wp_create_nonce('switch_to_user_' . $organization->ID)); ?>">Login</button></td>
+
+                </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
 <?php
 } else {
-    echo '<p>No matching organizations found.</p>';
+    echo '<div class="no-organizations">No matching organizations found.</div>';
 }
 ?>

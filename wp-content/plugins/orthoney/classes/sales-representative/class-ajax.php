@@ -11,8 +11,10 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
 	 **/
 	public function __construct() {
         add_action('wp_ajax_update_sales_representative', array($this, 'update_sales_representative_handler'));
+        add_action('wp_ajax_auto_login_request_to_sales_rep', array($this, 'auto_login_request_to_sales_rep_handler'));
 
     }
+
 
     public function update_sales_representative_handler() {
 
@@ -66,6 +68,35 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         wp_send_json(['success' => true, 'message' => 'Sales Representative Profile updated successfully!']);
         wp_die();
     }
+
+    /*
+    * Auto Login Request to sales Representative to Customer or Organization
+    */
+    public function auto_login_request_to_sales_rep_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+    
+        if (!is_user_logged_in()) {
+            wp_send_json(['success' => false, 'message' => 'You must be logged in.']);
+        }
+    
+        $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : 0;
+        $nonce = isset($_GET['nonce']) ? sanitize_text_field($_GET['nonce']) : '';
+        $type = isset($_GET['type']) ? sanitize_text_field($_GET['type']) : '';
+    
+        if (!$user_id || !$nonce || !wp_verify_nonce($nonce, 'switch_to_user_' . $user_id)) {
+            wp_send_json(['success' => false, 'message' => 'Invalid data or nonce.']);
+        }
+    
+        // Determine redirect URL based on type
+        $redirect_url = ($type === 'affiliate') 
+            ? home_url('/affiliate-dashboard/') 
+            : home_url('/customer-dashboard/');
+    
+        $login_url = home_url("/wp-login.php?action=switch_to_user&user_id={$user_id}&nr=1&_wpnonce={$nonce}&redirect_to=" . urlencode($redirect_url));
+    
+        wp_send_json(['success' => true, 'url' => $login_url]);
+    }
+    
     
 }
 

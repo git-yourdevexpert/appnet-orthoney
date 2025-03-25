@@ -11,37 +11,18 @@ class OAM_SALES_REPRESENTATIVE_Custom {
      */
     public function __construct() {
         add_action('init', array($this, 'sales_representative_dashboard_handler'));
-        add_action('init', array($this, 'handle_auto_login_request_handler'));
-        add_filter('acf/load_field/name=choose_customer', array($this, 'populate_choose_customer'));
-        add_filter('acf/load_field/name=choose_organization', [$this, 'populate_choose_organization']);
+        add_action('wp_head', array($this, 'remove_user_switching_footer_button'));
+
+        add_filter('acf/load_field/name=choose_customer', array($this, 'populate_choose_customer_acf_handler'));
+        add_filter('acf/load_field/name=choose_organization', [$this, 'populate_choose_organization_acf_handler']);
 
     }
 
-    public function handle_auto_login_request_handler() {
-        if (isset($_GET['action']) && $_GET['action'] === 'auto_login' && isset($_GET['user_id']) && isset($_GET['nonce'])) {
-            $user_id = intval($_GET['user_id']);
-            $nonce = sanitize_text_field($_GET['nonce']);
-            $redirect_to = !empty($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) : home_url('/customer-dashboard/');
-            $redirect_back = isset($_GET['redirect_back']) ? intval($_GET['redirect_back']) : 0;
-    
-            if (!wp_verify_nonce($nonce, 'auto_login_' . $user_id)) {
-                wp_die('Invalid request.');
-            }
-    
-            // Log the user in
-            wp_set_auth_cookie($user_id);
-    
-            // Save the redirect_back user ID in a session
-            if ($redirect_back) {
-                set_transient('redirect_back_user_' . $user_id, $redirect_back, 3600); // 1 hour
-            }
-    
-            // Perform the redirect
-            wp_redirect($redirect_to);
-            exit;
-        }
+    public function remove_user_switching_footer_button() {
+        ob_start(function ($buffer) {
+            return preg_replace('/<p id="user_switching_switch_on".*?<\/p>/s', '', $buffer);
+        });
     }
-
      /**
      * Affiliate callback
      */
@@ -55,9 +36,9 @@ class OAM_SALES_REPRESENTATIVE_Custom {
     }
 
     /**
-    * Populate choose_customer dropdown with users having only the 'customer' role
+    * Populate choose customer dropdown with users having only the 'customer' role
     */
-    public function populate_choose_customer($field) {
+    public function populate_choose_customer_acf_handler($field) {
         if ($field['name'] !== 'choose_customer') {
             return $field;
         }
@@ -89,9 +70,9 @@ class OAM_SALES_REPRESENTATIVE_Custom {
 
 
     /**
-     * Populate choose_organization dropdown with organization name, city, state, and code
+     * Populate choose organization dropdown with organization name, city, state, and code
      */
-    public function populate_choose_organization($field) {
+    public function populate_choose_organization_acf_handler($field) {
         if ($field['name'] !== 'choose_organization') return $field;
     
         $args = [

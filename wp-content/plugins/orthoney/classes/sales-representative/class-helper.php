@@ -22,7 +22,7 @@ class OAM_SALES_REPRESENTATIVE_Helper {
 
     public static function sales_representative_dashboard_navbar($user_roles = array()){
         $output = '';
-        if ( in_array( 'sales_representative', $user_roles)) {
+        if ( in_array( 'sales_representative', $user_roles) || in_array('administrator', $user_roles)) {
             $output = '<div class="sales-representative-dashboard">';
 
             $output .= '<div class="btn"><a href="' . esc_url(site_url('/sales-representative-dashboard')) . '">Dashboard</a></div>';
