@@ -38,6 +38,9 @@ class OAM_WC_Customizer {
         add_filter('woocommerce_email_enabled_customer_completed_order', array($this,'disable_wc_order_mail'), 10, 2);
         add_filter('woocommerce_email_enabled_customer_refunded_order', array($this,'disable_wc_order_mail'), 10, 2);
 
+        // WC thank you page template changes hooks
+        add_filter( 'woocommerce_thankyou_order_received_text', array($this, 'custom_thankyou_order_received_text'), 10, 2 );
+        add_action('woocommerce_thankyou', array($this, 'add_labels_to_order_overview'), 20);
     }
 
     /**
@@ -483,6 +486,62 @@ class OAM_WC_Customizer {
     
         return $block_content;
     }
+
+    /* 
+    * WC thank you page template changes hooks
+    */ 
+    public function custom_thankyou_order_received_text( $text, $order ) {
+        // Customize the thank you text
+        return 'Thanks for placing the order with us. Your order has been processed.';
+    }
+
+    public function add_labels_to_order_overview($order_id) {
+        if (!$order_id) return;
+    
+        $order = wc_get_order($order_id);
+    
+        if (!$order) return;
+    
+        ?>
+        <div class="order-process-wrapp">
+            <ul class="woocommerce-order-overview woocommerce-thankyou-order-details order_details">
+    
+                <li class="woocommerce-order-overview__order order">
+                    <label><?php esc_html_e( 'Order number:', 'woocommerce' ); ?></label>
+                    <strong><?php echo $order->get_order_number(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
+                </li>
+    
+                <li class="woocommerce-order-overview__date date">
+                    <label><?php esc_html_e( 'Date:', 'woocommerce' ); ?></label>
+                    <strong><?php echo wc_format_datetime( $order->get_date_created() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
+                </li>
+    
+                <?php if ( is_user_logged_in() && $order->get_user_id() === get_current_user_id() && $order->get_billing_email() ) : ?>
+                    <li class="woocommerce-order-overview__email email">
+                        <label><?php esc_html_e( 'Email:', 'woocommerce' ); ?></label>
+                        <strong><?php echo $order->get_billing_email(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
+                    </li>
+                <?php endif; ?>
+    
+                <li class="woocommerce-order-overview__total total">
+                    <label><?php esc_html_e( 'Total:', 'woocommerce' ); ?></label>
+                    <strong><?php echo $order->get_formatted_order_total(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
+                </li>
+    
+                <?php if ( $order->get_payment_method_title() ) : ?>
+                    <li class="woocommerce-order-overview__payment-method method">
+                        <label><?php esc_html_e( 'Payment method:', 'woocommerce' ); ?></label>
+                        <strong><?php echo wp_kses_post( $order->get_payment_method_title() ); ?></strong>
+                    </li>
+                <?php endif; ?>
+    
+            </ul>
+        </div>
+        <?php $order_details_url = $order->get_view_order_url();
+        echo '<div class="view-order-btn"><a href="' . esc_url($order_details_url) . '" class="button">View Order Details</a></div>';?>
+        <?php
+    }
+    
 }
 
 new OAM_WC_Customizer();
