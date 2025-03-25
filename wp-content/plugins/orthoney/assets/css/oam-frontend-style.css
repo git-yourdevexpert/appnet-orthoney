@@ -3670,7 +3670,7 @@ body .user-registration-social-connect-networks .ursc-network-lists {
 
   font-size: 16px;
 
-  padding: 6px 10px;
+  padding: 6px 0;
 
   display: flex;
 
@@ -4132,27 +4132,47 @@ body .wp-block-woocommerce-checkout-actions-block .wc-block-checkout__actions_ro
 }
 
 .woocommerce .woocommerce-order .woocommerce-thankyou-order-received {
-
-  font-size: 18px;
-
+  font-size: 22px;
   color: #008000;
-
+  text-align: center;
+  font-weight: bold;
 }
 
 body .woocommerce-thankyou-order-details {
-
-  border: 1px solid var(--color-content-primary);
-  border-radius: 0;
-  background: var(--color-content-primary);
-
+  border-collapse: separate;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  background-color: #fff;
+  padding: 0;
+  display: inline-flex;
+  overflow: hidden;
 }
 
-.woocommerce-thankyou-order-details li {
+body .woocommerce-thankyou-order-details li {
+  border-right: 1px solid #dee2e6;
+  font-size: 14px;
+  border-color: #dee2e6;
+  vertical-align: middle;
+  margin: 0;
+  color: #333;
+  font-weight: 600;
+}
 
-  color: #fff;
+body .woocommerce-thankyou-order-details li:last-child{border-right: 0px;}
 
-  font-size: 16px;
+body .woocommerce-thankyou-order-details li label {
+  background-color: #ebeff6;
+  display: block;
+  padding: 0.6rem 1rem;
+}
+body .woocommerce-thankyou-order-details li strong {
+  padding: 0.6rem 1rem;
+}
 
+.order-process-wrapp {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
 }
 
 .woocommerce-thankyou-order-details li strong {
@@ -4414,7 +4434,6 @@ body.user-registration-page .user-registration.ur-frontend-form form .user-regis
 .wc-block-checkout__form .wc-block-checkout__add-note .wc-block-components-textarea:focus {
   background: var(--inputs-focus-background, transparent);
   border-color: var(--inputs-focus-border-color, currentColor);
-  color: var(--inputs-focus-text-color, inherit);
   box-shadow: var(--inputs-focus-box-shadow, none);
 }
 
@@ -4475,6 +4494,53 @@ body .wc-block-components-radio-control .wc-block-components-radio-control__inpu
   margin-bottom: 20px;
   font-size: 22px;
   font-weight: 400;
+  text-align: left;
+}
+
+
+.top-bar-menu ul {
+  list-style: none;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.top-bar-menu ul li {
+  margin: 0 12px 0 0px;
+  padding-right: 12px;
+  position: relative;
+}
+
+.top-bar-menu ul li a {
+  font-size: 14px;
+}
+
+.top-bar-menu ul li:after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 4px;
+  width: 1px;
+  background: #fff;
+  height: calc(100% - 8px);
+}
+
+.top-bar-menu ul li:last-child:after{
+  display: none;
+}
+
+.top-bar-menu ul li:last-child{
+  margin: 0 0 0 0px;
+  padding-right: 0;
+}
+
+.view-order-btn {
+  text-align: center;
+}
+
+.page-id-685 #user-registration .ur-frontend-form .user-registration-form-login .ur-form-row .ursc-login-media--google {
+  display: none;
 }
 
 
