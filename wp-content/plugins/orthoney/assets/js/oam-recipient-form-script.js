@@ -741,18 +741,29 @@ document.addEventListener("DOMContentLoaded", function () {
           const duplicateCount = event.target.getAttribute("data-duplicatecount");
           let html = ``;
 
-          if((parseInt(successCount) + parseInt(newCount)) ==  totalCount){
-            html = `All recipients have been successfully validated!`;
-          }else{
-
-          html += `Out of ${totalCount} recipients, `;
-
-          if (successCount != 0) {
-            html += `${parseInt(successCount) + parseInt(newCount)} have been successfully validated. `;
+          if (parseInt(successCount) + parseInt(newCount) == totalCount && failCount == 0) {
+              html = `All recipients have been successfully validated!`;
+          } else if (parseInt(successCount) + parseInt(newCount) != totalCount && failCount != 0 && successCount == 0 && newCount == 0 && duplicateCount == 0) {
+            html = `All recipients have been failed!`;
+          }else if (parseInt(successCount) + parseInt(newCount) != totalCount && failCount != 0 && successCount == 0 && newCount == 0 && duplicateCount != 0) {
+            html = `Out of ${totalCount} recipients, ${parseInt(duplicateCount)} have been duplicated!`;
+          }else if (parseInt(successCount) + parseInt(newCount) != totalCount && failCount == 0 && successCount == 0 && newCount == 0 && duplicateCount != 0) {
+            html = `All recipients have been duplicated!`;
           }
-          
 
-          if (failCount != 0 || duplicateCount != 0 || newCount != 0) {
+          if(html == ''){
+            html += `Out of ${totalCount} recipients, `;
+          
+            if (successCount != 0  || newCount != 0) {
+              html += `${parseInt(successCount) + parseInt(newCount)} have been successfully validated. `;
+            }
+        }
+          
+          if (parseInt(alreadyOrderCount) !== 0) {
+            html += `<div><small>${alreadyOrderCount} recipients have already received the Jar this year.</small></div>`;
+          }
+
+          if (failCount != 0 || duplicateCount != 0 || newCount != 0 || successCount != 0) {
             html += "<div class='exceptions'><strong>Exceptions: </strong><ul>";
           }
 
@@ -764,9 +775,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (failCount != 0) {
             html += `<li><span>Failed Recipients: </span> ${failCount}</li>`;
           }
-          if (parseInt(alreadyOrderCount) !== 0) {
-            html += `<li><span>Already Order Recipients: </span> ${alreadyOrderCount}</li>`;
-          }
+         
           if (parseInt(newCount) !== 0) {
             html += `<li><span>New Recipient: </span> ${newCount}</li>`;
           }
@@ -776,7 +785,7 @@ document.addEventListener("DOMContentLoaded", function () {
           html += `<li class="total-recipients"><span>Total Recipients: </span> ${totalCount}</li>`;
 
           html += `</ul></div>`;
-        }
+        
           // html += `<p>Please confirm if you would like to proceed with the successfully added records.</p>`;
 
           const result = await Swal.fire({
@@ -801,7 +810,7 @@ document.addEventListener("DOMContentLoaded", function () {
               if (duplicateCount > 0) {
                 Swal.getConfirmButton().style.display = "inline-block";
                 if (successCount == 0) {
-                  Swal.getConfirmButton().textContent = "Yes, Proceed"; 
+                  // Swal.getConfirmButton().textContent = "Yes, Proceed"; 
                 }
               }
               if (successCount > 0 || newCount != 0) {

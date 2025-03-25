@@ -1092,8 +1092,9 @@ class OAM_Ajax{
                     AND city = %s 
                     AND state = %s 
                     AND zipcode = %s 
+                    AND user_id = %d
                     AND `timestamp` BETWEEN %s AND %s",
-                    $record->full_name, $record->city, $record->state,  $record->zipcode, $start_date, $end_date
+                    $record->full_name, $record->city, $record->state,  $record->zipcode, $user,$start_date, $end_date
                 ));
 
                 // Normalize and merge input address values
