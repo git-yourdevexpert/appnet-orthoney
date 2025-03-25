@@ -766,7 +766,6 @@ class OAM_Ajax{
         $user_id = get_current_user_id();
 
         $process_id = !empty($stepData['pid']) ? $stepData['pid'] : '';
-        $status = !empty($_POST['status']) ? $_POST['status'] : 0;
 
 
         $processQuery = $wpdb->prepare("
@@ -801,11 +800,10 @@ class OAM_Ajax{
         $zipcode = !empty($stepData['single_order_zipcode']) ? $stepData['single_order_zipcode'] : '';
         $quantity = !empty($stepData['single_address_quantity']) ? $stepData['single_address_quantity'] : '';
 
-        if($status != 1){
-            $validate_address_result =  OAM_Helper::validate_address($delivery_line_1, $delivery_line_2, $city, $state, $zipcode);
-            $data = json_decode($validate_address_result, true);
-        }
-        if(!empty($data) OR $status == 1){
+        $validate_address_result =  OAM_Helper::validate_address($delivery_line_1, $delivery_line_2, $city, $state, $zipcode);
+
+        $data = json_decode($validate_address_result, true);
+        if(!empty($data)){
             if($data['success'] === false){
                 wp_send_json_error(['message' => $data['message']]);
             }else{
@@ -1866,10 +1864,10 @@ class OAM_Ajax{
     
                 if (!empty($data->csv_name)) {
                     $download_url = esc_url(OAM_Helper::$process_recipients_csv_url . $data->csv_name);
-                    $download_button = "<a href='".esc_url($download_url)."' class='w-btn us-btn-style_1 outline-btn' download><i class='far fa-download'></i></a>";
+                    $download_button = "<a href='".esc_url($download_url)."' class='w-btn us-btn-style_1 outline-btn round-btn' download><i class='far fa-download'></i></a>";
                 }
     
-                $table_content .= "<tr><td>" . esc_html($data->id) . "</td><td>". esc_html($created_date). "</td><td>" . esc_html($data->name) . "</td><td>".$download_button." <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn'>Resume Order</a></td></tr>";
+                $table_content .= "<tr><td>" . esc_html($data->id) . "</td><td>". esc_html($created_date). "</td><td>" . esc_html($data->name) . "</td><td> <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>Resume Order</a> ".$download_button." </td></tr>";
             }
         } else {
             $table_content = '<tr><td colspan="4">No data available</td></tr>';
