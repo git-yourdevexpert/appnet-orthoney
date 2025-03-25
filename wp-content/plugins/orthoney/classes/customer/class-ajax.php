@@ -1256,32 +1256,29 @@ class OAM_Ajax{
      * TODO : remaining code for group
 	 */
     
-    public function orthoney_download_failed_recipient_handler() {
+     public function orthoney_download_failed_recipient_handler() {
         global $wpdb;
     
         $type = isset($_POST['type']) ? $_POST['type'] : '';
         $id = isset($_POST['id']) ? $_POST['id'] : '';
-        
-        // Assuming $user is defined somewhere, or you need to set the user_id.
-        $user = get_current_user_id(); // For example, if user is not passed, use the logged-in user's ID.
+    
+        // Get the logged-in user ID
+        $user = get_current_user_id();
         $recipient_table = '';
-
-        if($type == 'process'){
+    
+        if ($type == 'process') {
             $recipient_table = OAM_Helper::$order_process_recipient_table;
         }
-        // Get all records
+    
+        // Get all failed recipient records
         $allRecords = $wpdb->get_results($wpdb->prepare("
             SELECT * FROM {$recipient_table} WHERE user_id = %d AND pid = %d AND verified = 0
         ", $user, $id));
     
         $failData = [];
-    
-        // First pass: Group records by their unique combination
         $recordMap = [];
-
     
         foreach ($allRecords as $record) {
-            // Create unique key for comparison
             $key = $record->full_name . '|' . 
                    $record->address_1 . '|' . 
                    $record->city . '|' . 
@@ -1289,42 +1286,30 @@ class OAM_Ajax{
                    $record->country . '|' . 
                    $record->quantity . '|' . 
                    $record->zipcode;
-            
-            // Store record in the map
+    
             if (!isset($recordMap[$key])) {
                 $recordMap[$key] = [];
             }
             $recordMap[$key][] = $record;
         }
     
-        // Second pass: Categorize records
         foreach ($recordMap as $key => $records) {
             if (count($records) == 1) {
-                // Single record - add to success or fail based on verified status
                 $record = $records[0];
                 if ($record->verified == 0) {
-                    // If not verified, add to failData
                     $failData[] = $record;
                 }
             }
         }
     
-        // Generate Fail CSV if failData is not empty
         if (!empty($failData)) {
             $csvData = array(
-                array('Full name', 'Company name', 'Mailing address', 'Suite/Apt', 'City', 'State', 'Zipcode', 'Quantity', 'Greeting' ,'Reasons'),
+                array('Full name', 'Company name', 'Mailing address', 'Suite/Apt', 'City', 'State', 'Zipcode', 'Quantity', 'Greeting', 'Reasons'),
             );
     
-            // Loop through the records and add each row to the CSV data
             foreach ($failData as $record) {
-                // Check if reasons field is not empty and decode it
-                $reasons = '';
-                if (!empty($record->reasons)) {
-                    // Decode the JSON and implode it into a string
-                    $reasons = implode(", ", json_decode($record->reasons, true));
-                }
+                $reasons = (!empty($record->reasons)) ? implode(", ", json_decode($record->reasons, true)) : '';
     
-                // Add the record to the CSV data array
                 $csvData[] = array(
                     $record->full_name,
                     $record->company_name,
@@ -1339,36 +1324,48 @@ class OAM_Ajax{
                 );
             }
     
-            // Create a temporary file
-            $filename = 'fail-recipients.csv';
-            $temp_file = tempnam(sys_get_temp_dir(), 'csv_');
+            // Define new folder path inside wp-content
+            $custom_dir = WP_CONTENT_DIR . '/download_failed_recipient';
+            $custom_url = content_url('/download_failed_recipient');
     
-            // Open the file for writing
-            $output = fopen($temp_file, 'w');
+            // Create the directory if it does not exist
+            if (!file_exists($custom_dir)) {
+                wp_mkdir_p($custom_dir);
+            }
     
-            // Write data to CSV
+            // Use $id in the filename
+            $filename = 'fail-recipients-' . $id . '.csv';
+            $file_path = $custom_dir . '/' . $filename;
+            $file_url = $custom_url . '/' . $filename;
+    
+            // Remove the existing file if it exists
+            if (file_exists($file_path)) {
+                unlink($file_path);
+            }
+    
+            // Open file for writing
+            $output = fopen($file_path, 'w');
+            if ($output === false) {
+                wp_send_json_error(array('message' => 'Failed to create CSV file.'));
+                exit;
+            }
+    
             foreach ($csvData as $row) {
                 fputcsv($output, $row);
             }
-    
             fclose($output);
     
-            // Ensure the file is accessible for download
-            $file_url = wp_upload_dir()['url'] . '/' . basename($temp_file);
-    
-            // Move the file to the uploads directory
-            $destination = wp_upload_dir()['path'] . '/' . basename($temp_file);
-            rename($temp_file, $destination);
-    
-            // Prepare the JSON response with file URL and filename
-            wp_send_json_success(array(
-                'url' => $file_url,
-                'filename' => $filename,
-            ));
-    
+            // Check if file exists before sending the response
+            if (file_exists($file_path)) {
+                wp_send_json_success(array(
+                    'url' => $file_url,
+                    'filename' => $filename,
+                ));
+            } else {
+                wp_send_json_error(array('message' => 'CSV file not found.'));
+            }
             exit;
         } else {
-            // Handle case when no fail data is found
             wp_send_json_error(array('message' => 'No failed records found.'));
         }
     }
@@ -1869,10 +1866,10 @@ class OAM_Ajax{
     
                 if (!empty($data->csv_name)) {
                     $download_url = esc_url(OAM_Helper::$process_recipients_csv_url . $data->csv_name);
-                    $download_button = "<a href='".esc_url($download_url)."' class='w-btn us-btn-style_1 outline-btn round-btn' download><i class='far fa-download'></i></a>";
+                    $download_button = "<a href='".esc_url($download_url)."' class='w-btn us-btn-style_1 outline-btn' download><i class='far fa-download'></i></a>";
                 }
     
-                $table_content .= "<tr><td>" . esc_html($data->id) . "</td><td>". esc_html($created_date). "</td><td>" . esc_html($data->name) . "</td><td> <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>Resume Order</a> ".$download_button." </td></tr>";
+                $table_content .= "<tr><td>" . esc_html($data->id) . "</td><td>". esc_html($created_date). "</td><td>" . esc_html($data->name) . "</td><td>".$download_button." <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn'>Resume Order</a></td></tr>";
             }
         } else {
             $table_content = '<tr><td colspan="4">No data available</td></tr>';
