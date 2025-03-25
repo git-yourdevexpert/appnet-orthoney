@@ -4652,7 +4652,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
   outline: none !important;
 }
 
-.recipient-lists-block .w-btn.us-btn-style_1 {
+.dashboard-block .w-btn.us-btn-style_1 {
   font-size: 16px;
   padding: 10px 30px;
   text-transform: capitalize;
@@ -4667,7 +4667,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
   cursor: pointer;
 }
 
-.recipient-lists-block .w-btn.us-btn-style_1:hover {
+.dashboard-block .w-btn.us-btn-style_1:hover {
   background-color: #00afaa;
   color: #fff;
 }
@@ -4706,13 +4706,15 @@ html body .w-btn.outline-btn.round-btn:hover i {
   padding: 0 24px;
 }
 
+.place-order .row-block {
+  margin-bottom: 18px;
+  border-bottom: 2px solid #f0f4f7;
+  padding: 0 24px 20px;
+}
+
 .place-order .block-title {
   font-size: 22px;
   font-weight: 500;
-  margin-bottom: 18px;
-  padding-bottom: 22px;
-  border-bottom: 2px solid #f0f4f7;
-  padding: 0 24px 20px;
 }
 
 .order-process-block table,
