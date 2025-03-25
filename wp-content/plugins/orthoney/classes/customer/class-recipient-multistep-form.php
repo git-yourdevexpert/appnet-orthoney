@@ -353,6 +353,11 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     }
 
     public static function step_4($data, $currentStep, $group_name){
+        ?>
+        <div class="step" id="step4">
+        <?php
+        if($currentStep == 3){
+   
         $data = '';
         $view_all_recipients_btn_html = '';
         $oam_ajax = new OAM_Ajax();
@@ -365,21 +370,15 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         }
     
         $result = json_decode($data, true);
-
-        // echo "<pre>";
-        // print_r($result['data']['alreadyOrderData']);
-        // echo "</pre>";
+       
         ?>
-    
-        <div class="step" id="step4">
-            <div class="heading-title">
-                <div>
-                    <div class="group-name">
-                    Recipient List Name: <strong><?php echo $group_name; ?></strong>
-                        <button class="editProcessName far fa-edit" data-name="<?php echo $group_name; ?>" data-tippy="Edit Recipient List Name"></button>
-                    </div>
-                    <?php if ($result['data']['totalCount'] != 0) : ?>
-                        <p class="num-count">Number of Recipients: <span><?php echo $result['data']['totalCount']; ?></span></p>
+        <div class="heading-title">
+            <div>
+                <div class="group-name">
+                    Recipient List Name: <strong><?php echo $group_name; ?></strong><button class="editProcessName far fa-edit" data-name="<?php echo $group_name; ?>" data-tippy="Edit Recipient List Name"></button>
+                </div>
+                <?php if ($result['data']['totalCount'] != 0) : ?>
+                    <p class="num-count">Number of Recipients: <span><?php echo $result['data']['totalCount']; ?></span></p>
                     <?php endif; ?>
                 </div>
                 <div>
@@ -387,9 +386,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 </div>
             </div>
     
-            <div class="block-row"></div>
     
-            <?php if (!empty($result) && $result['success'] == 1) : ?>
+            <?php 
+            if (!empty($result) && $result['success'] == 1) : ?>
                 <div class="recipient-group-nav">
                     <?php
                     $sections = [
@@ -432,11 +431,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         <div><h5 class="table-title">New Recipients</h5></div>
                         <div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div>
                     </div>
-                <?php endif; ?>
-    
-            <?php endif; ?>
-    
-            <?php if ($result['data']['totalCount'] != 0) : ?>
+                <?php endif; 
+            endif; 
+            if ($result['data']['totalCount'] != 0) : ?>
                 <div class="two-cta-block">
                     <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save Progress</a>
                     <button class="verifyRecipientAddressButton w-btn us-btn-style_1 next-step"
@@ -449,7 +446,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         Next
                     </button>
                 </div>
-            <?php endif; ?>
+            <?php endif; } ?>
         </div>
     
         <?php
@@ -464,48 +461,50 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         $checkoutProceedStatus = $data->checkout_proceed_with_multi_addresses_status ?? '';
 
         echo '<div class="step" id="step5">';
+        if($currentStep == 4){
 
-        if (!empty($data->delivery_preference)) {
-            if ($data->delivery_preference == 'single_address') {
-                self::single_address_form($currentStep);
-            }
+            if (!empty($data->delivery_preference)) {
+                if ($data->delivery_preference == 'single_address') {
+                    self::single_address_form($currentStep);
+                }
 
-            if ($data->delivery_preference == 'multiple_address' && !empty($data->pid)) {
-                $data = OAM_Helper::get_order_process_address_verified_recipient($data->pid, $duplicate, $recipientAddressIds);
-                $result = json_decode($data, true);
+                if ($data->delivery_preference == 'multiple_address' && !empty($data->pid)) {
+                    $data = OAM_Helper::get_order_process_address_verified_recipient($data->pid, $duplicate, $recipientAddressIds);
+                    $result = json_decode($data, true);
 
-                if (!empty($result) && $result['success'] == 1) {
-                    echo '<div class="heading-title"><div>';
-                    echo '<div class="group-name">Recipient List Name: <strong>' . $group_name . '</strong>';
-                    echo '<button class="editProcessName far fa-edit" data-tippy="Edit Recipient List Name" data-name="' . $group_name . '"></button></div>';
-                    echo '<p class="num-count">Number of Final Recipients: <span>' . $result['data']['totalCount'] . '</span></p>';
-                    echo '</div></div>';
+                    if (!empty($result) && $result['success'] == 1) {
+                        echo '<div class="heading-title"><div>';
+                        echo '<div class="group-name">Recipient List Name: <strong>' . $group_name . '</strong>';
+                        echo '<button class="editProcessName far fa-edit" data-tippy="Edit Recipient List Name" data-name="' . $group_name . '"></button></div>';
+                        echo '<p class="num-count">Number of Final Recipients: <span>' . $result['data']['totalCount'] . '</span></p>';
+                        echo '</div></div>';
 
-                    echo '<div class="recipient-group-nav">';
-                    if ($result['data']['unverifiedRecordCount'] > 0) {
-                        echo '<button class="scroll-section-btn" data-section="unverified-block">Unverified Addresses (' . $result['data']['unverifiedRecordCount'] . ')</button>';
+                        echo '<div class="recipient-group-nav">';
+                        if ($result['data']['unverifiedRecordCount'] > 0) {
+                            echo '<button class="scroll-section-btn" data-section="unverified-block">Unverified Addresses (' . $result['data']['unverifiedRecordCount'] . ')</button>';
+                        }
+                        if ($result['data']['verifiedRecordCount'] > 0) {
+                            echo '<button class="scroll-section-btn" data-section="verified-block">Verified Addresses (' . $result['data']['verifiedRecordCount'] . ')</button>';
+                        }
+                        echo '</div>';
+
+                        echo '<div class="recipient-group-section">';
+                        self::render_recipient_block('Unverified Addresses', 'unverified-block', 'unverifiedRecord', $result['data']['unverifiedRecordCount'], $result['data']['totalCount'], $result['data']['unverifiedData']);
+                        self::render_recipient_block('Verified Addresses', 'verified-block', 'verifyRecord', $result['data']['verifiedRecordCount'], $result['data']['totalCount'], $result['data']['verifiedData']);
+                        echo '</div>';
+
+                        echo '<div class="two-cta-block">';
+                        echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step">Proceed To CheckOut</button>';
+                        echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
+                        echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';
+                        if ($result['data']['unverifiedRecordCount'] > 0) {
+                            echo '<button id="checkout_proceed_with_only_unverified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Continue With Unverified Addresses</button>';
+                        }
+                        if ($result['data']['verifiedRecordCount'] > 0) {
+                            echo '<button id="checkout_proceed_with_only_verified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Proceed With Only Verified Addresses</button>';
+                        }
+                        echo '</div>';
                     }
-                    if ($result['data']['verifiedRecordCount'] > 0) {
-                        echo '<button class="scroll-section-btn" data-section="verified-block">Verified Addresses (' . $result['data']['verifiedRecordCount'] . ')</button>';
-                    }
-                    echo '</div>';
-
-                    echo '<div class="recipient-group-section">';
-                    self::render_recipient_block('Unverified Addresses', 'unverified-block', 'unverifiedRecord', $result['data']['unverifiedRecordCount'], $result['data']['totalCount'], $result['data']['unverifiedData']);
-                    self::render_recipient_block('Verified Addresses', 'verified-block', 'verifyRecord', $result['data']['verifiedRecordCount'], $result['data']['totalCount'], $result['data']['verifiedData']);
-                    echo '</div>';
-
-                    echo '<div class="two-cta-block">';
-                    echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step">Proceed To CheckOut</button>';
-                    echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
-                    echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';
-                    if ($result['data']['unverifiedRecordCount'] > 0) {
-                        echo '<button id="checkout_proceed_with_only_unverified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Continue With Unverified Addresses</button>';
-                    }
-                    if ($result['data']['verifiedRecordCount'] > 0) {
-                        echo '<button id="checkout_proceed_with_only_verified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Proceed With Only Verified Addresses</button>';
-                    }
-                    echo '</div>';
                 }
             }
         }
