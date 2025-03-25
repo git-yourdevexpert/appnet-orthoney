@@ -14,11 +14,12 @@ class OAM_COMMON_Custom {
         add_filter('acf/settings/load_json', array($this, 'oh_acf_json_load_paths'));
         add_action('template_redirect', array($this, 'modify_passwordless_login_url'));
 
+        add_action('template_redirect', array($this, 'redirect_logged_in_user_to_dashboard'));
         // add_action('user_registration_after_submit_buttons', array($this, 'add_login_user_registration_after_submit_buttons'));
 
         add_action('user_registration_after_login_form', array($this, 'add_login_link_pl_login_form'));
         add_action('user_registration_before_customer_login_form', array($this, 'add_content_pl_login_form'));
-
+        add_shortcode('customer_login_button', array($this, 'custom_login_button_shortcode'));
     }
 
     public static function init() {
@@ -40,6 +41,47 @@ class OAM_COMMON_Custom {
         file_put_contents($log_file, $log_message, FILE_APPEND);
     }
 
+    public static function redirect_logged_in_user_to_dashboard() {
+        // Check if the user is logged in and visiting the login page
+        if ( is_user_logged_in() && is_page('login') ) {
+            $user = wp_get_current_user();
+            
+            // Example: Redirect based on user role
+            if ( in_array('yith_affiliate', $user->roles) || in_array('affiliate_team_member', $user->roles) ) {
+                wp_redirect(site_url('/affiliate-dashboard'));
+                exit;
+            } elseif ( in_array('customer', $user->roles) ) {
+                wp_redirect(site_url('/customer-dashboard'));
+                exit;
+            } elseif ( in_array('sales_representative', $user->roles) ) {
+                wp_redirect(site_url('/sales-representative-dashboard'));
+                exit;
+            } else {
+                wp_redirect(site_url('/home'));
+                exit;
+            }
+        }
+
+        if ( is_user_logged_in() && is_page('registration') ) {
+            $user = wp_get_current_user();
+            
+            // Example: Redirect based on user role
+            if ( in_array('yith_affiliate', $user->roles) || in_array('affiliate_team_member', $user->roles) ) {
+                wp_redirect(site_url('/affiliate-dashboard'));
+                exit;
+            } elseif ( in_array('customer', $user->roles) ) {
+                wp_redirect(site_url('/customer-dashboard'));
+                exit;
+            } elseif ( in_array('sales_representative', $user->roles) ) {
+                wp_redirect(site_url('/sales-representative-dashboard'));
+                exit;
+            } else {
+                wp_redirect(site_url('/home'));
+                exit;
+            }
+        }
+    }
+
     /**
      * ACF JSON Save Path.
      */
@@ -58,6 +100,31 @@ class OAM_COMMON_Custom {
             echo '<div class="custom-login-paragraph"><p>Please enter your email in the field below. A login link will be sent to your email, allowing you to log in automatically without a password.</p></div>';
         }
     }
+
+    public function custom_login_button_shortcode() {
+        $user = wp_get_current_user();
+        $output = '<ul>';
+    
+        if (is_user_logged_in()) {
+            if (in_array('customer', $user->roles)) {
+                $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
+            } 
+            if (in_array('yith_affiliate', $user->roles) || in_array('affiliate_team_member', $user->roles)) {
+                $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
+            }
+            if (in_array('administrator', $user->roles)) {
+                $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
+                $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
+            }
+        } else {
+            $output .= '<li><a href="' . ur_get_login_url() . '">Customer Login</a></li>';
+            $output .= '<li><a href="' . site_url('/affiliate-login') . '">Affiliate Login</a></li>';
+        }
+    
+        $output .= '</ul>';
+        return $output;
+    }
+
     /**
      * ACF JSON Load Paths.
      */
