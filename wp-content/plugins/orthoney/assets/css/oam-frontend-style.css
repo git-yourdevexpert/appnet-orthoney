@@ -1318,7 +1318,7 @@ body .grid-two-col input:focus {
 
 /* Quantity Input Styling */
 
-.quantity {
+body .woocommerce .quantity {
 
   border: none;
 
@@ -1348,7 +1348,7 @@ body .grid-two-col input:focus {
 
 
 
-.quantity button {
+body .woocommerce .quantity button {
 
   padding: 0;
 
@@ -1382,7 +1382,7 @@ body .grid-two-col input:focus {
 
 
 
-.quantity button.minus {
+body .woocommerce .quantity button.minus {
 
   border-right: 1px solid rgba(0, 0, 0, 0.15);
 
@@ -1390,7 +1390,7 @@ body .grid-two-col input:focus {
 
 
 
-.quantity button.plus {
+body .woocommerce .quantity button.plus {
 
   border-left: 1px solid rgba(0, 0, 0, 0.15);
 
@@ -1398,7 +1398,7 @@ body .grid-two-col input:focus {
 
 
 
-.quantity button:hover {
+body .woocommerce .quantity button:hover {
 
   background: #00afaa;
 
@@ -1406,9 +1406,9 @@ body .grid-two-col input:focus {
 
 
 
-.quantity button:after,
+body .woocommerce .quantity button:after,
 
-.quantity button:before {
+body .woocommerce .quantity button:before {
 
   content: "";
 
@@ -1436,7 +1436,7 @@ body .grid-two-col input:focus {
 
 
 
-.quantity button.plus:after {
+body .woocommerce .quantity button.plus:after {
 
   transform: rotate(90deg);
 
@@ -1444,9 +1444,9 @@ body .grid-two-col input:focus {
 
 
 
-.quantity button:hover:after,
+body .woocommerce .quantity button:hover:after,
 
-.quantity button:hover:before {
+body .woocommerce .quantity button:hover:before {
 
   background: #fff;
 
@@ -1454,7 +1454,7 @@ body .grid-two-col input:focus {
 
 
 
-.quantity input.input-box {
+body .woocommerce .quantity input.input-box {
 
   flex: 50px 0 0;
 
@@ -1484,11 +1484,11 @@ body .grid-two-col input:focus {
 
 
 
-.quantity input.input-box:not([type="submit"]):focus,
+body .woocommerce .quantity input.input-box:not([type="submit"]):focus,
 
-.quantity input.input-box:focus,
+body .woocommerce .quantity input.input-box:focus,
 
-.quantity input.input-box:focus {
+body .woocommerce .quantity input.input-box:focus {
 
   color: #333;
 
@@ -3684,7 +3684,8 @@ body .user-registration-social-connect-networks .ursc-network-lists {
 
 }
 
-.exceptions ul li.total-recipients, .exceptions ul li.total-recipients span {
+.exceptions ul li.total-recipients,
+.exceptions ul li.total-recipients span {
   font-weight: bold;
   font-size: 20px;
   border: 0px;
@@ -4158,13 +4159,16 @@ body .woocommerce-thankyou-order-details li {
   font-weight: 600;
 }
 
-body .woocommerce-thankyou-order-details li:last-child{border-right: 0px;}
+body .woocommerce-thankyou-order-details li:last-child {
+  border-right: 0px;
+}
 
 body .woocommerce-thankyou-order-details li label {
   background-color: #ebeff6;
   display: block;
   padding: 0.6rem 1rem;
 }
+
 body .woocommerce-thankyou-order-details li strong {
   padding: 0.6rem 1rem;
 }
@@ -4427,7 +4431,7 @@ body.user-registration-page .user-registration.ur-frontend-form form .user-regis
   transition: all 0.2s;
 }
 
-.wc-block-checkout__form  .wc-blocks-components-select .wc-blocks-components-select__expand{
+.wc-block-checkout__form .wc-blocks-components-select .wc-blocks-components-select__expand {
   top: calc(50% + 12px);
 }
 
@@ -4472,24 +4476,28 @@ body.user-registration-page .user-registration.ur-frontend-form form .user-regis
   color: #333;
 }
 
-.wp-block-woocommerce-checkout .wc-block-checkout__form .wc-block-components-radio-control--highlight-checked .wc-block-components-radio-control-accordion-option--checked-option-highlighted, .wp-block-woocommerce-checkout .wc-block-checkout__form .wc-block-components-radio-control--highlight-checked label.wc-block-components-radio-control__option--checked-option-highlighted{
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+.wp-block-woocommerce-checkout .wc-block-checkout__form .wc-block-components-radio-control--highlight-checked .wc-block-components-radio-control-accordion-option--checked-option-highlighted,
+.wp-block-woocommerce-checkout .wc-block-checkout__form .wc-block-components-radio-control--highlight-checked label.wc-block-components-radio-control__option--checked-option-highlighted {
+  box-shadow: inset 0 0 0 1px var(--color-content-primary);
   border-radius: 0px;
 }
 
-.wc-block-checkout__form  .wc-block-components-address-card{
+.wc-block-checkout__form .wc-block-components-address-card {
   border-radius: 0px;
 }
-body .wc-block-components-radio-control .wc-block-components-radio-control__input:checked{
+
+body .wc-block-components-radio-control .wc-block-components-radio-control__input:checked {
   border: 1px solid #00afaa;
 }
-body .wc-block-components-radio-control .wc-block-components-radio-control__input:checked:before{
+
+body .wc-block-components-radio-control .wc-block-components-radio-control__input:checked:before {
   background: #00afaa;
 }
 
 .swal2-popup .exceptions {
   margin-top: 20px;
 }
+
 .swal2-popup .exceptions strong {
   margin-bottom: 20px;
   font-size: 22px;
@@ -4526,11 +4534,11 @@ body .wc-block-components-radio-control .wc-block-components-radio-control__inpu
   height: calc(100% - 8px);
 }
 
-.top-bar-menu ul li:last-child:after{
+.top-bar-menu ul li:last-child:after {
   display: none;
 }
 
-.top-bar-menu ul li:last-child{
+.top-bar-menu ul li:last-child {
   margin: 0 0 0 0px;
   padding-right: 0;
 }
@@ -4540,6 +4548,30 @@ body .wc-block-components-radio-control .wc-block-components-radio-control__inpu
 }
 
 .page-id-685 #user-registration .ur-frontend-form .user-registration-form-login .ur-form-row .ursc-login-media--google {
+  display: none;
+}
+
+.admin-bar .select2-container--open .select2-dropdown {
+  margin-top: 33px;
+}
+
+.is-large .wc-block-checkout__billing-fields .wc-block-components-address-form .wc-block-components-address-form__country {
+  display: none;
+}
+
+body .woocommerce-order .woocommerce-thankyou-order-details {
+  display: none;
+}
+
+body .woocommerce-order .order-process-wrapp .woocommerce-thankyou-order-details {
+  display: flex;
+}
+
+.woocommerce-order .woocommerce-order-details {
+  display: none;
+}
+
+.woocommerce-order .woocommerce-customer-details {
   display: none;
 }
 
