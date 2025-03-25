@@ -18,8 +18,16 @@ class OAM_USER_Role {
      */
 
     public function create_user_roles() {
-     if (!get_role('affiliate_team_member')) {
+        if (!get_role('affiliate_team_member')) {
             add_role('affiliate_team_member', 'Affiliate Team Member', [
+                'read'         => true,
+                'edit_posts'   => false,
+                'delete_posts' => false,
+            ]);
+        }
+        // Add Sales Representative Role
+        if (!get_role('sales_representative')) {
+            add_role('sales_representative', 'Sales Representative', [
                 'read'         => true,
                 'edit_posts'   => false,
                 'delete_posts' => false,
