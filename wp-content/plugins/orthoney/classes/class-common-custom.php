@@ -230,6 +230,23 @@ class OAM_COMMON_Custom {
         }
        
     }
+     /**
+     * info block
+     */
+    public static function info_block($title, $content, $icon, $link = '') {    
+        if (!empty($title)) {
+            return '<div class="login-block">
+                <div class="login-container">
+                    <div class="icon-name-block">
+                    <span class="user-name">' . esc_html($title) . '</span> <br/>
+                    <span class="message-text">' . esc_html($content) . '</span>
+                    <img src="' . esc_url($icon) . '" alt="Icon" class="message-icon" />
+                    </div>' . (!empty($link) ? '<a href="' . esc_url($link) . '" class="message-link">Learn More</a>' : '') . '
+                </div>
+            </div>';
+        }
+        return '';
+    }
  
 }
 
