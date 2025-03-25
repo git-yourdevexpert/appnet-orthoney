@@ -1870,7 +1870,7 @@ class OAM_Ajax{
                     $download_button = "<a href='".esc_url($download_url)."' class='w-btn us-btn-style_1 outline-btn round-btn' download><i class='far fa-download'></i></a>";
                 }
     
-                $table_content .= "<tr><td>" . esc_html($data->id) . "</td><td>". esc_html($created_date). "</td><td>" . esc_html($data->name) . "</td><td>".$download_button." <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>Resume Order</a></td></tr>";
+                $table_content .= "<tr><td>" . esc_html($data->id) . "</td><td>". esc_html($created_date). "</td><td>" . esc_html($data->name) . "</td><td> <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>Resume Order</a> ".$download_button." </td></tr>";
             }
         } else {
             $table_content = '<tr><td colspan="4">No data available</td></tr>';

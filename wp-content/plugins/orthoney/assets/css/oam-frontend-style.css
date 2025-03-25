@@ -4598,7 +4598,35 @@ html body .w-btn.outline-btn.round-btn i {
   color: #007bff;
 }
 
+.pagination {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
 
+.pagination a {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #333;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.pagination a.active {
+  background: var(--color-content-link);
+  color: #fff;
+  border-color: var(--color-content-link);
+}
+
+.pagination a:hover:not(.active){
+  background: var(--color-content-link);
+  color: #fff;
+  border-color: var(--color-content-link);
+}
 
 @media (max-width: 1200px) {
 

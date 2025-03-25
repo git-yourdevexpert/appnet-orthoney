@@ -35,6 +35,6 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
         <tbody id="incomplete-order-data"></tbody>
     </table>
     <div class="incomplete-order-pagination">
-        <div id="incomplete-order-pagination"></div>
+        <div id="incomplete-order-pagination" class="pagination"></div>
     </div>
 </div>
