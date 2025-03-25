@@ -4629,6 +4629,28 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
 
 /* Dashboard */
+.dashboard-block .recipient-lists-block table {
+  width: 100%;
+}
+
+.dashboard-block .recipient-lists-block table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.dashboard-block .recipient-lists-block table th {
+  text-align: left;
+}
+
+.dashboard-block .recipient-lists-block table td,
+.dashboard-block .recipient-lists-block table th {
+  vertical-align: top;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid;
+  border-color: var(--color-content-border);
+  outline: none !important;
+}
 
 .recipient-lists-block .w-btn.us-btn-style_1 {
   font-size: 16px;
