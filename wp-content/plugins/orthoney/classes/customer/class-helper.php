@@ -188,7 +188,7 @@ class OAM_Helper{
 
                 
 
-                $html .= '<tr class="group-header" data-id="'.$id.'" '.(($duplicate != 1)? 'data-verify="'.$data->verified.'" data-group="'.$duplicate.'"': '').'>';
+                $html .= '<tr data-id="'.$id.'" '.(($duplicate != 1)? 'data-verify="'.$data->verified.'" data-group="'.$duplicate.'"': '').'>';
                 if($alreadyOrder != 0){
                     $html .= '<td data-label="Order Id"><div class="thead-data">Order Id</div>'.($data->order_id != "" ? $data->order_id : '') .'</td>';
                     $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->timestamp));
