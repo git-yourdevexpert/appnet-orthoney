@@ -5149,6 +5149,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
   .order-process-block table tbody tr.group-header td,
   .custom-table table tbody tr.group-header td {
     display: block;
+    border-right: 0;
   }
 
   .order-process-block table td:last-child,
@@ -5156,16 +5157,25 @@ html body .w-btn.outline-btn.round-btn:hover i {
     border-bottom: 0 !important;
   }
 
-  .order-process-block table, .custom-table table{
+  .order-process-block table,
+  .custom-table table {
     border: none;
     border-radius: 0;
     background-color: transparent;
   }
 
-  .order-process-block button.far, .custom-table button.far{
+  .order-process-block button.far,
+  .custom-table button.far {
     font-size: 13px;
     margin-right: 6px;
     padding: 7px;
+  }
+
+  .order-process-block table td:last-child,
+  .order-process-block table th:last-child,
+  .custom-table table td:last-child,
+  .custom-table table th:last-child {
+    border-right: 1px solid #dee2e6;
   }
 
 }
