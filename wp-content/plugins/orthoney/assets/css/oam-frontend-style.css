@@ -486,6 +486,7 @@
   box-shadow: var(--inputs-box-shadow, none);
 
   color: var(--inputs-text-color, inherit);
+  min-height: 39px;
 
 }
 
@@ -545,7 +546,7 @@
 
   color: #333;
 
-  line-height: inherit;
+  line-height: 38px;
 
   padding: 0;
 
@@ -727,7 +728,7 @@ body .select2-container--default .select2-results__option--highlighted.select2-r
 
 .selection .select2-selection:after {
 
-  margin-top: -1px;
+  margin-top: -5px;
 
 }
 
