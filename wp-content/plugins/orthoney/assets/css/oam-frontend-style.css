@@ -4893,7 +4893,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
   color: var(--color-content-primary);
 }
 
-.dashboard-block .recipient-lists-block table .w-btn:after{
+.dashboard-block .recipient-lists-block table .w-btn:before{
   display: none;
 }
 
