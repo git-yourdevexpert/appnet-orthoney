@@ -5007,6 +5007,11 @@ html body .w-btn.outline-btn.round-btn:hover i {
   .login-register-block .overlay-bg {
     order: 3;
   }
+
+  td,
+  th {
+    padding: 0.6rem 0.6rem;
+  }
 }
 
 @media (max-width: 992px) {
@@ -5023,12 +5028,79 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   }
 
-  .grid-two-col{
+  .grid-two-col {
     column-gap: 20px;
   }
 
-  .woocommerce-form-row, .woocommerce .form-row{
+  .woocommerce-form-row,
+  .woocommerce .form-row {
     margin: 0 0 1rem;
+  }
+
+  .order-process-block table,
+  .custom-table table {
+
+    display: block;
+
+    width: 100%;
+
+  }
+
+  .order-process-block table thead,
+  .custom-table table thead {
+
+    display: none;
+
+  }
+
+  .order-process-block table tbody,
+  .custom-table table tbody {
+
+    display: block;
+
+    width: 100%;
+
+  }
+
+  .order-process-block table tbody tr,
+  .custom-table table tbody tr {
+
+    display: flex;
+
+    flex-direction: column;
+
+    overflow: hidden;
+
+  }
+
+  .order-process-block table td,
+
+  .custom-table table td {
+
+    padding: 0;
+
+    display: flex;
+
+    border-bottom: 1px solid #dee2e6 !important;
+
+    align-items: center;
+
+  }
+
+  .order-process-block table td .thead-data,
+
+  .custom-table table td .thead-data {
+
+    background: #ebeff6;
+
+    padding: 0.6rem 1rem;
+
+    flex: 150px 0 0;
+
+    margin-right: 15px;
+
+    border-right: 1px solid #dee2e6;
+
   }
 
 }
@@ -5102,80 +5174,12 @@ html body .w-btn.outline-btn.round-btn:hover i {
   }
 
   .grid-two-col {
-
     column-gap: 20px;
-
   }
 
   .order-process-block .recipient-group-nav .scroll-section-btn {
 
     font-size: 16px;
-
-  }
-
-  .order-process-block table,
-  .custom-table table {
-
-    display: block;
-
-    width: 100%;
-
-  }
-
-  .order-process-block table thead,
-  .custom-table table thead {
-
-    display: none;
-
-  }
-
-  .order-process-block table tbody,
-  .custom-table table tbody {
-
-    display: block;
-
-    width: 100%;
-
-  }
-
-  .order-process-block table tbody tr,
-  .custom-table table tbody tr {
-
-    display: flex;
-
-    flex-direction: column;
-
-    overflow: hidden;
-
-  }
-
-  .order-process-block table td,
-
-  .custom-table table td {
-
-    padding: 0;
-
-    display: flex;
-
-    border-bottom: 1px solid #dee2e6 !important;
-
-    align-items: center;
-
-  }
-
-  .order-process-block table td .thead-data,
-
-  .custom-table table td .thead-data {
-
-    background: #ebeff6;
-
-    padding: 0.6rem 1rem;
-
-    flex: 150px 0 0;
-
-    margin-right: 15px;
-
-    border-right: 1px solid #dee2e6;
 
   }
 
@@ -5185,7 +5189,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
     font-size: 12px;
   }
 
-  .site-form .form-row label{
+  .site-form .form-row label {
     font-size: 14px;
   }
 
@@ -5274,7 +5278,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   }
 
-  .grid-two-col{
+  .grid-two-col {
     display: block;
   }
 
@@ -5296,7 +5300,9 @@ html body .w-btn.outline-btn.round-btn:hover i {
   .order-process-block .w-btn.next {
     justify-content: flex-start;
   }
-  .grid-two-col .footer-btn button[type="submit"], .grid-two-col .footer-btn button[type="button"]{
+
+  .grid-two-col .footer-btn button[type="submit"],
+  .grid-two-col .footer-btn button[type="button"] {
     width: 100%;
   }
 }
