@@ -26,7 +26,7 @@ $current_url = home_url( $_SERVER['REQUEST_URI'] );
 $groups = OAM_Helper::getGroupList($user_id);
 ?>
 <div class="groups-block order-process-block">
-    <h3>All Groups</h3>
+    <h3>All Recipient List</h3>
     <?php 
     if(!empty($groups)){
         ?>
@@ -34,7 +34,7 @@ $groups = OAM_Helper::getGroupList($user_id);
         <thead>
             <tr>
                 <th>Sr No</th>
-                <th>Group Name</th>
+                <th>Recipient List Name</th>
                 <th>Number of Recipients</th>
                 <th>CSV Files</th>
                 <th>Date</th>

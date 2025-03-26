@@ -32,7 +32,6 @@ class OAM_CUSTOM {
             'recipients-list',
             'groups',
             'groups-details',
-            'group-recipients-list',
             'affiliates'
         ];
         
@@ -78,7 +77,7 @@ class OAM_CUSTOM {
             'incomplete-order'  => __('Incomplete Order', OH_DOMAIN),
             'failed-recipients' => __('Failed Recipients', OH_DOMAIN),
             'orders'            => __('Orders', OH_DOMAIN),
-            'groups'            => __('Groups', OH_DOMAIN),
+            'groups'            => __('Recipient Lists', OH_DOMAIN),
             'affiliates'        => __('Organizations', OH_DOMAIN),
             'edit-account'      => __('My Profile', OH_DOMAIN),
             'edit-address'      => __('Edit Address', OH_DOMAIN),
