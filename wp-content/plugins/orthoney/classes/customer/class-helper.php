@@ -195,7 +195,7 @@ class OAM_Helper{
                     $html .= '<td data-label="Create Date">'.$created_date.'</td>';
                 }
                 $html .= '<td data-label="Full Name"><div class="thead-data">Full Name</div><input type="hidden" name="'.(($reverify == 1) ? "recipientAddressIds[]" : "recipientIds[]").'" value="'.$id.'">'.$data->full_name.'</td>';
-                $html .= '<td data-label="Company name"><div class="Company name">'.($data->company_name != "" ? $data->company_name : '') .'</td>';
+                $html .= '<td data-label="Company name"><div class="thead-data">Company name</div>'.($data->company_name != "" ? $data->company_name : '') .'</td>';
                 
                 $html .= $addressPartsHtml;
                 $html .= '<td data-label="Quantity"><div class="thead-data">Quantity</div>'.((empty($data->quantity) || $data->quantity <= 0) ? '0' : $data->quantity).'</td>';
