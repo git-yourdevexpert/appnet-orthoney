@@ -31,6 +31,7 @@ class OAM_CUSTOM {
             'order-recipients-data',
             'recipients-list',
             'groups',
+            'groups-details',
             'group-recipients-list',
             'affiliates'
         ];
@@ -43,6 +44,12 @@ class OAM_CUSTOM {
         add_rewrite_rule(
             'customer-dashboard/failed-recipients/details/([0-9]+)/?$', 
             'index.php?pagename=customer-dashboard&failed-recipients-details=$matches[1]', 
+            'top'
+        );
+
+        add_rewrite_rule(
+            'customer-dashboard/groups/details/([0-9]+)/?$', 
+            'index.php?pagename=customer-dashboard&groups-details=$matches[1]', 
             'top'
         );
 
@@ -59,10 +66,7 @@ class OAM_CUSTOM {
             });
         }
 
-        // Handle Failed Recipients Details Page
-        add_action("woocommerce_account_failed-recipients-details_endpoint", function () use ($base_path) {
-            include $base_path . "failed-recipients/details.php";
-        });
+        
     }
 
     /**
