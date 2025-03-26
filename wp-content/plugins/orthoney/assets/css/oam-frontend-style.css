@@ -4679,7 +4679,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
 }
 
 .order-process-dashboard {
-  width: 1340px;
+  width: 100%;
   border-radius: 20px;
   overflow: hidden;
   padding: 40px 30px 60px;
