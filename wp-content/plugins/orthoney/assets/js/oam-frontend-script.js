@@ -48,19 +48,22 @@ jQuery(document).ready(function($) {
         }
     });
 
-    function initTippy() {
-        tippy('[data-tippy]', {
-            content: (reference) => reference.getAttribute('data-tippy'),
-            theme: 'translucent',
-            animation: 'fade',
-            arrow: true,
-            allowHTML: true,
-            followCursor: true,
-        });
-    }
-    
-    // Run on initial page load
-    document.addEventListener("DOMContentLoaded", initTippy);
+});
+
+function initTippy() {
+    tippy('[data-tippy]', {
+        content: (reference) => reference.getAttribute('data-tippy'),
+        theme: 'translucent',
+        animation: 'fade',
+        arrow: true,
+        allowHTML: true,
+        followCursor: true,
+    });
+}
+
+// Run on initial page load
+document.addEventListener("DOMContentLoaded", initTippy);
+
 
 
 (function () {
@@ -976,11 +979,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 //incomplete order process code
 document.addEventListener("DOMContentLoaded", function () {
-    function fetchOrders(page = 1) {
+    function fetchOrders(page = 1, $failed = 0) {
         process_group_popup();
         const params = new URLSearchParams();
         params.append("action", "orthoney_incomplete_order_process_ajax");
         params.append("page", page);
+        params.append("failed", $failed);
         params.append("security", oam_ajax.nonce);
 
         fetch(oam_ajax.ajax_url, {
@@ -1000,6 +1004,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 tableBody.innerHTML = responseData.table_content;
                 paginationDiv.innerHTML = responseData.pagination;
                 initTippy();
+               
             } else {
                 Swal.fire({
                     title: "Error",
@@ -1022,16 +1027,123 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const Incomplete_orders = document.querySelector(".incomplete-order-block #incomplete-order-data");
     if (Incomplete_orders) {
-        fetchOrders();
+
+        if (Incomplete_orders.hasAttribute('data-failed')) {
+            fetchOrders(1, 1);
+        }else{
+            fetchOrders(1);
+        }
         
         document.addEventListener('click', function (event) {
             if (event.target.matches('#incomplete-order-pagination a')) {
                 event.preventDefault();
                 const page = event.target.getAttribute('data-page');
                 if (page) {
-                    fetchOrders(page);
+                    if (Incomplete_orders.hasAttribute('data-failed')) {
+                        fetchOrders(page, 1);
+                    }else{
+                        fetchOrders(page);
+                    }
                 }
             }
         });
+    }
+});
+
+//Edit Sales Representative Profile 
+document.addEventListener('click', function (event) {
+    if (event.target.id === 'sales-rep-save-profile') {
+        event.preventDefault();
+        if (!validateForm(document.getElementById('sales-rep-profile-form'))) return;
+
+        const form = document.getElementById('sales-rep-profile-form');
+        const formData = new FormData(form);
+        formData.append('action', 'update_sales_representative');
+        formData.append('security', oam_ajax?.nonce || '');
+
+        fetch(oam_ajax.ajax_url, {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: data.message || 'Sales Representative Profile updated successfully!',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.message || 'Something went wrong. Please try again.',
+                    icon: 'error',
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Fetch Error:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while updating the Sales Representative profile.',
+                icon: 'error',
+            });
+        });
+    }
+});
+
+
+
+//Switching Sales Rep to Customer or Organization
+document.addEventListener('click', function (event) {
+    if (event.target.classList.contains('customer-login-btn') || event.target.classList.contains('organization-login-btn')) {
+        event.preventDefault();
+        process_group_popup();
+        
+        const userId = event.target.getAttribute('data-user-id');
+        const nonce = event.target.getAttribute('data-nonce');
+        const type = event.target.classList.contains('organization-login-btn') ? 'affiliate' : 'customer';
+
+        const params = new URLSearchParams({
+            action: 'auto_login_request_to_sales_rep',
+            user_id: userId,
+            nonce: nonce,
+            type: type,
+            security: oam_ajax?.nonce || ''
+        });
+
+        fetch(`${oam_ajax.ajax_url}?${params.toString()}`, {
+            method: 'GET',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.url; // Perform the redirect
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.message || 'Failed to generate login URL.',
+                    icon: 'error',
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Fetch Error:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while generating the login URL.',
+                icon: 'error',
+            });
+        });
+    }
+});
+
+//Hide default user switching button
+document.addEventListener('DOMContentLoaded', function () {
+    const switchBackLink = document.querySelector('.woocommerce-MyAccount-navigation-link--user-switching-switch-back');
+    if (switchBackLink) {
+        switchBackLink.remove();
     }
 });
