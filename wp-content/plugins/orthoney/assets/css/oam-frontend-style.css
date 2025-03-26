@@ -3464,6 +3464,8 @@ body .user-registration-social-connect-networks .ursc-network-lists {
 
   text-underline-offset: 5px;
 
+  padding: 0;
+
 }
 
 .btn-underline:hover {
@@ -5015,6 +5017,21 @@ html body .w-btn.outline-btn.round-btn:hover i {
   body th {
     padding: 0.6rem 0.6rem;
   }
+
+  .order-process-block .recipient-group-nav {
+    white-space: normal;
+    overflow-y: inherit;
+    border-bottom: 0px;
+    flex-wrap: wrap;
+    display: flex;
+    gap: 5px;
+    row-gap: 10px;
+  }
+
+  .order-process-block .recipient-group-nav .scroll-section-btn {
+    width: calc(33.3333% - 5px);
+    margin: 0;
+  }
 }
 
 @media (max-width: 992px) {
@@ -5074,6 +5091,10 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
     overflow: hidden;
 
+    border-bottom: 1px solid #dee2e6 !important;
+
+    background: #fff;
+
   }
 
   .order-process-block table td,
@@ -5088,6 +5109,8 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
     align-items: center;
 
+    padding-right: 20px;
+
   }
 
   .order-process-block table td .thead-data,
@@ -5096,7 +5119,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
     background: #ebeff6;
 
-    padding: 0.6rem 1rem;
+    padding: 0.6rem 0.7rem;
 
     flex: 150px 0 0;
 
@@ -5104,6 +5127,39 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
     border-right: 1px solid #dee2e6;
 
+    border-left: 1px solid #dee2e6;
+
+  }
+
+  .order-process-block table tbody tr.group-header,
+  .custom-table table tbody tr.group-header {
+    padding: 12px 12px;
+    background: #eee;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    margin-top: 20px;
+    margin-bottom: 0;
+  }
+
+  .order-process-block table tbody tr.group-header:first-child,
+  .custom-table table tbody tr.group-header:first-child {
+    margin-top: 0;
+  }
+
+  .order-process-block table tbody tr.group-header td,
+  .custom-table table tbody tr.group-header td {
+    display: block;
+  }
+
+  .order-process-block table td:last-child,
+  .custom-table table td:last-child {
+    border-bottom: 0 !important;
+  }
+
+  .order-process-block table, .custom-table table{
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
   }
 
 }
@@ -5213,6 +5269,11 @@ html body .w-btn.outline-btn.round-btn:hover i {
     font-size: 15px;
   }
 
+  .order-process-block .recipient-group-nav .scroll-section-btn {
+    width: calc(50% - 3px);
+    margin: 0;
+  }
+
 }
 
 @media (max-width: 600px) {
@@ -5285,6 +5346,16 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   .order-process-block .organization-step .content-title a {
     display: inline-block;
+  }
+
+  .order-process-block .recipient-group-nav {
+    margin-top: 40px;
+  }
+
+  .order-process-block .recipient-group-nav .scroll-section-btn {
+    width: 100%;
+    margin: 0;
+    border: 1px solid #00afaa;
   }
 
 }
