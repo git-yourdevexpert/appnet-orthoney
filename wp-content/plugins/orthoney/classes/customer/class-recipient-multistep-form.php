@@ -81,13 +81,14 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     }
 
     public static function step_nav($currentStep = 0){ 
+        
         ?>
-        <div id="stepNav" class="tab-selections">
+        <div id="stepNav" class="tab-selections" <?php echo ((!isset($_GET['failed-recipients']) OR  $_GET['failed-recipients'] != 'true') ? '' : 'style="display:none"' ) ?>>
             <span class="step-nav-item <?php echo $currentStep == 0 ? 'active' : '' ?>" data-step="0">Step 1: Select Organization</span>
             <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Delivery Preference</span>
             <span class="step-nav-item <?php echo $currentStep == 2 ? 'active' : '' ?>" data-step="2">Step 3: Upload Recipients</span>
-            <span class="step-nav-item <?php echo $currentStep == 3 ? 'active' : '' ?>" data-step="3">Step 4: Verify Recipients</span>
-            <span class="step-nav-item <?php echo ($currentStep == 4 or $currentStep == 5) ? 'active' : '' ?>" data-step="4">Step 5: Verify Address</span>
+            <span class="step-nav-item <?php echo ($currentStep == 3 OR isset($_GET['failed-recipients']) &&  $_GET['failed-recipients'] == 'true') ? 'active' : '' ?>" data-step="3">Step 4: Verify Recipients</span>
+            <span class="step-nav-item <?php echo (($currentStep == 4 or $currentStep == 5) OR (!isset($_GET['failed-recipients']) OR  !$_GET['failed-recipients'] == 'true')) ? 'active' : '' ?>" data-step="4">Step 5: Verify Address</span>
             <span class="step-nav-item" data-step="5">Step 6: Checkout</span>
         </div>
         <?php
@@ -356,7 +357,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         ?>
         <div class="step" id="step4">
         <?php
-        if($currentStep == 3){
+        if(($currentStep == 3 OR isset($_GET['failed-recipients']) &&  $_GET['failed-recipients'] == 'true')){
    
         $data = '';
         $view_all_recipients_btn_html = '';
@@ -370,7 +371,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         }
     
         $result = json_decode($data, true);
-       
+        if(!isset($_GET['failed-recipients']) &&  $_GET['failed-recipients'] != 'true'){
+
         ?>
         <div class="heading-title">
             <div>
@@ -385,9 +387,11 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     <button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button>
                 </div>
             </div>
+        </div>
     
     
-            <?php 
+        <?php 
+        }
             if (!empty($result) && $result['success'] == 1) : ?>
                 <div class="recipient-group-nav">
                     <?php
@@ -409,7 +413,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     ?>
                 </div>
     
-                <div class="recipient-group-section">
+                <div class="recipient-group-section <?php echo ((!isset($_GET['failed-recipients']) &&  $_GET['failed-recipients'] != 'true') ? '' : 'failed-recipient-show' ) ?>">
                     <?php
                     foreach ($sections as $key => $label) {
                         $countKey = $key . 'Count';
@@ -426,13 +430,16 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     ?>
                 </div>
     
-                <?php if (!empty($_GET['pid']) && empty($result['data']['newCount'])) : ?>
+                <?php 
+               
+            endif; 
+            if(!isset($_GET['failed-recipients']) &&  $_GET['failed-recipients'] != 'true'){
+                if (!empty($_GET['pid']) && empty($result['data']['newCount'])) : ?>
                     <div class="heading-title">
                         <div><h5 class="table-title">New Recipients</h5></div>
                         <div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div>
                     </div>
-                <?php endif; 
-            endif; 
+                <?php endif;  
             if ($result['data']['totalCount'] != 0) : ?>
                 <div class="two-cta-block">
                     <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save Progress</a>
@@ -446,7 +453,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         Next
                     </button>
                 </div>
-            <?php endif; } ?>
+            <?php endif; } } ?>
         </div>
     
         <?php

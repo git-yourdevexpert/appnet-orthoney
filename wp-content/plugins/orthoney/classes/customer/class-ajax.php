@@ -1002,7 +1002,7 @@ class OAM_Ajax{
         
         $exclude_ids = $process_id = $customGreeting = $addressPartsHtml = $successHtml = $newDataHtml = $alreadyOrderHtml  = $failHtml = $duplicateHtml = '';
         $successData = $newData = $failData = $duplicateGroups = $alreadyOrderGroups = [];
-
+        $totalCount = 0;
         if($userId != ''){
             $user = $userId;
         }else{
@@ -1137,42 +1137,72 @@ class OAM_Ajax{
                 }
             }
 
-           
-    
-            // Generate Duplicate HTML - now showing grouped duplicates
-            //Keep 1 Entry and Delete Other Duplicate Entries
             $totalDuplicates = 0;
-            if(!empty($duplicateGroups)){
+            if(!isset($_GET['failed-recipients']) &&  $_GET['failed-recipients'] != 'true'){
+
+                // Generate Duplicate HTML - now showing grouped duplicates
+                //Keep 1 Entry and Delete Other Duplicate Entries
+                if(!empty($duplicateGroups)){
+                    foreach ($duplicateGroups as $group) {
+                        $totalDuplicates += count($group);
+                    }
+
+                    $bulkMargeButtonHtml = '';
+                    if($process_id != ''){
+                        $bulkMargeButtonHtml = '<div class="tooltip" data-tippy="Keep 1 Entry and Delete Other Duplicate Entries"><button id="bulkMargeRecipient" class="btn-underline">Bulk Marge</button></div>';
+                    }
+                    
+                    $duplicateHtml .= '<div class="heading-title"><div><h5 class="table-title">Duplicate Recipient</h5> </div>'.$bulkMargeButtonHtml.'</div>';
+                    
+                    foreach ($duplicateGroups as $groupIndex => $group) {
+                        $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="99'.($groupIndex + 1).'"><td colspan="12"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
+                        $duplicateHtml .= OAM_Helper::get_table_recipient_content($group , $customGreeting, 0 , '99'.$groupIndex + 1);
+                        
+                    }
+                }
+
+            
+                // Generate new data HTML
+                if(!empty($newData)){
+                    $newDataHtml .= '<div class="heading-title"><h5 class="table-title">New Recipients</h5><div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div></div>';
+                    $newDataHtml .= OAM_Helper::get_table_recipient_content($newData, $customGreeting);
+                    
+                }
+        
+                // Generate Success HTML
+                if(!empty($successData)){
+                    $successHtml .= '<div class="heading-title"><div><h5 class="table-title">Verified Recipients</h5></div></div>';
+                    $successHtml .=  OAM_Helper::get_table_recipient_content($successData , $customGreeting);
+                }
+                
+                
+                if(!empty($alreadyOrderGroups)){
+                    $alreadyOrderHtml .= '<div class="heading-title"><div><h5 class="table-title">Already Ordered</h5><p> Honey is already ordered for '.count($alreadyOrderGroups).' Recipients this year</p></div></div>';
+                    $alreadyOrderHtml .= OAM_Helper::get_table_recipient_content($alreadyOrderGroups , $customGreeting, 0 , 0 , 1);
+                }
+
+                // Wrap tables with headers
+                if($newDataHtml != ''){
+                    $newDataHtml = $tableStart.$newDataHtml.$tableEnd;
+                }
+                if($successHtml != ''){
+                    $successHtml = $tableStart.$successHtml.$tableEnd;
+                }
+                if($alreadyOrderHtml != ''){
+                    $alreadyOrderHtml = $alreadyOrderTableStart.$alreadyOrderHtml.$tableEnd;
+                }
+
+                if($duplicateHtml != ''){
+                    $duplicateHtml = $duplicateTableStart.$duplicateHtml.$tableEnd;
+                }
+        
+                // Calculate total count of all records including duplicates
+                $totalDuplicates = 0;
                 foreach ($duplicateGroups as $group) {
                     $totalDuplicates += count($group);
                 }
-
-                $bulkMargeButtonHtml = '';
-                if($process_id != ''){
-                    $bulkMargeButtonHtml = '<div class="tooltip" data-tippy="Keep 1 Entry and Delete Other Duplicate Entries"><button id="bulkMargeRecipient" class="btn-underline">Bulk Marge</button></div>';
-                }
-                
-                $duplicateHtml .= '<div class="heading-title"><div><h5 class="table-title">Duplicate Recipient</h5> </div>'.$bulkMargeButtonHtml.'</div>';
-                
-                foreach ($duplicateGroups as $groupIndex => $group) {
-                    $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="99'.($groupIndex + 1).'"><td colspan="12"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
-                    $duplicateHtml .= OAM_Helper::get_table_recipient_content($group , $customGreeting, 0 , '99'.$groupIndex + 1);
-                    
-                }
-            }
-
-            $totalCount = count($successData) + count($failData) + $totalDuplicates + count($newData);
-            // Generate new data HTML
-            if(!empty($newData)){
-                $newDataHtml .= '<div class="heading-title"><h5 class="table-title">New Recipients</h5><div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div></div>';
-                $newDataHtml .= OAM_Helper::get_table_recipient_content($newData, $customGreeting);
-                
-            }
-    
-            // Generate Success HTML
-            if(!empty($successData)){
-                $successHtml .= '<div class="heading-title"><div><h5 class="table-title">Verified Recipients</h5></div></div>';
-                $successHtml .=  OAM_Helper::get_table_recipient_content($successData , $customGreeting);
+            }else{
+                $successData = [];
             }
             
             // Generate Fail HTML
@@ -1181,34 +1211,13 @@ class OAM_Ajax{
                 $failHtml .= OAM_Helper::get_table_recipient_content($failData , $customGreeting);
             }
 
-            if(!empty($alreadyOrderGroups)){
-                $alreadyOrderHtml .= '<div class="heading-title"><div><h5 class="table-title">Already Ordered</h5><p> Honey is already ordered for '.count($alreadyOrderGroups).' Recipients this year</p></div></div>';
-                $alreadyOrderHtml .= OAM_Helper::get_table_recipient_content($alreadyOrderGroups , $customGreeting, 0 , 0 , 1);
-            }
-    
-           
-            // Wrap tables with headers
-            if($newDataHtml != ''){
-                $newDataHtml = $tableStart.$newDataHtml.$tableEnd;
-            }
-            if($successHtml != ''){
-                $successHtml = $tableStart.$successHtml.$tableEnd;
-            }
-            if($alreadyOrderHtml != ''){
-                $alreadyOrderHtml = $alreadyOrderTableStart.$alreadyOrderHtml.$tableEnd;
-            }
+            $totalCount = count($successData) + count($failData) + $totalDuplicates + count($newData);
+
+            
             if($failHtml != ''){
                 $failHtml = '<div class="download-csv"><div class="heading-title"><div><h5 class="table-title">Failed Recipeints</h5><p>To fix the failed data, edit the row and make the necessary changes OR upload a new CSV for failed recipients.</p></div><div><button data-tippy="Failed records can be downloaded" id="download-failed-recipient-csv" class="btn-underline" ><i class="far fa-download"></i> Download Failed Recipients</button></div></div> </div>'.$tableStart.$failHtml.$tableEnd;
             }
-            if($duplicateHtml != ''){
-                $duplicateHtml = $duplicateTableStart.$duplicateHtml.$tableEnd;
-            }
-    
-            // Calculate total count of all records including duplicates
-            $totalDuplicates = 0;
-            foreach ($duplicateGroups as $group) {
-                $totalDuplicates += count($group);
-            }
+            
 
             $resultData = [
                 'newData'         => $newDataHtml,
@@ -1836,30 +1845,53 @@ class OAM_Ajax{
         global $wpdb;
         $user_id = get_current_user_id();
         $current_page = isset($_POST['page']) ? max(1, intval($_POST['page'])) : 1;
+        $failed = isset($_POST['failed']) ? $_POST['failed'] : 0;
         $items_per_page = 10;
         $offset = ($current_page - 1) * $items_per_page;
     
         $order_process_table = OAM_Helper::$order_process_table;
         // Get total items and pages
-        $total_items = (int) $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$order_process_table} WHERE user_id = %d AND step != %d",
-            $user_id, 5
-        ));
-        $total_pages = (int) ceil($total_items / $items_per_page);
-        // Fetch process data
-        $processQuery = $wpdb->prepare(
-            "SELECT * FROM {$order_process_table} WHERE user_id = %d AND step != %d ORDER BY created DESC LIMIT %d OFFSET %d",
-            $user_id, 5 ,$items_per_page, $offset
-        );
 
-    
+        if($failed == 1){
+            $total_items = (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$order_process_table} WHERE user_id = %d AND step = %d AND order_id != %d AND order_type = %s",
+                $user_id, 5, 0 ,'multi-recipient-order'
+            ));
+
+             // Fetch process data
+            $processQuery = $wpdb->prepare(
+                "SELECT * FROM {$order_process_table} WHERE user_id = %d AND step = %d AND order_id != %d AND order_type = %s ORDER BY created DESC LIMIT %d OFFSET %d",
+                $user_id, 5 ,0 ,'multi-recipient-order' ,$items_per_page, $offset
+            );
+        }else{
+
+            $total_items = (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$order_process_table} WHERE user_id = %d AND step != %d",
+                $user_id, 5
+            ));
+          
+            // Fetch process data
+            $processQuery = $wpdb->prepare(
+                "SELECT * FROM {$order_process_table} WHERE user_id = %d AND step != %d ORDER BY created DESC LIMIT %d OFFSET %d",
+                $user_id, 5 ,$items_per_page, $offset
+            );
+        }
+
+        $total_pages = (int) ceil($total_items / $items_per_page);
+        
         $results = $wpdb->get_results($processQuery);
         $table_content = '';
     
         if (!empty($results)) {
             foreach ($results as $data) {
                 $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->created));
-                $resume_url = esc_url(home_url("/order-process?pid=$data->id"));
+
+                if($failed != 1){
+                    $resume_url = esc_url(home_url("/order-process?pid=$data->id"));
+                }else{
+                    $resume_url = esc_url(home_url("/customer-dashboard/failed-recipients/details/?pid=".$data->id));
+                }
+
                 $download_button = '';
     
                 if (!empty($data->csv_name)) {
@@ -1867,7 +1899,7 @@ class OAM_Ajax{
                     $download_button = "<a href='".esc_url($download_url)."' class='w-btn us-btn-style_1 outline-btn round-btn' download><i class='far fa-download'></i></a>";
                 }
     
-                $table_content .= "<tr><td>" . esc_html($data->id) . "</td><td>". esc_html($created_date). "</td><td>" . esc_html($data->name) . "</td><td> <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>Resume Order</a> ".$download_button." </td></tr>";
+                $table_content .= "<tr><td>" . esc_html($data->id) . "</td><td>". esc_html($created_date). "</td><td>" . esc_html($data->name) . "</td><td> <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>".($failed == 1 ? 'View Recipients' : 'Resume Order' )."</a> ".($failed != 1 ? $download_button : '' )." </td></tr>";
             }
         } else {
             $table_content = '<tr><td colspan="4">No data available</td></tr>';
