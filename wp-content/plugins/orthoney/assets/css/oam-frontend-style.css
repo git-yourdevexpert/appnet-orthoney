@@ -990,6 +990,7 @@ body .select2-container--default .select2-results__option--highlighted.select2-r
   color: #333;
 
   cursor: inherit;
+  font-weight: 400 !important;
 
 }
 
@@ -5173,8 +5174,13 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   }
 
-  .grid-two-col {
+  .grid-two-col,
+  .popup-show .recipient-view-details-wrapper ul {
     column-gap: 20px;
+  }
+
+  .popup-show .recipient-view-details-wrapper ul{
+    row-gap: 15px;
   }
 
   .order-process-block .recipient-group-nav .scroll-section-btn {
@@ -5189,7 +5195,8 @@ html body .w-btn.outline-btn.round-btn:hover i {
     font-size: 12px;
   }
 
-  .site-form .form-row label {
+  .site-form .form-row label,
+  .popup-show .recipient-view-details-wrapper ul li label, .recipient-view-greeting-box label {
     font-size: 14px;
   }
 
@@ -5223,7 +5230,8 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   }
 
-  .grid-two-col .form-row.gfield--width-half {
+  .grid-two-col .form-row.gfield--width-half,
+  .popup-show .recipient-view-details-wrapper ul li {
 
     grid-column: span 12;
 
