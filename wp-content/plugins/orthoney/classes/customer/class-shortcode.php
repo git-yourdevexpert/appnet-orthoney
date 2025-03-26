@@ -14,7 +14,7 @@ class OAM_Shortcode
         add_shortcode('get_group', array( $this, 'get_group_handler' ) );
         add_shortcode('customer_dashboard', array( $this, 'customer_dashboard_handler' ) );
 	//show recent incomplate orders
-        add_shortcode('recent_incomplete_orders', array($this, 'display_recent_incomplete_orders'));
+        // add_shortcode('recent_incomplete_orders', array($this, 'display_recent_incomplete_orders'));
 
         //recent order
         add_shortcode('recent_orders', array($this, 'display_recent_orders'));
@@ -44,65 +44,7 @@ class OAM_Shortcode
             
         return ob_get_clean();
     }
-/**
-     * Show Recent Incomplete Orders with Parameters
-     **/
-    public function display_recent_incomplete_orders($atts) {
-        global $wpdb;
-        $user_id = get_current_user_id();
-        $order_process_table = OAM_Helper::$order_process_table;
-    
-        // Extract shortcode attributes with defaults
-        $atts = shortcode_atts([
-            'limit' => 3,
-        ], $atts);
-        $limit = intval($atts['limit']);
-    
-        // Fetch limited orders
-        $query = $wpdb->prepare(
-            "SELECT * FROM {$order_process_table} WHERE user_id = %d AND step != %d ORDER BY created DESC LIMIT %d",
-            $user_id, 5, $limit
-        );
-        $results = $wpdb->get_results($query);
 
-        if (empty($results)) {
-            return '<p>No recent incomplete orders available.</p>';
-        }
-    
-        // Check the total number of orders
-        $total_orders = (int) $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$order_process_table} WHERE user_id = %d AND step != %d",
-            $user_id, 5
-        ));
-    
-        ob_start();
-        ?>
-        <div class="incomplete-orders-section">
-            <h3>Incomplete Orders</h3>
-            <div class="incomplete-order-list">
-                <?php foreach ($results as $data) : 
-                    $created_date = date_i18n('d/m/Y', strtotime($data->created));
-                    $resume_url = esc_url(home_url("/order-process?pid=$data->id"));
-                ?>
-                <div class="incomplete-order-card">
-                    <div class="incomplete-order-details">
-                        <p><strong>Order ID:</strong><?php echo esc_html($data->id); ?></p>
-                        <p><strong>Name:</strong> <?php echo esc_html($data->name); ?></p>
-                        <p><strong>Date:</strong> <?php echo esc_html($created_date); ?></p>
-                    </div>
-                    <div class="incomplete-order-actions">
-                        <a href="<?php echo $resume_url; ?>" class="w-btn us-btn-style_1 outline-btn">Resume</a>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>            
-            <?php if ($total_orders > $limit) : ?>
-                <a href="<?php echo esc_url(home_url('/my-account/incomplete-order/')); ?>" class="w-btn us-btn-style_1 outline-btn">View All</a>
-            <?php endif; ?>
-        </div>
-        <?php
-        return ob_get_clean();
-    }
 
     /**
      * Show Recent Orders 

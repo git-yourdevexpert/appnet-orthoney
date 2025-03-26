@@ -25,6 +25,7 @@ class OAM_Helper{
     
     // Define directories
     public static $all_uploaded_csv_dir;
+    public static $customer_dashboard_link;
     public static $process_recipients_csv_dir;
     public static $process_recipients_csv_url;
     public static $group_recipients_csv_dir;
@@ -46,6 +47,7 @@ class OAM_Helper{
 
         self::$users_table = $wpdb->prefix . 'users';
 
+        self::$customer_dashboard_link = home_url('customer-dashboard');
         self::$all_uploaded_csv_dir = WP_CONTENT_DIR . '/all-uploaded-files/';
         self::$process_recipients_csv_dir = WP_CONTENT_DIR . '/process-recipients-files/';
         self::$process_recipients_csv_url = WP_CONTENT_URL . '/process-recipients-files/';
@@ -789,6 +791,169 @@ class OAM_Helper{
         }
     
         return wp_remote_retrieve_body($response);
+    }
+
+    public static function group_dashboard_widget($title = "", $limit = 3, $link = '') {
+        global $wpdb;
+        $user_id = get_current_user_id();
+        $group_table = OAM_Helper::$group_table;
+    
+    
+        // Fetch limited orders
+        $query = $wpdb->prepare(
+            "SELECT * FROM {$group_table} WHERE user_id = %d  ORDER BY timestamp DESC LIMIT %d",
+            $user_id, $limit
+        );
+        $results = $wpdb->get_results($query);
+
+    
+        
+        $html = '<div class="recipient-lists-block custom-table">
+            <div class="row-block">
+                <h4>'.esc_html( $title ).'</h4>
+                <div class="see-all">
+                    '.(($link) ? '<a class="w-btn us-btn-style_1" href="'.$link.'">See all</a> ': '').'
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Company Name</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>';
+                if(!empty($results)){
+                foreach ($results as $data) {
+                    $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->timestamp));
+                    
+                    $resume_url = '#';
+                    $html .= '<tr data-id="52" data-verify="0" data-group="0">
+                    <td>'.esc_html($data->id).'</td>
+                    <td>'.esc_html($data->name).'</td>
+                    <td>'.esc_html($created_date).'</td>
+                    <td><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume</a></td>
+                </tr>';
+                }
+            }else{
+                $html .= '<tr><td colspan="4">No incomplete orders available.</td></tr>';
+            }
+                $html .= '</tbody>
+            </table>
+        </div>';
+
+
+        
+        return $html;
+    }
+
+    public static function incomplete_orders_dashboard_widget($title = "", $limit = 3, $link = '') {
+        global $wpdb;
+        $user_id = get_current_user_id();
+        $order_process_table = OAM_Helper::$order_process_table;
+    
+    
+        // Fetch limited orders
+        $query = $wpdb->prepare(
+            "SELECT * FROM {$order_process_table} WHERE user_id = %d AND step != %d ORDER BY created DESC LIMIT %d",
+            $user_id, 5, $limit
+        );
+        $results = $wpdb->get_results($query);
+
+        
+        $html = '<div class="recipient-lists-block custom-table">
+            <div class="row-block">
+                <h4>'.esc_html( $title ).'</h4>
+                <div class="see-all">
+                    '.(($link) ? '<a class="w-btn us-btn-style_1" href="'.$link.'">See all</a> ': '').'
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Company Name</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>';
+                if(!empty($results)){
+                foreach ($results as $data) {
+                    $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->created));
+                    
+                    $resume_url = esc_url(home_url("/order-process?pid=$data->id"));
+                    $html .= '<tr data-id="52" data-verify="0" data-group="0">
+                    <td>'.esc_html($data->id).'</td>
+                    <td>'.esc_html($data->name).'</td>
+                    <td>'.esc_html($created_date).'</td>
+                    <td><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume</a></td>
+                </tr>';
+                }
+            }else{
+                $html .= '<tr><td colspan="4">No incomplete orders available.</td></tr>';
+            }
+                $html .= '</tbody>
+            </table>
+        </div>';
+
+
+        
+        return $html;
+    }
+    public static function failed_recipients_dashboard_widget($title = "", $limit = 3, $link = '') {
+        global $wpdb;
+        $user_id = get_current_user_id();
+        $order_process_table = OAM_Helper::$order_process_table;
+    
+    
+        // Fetch limited orders
+        $query = $wpdb->prepare(
+            "SELECT * FROM {$order_process_table} WHERE user_id = %d AND step = %d AND order_id != %d AND order_type = %s ORDER BY created DESC LIMIT %d",
+            $user_id,5,0, 'multi-recipient-order',$limit
+        );
+        $results = $wpdb->get_results($query);
+
+        
+        $html = '<div class="recipient-lists-block custom-table">
+            <div class="row-block">
+                <h4>'.esc_html( $title ).'</h4>
+                <div class="see-all">
+                    '.(($link) ? '<a class="w-btn us-btn-style_1" href="'.$link.'">See all</a> ': '').'
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Company Name</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>';
+                if(!empty($results)){
+                foreach ($results as $data) {
+                    $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->created));
+                    
+                    $resume_url = esc_url(home_url("/order-process?pid=$data->id"));
+                    $html .= '<tr data-id="52" data-verify="0" data-group="0">
+                    <td>'.esc_html($data->id).'</td>
+                    <td>'.esc_html($data->name).'</td>
+                    <td>'.esc_html($created_date).'</td>
+                    <td><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume</a></td>
+                </tr>';
+                }
+            }else{
+                $html .= '<tr><td colspan="4">No failed recipients found!.</td></tr>';
+            }
+                $html .= '</tbody>
+            </table>
+        </div>';
+        
+        return $html;
     }
     
 
