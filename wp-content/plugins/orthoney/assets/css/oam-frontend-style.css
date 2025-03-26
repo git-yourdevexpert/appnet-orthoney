@@ -5095,6 +5095,10 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
     background: #fff;
 
+    margin-bottom: 20px;
+
+    border-top: 1px solid #dee2e6 !important;
+
   }
 
   .order-process-block table td,
@@ -5144,6 +5148,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
   .order-process-block table tbody tr.group-header:first-child,
   .custom-table table tbody tr.group-header:first-child {
     margin-top: 0;
+    border-top: 0px solid #dee2e6 !important;
   }
 
   .order-process-block table tbody tr.group-header td,
@@ -5181,6 +5186,11 @@ html body .w-btn.outline-btn.round-btn:hover i {
   .order-process-block table tbody tr.group-header td,
   .custom-table table tbody tr.group-header td {
     border-right: 0;
+  }
+
+  .order-process-block table tbody tr:first-child,
+  .custom-table table tbody tr:first-child {
+    border-top: 1px solid #dee2e6 !important;
   }
 
 }
