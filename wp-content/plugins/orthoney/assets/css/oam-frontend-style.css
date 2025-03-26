@@ -5238,8 +5238,12 @@ html body .w-btn.outline-btn.round-btn:hover i {
     font-size: 16px;
   }
 
-  .order-process-block .tab-selections .step-nav-item{
+  .order-process-block .tab-selections .step-nav-item {
     grid-column: span 6;
+  }
+
+  .order-process-block .organization-step .content-title a {
+    display: inline-block;
   }
 
 }
@@ -5254,4 +5258,10 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   }
 
+}
+
+@media (max-width: 319px) {
+  .order-process-block .tab-selections .step-nav-item {
+    grid-column: span 12;
+  }
 }
