@@ -370,6 +370,25 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             if(($currentStep == 3 OR self::$atts_process_id != 0)){
                 $data = '';
                 $view_all_recipients_btn_html = '';
+
+                if(self::$atts_process_id != 0){
+                    global $wpdb;
+                    $order_process_table = OAM_Helper::$order_process_table;
+                    $user_id = get_current_user_id();
+
+                    $total_items = (int) $wpdb->get_var($wpdb->prepare(
+                        "SELECT COUNT(*) FROM {$order_process_table} WHERE id = %d AND user_id = %d AND step = %d AND order_id != %d AND order_type = %s",
+                        self::$atts_process_id, $user_id, 5, 0 ,'multi-recipient-order'
+                    ));
+                    if($total_items == 0){
+                        
+                         echo  'Failed recipient is not found';
+                        
+                        return;
+                    }
+                }
+
+
                 $oam_ajax = new OAM_Ajax();
                 // Fetch recipient data based on 'pid' parameter
                 if (isset($_GET['pid']) && $_GET['pid'] != '') {
@@ -412,7 +431,11 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             'alreadyOrder' => 'Already Ordered',
                             'new'      => 'New'
                         ];
-
+                        if(self::$atts_process_id != 0){
+                            $sections = [
+                                'fail'     => 'Failed',
+                            ];
+                        }
                         foreach ($sections as $key => $label) {
                             $countKey = $key . 'Count';
                             if (!empty($result['data'][$countKey])) {
