@@ -4909,8 +4909,10 @@ html body .w-btn.outline-btn.round-btn:hover i {
 /* end */
 
 @media (min-width: 993px) {
-  .order-process-block table td .thead-data, .custom-table table td .thead-data {
-      display: none;
+
+  .order-process-block table td .thead-data,
+  .custom-table table td .thead-data {
+    display: none;
   }
 }
 
@@ -5408,6 +5410,16 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   .grid-two-col {
     display: block;
+  }
+
+  .order-process-block .two-cta-block .w-btn.outline-btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .order-process-block .two-cta-block .w-btn {
+    width: 100%;
   }
 
 }
