@@ -1654,6 +1654,8 @@ body.woocommerce .quantity input.input-box:focus {
 
   right: 0;
 
+  z-index: 1;
+
 }
 
 .animate-bee .image-block {
@@ -5179,7 +5181,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
     column-gap: 20px;
   }
 
-  .popup-show .recipient-view-details-wrapper ul{
+  .popup-show .recipient-view-details-wrapper ul {
     row-gap: 15px;
   }
 
@@ -5196,8 +5198,19 @@ html body .w-btn.outline-btn.round-btn:hover i {
   }
 
   .site-form .form-row label,
-  .popup-show .recipient-view-details-wrapper ul li label, .recipient-view-greeting-box label {
+  .popup-show .recipient-view-details-wrapper ul li label,
+  .recipient-view-greeting-box label {
     font-size: 14px;
+  }
+
+  .order-process-block .group-name {
+    flex-wrap: wrap;
+    font-size: 16px;
+    margin-bottom: 22px;
+  }
+
+  p.num-count {
+    font-size: 15px;
   }
 
 }
