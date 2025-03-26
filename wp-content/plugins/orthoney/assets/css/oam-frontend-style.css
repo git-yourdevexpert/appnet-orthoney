@@ -5260,6 +5260,24 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
 }
 
+@media (max-width: 374px) {
+  .button-block {
+    flex-wrap: wrap;
+  }
+
+  .order-process-block .w-btn {
+    width: 100%;
+  }
+
+  .order-process-block .w-btn.back {
+    justify-content: flex-end;
+  }
+
+  .order-process-block .w-btn.next {
+    justify-content: flex-start;
+  }
+}
+
 @media (max-width: 319px) {
   .order-process-block .tab-selections .step-nav-item {
     grid-column: span 12;
