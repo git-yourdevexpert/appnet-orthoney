@@ -4893,7 +4893,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
   color: var(--color-content-primary);
 }
 
-.dashboard-block .recipient-lists-block table .w-btn:before{
+.dashboard-block .recipient-lists-block table .w-btn:before {
   display: none;
 }
 
@@ -5021,6 +5021,12 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
 }
 
+@media(max-width: 782px) {
+  .admin-bar .select2-container--open .select2-dropdown {
+    margin-top: 46px !important;
+  }
+}
+
 @media (max-width: 767px) {
 
   .login-register-block .user-registration {
@@ -5043,7 +5049,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   .order-process-block .organization-step .content-title {
 
-    font-size: 20px;
+    font-size: 18px;
 
     line-height: normal;
 
@@ -5225,6 +5231,11 @@ html body .w-btn.outline-btn.round-btn:hover i {
     border-radius: 5px;
     padding: 8px;
     line-height: 1.3;
+  }
+
+
+  .order-process-block .organization-step .content-title {
+    font-size: 16px;
   }
 
 }
