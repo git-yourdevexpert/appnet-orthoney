@@ -48,16 +48,19 @@ jQuery(document).ready(function($) {
         }
     });
 
-    tippy('[data-tippy]', {
-        content: (reference) => reference.getAttribute('data-tippy'),
-        theme: 'translucent',
-        animation: 'fade',
-        arrow: true,
-        allowHTML: true,
-        followCursor: true,
-    });
-});
-
+    function initTippy() {
+        tippy('[data-tippy]', {
+            content: (reference) => reference.getAttribute('data-tippy'),
+            theme: 'translucent',
+            animation: 'fade',
+            arrow: true,
+            allowHTML: true,
+            followCursor: true,
+        });
+    }
+    
+    // Run on initial page load
+    document.addEventListener("DOMContentLoaded", initTippy);
 
 
 (function () {
@@ -996,7 +999,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const responseData = data.data;
                 tableBody.innerHTML = responseData.table_content;
                 paginationDiv.innerHTML = responseData.pagination;
-               
+                initTippy();
             } else {
                 Swal.fire({
                     title: "Error",
