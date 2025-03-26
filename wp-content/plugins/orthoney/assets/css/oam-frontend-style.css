@@ -5113,7 +5113,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   .custom-table table td {
 
-    padding: 0;
+    padding: 10px 0;
 
     display: flex;
 
@@ -5138,6 +5138,8 @@ html body .w-btn.outline-btn.round-btn:hover i {
     border-right: 1px solid #dee2e6;
 
     border-left: 1px solid #dee2e6;
+    margin-top: -10px;
+    margin-bottom: -10px;
 
   }
 
@@ -5180,6 +5182,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
     font-size: 13px;
     margin-right: 6px;
     padding: 7px;
+    align-self: center;
   }
 
   .order-process-block table td:last-child,
