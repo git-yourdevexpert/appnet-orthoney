@@ -623,13 +623,13 @@ body .select2-container--default .select2-results__option--highlighted.select2-r
 
   margin: 0;
 
-  display: flex;
+  display: inline-flex;
 
   flex-wrap: wrap;
 
   max-width: 390px;
 
-  padding-bottom: 5px;
+  padding-bottom: 0;
 
   overflow-y: auto;
 
