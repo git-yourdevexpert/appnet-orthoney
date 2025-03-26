@@ -5144,6 +5144,14 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   }
 
+  .user-registration .user-registration-social-connect-networks .custom-passwordless-link {
+    width: 100%;
+  }
+
+  .user-registration .user-registration-social-connect-networks .ursc-network-lists.ursc_theme_4 {
+      width: 100% !important;
+  }
+
 }
 
 @media (max-width: 395px) {
