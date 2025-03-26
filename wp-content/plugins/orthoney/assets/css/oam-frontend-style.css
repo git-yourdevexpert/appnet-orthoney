@@ -5162,6 +5162,12 @@ html body .w-btn.outline-btn.round-btn:hover i {
     background-color: transparent;
   }
 
+  .order-process-block button.far, .custom-table button.far{
+    font-size: 13px;
+    margin-right: 6px;
+    padding: 7px;
+  }
+
 }
 
 @media(max-width: 782px) {
@@ -5356,6 +5362,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
     width: 100%;
     margin: 0;
     border: 1px solid #00afaa;
+    border-radius: 0;
   }
 
 }
