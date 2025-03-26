@@ -173,9 +173,9 @@ class OAM_Helper{
                 
                 $addressParts = array_filter([$data->address_1, $data->address_2, $data->city, $data->state, $data->zipcode]);
                 if (!empty($addressParts)) {
-                    $addressPartsHtml = '<td>' . implode(', ', $addressParts) . '</td>';
+                    $addressPartsHtml = '<td data-label="Address"><div class="thead-data">Address</div>' . implode(', ', $addressParts) . '</td>';
                 } else {
-                    $addressPartsHtml = '<td>-</td>';
+                    $addressPartsHtml = '<td data-label="Address"><div class="thead-data">Address</div>-</td>';
                 }
                 
                 $greetingHtml = '<div>N/A</div>'; // Default value
@@ -190,24 +190,24 @@ class OAM_Helper{
 
                 $html .= '<tr data-id="'.$id.'" '.(($duplicate != 1)? 'data-verify="'.$data->verified.'" data-group="'.$duplicate.'"': '').'>';
                 if($alreadyOrder != 0){
-                    $html .= '<td>'.($data->order_id != "" ? $data->order_id : '') .'</td>';
+                    $html .= '<td data-label="Order Id"><div class="thead-data">Order Id</div>'.($data->order_id != "" ? $data->order_id : '') .'</td>';
                     $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->timestamp));
-                    $html .= '<td>'.$created_date.'</td>';
+                    $html .= '<td data-label="Create Date">'.$created_date.'</td>';
                 }
-                $html .= '<td><input type="hidden" name="'.(($reverify == 1) ? "recipientAddressIds[]" : "recipientIds[]").'" value="'.$id.'">'.$data->full_name.'</td>';
-                $html .= '<td>'.($data->company_name != "" ? $data->company_name : '') .'</td>';
+                $html .= '<td data-label="Full Name"><div class="Full Name">Order Id</div><input type="hidden" name="'.(($reverify == 1) ? "recipientAddressIds[]" : "recipientIds[]").'" value="'.$id.'">'.$data->full_name.'</td>';
+                $html .= '<td data-label="Company name"><div class="Company name">'.($data->company_name != "" ? $data->company_name : '') .'</td>';
                 
                 $html .= $addressPartsHtml;
-                $html .= '<td>'.((empty($data->quantity) || $data->quantity <= 0) ? '0' : $data->quantity).'</td>';
+                $html .= '<td data-label="Quantity"><div class="Quantity">'.((empty($data->quantity) || $data->quantity <= 0) ? '0' : $data->quantity).'</td>';
                
                 // $html .= '<td>'.$greetingHtml.'</td>';
 
                 if($alreadyOrder == 0){
                     if($reverify != 1){
-                        $html .= '<td>'.(($data->verified == 0) ? $reasonsHtml: 'Passed').'</td>';
+                        $html .= '<td data-label="Status"><div class="Status">'.(($data->verified == 0) ? $reasonsHtml: 'Passed').'</td>';
                     }
                     if($reverify == 1){
-                        $html .= '<td>';
+                        $html .= '<td data-label="Action"><div class="Action">';
                         if($data->address_verified == 0){
                             // $html .= '<button class="reverifyAddress w-btn us-btn-style_1" style="padding:10px"><small>Reverify Address</small></button>';
                         }
@@ -215,7 +215,7 @@ class OAM_Helper{
                         $html .= '</td>';
                         
                     }else{
-                        $html .= '<td>';
+                        $html .= '<td data-label="Action"><div class="Action">';
                         if($duplicate == 1){
                             $html .= '<button class="keep_this_and_delete_others" data-recipientname="'.$data->full_name.'"  data-popup="#recipient-manage-popup" data-tippy="Keep this and delete others">Keep this and delete others</button>';
                         }

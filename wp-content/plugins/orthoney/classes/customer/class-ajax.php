@@ -998,7 +998,7 @@ class OAM_Ajax{
      * 
 	 */
    
-    public function orthoney_get_csv_recipient_ajax_handler($userId = '', $processID = '') {
+    public function orthoney_get_csv_recipient_ajax_handler($userId = '', $processID = '', $atts_process_id = 0) {
         
         $exclude_ids = $process_id = $customGreeting = $addressPartsHtml = $successHtml = $newDataHtml = $alreadyOrderHtml  = $failHtml = $duplicateHtml = '';
         $successData = $newData = $failData = $duplicateGroups = $alreadyOrderGroups = [];
@@ -1137,9 +1137,10 @@ class OAM_Ajax{
                 }
             }
 
+          
             $totalDuplicates = 0;
-            if(!isset($_GET['failed-recipients']) &&  $_GET['failed-recipients'] != 'true'){
-
+            if($atts_process_id == 0){
+          
                 // Generate Duplicate HTML - now showing grouped duplicates
                 //Keep 1 Entry and Delete Other Duplicate Entries
                 if(!empty($duplicateGroups)){
@@ -1217,6 +1218,7 @@ class OAM_Ajax{
             if($failHtml != ''){
                 $failHtml = '<div class="download-csv"><div class="heading-title"><div><h5 class="table-title">Failed Recipeints</h5><p>To fix the failed data, edit the row and make the necessary changes OR upload a new CSV for failed recipients.</p></div><div><button data-tippy="Failed records can be downloaded" id="download-failed-recipient-csv" class="btn-underline" ><i class="far fa-download"></i> Download Failed Recipients</button></div></div> </div>'.$tableStart.$failHtml.$tableEnd;
             }
+            
             
 
             $resultData = [
@@ -1889,7 +1891,7 @@ class OAM_Ajax{
                 if($failed != 1){
                     $resume_url = esc_url(home_url("/order-process?pid=$data->id"));
                 }else{
-                    $resume_url = esc_url(home_url("/customer-dashboard/failed-recipients/details/?pid=".$data->id));
+                    $resume_url = esc_url(home_url("/customer-dashboard/failed-recipients/details/".$data->id));
                 }
 
                 $download_button = '';

@@ -10,11 +10,13 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     /**
      * Define class Constructor
      **/
+    private  static $atts_process_id;
     public function __construct(){
         add_shortcode('recipient_multistep_form', array($this, 'recipient_multistep_form_handler'));
     }
+    public static function init() {}
 
-    public function recipient_multistep_form_handler() {
+    public function recipient_multistep_form_handler($atts) {
         if (!is_user_logged_in()) {
             return OAM_COMMON_Custom::message_design_block(
                 'If you want to access this page, please',
@@ -22,8 +24,17 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 'Login'
             );
         }
-    
+
+        
         ob_start();
+        $failed_recipients_details = get_query_var('failed-recipients-details');
+        if (!empty($failed_recipients_details)) {
+            self::$atts_process_id = intval($failed_recipients_details);
+        } else {
+            self::$atts_process_id = 0;
+        }
+
+    
         echo "<div class='order-block-wrap'>
                 <div class='loader multiStepForm'>
                     <div>
@@ -81,14 +92,13 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     }
 
     public static function step_nav($currentStep = 0){ 
-        
         ?>
-        <div id="stepNav" class="tab-selections" <?php echo ((!isset($_GET['failed-recipients']) OR  $_GET['failed-recipients'] != 'true') ? '' : 'style="display:none"' ) ?>>
-            <span class="step-nav-item <?php echo $currentStep == 0 ? 'active' : '' ?>" data-step="0">Step 1: Select Organization</span>
+        <div id="stepNav" class="tab-selections" <?php echo ((self::$atts_process_id != 0) ? 'style="display:none"' : '' ) ?>>
+            <span class="step-nav-item <?php echo ($currentStep == 0  AND self::$atts_process_id == 0) ? 'active' : '' ?>" data-step="0">Step 1: Select Organization</span>
             <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Delivery Preference</span>
             <span class="step-nav-item <?php echo $currentStep == 2 ? 'active' : '' ?>" data-step="2">Step 3: Upload Recipients</span>
-            <span class="step-nav-item <?php echo ($currentStep == 3 OR isset($_GET['failed-recipients']) &&  $_GET['failed-recipients'] == 'true') ? 'active' : '' ?>" data-step="3">Step 4: Verify Recipients</span>
-            <span class="step-nav-item <?php echo (($currentStep == 4 or $currentStep == 5) OR (!isset($_GET['failed-recipients']) OR  !$_GET['failed-recipients'] == 'true')) ? 'active' : '' ?>" data-step="4">Step 5: Verify Address</span>
+            <span class="step-nav-item <?php echo (($currentStep == 3 OR self::$atts_process_id != 0) ? 'active' : '') ?>" data-step="3">Step 4: Verify Recipients</span>
+            <span class="step-nav-item <?php echo ($currentStep == 4 OR $currentStep == 5) ? 'active' : '' ?>" data-step="4">Step 5: Verify Address</span>
             <span class="step-nav-item" data-step="5">Step 6: Checkout</span>
         </div>
         <?php
@@ -357,103 +367,110 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         ?>
         <div class="step" id="step4">
         <?php
-        if(($currentStep == 3 OR isset($_GET['failed-recipients']) &&  $_GET['failed-recipients'] == 'true')){
-   
-        $data = '';
-        $view_all_recipients_btn_html = '';
-        $oam_ajax = new OAM_Ajax();
-    
-        // Fetch recipient data based on 'pid' parameter
-        if (isset($_GET['pid']) && $_GET['pid'] != '') {
-            $data = $oam_ajax->orthoney_get_csv_recipient_ajax_handler(get_current_user_id(), $_GET['pid']);
-        } else {
-            $data = $oam_ajax->orthoney_get_csv_recipient_ajax_handler(get_current_user_id());
-        }
-    
-        $result = json_decode($data, true);
-        if(!isset($_GET['failed-recipients']) &&  $_GET['failed-recipients'] != 'true'){
+            if(($currentStep == 3 OR self::$atts_process_id != 0)){
+                $data = '';
+                $view_all_recipients_btn_html = '';
+                $oam_ajax = new OAM_Ajax();
+                // Fetch recipient data based on 'pid' parameter
+                if (isset($_GET['pid']) && $_GET['pid'] != '') {
+                    $data = $oam_ajax->orthoney_get_csv_recipient_ajax_handler(get_current_user_id(), $_GET['pid'], self::$atts_process_id);
+                } else {
+                    $data = $oam_ajax->orthoney_get_csv_recipient_ajax_handler(get_current_user_id(), '', self::$atts_process_id);
+                }
 
-        ?>
-        <div class="heading-title">
-            <div>
-                <div class="group-name">
-                    Recipient List Name: <strong><?php echo $group_name; ?></strong><button class="editProcessName far fa-edit" data-name="<?php echo $group_name; ?>" data-tippy="Edit Recipient List Name"></button>
-                </div>
-                <?php if ($result['data']['totalCount'] != 0) : ?>
-                    <p class="num-count">Number of Recipients: <span><?php echo $result['data']['totalCount']; ?></span></p>
-                    <?php endif; ?>
-                </div>
-                <div>
-                    <button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button>
-                </div>
-            </div>
-        </div>
-    
-    
-        <?php 
-        }
-            if (!empty($result) && $result['success'] == 1) : ?>
-                <div class="recipient-group-nav">
-                    <?php
-                    $sections = [
-                        'fail'     => 'Failed',
-                        'success'  => 'Success',
-                        'duplicate' => 'Duplicate',
-                        'alreadyOrder' => 'Already Ordered',
-                        'new'      => 'New'
-                    ];
-    
-                    foreach ($sections as $key => $label) {
-                        $countKey = $key . 'Count';
-                        if (!empty($result['data'][$countKey])) {
-                            echo '<button class="scroll-section-btn" data-section="' . $key . 'CSVData">' 
-                                . $label . ' Recipient (' . $result['data'][$countKey] . ')</button>';
-                        }
-                    }
+                if(self::$atts_process_id != 0){
+                    $data = $oam_ajax->orthoney_get_csv_recipient_ajax_handler(get_current_user_id(), self::$atts_process_id, self::$atts_process_id);
+                }
+                $result = json_decode($data, true);
+
+                if(self::$atts_process_id == 0){
                     ?>
-                </div>
-    
-                <div class="recipient-group-section <?php echo ((!isset($_GET['failed-recipients']) &&  $_GET['failed-recipients'] != 'true') ? '' : 'failed-recipient-show' ) ?>">
-                    <?php
-                    foreach ($sections as $key => $label) {
-                        $countKey = $key . 'Count';
-                        $dataKey = $key . 'Data';
-                   
-                        if (!empty($result['data'][$countKey])) {
-                            $viewAllBtn = '';
-                            if ($key != 'duplicate' && $result['data'][$countKey] > 10) {
-                                $viewAllBtn = '<button class="view-all-recipients btn-underline" data-status="0">View All Recipients</button>';
-                            }
-                            echo '<div id="' . $key . 'CSVData" class="table-data">' . $result['data'][$dataKey] . $viewAllBtn . '</div>';
-                        }
-                    }
-                    ?>
-                </div>
-    
-                <?php 
-               
-            endif; 
-            if(!isset($_GET['failed-recipients']) &&  $_GET['failed-recipients'] != 'true'){
-                if (!empty($_GET['pid']) && empty($result['data']['newCount'])) : ?>
                     <div class="heading-title">
-                        <div><h5 class="table-title">New Recipients</h5></div>
-                        <div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div>
+                        <div>
+                            <div class="group-name">
+                                Recipient List Name: <strong><?php echo $group_name; ?></strong><button class="editProcessName far fa-edit" data-name="<?php echo $group_name; ?>" data-tippy="Edit Recipient List Name"></button>
+                            </div>
+                            <?php if ($result['data']['totalCount'] != 0) : ?>
+                                <p class="num-count">Number of Recipients: <span><?php echo $result['data']['totalCount']; ?></span></p>
+                                <?php endif; ?>
+                            </div>
+                            <div>
+                                <button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button>
+                            </div>
+                        </div>
                     </div>
-                <?php endif;  
-            if ($result['data']['totalCount'] != 0) : ?>
-                <div class="two-cta-block">
-                    <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save Progress</a>
-                    <button class="verifyRecipientAddressButton w-btn us-btn-style_1 next-step"
-                        data-totalCount="<?php echo $result['data']['totalCount']; ?>"
-                        data-successCount="<?php echo $result['data']['successCount']; ?>"
-                        data-newCount="<?php echo $result['data']['newCount']; ?>"
-                        data-failCount="<?php echo $result['data']['failCount']; ?>"
-                        data-alreadyOrderCount="<?php echo $result['data']['alreadyOrderCount']; ?>"
-                        data-duplicateCount="<?php echo $result['data']['duplicateCount']; ?>">
-                        Next
-                    </button>
-                </div>
-            <?php endif; } } ?>
+                    <?php
+                }
+                if (!empty($result) && $result['success'] == 1) { 
+                    ?>
+                    <div class="recipient-group-nav">
+                        <?php
+                        $sections = [
+                            'fail'     => 'Failed',
+                            'success'  => 'Success',
+                            'duplicate' => 'Duplicate',
+                            'alreadyOrder' => 'Already Ordered',
+                            'new'      => 'New'
+                        ];
+
+                        foreach ($sections as $key => $label) {
+                            $countKey = $key . 'Count';
+                            if (!empty($result['data'][$countKey])) {
+                                echo '<button class="scroll-section-btn" data-section="' . $key . 'CSVData">' 
+                                    . $label . ' Recipient (' . $result['data'][$countKey] . ')</button>';
+                            }
+                        }
+                        ?>
+                    </div>
+                    <div class="recipient-group-section <?php echo ((self::$atts_process_id != 0) ? 'failed-recipient-show' : '' ) ?>">
+                        <?php
+                        foreach ($sections as $key => $label) {
+                            $countKey = $key . 'Count';
+                            $dataKey = $key . 'Data';
+                        
+                            if (!empty($result['data'][$countKey])) {
+                                $viewAllBtn = '';
+                                if ($key != 'duplicate' && $result['data'][$countKey] > 10) {
+                                    $viewAllBtn = '<button class="view-all-recipients btn-underline" data-status="0">View All Recipients</button>';
+                                }
+                                echo '<div id="' . $key . 'CSVData" class="table-data">' . $result['data'][$dataKey] . $viewAllBtn . '</div>';
+                            }
+                        }
+                        ?>
+                    </div>
+                    <?php
+                    
+                }
+                if(self::$atts_process_id == 0){
+                    if (!empty($_GET['pid']) && empty($result['data']['newCount'])) { 
+                        ?>
+                        <div class="heading-title">
+                            <div><h5 class="table-title">New Recipients</h5></div>
+                            <div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div>
+                        </div>
+                        <?php 
+                    }
+                  
+        
+                    if ($result['data']['totalCount'] != 0) {
+                        ?>
+                        <div class="two-cta-block">
+                            <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save Progress</a>
+                            <button class="verifyRecipientAddressButton w-btn us-btn-style_1 next-step"
+                                data-totalCount="<?php echo $result['data']['totalCount']; ?>"
+                                data-successCount="<?php echo $result['data']['successCount']; ?>"
+                                data-newCount="<?php echo $result['data']['newCount']; ?>"
+                                data-failCount="<?php echo $result['data']['failCount']; ?>"
+                                data-alreadyOrderCount="<?php echo $result['data']['alreadyOrderCount']; ?>"
+                                data-duplicateCount="<?php echo $result['data']['duplicateCount']; ?>">
+                                Next
+                            </button>
+                        </div>
+                        <?php 
+                    } 
+                } 
+            }
+            ?>
         </div>
     
         <?php

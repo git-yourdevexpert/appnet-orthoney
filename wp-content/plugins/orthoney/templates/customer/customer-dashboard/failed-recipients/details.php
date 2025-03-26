@@ -6,5 +6,5 @@ if (!$recipient_id) {
     return;
 }
 
-echo "<h2>Details for Failed Recipient ID: " . esc_html($recipient_id) . "</h2>";
+
 ?>

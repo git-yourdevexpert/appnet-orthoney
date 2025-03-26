@@ -21,6 +21,7 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
     return;
 }
 ?>
+
 <div class="incomplete-order-block order-process-block">
     <div class="heading-title"><h5 class="block-title">All Incomplete Orders</h5></div>
     <table>

@@ -2,10 +2,7 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-?>
-<h2>Failed Recipients Details Working</h2>
-<p>Here you can see the details of failed recipients.</p>
+$recipient_id = get_query_var('failed-recipients-details');
 
-<?php 
-
+echo do_shortcode("[recipient_multistep_form]");
 ?>
