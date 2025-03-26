@@ -1323,8 +1323,7 @@ body .grid-two-col input:focus {
 
 /* Quantity Input Styling */
 
-body .woocommerce .quantity,
-body .quantity {
+body.woocommerce .quantity {
 
   border: none;
 
@@ -1354,8 +1353,7 @@ body .quantity {
 
 
 
-body .woocommerce .quantity button,
-body .quantity button{
+body.woocommerce .quantity button {
 
   padding: 0;
 
@@ -1389,8 +1387,7 @@ body .quantity button{
 
 
 
-body .woocommerce .quantity button.minus,
-body .quantity button.minus {
+body.woocommerce .quantity button.minus {
 
   border-right: 1px solid rgba(0, 0, 0, 0.15);
 
@@ -1398,8 +1395,7 @@ body .quantity button.minus {
 
 
 
-body .woocommerce .quantity button.plus,
-body .quantity button.plus{
+body.woocommerce .quantity button.plus {
 
   border-left: 1px solid rgba(0, 0, 0, 0.15);
 
@@ -1407,8 +1403,7 @@ body .quantity button.plus{
 
 
 
-body .woocommerce .quantity button:hover,
-body .quantity button:hover {
+body.woocommerce .quantity button:hover {
 
   background: #00afaa;
 
@@ -1416,12 +1411,9 @@ body .quantity button:hover {
 
 
 
-body .woocommerce .quantity button:after,
+body.woocommerce .quantity button:after,
 
-body .woocommerce .quantity button:before,
-body .quantity button:after,
-
-body .quantity button:before {
+body.woocommerce .quantity button:before {
 
   content: "";
 
@@ -1449,8 +1441,7 @@ body .quantity button:before {
 
 
 
-body .woocommerce .quantity button.plus:after,
-body .quantity button.plus:after {
+body.woocommerce .quantity button.plus:after {
 
   transform: rotate(90deg);
 
@@ -1458,12 +1449,9 @@ body .quantity button.plus:after {
 
 
 
-body .woocommerce .quantity button:hover:after,
+body.woocommerce .quantity button:hover:after,
 
-body .woocommerce .quantity button:hover:before,
-body .quantity button:hover:after,
-
-body .quantity button:hover:before {
+body.woocommerce .quantity button:hover:before {
 
   background: #fff;
 
@@ -1471,8 +1459,7 @@ body .quantity button:hover:before {
 
 
 
-body .woocommerce .quantity input.input-box,
-body .quantity input.input-box {
+body.woocommerce .quantity input.input-box {
 
   flex: 50px 0 0;
 
@@ -1502,17 +1489,11 @@ body .quantity input.input-box {
 
 
 
-body .woocommerce .quantity input.input-box:not([type="submit"]):focus,
+body.woocommerce .quantity input.input-box:not([type="submit"]):focus,
 
-body .woocommerce .quantity input.input-box:focus,
+body.woocommerce .quantity input.input-box:focus,
 
-body .woocommerce .quantity input.input-box:focus,
-
-body .quantity input.input-box:not([type="submit"]):focus,
-
-body .quantity input.input-box:focus,
-
-body .quantity input.input-box:focus{
+body.woocommerce .quantity input.input-box:focus {
 
   color: #333;
 
