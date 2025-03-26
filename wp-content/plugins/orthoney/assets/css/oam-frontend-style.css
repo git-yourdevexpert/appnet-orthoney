@@ -2423,6 +2423,10 @@ body .order-process-block input:focus {
 
   background-color: #fff;
 
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+
 }
 
 body .order-process-block input,
