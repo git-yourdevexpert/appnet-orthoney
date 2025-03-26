@@ -623,7 +623,7 @@ body .select2-container--default .select2-results__option--highlighted.select2-r
 
   margin: 0;
 
-  display: inline-flex;
+  display: flex;
 
   flex-wrap: wrap;
 
@@ -5023,6 +5023,14 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   }
 
+  .grid-two-col{
+    column-gap: 20px;
+  }
+
+  .woocommerce-form-row, .woocommerce .form-row{
+    margin: 0 0 1rem;
+  }
+
 }
 
 @media(max-width: 782px) {
@@ -5177,6 +5185,10 @@ html body .w-btn.outline-btn.round-btn:hover i {
     font-size: 12px;
   }
 
+  .site-form .form-row label{
+    font-size: 14px;
+  }
+
 }
 
 @media (max-width: 600px) {
@@ -5262,6 +5274,10 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   }
 
+  .grid-two-col{
+    display: block;
+  }
+
 }
 
 @media (max-width: 374px) {
@@ -5279,6 +5295,9 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   .order-process-block .w-btn.next {
     justify-content: flex-start;
+  }
+  .grid-two-col .footer-btn button[type="submit"], .grid-two-col .footer-btn button[type="button"]{
+    width: 100%;
   }
 }
 
