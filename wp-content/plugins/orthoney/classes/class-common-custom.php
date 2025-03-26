@@ -238,10 +238,14 @@ class OAM_COMMON_Custom {
     public static function info_block($title, $content) {    
         if (!empty($title)) {
             return '<div class="place-order item">
-                        <h4 class="block-title">' . esc_html($title) . '</h4>
-                        <div class="description">' . esc_html($content) . '</div>
-                    </div>';
+            <div class="row-block">
+            <h4 class="block-title">' . esc_html($title) . '</h4>
+            <div class="see-all"><a href="'.esc_html(home_url('order-process')).'" class="w-btn us-btn-style_1">Order Now</a></div>
+            </div>
+            <div class="description">' . esc_html($content) . '</div>
+            </div>';
         }
+        
         return '';
     }
  
