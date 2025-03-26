@@ -1050,6 +1050,71 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+
+
+//group order process code
+document.addEventListener("DOMContentLoaded", function () {
+    function fetchOrders(page = 1) {
+        process_group_popup();
+        const params = new URLSearchParams();
+        params.append("action", "orthoney_groups_ajax");
+        params.append("page", page);
+        params.append("security", oam_ajax.nonce);
+
+        fetch(oam_ajax.ajax_url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: params.toString()
+        })
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.getElementById("groups-data");
+            const paginationDiv = document.getElementById("groups-pagination");
+
+            if (data.success) {
+                const responseData = data.data;
+                tableBody.innerHTML = responseData.table_content;
+                paginationDiv.innerHTML = responseData.pagination;
+                initTippy();
+               
+            } else {
+                Swal.fire({
+                    title: "Error",
+                    text: data.data?.message || "Something went wrong. Please try again",
+                    icon: "error",
+                });
+            }
+            setTimeout(() => {
+                Swal.close();
+            }, 500);
+        })
+        .catch(() => {
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while updating the Incomplete Order.',
+                icon: 'error',
+            });
+        });
+    }
+
+    const dashboard_groups = document.querySelector(".groups-block #groups-data");
+    if (dashboard_groups) {
+        fetchOrders(1);
+                
+        document.addEventListener('click', function (event) {
+            if (event.target.matches('#groups-pagination a')) {
+                event.preventDefault();
+                const page = event.target.getAttribute('data-page');
+                if (page) {
+                    fetchOrders(page);
+                }
+            }
+        });
+    }
+});
+
 //Edit Sales Representative Profile 
 document.addEventListener('click', function (event) {
     if (event.target.id === 'sales-rep-save-profile') {

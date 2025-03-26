@@ -43,6 +43,7 @@ class OAM_Ajax{
         add_action('wp_ajax_search_affiliates', array( $this,'search_affiliates_handler'));
 
         add_action( 'wp_ajax_orthoney_incomplete_order_process_ajax', array( $this, 'orthoney_incomplete_order_process_ajax_handler' ) );
+        add_action( 'wp_ajax_orthoney_groups_ajax', array( $this, 'orthoney_groups_ajax_handler' ) );
         // Done
         
 		add_action( 'wp_ajax_deleted_group', array( $this, 'orthoney_deleted_group_handler' ) );
@@ -1902,6 +1903,94 @@ class OAM_Ajax{
                 }
     
                 $table_content .= "<tr><td>" . esc_html($data->id) . "</td><td>". esc_html($created_date). "</td><td>" . esc_html($data->name) . "</td><td> <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>".($failed == 1 ? 'View Recipients' : 'Resume Order' )."</a> ".($failed != 1 ? $download_button : '' )." </td></tr>";
+            }
+        } else {
+            $table_content = '<tr><td colspan="4">No data available</td></tr>';
+        }
+    
+        $pagination = '';
+        if ($total_pages > 1) {
+            for ($i = 1; $i <= $total_pages; $i++) {
+                $active_class = ($current_page == $i) ? 'active' : '';
+                $pagination .= "<a href='javascript:;' class='".$active_class."' data-page='".$i."'>".$i."</a> ";
+            }
+        }
+        wp_send_json_success([
+            'table_content' => $table_content,
+            'pagination' => $pagination,
+            'current_page' => $current_page,
+            'total_pages' => $total_pages,
+        ]);
+        wp_die();
+    }
+
+    //
+    public function orthoney_groups_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+        $user_id = get_current_user_id();
+        $current_page = isset($_POST['page']) ? max(1, intval($_POST['page'])) : 1;
+        
+        $items_per_page = 10;
+        $offset = ($current_page - 1) * $items_per_page;
+    
+        $group_table = OAM_Helper::$group_table;
+        $group_recipient_table = OAM_Helper::$group_recipient_table;
+        $order_process_table = OAM_Helper::$order_process_table;;
+
+        // Get total items and pages
+        $total_items = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$group_table} WHERE user_id = %d AND visibility = %d",
+            $user_id, 1
+        ));
+       
+        
+        // Fetch process data
+        $processQuery = $wpdb->prepare(
+            "SELECT * FROM {$group_table} WHERE user_id = %d  AND visibility = %d LIMIT %d OFFSET %d",
+            $user_id ,1,$items_per_page, $offset
+        );
+
+       
+        
+
+        $total_pages = (int) ceil($total_items / $items_per_page);
+        
+        $results = $wpdb->get_results($processQuery);
+        $table_content = '';
+    
+        if (!empty($results)) {
+            foreach ($results as $data) {
+
+                $total_recipients = (int) $wpdb->get_var($wpdb->prepare(
+                    "SELECT COUNT(*) FROM {$group_recipient_table} WHERE user_id = %d AND group_id = %d",
+                    $user_id, $data->id
+                ));
+
+                $csv_name = $wpdb->get_var($wpdb->prepare(
+                    "SELECT csv_name FROM {$order_process_table} WHERE user_id = %d AND id = %d",
+                    $user_id, $data->pid
+                ));
+
+                $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->timestamp));
+
+                $resume_url = esc_url(OAM_Helper::$customer_dashboard_link.'/groups/details/'.$data->id);
+               
+                $download_button = '';
+    
+                if (!empty($data->csv_name)) {
+                    $download_url = esc_url(OAM_Helper::$process_recipients_csv_url . $data->csv_name);
+                    $download_button = "<a href='".esc_url($download_url)."' class='w-btn us-btn-style_1 outline-btn round-btn' download data-tippy='Download Recipients File'><i class='far fa-download'></i></a>";
+                }
+    
+                $table_content .= "<tr>
+                <td>" . esc_html($data->id) . "</td>
+                <td>" . esc_html($data->name) . "</td>
+                <td>".$total_recipients."</td>
+                <td><a download href='".esc_url(OAM_Helper::$process_recipients_csv_url . $csv_name)."'>". $csv_name."</a></td>
+                <td>" . esc_html($created_date) . "</td>
+                <td> <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>View Recipients</td>
+                </tr>";
             }
         } else {
             $table_content = '<tr><td colspan="4">No data available</td></tr>';

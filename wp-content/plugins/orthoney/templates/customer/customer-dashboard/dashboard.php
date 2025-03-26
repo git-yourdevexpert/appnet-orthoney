@@ -47,7 +47,7 @@ if ($redirect_back_user_id) {
                     </div>
                     <div class="cl-right">
                     <?php 
-                        // echo OAM_Helper::order_dashboard_widget('Recipient List', 3, esc_url(OAM_Helper::$customer_dashboard_link.'/groups/'));
+                        echo OAM_Helper::groups_dashboard_widget('Group List', 3, esc_url(OAM_Helper::$customer_dashboard_link.'/groups/'));
                         ?>
                     </div>
                 </div>

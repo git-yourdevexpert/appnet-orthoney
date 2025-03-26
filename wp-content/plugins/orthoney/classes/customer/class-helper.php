@@ -928,7 +928,7 @@ class OAM_Helper{
                 <thead>
                     <tr>
                         <th>Order ID</th>
-                        <th>Company Name</th>
+                        <th>Name</th>
                         <th>Date</th>
                         <th>Action</th>
                     </tr>
@@ -948,6 +948,63 @@ class OAM_Helper{
                 }
             }else{
                 $html .= '<tr><td colspan="4">No failed recipients found!.</td></tr>';
+            }
+                $html .= '</tbody>
+            </table>
+        </div>';
+        
+        return $html;
+    }
+
+    public static function groups_dashboard_widget($title = "", $limit = 3, $link = '') {
+        global $wpdb;
+        $user_id = get_current_user_id();
+        $order_process_table = OAM_Helper::$order_process_table;
+    
+        $group_table = OAM_Helper::$group_table;
+        $group_recipient_table = OAM_Helper::$group_recipient_table;
+        $order_process_table = OAM_Helper::$order_process_table;;
+
+      
+        // Fetch limited orders
+        $query = $wpdb->prepare(
+            "SELECT * FROM {$group_table} WHERE user_id = %d AND visibility = %d ORDER BY timestamp DESC LIMIT %d",
+            $user_id, 1, $limit
+        );
+        $results = $wpdb->get_results($query);
+
+        
+        $html = '<div class="recipient-lists-block custom-table">
+            <div class="row-block">
+                <h4>'.esc_html( $title ).'</h4>
+                <div class="see-all">
+                    '.(($link) ? '<a class="w-btn us-btn-style_1" href="'.$link.'">See all</a> ': '').'
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>';
+                if(!empty($results)){
+                foreach ($results as $data) {
+                    $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->timestamp));
+                    
+                    $resume_url = esc_url(OAM_Helper::$customer_dashboard_link.'/groups/details/'.$data->id);
+                    $html .= '<tr data-id="52" data-verify="0" data-group="0">
+                    <td>'.esc_html($data->id).'</td>
+                    <td>'.esc_html($data->name).'</td>
+                    <td>'.esc_html($created_date).'</td>
+                    <td><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">View Recipients</a></td>
+                </tr>';
+                }
+            }else{
+                $html .= '<tr><td colspan="4">No group found!.</td></tr>';
             }
                 $html .= '</tbody>
             </table>
