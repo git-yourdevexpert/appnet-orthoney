@@ -4950,10 +4950,12 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
   }
 
+}
+
+@media (max-width: 1024px) {
   .login-register-block .overlay-bg{
     order: 2;
   }
-
 }
 
 @media (max-width: 992px) {
