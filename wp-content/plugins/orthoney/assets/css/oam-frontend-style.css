@@ -4163,6 +4163,7 @@ body .wp-block-woocommerce-checkout-actions-block .wc-block-checkout__actions_ro
   color: #008000;
   text-align: center;
   font-weight: bold;
+  padding: 0 20px;
 }
 
 body .woocommerce-thankyou-order-details {
