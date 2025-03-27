@@ -2233,7 +2233,7 @@ body.woocommerce .quantity input.input-box:focus {
 .order-process-block a.far.fa-edit:hover,
 
 .order-process-block button.far.fa-eye:hover,
-.order-process-block a.far.fa-eye{
+.order-process-block a.far.fa-eye:hover{
 
   color: #007bff;
 
