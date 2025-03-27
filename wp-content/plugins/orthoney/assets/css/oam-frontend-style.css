@@ -5402,6 +5402,7 @@ h1.checkout-title:after {
 
   html body .wp-block-woocommerce-checkout-order-summary-block.checkout-order-summary-block-fill-wrapper {
     display: none;
+    padding: 0;
   }
 }
 
