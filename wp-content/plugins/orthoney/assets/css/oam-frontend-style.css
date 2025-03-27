@@ -5492,7 +5492,9 @@ h1.checkout-title:after {
     border-top: 1px solid rgba(0, 0, 0, 0.15) !important;
   }
 
-  html body .wc-block-authnet-gateway-container input,
+  html body .wc-block-authnet-gateway-container input#cardNumber,
+  html body .wc-block-authnet-gateway-container input#expiryDate,
+  html body .wc-block-authnet-gateway-container input#cvc,
   .wc-block-authnet-gateway-container .qaJVi svg {
     width: 100% !important;
   }
