@@ -2205,6 +2205,7 @@ body.woocommerce .quantity input.input-box:focus {
   justify-content: center;
 
   font-size: 15px;
+  color: inherit;
 
 }
 
@@ -2231,7 +2232,8 @@ body.woocommerce .quantity input.input-box:focus {
 .custom-table button.far.fa-edit:hover,
 .order-process-block a.far.fa-edit:hover,
 
-.order-process-block button.far.fa-eye:hover {
+.order-process-block button.far.fa-eye:hover,
+.order-process-block a.far.fa-eye{
 
   color: #007bff;
 
