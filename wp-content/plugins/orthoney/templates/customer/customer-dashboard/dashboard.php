@@ -4,13 +4,14 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$current_user_id = get_current_user_id();
-$redirect_back_user_id = get_transient('redirect_back_user_' . $current_user_id);
+if (class_exists('user_switching') && method_exists('user_switching', 'get_old_user')) {
+    $old_user = user_switching::get_old_user();
+    if ($old_user) {
+        $redirect_to = urlencode(home_url('/sales-representative-dashboard/manage-customer/'));
+        $switch_back_url = user_switching::switch_back_url($old_user) . '&redirect_to=' . $redirect_to;
 
-if ($redirect_back_user_id) {
-    $nonce = wp_create_nonce('auto_login_' . $redirect_back_user_id);
-    $back_url = home_url('/?action=auto_login&user_id=' . $redirect_back_user_id . '&nonce=' . $nonce . '&redirect_to=' . urlencode('/sales-representative-dashboard/'));
-    echo '<a href="' . esc_url($back_url) . '" class="button">Back to Previous User</a>';
+        echo '<a href="' . esc_url($switch_back_url) . '" class="switch-back-btn w-btn us-btn-style_1">Switch Back to ' . esc_html($old_user->display_name) . '</a>';
+    }
 }
 
 ?>

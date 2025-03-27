@@ -9,7 +9,6 @@ if (!defined('ABSPATH')) {
 <span class="error-message"></span>
 <button id="search-button">Search</button>
 <ul id="customer-email-results"></ul>
-
 <?php 
 global $wpdb;
 $table_name = OAM_Helper::$oh_affiliate_customer_linker;
