@@ -4961,6 +4961,7 @@ h1.checkout-title:after {
 body .order-process-block button.show-password-input:empty,
 body .register-form button.show-password-input:empty {
   display: none;
+  padding: 0;
 }
 
 .affiliate-dashboard .filter-container {
