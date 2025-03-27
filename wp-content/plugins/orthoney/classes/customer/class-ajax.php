@@ -1324,7 +1324,7 @@ class OAM_Ajax{
             $group_recipient_table = OAM_Helper::$group_recipient_table;
            
             $failData = $wpdb->get_results($wpdb->prepare("
-                SELECT * FROM {$group_recipient_table} WHERE user_id = %d AND group_id = %d  AND visibility = %
+                SELECT * FROM {$group_recipient_table} WHERE user_id = %d AND group_id = %d  AND visibility = %d
             ", $user, $id, 1));
         }
     
