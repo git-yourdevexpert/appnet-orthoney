@@ -5399,6 +5399,10 @@ h1.checkout-title:after {
   body .wp-block-woocommerce-checkout-order-summary-block .wc-block-components-title {
     margin-bottom: 30px;
   }
+
+  .is-mobile .wp-block-woocommerce-checkout-order-summary-block.checkout-order-summary-block-fill-wrapper {
+    display: none;
+  }
 }
 
 @media (max-width: 600px) {
@@ -5488,7 +5492,7 @@ h1.checkout-title:after {
   .wc-block-checkout__form .wc-block-authnet-gateway-container input[type=tel] {
     border-bottom: 0px;
     border-left: 0px;
-    border-right: 0px;    
+    border-right: 0px;
     border-top: 1px solid rgba(0, 0, 0, 0.15) !important;
   }
 
@@ -5506,7 +5510,7 @@ h1.checkout-title:after {
     margin: 0 auto;
   }
 
-  .wc-block-checkout__form .wc-block-authnet-gateway-container .sc-gjcoXW{
+  .wc-block-checkout__form .wc-block-authnet-gateway-container .sc-gjcoXW {
     flex-wrap: wrap;
     height: auto;
     padding-left: 0;
