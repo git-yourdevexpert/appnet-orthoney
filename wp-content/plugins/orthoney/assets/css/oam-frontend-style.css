@@ -2565,25 +2565,18 @@ body .order-process-block input:focus {
 
 
 .yith-wcaf-registration-form .forms-container {
-
   display: flex;
-
   flex-wrap: wrap;
-
   align-items: center;
   border: 1px solid #e3e7f0;
-  border-radius: 20px;
+  border-radius: 21px;
   box-shadow: var(--box-shadow);
   overflow: hidden;
   padding: 40px 30px 60px;
   position: relative;
   background: #f0f4f7;
-
   position: relative;
-
   overflow: hidden;
-
-
 }
 
 
