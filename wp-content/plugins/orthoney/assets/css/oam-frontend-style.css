@@ -2185,7 +2185,8 @@ body.woocommerce .quantity input.input-box:focus {
 
 .order-process-block button.far,
 
-.custom-table button.far {
+.custom-table button.far,
+.order-process-block a.far {
 
   background-color: #f0f4f7;
 
@@ -2208,6 +2209,7 @@ body.woocommerce .quantity input.input-box:focus {
 }
 
 .order-process-block button.far:hover,
+.order-process-block a.far:hover,
 
 .custom-table button.far:hover {
 
@@ -2216,6 +2218,7 @@ body.woocommerce .quantity input.input-box:focus {
 }
 
 .order-process-block button.far:last-child,
+.order-process-block a.far:last-child,
 
 .custom-table button.far:last-child {
 
@@ -2226,6 +2229,7 @@ body.woocommerce .quantity input.input-box:focus {
 .order-process-block button.far.fa-edit:hover,
 
 .custom-table button.far.fa-edit:hover,
+.order-process-block a.far.fa-edit:hover,
 
 .order-process-block button.far.fa-eye:hover {
 
@@ -2234,6 +2238,7 @@ body.woocommerce .quantity input.input-box:focus {
 }
 
 .order-process-block button.far.fa-trash:hover,
+.order-process-block a.far.fa-trash:hover,
 
 .custom-table button.far.fa-trash:hover {
 
@@ -4196,6 +4201,7 @@ body .woocommerce-thankyou-order-details li strong {
   display: flex;
   justify-content: center;
   margin-bottom: 30px;
+  padding: 0 20px;
 }
 
 .woocommerce-thankyou-order-details li strong {
@@ -4584,6 +4590,7 @@ body .woocommerce-order .woocommerce-thankyou-order-details {
 
 body .woocommerce-order .order-process-wrapp .woocommerce-thankyou-order-details {
   display: flex;
+  flex-wrap: wrap;
 }
 
 .woocommerce-order .woocommerce-order-details {
@@ -5234,6 +5241,9 @@ h1.checkout-title:after {
   .wp-block-woocommerce-checkout .is-large .wc-block-checkout__sidebar {
     width: 100%;
   }
+  body .woocommerce-thankyou-order-details li{
+    flex: 50% 0 0;
+  }
 
 }
 
@@ -5521,6 +5531,10 @@ h1.checkout-title:after {
     padding-left: 0;
     padding-right: 0;
     padding-bottom: 0;
+  }
+
+  body .woocommerce-thankyou-order-details li{
+    flex: 100% 0 0;
   }
 
 }
