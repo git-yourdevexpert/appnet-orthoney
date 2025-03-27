@@ -5404,6 +5404,10 @@ h1.checkout-title:after {
     display: none;
     padding: 0;
   }
+
+  html body .wc-block-checkout__terms.wc-block-checkout__terms--with-separator{
+    padding-top: 0;
+  }
 }
 
 @media (max-width: 600px) {
