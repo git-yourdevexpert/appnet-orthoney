@@ -224,7 +224,7 @@ class OAM_WC_CRON_Suborder {
                     'quantity'          => sanitize_text_field($recipients->quantity),
                     'verified'          => sanitize_text_field($recipients->verified),
                     'address_verified'  => sanitize_text_field($recipients->address_verified),
-                    'visibility'        => 0,
+                    'visibility'        => 1,
                     'new'               => 0,
                     'update_type'       => 0,
                     'reasons'           => sanitize_text_field($recipients->reasons),
