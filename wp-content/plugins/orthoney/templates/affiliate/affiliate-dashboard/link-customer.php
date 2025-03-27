@@ -9,6 +9,7 @@ if (!defined('ABSPATH')) {
 <span class="error-message"></span>
 <button id="search-button">Search</button>
 <ul id="customer-email-results"></ul>
+
 <?php 
 global $wpdb;
 $table_name = OAM_Helper::$oh_affiliate_customer_linker;
@@ -29,6 +30,7 @@ if (!empty($requests)) {
                 <th>Customer Name</th>
                 <th>Customer Email</th>
                 <th>Status</th>
+                <th>Action</th>
             </tr>
           </thead>
           <tbody>';
@@ -39,13 +41,21 @@ if (!empty($requests)) {
         $customer_name = $customer ? esc_html($customer->display_name) : 'Unknown';
         $customer_email = $customer ? esc_html($customer->user_email) : 'Unknown';
         $status_label = ($request->status == 1) ? 'Approved' : 'Pending';
-
+        
         echo '<tr>
                 <td>' . esc_html($request->id) . '</td>
                 <td>' . $customer_name . '</td>
                 <td>' . $customer_email . '</td>
-                <td>' . esc_html($status_label) . '</td>
-              </tr>';
+                <td>' . esc_html($status_label) . '</td>';
+        
+        // Show resend button if status is pending
+        if ($request->status == 0) {
+            echo '<td><button class="resend-email-btn" data-customer-id="' . esc_attr($request->customer_id) . '">Resend Email</button></td>';
+        } else {
+            echo '<td>-</td>';
+        }
+        
+        echo '</tr>';
     }
 
     echo '</tbody></table></div>';

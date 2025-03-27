@@ -600,3 +600,50 @@ document.getElementById('search-button').addEventListener('click', async functio
         });
     }
 });
+
+//Resend email button code 
+document.addEventListener('click', async function (event) {
+    if (event.target.classList.contains('resend-email-btn')) {
+        const customerId = event.target.getAttribute('data-customer-id');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Do you want to resend the email?",
+            icon: 'warning',
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Resend it!',
+            cancelButtonText: 'No, Cancel',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+            reverseButtons: true,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                process_group_popup();
+                try {
+                    const response = await fetch(oam_ajax.ajax_url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            action: 'add_affiliate_request',
+                            customer_id: customerId,
+                            security: oam_ajax?.nonce || ''
+                        }),
+                    });
+
+                    const data = await response.json();
+                    Swal.fire({
+                        title: data.success ? 'Success' : 'Error',
+                        text: data.message,
+                        icon: data.success ? 'success' : 'error',
+                    });
+                } catch (error) {
+                    console.error('Fetch Error:', error);
+                    Swal.fire('Error', 'An error occurred while resending the email.', 'error');
+                }
+            }
+        });
+    }
+});
