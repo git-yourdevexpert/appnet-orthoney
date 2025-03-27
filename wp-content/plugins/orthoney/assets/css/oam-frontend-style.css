@@ -2577,13 +2577,12 @@ body .order-process-block input:focus {
   background: #f0f4f7;
   position: relative;
   overflow: hidden;
+  display: block;
 }
 
 
 .yith-wcaf-registration-form .forms-container .register-title {
-
   width: 100%;
-
 }
 
 .yith-wcaf-registration-form .forms-container .register-form {
