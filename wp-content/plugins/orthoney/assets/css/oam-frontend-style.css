@@ -4917,6 +4917,9 @@ h1.checkout-title:after {
   background: #f0f4f7;
   position: relative;
   overflow: hidden;
+  width: 94%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 
@@ -4988,6 +4991,7 @@ body .register-form input:focus:not(.input-checkbox, .button) {
 
 .yith-wcaf-registration-form .forms-container .register .form-row:last-child {
   text-align: right;
+  margin-bottom: 0;
 }
 
 @media (min-width: 993px) {
@@ -5416,6 +5420,10 @@ body .register-form input:focus:not(.input-checkbox, .button) {
 
   .swal2-popup .swal2-actions .swal2-styled {
     width: 100%;
+  }
+
+  .yith-wcaf-registration-form .forms-container .register .form-row.gfield--width-half {
+    grid-column: span 12;
   }
 
 }
