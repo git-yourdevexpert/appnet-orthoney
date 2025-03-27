@@ -2566,64 +2566,6 @@ body .order-process-block input:focus {
 
 
 
-.yith-wcaf-registration-form .forms-container .register-title {
-  width: 100%;
-}
-
-.yith-wcaf-registration-form .forms-container {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  border: 1px solid #e3e7f0;
-  border-radius: 20px;
-  box-shadow: var(--box-shadow);
-  overflow: hidden;
-  padding: 40px 30px 60px;
-  position: relative;
-  background: #f0f4f7;
-  position: relative;
-  overflow: hidden;
-}
-
-
-.yith-wcaf-registration-form .forms-container .register-form {
-
-  width: 100%;
-
-}
-
-.yith-wcaf-registration-form .forms-container .register {
-
-  column-gap: 30px;
-
-  display: grid;
-
-  grid-template-columns: repeat(12, 1fr);
-
-}
-
-.yith-wcaf-registration-form .forms-container .register .form-row.gfield--width-half {
-
-  grid-column: span 6;
-
-}
-
-.yith-wcaf-registration-form .forms-container .register .select2-container {
-
-  width: 100% !important;
-
-}
-
-.yith-wcaf-registration-form .forms-container .register .form-row,
-
-.yith-wcaf-registration-form .forms-container .register .existing-customer-login {
-
-  grid-column: span 12;
-
-  margin-bottom: 16px;
-
-}
-
 body .woocommerce-form-row label,
 
 body .woocommerce .form-row label {
@@ -4954,6 +4896,67 @@ h1.checkout-title:after {
 /* end */
 
 /* end */
+
+
+
+
+.yith-wcaf-registration-form .forms-container .register-title {
+  width: 100%;
+}
+
+.yith-wcaf-registration-form .forms-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  border: 1px solid #e3e7f0;
+  border-radius: 20px;
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+  padding: 40px 30px 60px;
+  position: relative;
+  background: #f0f4f7;
+  position: relative;
+  overflow: hidden;
+}
+
+
+.yith-wcaf-registration-form .forms-container .register-form {
+
+  width: 100%;
+
+}
+
+.yith-wcaf-registration-form .forms-container .register {
+
+  column-gap: 30px;
+
+  display: grid;
+
+  grid-template-columns: repeat(12, 1fr);
+
+}
+
+.yith-wcaf-registration-form .forms-container .register .form-row.gfield--width-half {
+
+  grid-column: span 6;
+
+}
+
+.yith-wcaf-registration-form .forms-container .register .select2-container {
+
+  width: 100% !important;
+
+}
+
+.yith-wcaf-registration-form .forms-container .register .form-row,
+
+.yith-wcaf-registration-form .forms-container .register .existing-customer-login {
+
+  grid-column: span 12;
+
+  margin-bottom: 16px;
+
+}
 
 @media (min-width: 993px) {
 
