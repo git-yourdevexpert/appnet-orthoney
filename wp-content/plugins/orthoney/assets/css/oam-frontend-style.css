@@ -5360,7 +5360,7 @@ h1.checkout-title:after {
 @media(max-width: 700px) {
 
   html body .wp-block-woocommerce-checkout .wc-block-components-sidebar-layout .wc-block-components-main,
-  html body .wc-block-components-sidebar-layout .wc-block-components-sidebar {
+  html body .wc-block-components-sidebar-layout .wc-block-components-sidebar.wc-block-checkout__sidebar {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
   }
@@ -5370,7 +5370,7 @@ h1.checkout-title:after {
     padding-top: 40px;
   }
 
-  body .wc-block-components-sidebar-layout .wc-block-components-sidebar {
+  html body .wc-block-components-sidebar-layout .wc-block-components-sidebar.wc-block-checkout__sidebar {
     padding-top: 20px;
   }
 
