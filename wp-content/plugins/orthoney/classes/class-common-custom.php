@@ -108,11 +108,7 @@ class OAM_COMMON_Custom {
         if (is_user_logged_in()) {
             if (in_array('customer', $user->roles)) {
                 $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
-            } 
-            if (in_array('yith_affiliate', $user->roles) || in_array('affiliate_team_member', $user->roles)) {
-                $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
-            }
-            if (in_array('administrator', $user->roles)) {
+            } else {
                 $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
                 $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
             }
