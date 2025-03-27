@@ -1946,7 +1946,12 @@ class OAM_Ajax{
                     $download_button = "<a href='".esc_url($download_url)."' class='w-btn us-btn-style_1 outline-btn round-btn' download data-tippy='Download Recipients File'><i class='far fa-download'></i></a>";
                 }
     
-                $table_content .= "<tr><td>" . esc_html($data->id) . "</td><td>". esc_html($created_date). "</td><td>" . esc_html($data->name) . "</td><td> <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>".($failed == 1 ? 'View Recipients' : 'Resume Order' )."</a> ".($failed != 1 ? $download_button : '' )." </td></tr>";
+                $table_content .= "<tr>
+                <td><div class='thead-data'>Sr No</div>" . esc_html($data->id) . "</td>
+                <td><div class='thead-data'>Name</div>" . esc_html($data->name) . "</td>
+                <td><div class='thead-data'>Date</div>". esc_html($created_date). "</td>
+                <td><div class='thead-data'>Action</div> <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>".($failed == 1 ? 'View Recipients' : 'Resume Order' )."</a> ".($failed != 1 ? $download_button : '' )." </td>
+                </tr>";
             }
         } else {
             $table_content = '<tr><td colspan="4">No data available</td></tr>';
@@ -2010,11 +2015,11 @@ class OAM_Ajax{
             ));
 
             $table_content .= "<tr>
-            <td>-</td>
-            <td>Unique Recipients List</td>
-            <td>".$total_unique_recipients."</td>
-            <td>-</td>
-            <td><a href='".esc_url(OAM_Helper::$customer_dashboard_link.'/groups/details/unique_recipients')."' class='far fa-eye'></td>
+            <td><div class='thead-data'>Sr No</div>-</td>
+            <td><div class='thead-data'>Recipient List Name</div>Unique Recipients List</td>
+            <td><div class='thead-data'>Number of Recipients</div>".$total_unique_recipients."</td>
+            <td><div class='thead-data'>Date</div>-</td>
+            <td><div class='thead-data'>Action</div><a href='".esc_url(OAM_Helper::$customer_dashboard_link.'/groups/details/unique_recipients')."' class='far fa-eye'></td>
             </tr>";
             foreach ($results as $data) {
 
@@ -2040,11 +2045,11 @@ class OAM_Ajax{
                 }
     
                 $table_content .= "<tr>
-                <td>" . esc_html($data->id) . "</td>
-                <td>" . esc_html($data->name) . "</td>
-                <td>".$total_recipients."</td>
-                <td>" . esc_html($created_date) . "</td>
-                <td> <a href='".esc_url($resume_url)."' class='far fa-eye'></a><button data-groupid='".esc_html($data->id)."' data-groupname='".esc_html($data->name)."' data-tippy='Remove Recipients List' class='deleteGroupButton far fa-trash'></button></td>
+                <td><div class='thead-data'>ID</div>" . esc_html($data->id) . "</td>
+                <td><div class='thead-data'>Recipient List Name</div>" . esc_html($data->name) . "</td>
+                <td><div class='thead-data'>Number of Recipients</div>".$total_recipients."</td>
+                <td><div class='thead-data'>Date</div>" . esc_html($created_date) . "</td>
+                <td><div class='thead-data'>Action</div> <a href='".esc_url($resume_url)."' class='far fa-eye'></a><button data-groupid='".esc_html($data->id)."' data-groupname='".esc_html($data->name)."' data-tippy='Remove Recipients List' class='deleteGroupButton far fa-trash'></button></td>
                 </tr>";
             }
         } else {

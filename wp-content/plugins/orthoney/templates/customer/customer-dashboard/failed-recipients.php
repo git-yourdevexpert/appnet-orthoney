@@ -28,8 +28,8 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
         <thead>
             <tr>
                 <th>Sr No</th>
-                <th>Date</th>
                 <th>Name</th>
+                <th>Date</th>
                 <th style="width:300px">Action</th>
             </tr>
         </thead>
