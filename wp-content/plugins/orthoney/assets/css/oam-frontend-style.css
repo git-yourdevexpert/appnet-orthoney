@@ -5357,11 +5357,29 @@ h1.checkout-title:after {
 
 }
 
-@media(width <=700px) {
+@media(max-width: 700px) {
+
   body .wp-block-woocommerce-checkout .wc-block-components-sidebar-layout .wc-block-components-main,
   body .is-medium.wc-block-components-sidebar-layout .wc-block-components-sidebar {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
+  }
+
+  body .wp-block-woocommerce-checkout .wc-block-components-sidebar-layout .wc-block-components-main {
+    padding-bottom: 60px;
+    padding-top: 40px;
+  }
+
+  body .is-medium.wc-block-components-sidebar-layout .wc-block-components-sidebar {
+    padding-top: 20px;
+  }
+
+  .is-medium .wp-block-woocommerce-checkout-order-summary-block .wc-block-components-checkout-order-summary__title {
+    padding: 12px 20px;
+  }
+
+  .is-medium .wp-block-woocommerce-checkout-order-summary-block .wc-block-components-checkout-order-summary__title .wc-block-components-checkout-order-summary__title-icon {
+    fill: #fff;
   }
 }
 
