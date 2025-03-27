@@ -4986,6 +4986,10 @@ body .register-form input:focus:not(.input-checkbox, .button) {
   white-space: nowrap;
 }
 
+.yith-wcaf-registration-form .forms-container .register .form-row:last-child {
+  text-align: right;
+}
+
 @media (min-width: 993px) {
 
   .order-process-block table td .thead-data,
