@@ -3918,6 +3918,8 @@ body .forgot-block .custom-login-btn:hover {
 
   padding-bottom: 50px;
 
+  padding-left: 20px;
+
 }
 
 .wp-block-woocommerce-checkout .wc-block-components-sidebar-layout .wc-block-components-main::before {
@@ -3985,6 +3987,8 @@ body .forgot-block .custom-login-btn:hover {
   padding-top: 50px;
 
   padding-bottom: 50px;
+
+  padding-right: 20px;
 
 }
 
@@ -4907,6 +4911,23 @@ html body .w-btn.outline-btn.round-btn:hover i {
   display: none;
 }
 
+h1.checkout-title {
+  padding-top: 0;
+  text-transform: capitalize;
+  margin: 0 0 30px;
+  position: relative;
+  padding-bottom: 17px;
+}
+
+h1.checkout-title:after {
+  content: '';
+  width: 120px;
+  height: 3px;
+  background: var(--color-content-border);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
 /* end */
 
 @media (min-width: 993px) {
