@@ -48,6 +48,8 @@ class OAM_AFFILIATE_Shortcode
                     include_once $template_path . 'order-list.php';
                 } elseif ($endpoint === 'change-admin' && file_exists($template_path . 'change-admin.php')) {
                     echo '<div class="oam-access-denied-message">You do not have access to this page.</div>';
+                } elseif ($endpoint === 'link-customer' && file_exists($template_path . 'link-customer.php')) {
+                    echo '<div class="oam-access-denied-message">You do not have access to this page.</div>';
                 } else {
                     include_once $template_path . 'dashboard.php';
                 }
@@ -67,6 +69,8 @@ class OAM_AFFILIATE_Shortcode
                         include_once $template_path . 'order-list.php';
                     } elseif ($endpoint === 'change-admin' && file_exists($template_path . 'change-admin.php')) {
                         include_once $template_path . 'change-admin.php';
+                    }elseif ($endpoint === 'link-customer' && file_exists($template_path . 'link-customer.php')) {
+                        include_once $template_path . 'link-customer.php';
                     } else {
                         include_once $template_path . 'dashboard.php';
                     }

@@ -27,7 +27,150 @@ class OAM_AFFILIATE_Ajax{
         // Change Affiliate Admin user
         add_action('wp_ajax_change_user_role_logout', array( $this, 'change_user_role_logout_handler' ));
 
+        add_action('wp_ajax_search_customer_by_email', array( $this, 'search_customer_by_email' ));
+        add_action('wp_ajax_add_affiliate_request', array( $this, 'add_affiliate_request_handler' ));
+        add_action('wp_ajax_nopriv_add_affiliate_link', array($this, 'add_affiliate_link_handler'));
+        add_action('wp_ajax_add_affiliate_link', array( $this, 'add_affiliate_link_handler' ));
+
     }
+
+    public function add_affiliate_link_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+    
+        $token = isset($_POST['token']) ? sanitize_text_field($_POST['token']) : '';
+    
+        if (empty($token)) {
+            wp_send_json(['success' => false, 'message' => 'Invalid token.']);
+        }
+    
+        global $wpdb;
+        $table_name = OAM_Helper::$oh_affiliate_customer_linker;
+    
+        $existing_request = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table_name} WHERE token = %s", $token));
+    
+        if ($existing_request) {
+            if ($existing_request->status == 0) {
+                $wpdb->update(
+                    $table_name,
+                    ['status' => 1],
+                    ['token' => $token],
+                    ['%d'],
+                    ['%s']
+                );
+                wp_send_json(['success' => true, 'message' => 'Link successfully!']);
+            } elseif ($existing_request->status == 1) {
+                wp_send_json(['success' => true, 'message' => 'Already linked successfully!']);
+            }
+        } else {
+            wp_send_json(['success' => false, 'message' => 'Token not found.']);
+        }
+    }
+
+    public function add_affiliate_request_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+    
+        $customer_id = intval($_POST['customer_id']);
+        $affiliate_id = get_current_user_id();
+    
+        if (!$customer_id || !$affiliate_id) {
+            wp_send_json(['success' => false, 'message' => 'Invalid data.']);
+        }
+    
+        global $wpdb;
+        $table_name = OAM_Helper::$oh_affiliate_customer_linker;
+    
+        $random_string = OAM_AFFILIATE_Helper::getRandomChars('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 10);
+        $token = md5($random_string . time());
+    
+        $existing_request = $wpdb->get_row(
+            $wpdb->prepare("SELECT * FROM {$table_name} WHERE affiliate_id = %d AND customer_id = %d", $affiliate_id, $customer_id)
+        );
+    
+        if ($existing_request) {
+            if ($existing_request->status == 0) {
+                $token = $existing_request->token;
+                $this->send_affiliate_email($customer_id, $affiliate_id, 'Resend : Affiliate Request Notification', $token);
+                wp_send_json(['success' => true, 'message' => 'Resend request successfully!']);
+            }
+            wp_send_json(['success' => false, 'message' => 'Customer is already linked with you.']);
+        }
+    
+        if ($wpdb->insert($table_name, ['customer_id' => $customer_id, 'affiliate_id' => $affiliate_id, 'status' => 0, 'token' => $token], ['%d', '%d', '%d', '%s'])) {
+            $this->send_affiliate_email($customer_id, $affiliate_id, 'Affiliate Request Notification', $token);
+            wp_send_json(['success' => true, 'message' => 'Request sent successfully.', 'token' => $token]);
+        }
+    
+        wp_send_json(['success' => false, 'message' => 'Failed to send request.']);
+    }
+    
+    private function send_affiliate_email($customer_id, $affiliate_id, $subject, $token) {
+        $customer_email = get_userdata($customer_id)->user_email;
+        $affiliate_name = get_userdata($affiliate_id)->display_name;
+        $message = "Hello,\n\nYou have received an affiliate request from {$affiliate_name}.\n\n";
+        $message .= "Please approve or reject the request using the following link:\n";
+        $message .= home_url("/?action=organization-link&token={$token}");
+        wp_mail($customer_email, $subject, $message, ['Content-Type: text/plain; charset=UTF-8']);
+    }
+
+    public function search_customer_by_email() {
+        check_ajax_referer('oam_nonce', 'security');
+        $user_id = get_current_user_id();
+        $email = sanitize_email($_POST['email']);
+        if (empty($email)) {
+            wp_send_json(['success' => false, 'message' => 'Invalid email.']);
+        }
+    
+        // Perform exact email match using get_user_by instead of WP_User_Query
+        $user = get_user_by('email', $email);
+    
+        if (!$user) {
+            wp_send_json(['success' => false, 'customers' => []]);
+        }
+    
+        // Check if the user has only the 'customer' role
+        $user_roles = (array) $user->roles;
+        if (count($user_roles) === 1 && in_array('customer', $user_roles)) {
+            global $wpdb;
+            $table_name = OAM_Helper::$oh_affiliate_customer_linker;
+            $processQuery = $wpdb->prepare(
+                "SELECT * FROM {$table_name} WHERE affiliate_id = %d AND customer_id = %d",
+                $user_id, $user->id
+            );
+    
+            $results = $wpdb->get_row($processQuery);
+            $message = '';
+            $exist_status = 2;
+
+            
+            if($results){
+                $exist_status = $results->status;
+                if($results->status == 0){
+                    $message = 'You have already send request. Can you resend request?';
+                }
+                if($results->status == 1){
+                    $message = 'Customer is already link with you';
+                }
+                if($results->status == -1){
+                    $message = 'Customer has been reject to you.';
+                }
+
+            }
+            $customers = [
+                [
+                    'id'    => $user->id,
+                    'name'  => $user->display_name,
+                    'email' => $user->user_email,
+                    'exist_status' => $exist_status,
+                    'message' => $message,
+                ]
+            ];
+            
+            wp_send_json(['success' => true, 'customers' => $customers]);
+        }
+    
+        wp_send_json(['success' => false, 'customers' => []]);
+    }
+    
     // Change Affilate Admin user
     public function change_user_role_logout_handler() {
         check_ajax_referer('oam_nonce', 'security'); // Security check

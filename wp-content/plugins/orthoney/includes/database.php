@@ -29,7 +29,8 @@ function orthoney_create_custom_tables() {
         'files_upload_activity_log_table' => $wpdb->prefix . 'oh_files_upload_activity_log',
         'order_process_table' => $wpdb->prefix . 'oh_order_process',
         'order_process_recipient_activate_log_table' => $wpdb->prefix . 'oh_order_process_recipient_activate_log',
-        'affiliate_customer_relation' => $wpdb->prefix . 'oh_affiliate_customer_relation'
+        'affiliate_customer_relation' => $wpdb->prefix . 'oh_affiliate_customer_relation',
+        'affiliate_customer_linker' => $wpdb->prefix . 'oh_affiliate_customer_linker'
     ];
 
     // Drop tables if the refresh flag is set
@@ -76,6 +77,16 @@ function orthoney_create_custom_tables() {
             pid BIGINT(20) UNSIGNED NOT NULL,
             order_id BIGINT(20) UNSIGNED NOT NULL,
             visibility TINYINT(1) DEFAULT 1,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id)
+        ) ENGINE=InnoDB {$wpdb->get_charset_collate()};",
+
+        'affiliate_customer_linker' => "CREATE TABLE {$tables['affiliate_customer_linker']} (
+            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            customer_id BIGINT(20) UNSIGNED NOT NULL,
+            affiliate_id BIGINT(20) UNSIGNED NOT NULL,
+            status VARCHAR(20) NOT NULL,
+            token VARCHAR(64) NOT NULL,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id)
         ) ENGINE=InnoDB {$wpdb->get_charset_collate()};",

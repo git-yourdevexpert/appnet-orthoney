@@ -243,7 +243,7 @@ class OAM_AFFILIATE_Helper {
             if ( ! in_array( 'affiliate_team_member', $user_roles)) {
 
                 $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/change-admin/')) . '">Change Admin</a></div>';
-
+                $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/link-customer/')) . '">Link Customer</a></div>';
                 $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/user-list/')) . '">User List</a></div>';
 
             }
