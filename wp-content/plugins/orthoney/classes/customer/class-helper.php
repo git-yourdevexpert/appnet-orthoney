@@ -572,7 +572,7 @@ class OAM_Helper{
                 </div>
 
                 <div class="footer-btn gfield--width-full">
-                <button type='button' class=" w-btn us-btn-style_1" data-lity-close>Cancel</button>
+                <button type='button' class=" w-btn us-btn-style_4" data-lity-close>Cancel</button>
                     <button type="submit">Submit</button>
                 </div>
             </form>
@@ -593,7 +593,7 @@ class OAM_Helper{
     public static function view_details_recipient_popup(){
         ?>
         <div id="recipient-view-details-popup" class="lity-hide black-mask full-popup popup-show">
-            <h2>Recipient Details</h2>
+            <h3>Recipient Details</h3>
             <div class="recipient-view-details-wrapper"></div>
             
         </div>
@@ -603,7 +603,7 @@ class OAM_Helper{
     public static function manage_recipient_popup(){
         ?>
         <div id="recipient-manage-popup" class="lity-hide black-mask full-popup popup-show">
-            <h2>Recipient Details</h2>
+            <h3>Recipient Details</h3>
             <?php 
             echo self::get_recipient_form();
             ?>
