@@ -5378,8 +5378,26 @@ h1.checkout-title:after {
     padding: 12px 20px;
   }
 
-  .is-medium .wp-block-woocommerce-checkout-order-summary-block .wc-block-components-checkout-order-summary__title .wc-block-components-checkout-order-summary__title-icon {
+  .is-medium .wc-block-checkout__sidebar .wp-block-woocommerce-checkout-order-summary-block .wc-block-components-checkout-order-summary__title .wc-block-components-checkout-order-summary__title-icon {
     fill: #fff;
+  }
+
+  body .wc-block-checkout__sidebar .wp-block-woocommerce-checkout-order-summary-block .wc-block-components-formatted-money-amount {
+    color: #fff;
+  }
+
+  body .wc-block-checkout__sidebar .wp-block-woocommerce-checkout-order-summary-block .wc-block-components-checkout-order-summary__title {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .is-medium .wc-block-checkout__sidebar .wp-block-woocommerce-checkout-order-summary-block .wc-block-components-totals-wrapper {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .wp-block-woocommerce-checkout-order-summary-block .wc-block-components-title {
+    margin-bottom: 30px;
   }
 }
 
