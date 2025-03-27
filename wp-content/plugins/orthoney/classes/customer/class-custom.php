@@ -47,7 +47,7 @@ class OAM_CUSTOM {
         );
 
         add_rewrite_rule(
-            'customer-dashboard/groups/details/([0-9]+)/?$', 
+            'customer-dashboard/groups/details/([0-9a-z_]+)/?$', 
             'index.php?pagename=customer-dashboard&groups-details=$matches[1]', 
             'top'
         );

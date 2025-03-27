@@ -32,7 +32,9 @@ function process_group_popup(selectHtml = '') {
 
 jQuery(document).ready(function($) {
     
-       
+    if(getURLParam('action') == 'afficted-link' && getURLParam('token') != ''){
+
+    }
     jQuery('#affiliate_select').select2({
         matcher: function(params, data) {
             if (jQuery.trim(params.term) === '') {
@@ -256,72 +258,75 @@ Create new group Js END
 /*
 Deleted group Js Start
  */
-const deleteGroupButtons = document.querySelectorAll('.deleteGroupButton');
 
-if (deleteGroupButtons.length > 0) {
-    deleteGroupButtons.forEach(button => {
-        button.addEventListener('click', function(event) {
-            event.preventDefault();
-            const target = event.target;
-            const groupID = target.getAttribute('data-groupid');
-            const groupName = target.getAttribute('data-groupname') || 'this recipient';
 
-            Swal.fire({
-                title: 'Are you sure?',
-                html: 'You are removing <strong>' + groupName + '</strong> group.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, I want',
-                cancelButtonText: 'Cancel',
-                allowOutsideClick: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    process_group_popup(); // Call the popup function before deleting
+document.addEventListener('click', function (event) {
+    if (event.target.classList.contains('deleteGroupButton')) {
+        console.log('sas');
+        event.preventDefault();
+        const target = event.target;
+        const groupID = target.getAttribute('data-groupid');
+        const groupName = target.getAttribute('data-groupname') || 'this recipient';
 
-                    fetch(oam_ajax.ajax_url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: new URLSearchParams({
-                            action: 'deleted_group',
-                            group_id: groupID,
-                        }),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                title: data.message,
-                                icon: 'success',
-                                showConfirmButton: false,
-                                timerProgressBar: false
-                            });
-                            setTimeout(function() {
-                                window.location.reload();
-                            }, 1500);
-                        } else {
-                            Swal.fire({
-                                title: 'Error',
-                                text: data.message,
-                                icon: 'error',
-                            });
-                        }
-                    })
-                    .catch(error => {
+        Swal.fire({
+            title: 'Are you sure?',
+            html: 'You are removing <strong>' + groupName + '</strong> recipient list.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, I want',
+            cancelButtonText: 'Cancel',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                process_group_popup(); // Call the popup function before deleting
+
+                fetch(oam_ajax.ajax_url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'deleted_group',
+                        group_id: groupID,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: data.message,
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timerProgressBar: false
+                        });
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
                         Swal.fire({
                             title: 'Error',
-                            text: 'An error occurred while deleting the group.',
+                            text: data.message,
                             icon: 'error',
                         });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'An error occurred while deleting the group.',
+                        icon: 'error',
                     });
-                }
-            });
+                });
+            }
         });
-    });
-}
+    }
+});
+
 
 /*
 Deleted group Js End
@@ -535,6 +540,14 @@ document.addEventListener('click', function (event) {
     if (event.target.classList.contains('deleteRecipient')) {
         event.preventDefault();
 
+        let method = 'process';
+        const customer_dashboard_recipient_list = document.querySelector("#customer-dashboard-recipient-list");
+        if(customer_dashboard_recipient_list){
+            method = 'group';
+            group_id = customer_dashboard_recipient_list.getAttribute('data-groupid');
+            
+        }
+
         let groupId = 0;
         let count = 0;
         let groupHeader= '';
@@ -574,6 +587,7 @@ document.addEventListener('click', function (event) {
                     body: new URLSearchParams({
                         action: 'deleted_recipient',
                         id: recipientID,
+                        method: method
                     }),
                 })
                 .then(response => response.json())
@@ -658,19 +672,25 @@ if (recipientManageForm) {
             return; // Stop if validation fails
         }
 
+        process_group_popup();
+
         let address_verified = 0;
         if (document.getElementById("unverifiedRecord") || document.getElementById("verifiedRecord")) {
             address_verified = 1;
         }
 
-        let group_id = '';
-        const groupId = getURLParam('recipient_group_id');
-        if (groupId && groupId !== '0') {
-            group_id = groupId;
+        let group_id = 0;
+        let method = 'process';
+        const customer_dashboard_recipient_list = document.querySelector("#customer-dashboard-recipient-list");
+        if(customer_dashboard_recipient_list){
+            method = 'group';
+            group_id = customer_dashboard_recipient_list.getAttribute('data-groupid');
+            
         }
 
         const formData = new FormData(this);
         formData.append('action', 'manage_recipient_form');
+        formData.append('method', method);
         formData.append('group_id', group_id);
         formData.append('address_verified', address_verified);
 
@@ -724,7 +744,7 @@ Edit button JS start
 document.addEventListener('click', function (event) {
     if (event.target.classList.contains('editRecipient') || event.target.classList.contains('viewRecipient')) {
         event.preventDefault();
-
+        process_group_popup();
         
         const target = event.target;
 
@@ -737,6 +757,12 @@ document.addEventListener('click', function (event) {
             if (recipientTr.hasAttribute('data-address_verified')) {
                 address_verified = recipientTr.getAttribute('data-address_verified');  
             } 
+
+            let method = 'process';
+            const customer_dashboard_recipient_list = document.querySelector("#customer-dashboard-recipient-list");
+            if(customer_dashboard_recipient_list){
+                method = 'group';
+            }
             
 
             fetch(oam_ajax.ajax_url, {
@@ -747,7 +773,8 @@ document.addEventListener('click', function (event) {
                 body: new URLSearchParams({
                     action: 'get_recipient_base_id',
                     id: recipientID,
-                    address_verified : address_verified
+                    address_verified : address_verified,
+                    method : method
                 }),
             })
             .then(response => response.json())
@@ -796,9 +823,10 @@ document.addEventListener('click', function (event) {
                         const viewpopup = document.querySelector('#recipient-view-details-popup .recipient-view-details-wrapper');
                         viewpopup.innerHTML = html;
                     }
-                    
+                    Swal.close();
                     setTimeout(function() {
                         lity(event.target.getAttribute('data-popup'));
+                       
                     }, 250);
                     
                 } else {
@@ -829,9 +857,14 @@ Edit button JS END
 document.addEventListener('click', function (event) {
     if (event.target.id === 'download-failed-recipient-csv') {
         event.preventDefault();
-
+        process_group_popup();
         const process_id = getURLParam('pid');
-        const recipient_group_id = getURLParam('recipient_group_id');
+        let recipient_group_id = '';
+        const customer_dashboard_recipient_list = document.querySelector("#customer-dashboard-recipient-list");
+        if(customer_dashboard_recipient_list){
+
+            recipient_group_id = customer_dashboard_recipient_list.getAttribute('data-groupid');
+        }
         
         const params = new URLSearchParams({
             action: 'download_failed_recipient',
@@ -853,8 +886,21 @@ document.addEventListener('click', function (event) {
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
+                setTimeout(() => {
+                    Swal.close();
+                }, 500);
             } else {
-                alert('Error: ' + data.data.message);
+                Swal.fire({
+                    title: data.data.message,
+                    icon: "error",
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
+                  });
+               
             }
         })
         .catch(error => console.error('AJAX Error:', error));

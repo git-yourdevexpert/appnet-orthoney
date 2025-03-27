@@ -1,4 +1,5 @@
 const multiStepForm = document.querySelector("#multiStepForm");
+const customer_dashboard_recipient_list = document.querySelector("#customer-dashboard-recipient-list");
 
 window.addEventListener('load', function() {
   setTimeout(() => {
@@ -11,6 +12,101 @@ window.addEventListener('load', function() {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+
+  if (multiStepForm || customer_dashboard_recipient_list) {
+  document.querySelectorAll(".editProcessName").forEach((button) => {
+    button.addEventListener("click", function (event) {
+      event.preventDefault();
+      const process_name = event.target.getAttribute("data-name"); // Get process name
+      let method = 'order-process';
+      if(customer_dashboard_recipient_list){
+         method = 'group';
+      }
+      Swal.fire({
+        title: "Enter Recipient List Name",
+        text: "The recipient list name for easy future reference.",
+        input: "text",
+        inputPlaceholder: "Enter Recipient List Name",
+        inputAttributes: {
+          autocapitalize: "off",
+        },
+        inputValue: process_name,
+        showCancelButton: true,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        allowEnterKey: false,
+        confirmButtonText: "Save and Continue",
+        showLoaderOnConfirm: true,
+        reverseButtons: true,
+        preConfirm: async (groupName) => {
+          if (!groupName) {
+            Swal.showValidationMessage("Group name is required!");
+            return false; // Prevent proceeding if validation fails
+          }
+
+          process_group_popup();
+
+          let mappId = getURLParam("pid");
+          if(customer_dashboard_recipient_list){
+            mappId = customer_dashboard_recipient_list.getAttribute('data-groupid');
+          }
+
+          return fetch(oam_ajax.ajax_url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              action: "edit_process_name",
+              group_name: groupName,
+              security: oam_ajax.nonce,
+              method: method,
+              pid: mappId,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                document.querySelectorAll(".editProcessName").forEach(editProcessName => {
+                  editProcessName.setAttribute("data-name", groupName);
+                  
+                  // Get the closest parent <p> tag safely
+                  let parentParagraph = editProcessName.closest(".group-name");
+                  
+                  if (parentParagraph) {
+                    let strongTag = parentParagraph.querySelector("strong");
+                    if (strongTag) {
+                      strongTag.innerHTML = groupName;
+                    }
+                  }
+                });
+
+                Swal.fire({
+                  title: data.data.message,
+                  icon: "success",
+                  timer: 2500,
+                  showConfirmButton: false,
+                  timerProgressBar: true,
+                  allowOutsideClick: false,
+                  allowEscapeKey: false,
+                  allowEnterKey: false,
+                });
+              } else {
+                throw new Error(data.data?.message || "Failed to update group name.");
+              }
+            })
+            .catch((error) => {
+              Swal.fire({
+                title: "Error",
+                text: error.message || "An error occurred while updating the group name.",
+                icon: "error",
+              });
+            });
+        },
+      });
+    });
+  });
+}
 
   if (multiStepForm) {
 
@@ -616,91 +712,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
 
-      document
-  .querySelectorAll("#multiStepForm .editProcessName")
-  .forEach((button) => {
-    button.addEventListener("click", function (event) {
-      event.preventDefault();
-      const process_name = event.target.getAttribute("data-name"); // Get process name
-
-      Swal.fire({
-        title: "Enter Recipient List Name",
-        text: "The recipient list name for easy future reference.",
-        input: "text",
-        inputPlaceholder: "Enter Recipient List Name",
-        inputAttributes: {
-          autocapitalize: "off",
-        },
-        inputValue: process_name,
-        showCancelButton: true,
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        allowEnterKey: false,
-        confirmButtonText: "Save and Continue",
-        showLoaderOnConfirm: true,
-        reverseButtons: true,
-        preConfirm: async (groupName) => {
-          if (!groupName) {
-            Swal.showValidationMessage("Group name is required!");
-            return false; // Prevent proceeding if validation fails
-          }
-
-          process_group_popup();
-
-          return fetch(oam_ajax.ajax_url, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams({
-              action: "edit_process_name",
-              group_name: groupName,
-              security: oam_ajax.nonce,
-              pid: getURLParam("pid"),
-            }),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                document.querySelectorAll(".editProcessName").forEach(editProcessName => {
-                  editProcessName.setAttribute("data-name", groupName);
-                  
-                  // Get the closest parent <p> tag safely
-                  let parentParagraph = editProcessName.closest(".group-name");
-                  
-                  if (parentParagraph) {
-                    let strongTag = parentParagraph.querySelector("strong");
-                    if (strongTag) {
-                      strongTag.innerHTML = groupName;
-                    }
-                  }
-                });
-
-                Swal.fire({
-                  title: data.data.message,
-                  icon: "success",
-                  timer: 2500,
-                  showConfirmButton: false,
-                  timerProgressBar: true,
-                  allowOutsideClick: false,
-                  allowEscapeKey: false,
-                  allowEnterKey: false,
-                });
-              } else {
-                throw new Error(data.data?.message || "Failed to update group name.");
-              }
-            })
-            .catch((error) => {
-              Swal.fire({
-                title: "Error",
-                text: error.message || "An error occurred while updating the group name.",
-                icon: "error",
-              });
-            });
-        },
-      });
-    });
-  });
+      
 
     
 
@@ -1532,11 +1544,11 @@ function addRecipientManuallyPopup(reload) {
         }
       }
     );
-    console.log(emptyDivs.length);
+    
     const upload_type_output = document.querySelector(
       'input[name="upload_type_output"]:checked'
     );
-    if (emptyDivs.length === 4 && upload_type_output.value == "add-manually") {
+    if (emptyDivs.length === 4 && upload_type_output.value == "add-manually" && getURLParam('failed-recipients') != 'true') {
       let button = document.querySelector(
         "#multiStepForm button.editRecipient"
       );

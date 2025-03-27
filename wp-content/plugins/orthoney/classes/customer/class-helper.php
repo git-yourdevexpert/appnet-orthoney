@@ -349,7 +349,7 @@ class OAM_Helper{
         return self::log_and_return(true, $method, $process_id, 'File uploaded and validated.', $file_path);
     }
     
-    public static function order_process_recipient_activate_log($recipient_id, $status, $changes) {
+    public static function order_process_recipient_activate_log($recipient_id, $status, $changes, $method = 'process') {
         if($recipient_id != '' && $recipient_id != 0){
             global $wpdb;
             $order_process_recipient_activate_log_table = OAM_Helper::$order_process_recipient_activate_log_table;
@@ -357,6 +357,7 @@ class OAM_Helper{
                 'user_id'         => get_current_user_id(),
                 'recipient_id'    => $recipient_id,
                 'type'            => sanitize_text_field($status),
+                'method'            => sanitize_text_field($method),
                 'update_log'      => sanitize_textarea_field($changes),
                 'user_agent'      => OAM_Helper::get_user_agent(),
                 'user_ip'         => OAM_Helper::get_user_ip(),
@@ -593,7 +594,7 @@ class OAM_Helper{
     public static function view_details_recipient_popup(){
         ?>
         <div id="recipient-view-details-popup" class="lity-hide black-mask full-popup popup-show">
-            <h3>Recipient Details</h3>
+            <h2>Recipient Details</h2>
             <div class="recipient-view-details-wrapper"></div>
             
         </div>

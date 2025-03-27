@@ -36,7 +36,6 @@ $groups = OAM_Helper::getGroupList($user_id);
                 <th>Sr No</th>
                 <th>Recipient List Name</th>
                 <th>Number of Recipients</th>
-                <th>CSV Files</th>
                 <th>Date</th>
                 <th style="width:300px">Action</th>
             </tr>

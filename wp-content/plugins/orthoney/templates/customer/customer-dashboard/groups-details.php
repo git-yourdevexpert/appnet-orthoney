@@ -2,81 +2,161 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-$group_id = get_query_var('groups-details');
 
+$group_id = get_query_var('groups-details');
 global $wpdb;
 $user_id = get_current_user_id();
 
-
 $group_table = OAM_Helper::$group_table;
 $group_recipient_table = OAM_Helper::$group_recipient_table;
-$order_process_table = OAM_Helper::$order_process_table;;
+$order_process_table = OAM_Helper::$order_process_table;
 
-
-$group_details = $wpdb->get_row($wpdb->prepare(
-    "SELECT * FROM {$group_table} WHERE user_id = %d AND id = %d",
-    $user_id, $group_id 
-));
-
-$recipients = $wpdb->get_results($wpdb->prepare(
-    "SELECT * FROM {$group_recipient_table} WHERE user_id = %d AND group_id = %d",
-    $user_id, $group_id 
-));
-
-$csv_name = $wpdb->get_var($wpdb->prepare(
-    "SELECT csv_name FROM {$order_process_table} WHERE user_id = %d AND id = %d",
-    $user_id, $group_details->pid
-));
-
-
-if(!empty($recipients)){
-
-?>
-<div class="order-process-block">
-<div class="heading-title"><h5 class="block-title"><?php echo $group_details->name ?> Recipient List</h5></div>
-
-<div class="heading-title">
-    <div>
-        <div class="group-name"> 
-            Recipient List Name: <strong><?php echo $group_details->name ?></strong>
-            <button class="editProcessName far fa-edit" data-name="<?php echo $group_details->name ?>" data-tippy="Edit Recipient List Name"></button>
-        </div>
-        <p class="num-count">Number of Recipients: <span><?php echo count($recipients) ?></span></p>
-    </div>
-    <div>
-        <?php 
-        if($csv_name != ''){
-            echo '<a href="'.esc_url(OAM_Helper::$process_recipients_csv_url . $csv_name).'" data-tippy="All Recipients can be downloaded" class="btn-underline"><i class="far fa-download"></i> Download All Recipients</a>';
+if($group_id == 'unique_recipients'){
+    
+        $query = $wpdb->prepare(
+            "SELECT * FROM {$group_recipient_table} WHERE user_id = %d AND visibility = 1",
+            $user_id
+        );
+    
+        $allRecords = $wpdb->get_results($query);
+    
+        $recordMap = [];
+        $recipients = [];
+    
+        // Step 1: Group records by unique key
+        foreach ($allRecords as $record) {
+            $key = $record->full_name . '|' . 
+                   str_replace($record->address_1, ',' , '' ). ' ' . 
+                   str_replace($record->address_2 , ',' , '') . '|' . 
+                   $record->city . '|' . 
+                   $record->state . '|' . 
+                   $record->zipcode;
+    
+            $recordMap[$key][] = $record;
         }
-        ?>
-        
-    </div>
-</div>
-
-
-<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Address Verified</th><th>Action</th></tr></thead><tbody>
-<?php
-foreach ($recipients as $key => $data) {
-    $addressParts = array_filter([$data->address_1, $data->address_2, $data->city, $data->state, $data->zipcode]);
-                if (!empty($addressParts)) {
-                    $addressPartsHtml = '<td data-label="Address"><div class="thead-data">Address</div>' . implode(', ', $addressParts) . '</td>';
-                } else {
-                    $addressPartsHtml = '<td data-label="Address"><div class="thead-data">Address</div>-</td>';
-                }
-    ?>
-    <tr data-id="1" data-verify="1" data-group="0">
-        <td data-label="Full Name"><div class="thead-data">Full Name</div><input type="hidden" name="recipientIds[]" value="1"><?php echo $data->full_name ?></td>
-        <td data-label="Company name"><div class="thead-data">Company name</div><?php echo $data->company_name ?></td>
-        <?php echo $addressPartsHtml ?>
-        <td data-label="Quantity"><div class="thead-data">Quantity</div><?php echo ((empty($data->quantity) || $data->quantity <= 0) ? '0' : $data->quantity) ?></td>
-        <td data-label="Status"><div class="thead-data">Status</div><?php echo (($data->address_verified == 0) ? 'Failed': 'Passed') ?></td>
-        <td data-label="Action"><div class="thead-data">Action</div><button class="viewRecipient far fa-eye" data-tippy="View Recipient Details" data-popup="#recipient-view-details-popup"></button><button class="editRecipient far fa-edit" data-tippy="Edit Recipient Details" data-popup="#recipient-manage-popup"></button><button data-recipientname="Michael Johnson" data-tippy="Remove Recipient" class="deleteRecipient far fa-trash"></button></td>
-    </tr>
-    <?php
+    
+        // Step 2: Categorize records (Outside the first loop)
+        foreach ($recordMap as $key => $records) {
+            // If there are duplicates, add only the first record
+            $recipients[] = $records[0];
+        }
+    
+    
 }
+
+if($group_id != 'unique_recipients'){
+    $group_details = $wpdb->get_row(
+        $wpdb->prepare(
+            "SELECT * FROM {$group_table} WHERE user_id = %d AND id = %d",
+            $user_id,
+            $group_id
+        )
+    );
+
+    $recipients = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT * FROM {$group_recipient_table} WHERE user_id = %d AND group_id = %d AND visibility = %d",
+            $user_id,
+            $group_id,
+            1
+        )
+    );
+
+    $csv_name = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT csv_name FROM {$order_process_table} WHERE user_id = %d AND id = %d ",
+            $user_id,
+            $group_details->pid
+        )
+    );
+}
+if (!empty($recipients)) :
+?>
+
+    <div class="order-process-block" id="customer-dashboard-recipient-list" data-groupid="<?php echo $group_id; ?>">
+        <div class="heading-title">
+            <h5 class="block-title"><?php echo 'Unique'; ?> Recipient List</h5>
+        </div>
+
+        <div class="heading-title">
+            <div>
+                <?php
+                if($group_id != 'unique_recipients'){ 
+                ?>
+                <div class="group-name">
+                    Recipient List Name: <strong><?php echo $group_details->name; ?></strong>
+                    <button class="editProcessName far fa-edit" data-name="<?php echo $group_details->name; ?>" data-tippy="Edit Recipient List Name"></button>
+                </div>
+                <?php } ?>
+                <p class="num-count">Number of Recipients: <span><?php echo count($recipients); ?></span></p>
+            </div>
+            <div>
+                <?php if (!empty($csv_name)) : ?>
+                    <button data-tippy="All recipients can be downloaded." id="download-failed-recipient-csv" class="btn-underline">
+                        <i class="far fa-download"></i> Download All Recipients
+                    </button>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Company Name</th>
+                    <th>Address</th>
+                    <th>Quantity</th>
+                    <th>Address Verified</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($recipients as $data) : ?>
+                    <tr data-id="<?php echo $data->id; ?>">
+                        <td data-label="Full Name">
+                            <div class="thead-data">Full Name</div>
+                            <input type="hidden" name="recipientIds[]" value="1">
+                            <?php echo $data->full_name; ?>
+                        </td>
+                        <td data-label="Company name">
+                            <div class="thead-data">Company name</div>
+                            <?php echo $data->company_name; ?>
+                        </td>
+                        <td data-label="Address">
+                            <div class="thead-data">Address</div>
+                            <?php
+                            $addressParts = array_filter([$data->address_1, $data->address_2, $data->city, $data->state, $data->zipcode]);
+                            echo !empty($addressParts) ? implode(', ', $addressParts) : '-';
+                            ?>
+                        </td>
+                        <td data-label="Quantity">
+                            <div class="thead-data">Quantity</div>
+                            <?php echo (!empty($data->quantity) && $data->quantity > 0) ? $data->quantity : '0'; ?>
+                        </td>
+                        <td data-label="Status">
+                            <div class="thead-data">Status</div>
+                            <?php echo ($data->address_verified == 0) ? 'Failed' : 'Passed'; ?>
+                        </td>
+                        <td data-label="Action">
+                            <div class="thead-data">Action</div>
+                            <button class="viewRecipient far fa-eye" data-tippy="View Recipient Details" data-popup="#recipient-view-details-popup"></button>
+                            <button class="editRecipient far fa-edit" data-tippy="Edit Recipient Details" data-popup="#recipient-manage-popup"></button>
+                            <button data-recipientname="<?php echo $data->full_name; ?>" data-tippy="Remove Recipient" class="deleteRecipient far fa-trash"></button>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php
+        if($group_id != 'unique_recipients'){ 
+        ?>
+        <div class="heading-title"><div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div></div>
+        <?php } ?>
+    </div>
+
+<?php
+echo OAM_Helper::manage_recipient_popup();
+echo OAM_Helper::view_details_recipient_popup();
+endif;
 
 ?>
-</tbody></table>
-</div>
-<?php
-}

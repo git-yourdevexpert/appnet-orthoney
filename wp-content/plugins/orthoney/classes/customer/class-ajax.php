@@ -332,30 +332,42 @@ class OAM_Ajax{
         global $wpdb;
     
         $order_process_table   = OAM_Helper::$order_process_table;
+        $group_table   = OAM_Helper::$group_table;
 
         $process_id  = isset($_POST['pid']) ? intval($_POST['pid']) : 0;
         $name    = isset($_POST['group_name']) ? sanitize_text_field($_POST['group_name']) : 'unknown_'.$process_id;
+        $method    = isset($_POST['method']) ? $_POST['method'] : 'order-process';
 
         $check_process_status = OAM_COMMON_Custom::check_process_exist($name, $process_id);
         if ($check_process_status) {
             wp_send_json_error(['message' => 'The group name already exists. Please enter a different name.']);
         }
 
-        
-
-        $result = $wpdb->update(
-            $order_process_table,
-            [
-                'name'     => sanitize_text_field($name),
-            ],
-            ['id' => $process_id]
-        );
+        if($method == 'order-process'){
+    
+            $result = $wpdb->update(
+                $order_process_table,
+                [
+                    'name'     => sanitize_text_field($name),
+                ],
+                ['id' => $process_id]
+            );
+        }
+        if($method == 'group'){
+            $result = $wpdb->update(
+                $group_table,
+                [
+                    'name'     => sanitize_text_field($name),
+                ],
+                ['id' => $process_id]
+            );
+        }
 
         if ($result === false) {
-            wp_send_json_error(['message' => 'Group name is not updated, so please try again.']);
+            wp_send_json_error(['message' => 'Recipient list name is not updated, so please try again.']);
         }
         
-        wp_send_json_success(['message' => 'Group name has been updated successfully.']);
+        wp_send_json_success(['message' => 'Recipient list name has been updated successfully.']);
         wp_die();
     }
 
@@ -1274,44 +1286,51 @@ class OAM_Ajax{
     
         // Get the logged-in user ID
         $user = get_current_user_id();
-        $recipient_table = '';
-    
-        if ($type == 'process') {
-            $recipient_table = OAM_Helper::$order_process_recipient_table;
-        }
-    
-        // Get all failed recipient records
-        $allRecords = $wpdb->get_results($wpdb->prepare("
-            SELECT * FROM {$recipient_table} WHERE user_id = %d AND pid = %d AND verified = 0
-        ", $user, $id));
-    
         $failData = [];
         $recordMap = [];
-    
-        foreach ($allRecords as $record) {
-            $key = $record->full_name . '|' . 
-                   $record->address_1 . '|' . 
-                   $record->city . '|' . 
-                   $record->state . '|' . 
-                   $record->country . '|' . 
-                   $record->quantity . '|' . 
-                   $record->zipcode;
-    
-            if (!isset($recordMap[$key])) {
-                $recordMap[$key] = [];
+        $filename = 'fail-recipients-' . $id . '.csv';
+        if ($type == 'process') {
+            $recipient_table = OAM_Helper::$order_process_recipient_table;
+            $allRecords = $wpdb->get_results($wpdb->prepare("
+                SELECT * FROM {$recipient_table} WHERE user_id = %d AND pid = %d  AND visibility = %
+            ", $user, $id, 1));
+           
+        
+            foreach ($allRecords as $record) {
+                $key = $record->full_name . '|' . 
+                    $record->address_1 . '|' . 
+                    $record->city . '|' . 
+                    $record->state . '|' . 
+                    $record->country . '|' . 
+                    $record->quantity . '|' . 
+                    $record->zipcode;
+        
+                if (!isset($recordMap[$key])) {
+                    $recordMap[$key] = [];
+                }
+                $recordMap[$key][] = $record;
             }
-            $recordMap[$key][] = $record;
-        }
-    
-        foreach ($recordMap as $key => $records) {
-            if (count($records) == 1) {
-                $record = $records[0];
-                if ($record->verified == 0) {
-                    $failData[] = $record;
+        
+            foreach ($recordMap as $key => $records) {
+                if (count($records) == 1) {
+                    $record = $records[0];
+                    if ($record->verified == 0) {
+                        $failData[] = $record;
+                    }
                 }
             }
         }
+        
+        if ($type == 'group') {
+            $filename = 'recipients-list-' . $id . '.csv';
+            $group_recipient_table = OAM_Helper::$group_recipient_table;
+           
+            $failData = $wpdb->get_results($wpdb->prepare("
+                SELECT * FROM {$group_recipient_table} WHERE user_id = %d AND group_id = %d  AND visibility = %
+            ", $user, $id, 1));
+        }
     
+       
         if (!empty($failData)) {
             $csvData = array(
                 array('Full name', 'Company name', 'Mailing address', 'Suite/Apt', 'City', 'State', 'Zipcode', 'Quantity', 'Greeting', 'Reasons'),
@@ -1335,8 +1354,8 @@ class OAM_Ajax{
             }
     
             // Define new folder path inside wp-content
-            $custom_dir = WP_CONTENT_DIR . '/download_failed_recipient';
-            $custom_url = content_url('/download_failed_recipient');
+            $custom_dir = WP_CONTENT_DIR . '/download_recipient_list';
+            $custom_url = content_url('/download_recipient_list');
     
             // Create the directory if it does not exist
             if (!file_exists($custom_dir)) {
@@ -1344,7 +1363,7 @@ class OAM_Ajax{
             }
     
             // Use $id in the filename
-            $filename = 'fail-recipients-' . $id . '.csv';
+           
             $file_path = $custom_dir . '/' . $filename;
             $file_url = $custom_url . '/' . $filename;
     
@@ -1384,7 +1403,7 @@ class OAM_Ajax{
     public function orthoney_create_group_handler() {
         // Check if the group name is provided
         if (empty($_POST['group_name'])) {
-            wp_send_json_error(['message' => 'Group name is required.']);
+            wp_send_json_error(['message' => 'Recipients list name is required.']);
         }
     
         $group_name = sanitize_text_field($_POST['group_name']);
@@ -1403,9 +1422,9 @@ class OAM_Ajax{
                 ['%d']                 // Format for WHERE condition
             );
             if ($result !== false) {
-                wp_send_json_success(['message' => 'Group updated successfully!']);
+                wp_send_json_success(['message' => 'Recipients list name updated successfully!']);
             } else {
-                wp_send_json_error(['message' => 'Failed to update group name.']);
+                wp_send_json_error(['message' => 'Failed to update Recipients list name.']);
             }
         }
         if($group_status  == 'create'){
@@ -1419,9 +1438,9 @@ class OAM_Ajax{
             );
         
             if ($result) {
-                wp_send_json_success(['message' => 'Group created successfully!']);
+                wp_send_json_success(['message' => 'Recipients list created successfully!']);
             } else {
-                wp_send_json_error(['message' => 'Failed to create group.']);
+                wp_send_json_error(['message' => 'Failed to create recipients list.']);
             }
         }
         
@@ -1499,12 +1518,16 @@ class OAM_Ajax{
         if (empty($_POST['id'])) {
             wp_send_json_error(['message' => 'Recipient is required.']);
         }
+        $method = !empty($_POST['method']) ? $_POST['method'] : 'process';
     
         $id = sanitize_text_field($_POST['id']);
 
         // Your logic to insert the recipient into the database
         global $wpdb;
         $table = OAM_Helper::$order_process_recipient_table;
+        if($method == 'group'){
+            $table = OAM_Helper::$group_recipient_table;
+        }
 
         $result = $wpdb->update(
             $table,
@@ -1513,9 +1536,9 @@ class OAM_Ajax{
         );
     
         if ($result) {
-            OAM_Helper::order_process_recipient_activate_log($id, 'deleted', '');
+            OAM_Helper::order_process_recipient_activate_log($id, 'deleted', '', $method);
             wp_send_json_success([
-                'message' => 'Recipient deleted successfully!',
+                'message' => 'A new recipient has been added successfully!',
                 'user' => get_current_user_id(),
 
             ]);
@@ -1530,6 +1553,7 @@ class OAM_Ajax{
     
         // Determine recipient ID from POST or fallback to the function parameter
         $recipientID = !empty($_POST['id']) ? intval($_POST['id']) : intval($recipient);
+        $method = !empty($_POST['method']) ? $_POST['method'] : 'process';
     
         if (empty($recipientID)) {
             $response = ['success' => false, 'message' => 'Invalid recipient ID.'];
@@ -1538,6 +1562,9 @@ class OAM_Ajax{
     
         // Table name
         $recipient_table = OAM_Helper::$order_process_recipient_table;
+        if($method == 'group'){
+            $recipient_table = OAM_Helper::$group_recipient_table;
+        }
     
         // Fetch recipient record as an associative array
         $record = $wpdb->get_row(
@@ -1555,6 +1582,9 @@ class OAM_Ajax{
 
     // Callback function for manually add new recipient and edit recipient
     public function orthoney_manage_recipient_form_handler() {
+        $method =  isset($_POST['method']) ? $_POST['method'] : 'process';
+        
+        $group_id =  isset($_POST['group_id']) ? $_POST['group_id'] : 0;
         global $wpdb;
         
         // Check for required fields
@@ -1602,6 +1632,7 @@ class OAM_Ajax{
         
         $table = OAM_Helper::$order_process_recipient_table;
         
+        
         $recipient_id = isset($_POST['recipient_id']) ? absint($_POST['recipient_id']) : null;
         $process_id = isset($_POST['pid']) ? absint($_POST['pid']) : null;
         
@@ -1615,12 +1646,22 @@ class OAM_Ajax{
         $status = '';
         $result = false;
         
-        // Check if a record with the same key exists
-        $existing_recipient = $wpdb->get_row( $wpdb->prepare(
-            "SELECT id, visibility FROM $table WHERE full_name = %s AND address_1 = %s AND city = %s AND state = %s AND zipcode = %s AND pid = %d", 
-            $data['full_name'], $data['address_1'], $data['city'], $data['state'], $data['zipcode'], $process_id
-            )
-        );
+        if($method == 'group'){
+            $table = OAM_Helper::$group_recipient_table;
+            $existing_recipient = $wpdb->get_row( $wpdb->prepare(
+                "SELECT id, visibility FROM $table WHERE full_name = %s AND address_1 = %s AND city = %s AND state = %s AND zipcode = %s AND group_id = %d", 
+                $data['full_name'], $data['address_1'], $data['city'], $data['state'], $data['zipcode'], $group_id
+                )
+            );
+        }else{
+        
+            $existing_recipient = $wpdb->get_row( $wpdb->prepare(
+                "SELECT id, visibility FROM $table WHERE full_name = %s AND address_1 = %s AND city = %s AND state = %s AND zipcode = %s AND pid = %d", 
+                $data['full_name'], $data['address_1'], $data['city'], $data['state'], $data['zipcode'], $process_id
+                )
+            );
+        }
+        
             
         if (!$recipient_id && $existing_recipient) {
             if ($existing_recipient->visibility == 1) {
@@ -1634,7 +1675,8 @@ class OAM_Ajax{
                         'recipient_id' => $existing_recipient->id,
                         'message'      => 'Recipient reactivated successfully!',
                     ]);
-                    OAM_Helper::order_process_recipient_activate_log($existing_recipient->id, 'reactivated', '');
+                   
+                    OAM_Helper::order_process_recipient_activate_log($existing_recipient->id, 'reactivated', '', $method);
                 } else {
                     wp_send_json_error(['message' => 'Failed to update visibility.']);
                 }
@@ -1683,13 +1725,17 @@ class OAM_Ajax{
             
             $status = 'update';
             
-            OAM_Helper::order_process_recipient_activate_log($recipient_id, $status, wp_json_encode($changes));
+            OAM_Helper::order_process_recipient_activate_log($recipient_id, $status, wp_json_encode($changes), $method);
             $success_message = 'Recipient details updated successfully!';
             
         } else {
             // Insert new recipient
             $data['user_id'] = get_current_user_id();
-            $data['pid'] = $_POST['pid'];
+            if($method == 'group'){
+                $data['group_id'] = $group_id;
+            }else{
+                $data['pid'] = $_POST['pid'];
+            }
             $data['new'] = 1;
             $data['address_verified'] = 0;
             $data['update_type'] = sanitize_text_field("add_manually");
@@ -1698,7 +1744,7 @@ class OAM_Ajax{
             $status = 'new';
             
 
-            OAM_Helper::order_process_recipient_activate_log($wpdb->insert_id, $status, 'manually added');
+            OAM_Helper::order_process_recipient_activate_log($wpdb->insert_id, $status, 'manually added' , $method);
             $success_message = 'Recipient details added successfully!';
         }
         
@@ -1960,11 +2006,23 @@ class OAM_Ajax{
         $table_content = '';
     
         if (!empty($results)) {
+            $total_unique_recipients = (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$group_recipient_table} WHERE user_id = %d AND visibility = %d",
+                $user_id, 1
+            ));
+
+            $table_content .= "<tr>
+            <td>-</td>
+            <td>Unique Recipients List</td>
+            <td>".$total_unique_recipients."</td>
+            <td>-</td>
+            <td><a href='".esc_url(OAM_Helper::$customer_dashboard_link.'/groups/details/unique_recipients')."' class='far fa-eye'></td>
+            </tr>";
             foreach ($results as $data) {
 
                 $total_recipients = (int) $wpdb->get_var($wpdb->prepare(
-                    "SELECT COUNT(*) FROM {$group_recipient_table} WHERE user_id = %d AND group_id = %d",
-                    $user_id, $data->id
+                    "SELECT COUNT(*) FROM {$group_recipient_table} WHERE user_id = %d AND group_id = %d AND visibility = %d",
+                    $user_id, $data->id, 1
                 ));
 
                 $csv_name = $wpdb->get_var($wpdb->prepare(
@@ -1987,9 +2045,8 @@ class OAM_Ajax{
                 <td>" . esc_html($data->id) . "</td>
                 <td>" . esc_html($data->name) . "</td>
                 <td>".$total_recipients."</td>
-                <td><a download href='".esc_url(OAM_Helper::$process_recipients_csv_url . $csv_name)."'>". $csv_name."</a></td>
                 <td>" . esc_html($created_date) . "</td>
-                <td> <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>View Recipients</td>
+                <td> <a href='".esc_url($resume_url)."' class='far fa-eye'></a><button data-groupid='".esc_html($data->id)."' data-groupname='".esc_html($data->name)."' data-tippy='Remove Recipients List' class='deleteGroupButton far fa-trash'></button></td>
                 </tr>";
             }
         } else {
