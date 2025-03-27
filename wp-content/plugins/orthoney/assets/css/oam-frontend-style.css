@@ -4958,6 +4958,10 @@ h1.checkout-title:after {
 
 }
 
+body .order-process-block button.show-password-input:empty {
+  display: none;
+}
+
 @media (min-width: 993px) {
 
   .order-process-block table td .thead-data,
