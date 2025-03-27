@@ -819,8 +819,8 @@ class OAM_Helper{
             <table>
                 <thead>
                     <tr>
-                        <th>Order ID</th>
-                        <th>Company Name</th>
+                        <th>ID</th>
+                        <th>Name</th>
                         <th>Date</th>
                         <th>Action</th>
                     </tr>
@@ -832,10 +832,10 @@ class OAM_Helper{
                     
                     $resume_url = '#';
                     $html .= '<tr data-id="52" data-verify="0" data-group="0">
-                    <td>'.esc_html($data->id).'</td>
-                    <td>'.esc_html($data->name).'</td>
-                    <td>'.esc_html($created_date).'</td>
-                    <td><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume</a></td>
+                    <td><div class="thead-data">Id</div>'.esc_html($data->id).'</td>
+                    <td><div class="thead-data">Name</div>'.esc_html($data->name).'</td>
+                    <td><div class="thead-data">Date</div>'.esc_html($created_date).'</td>
+                    <td><div class="thead-data">Action</div><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume</a></td>
                 </tr>';
                 }
             }else{
@@ -874,8 +874,8 @@ class OAM_Helper{
             <table>
                 <thead>
                     <tr>
-                        <th>Order ID</th>
-                        <th>Company Name</th>
+                        <th>ID</th>
+                        <th>Name</th>
                         <th>Date</th>
                         <th>Action</th>
                     </tr>
@@ -887,10 +887,10 @@ class OAM_Helper{
                     
                     $resume_url = esc_url(home_url("/order-process?pid=$data->id"));
                     $html .= '<tr data-id="52" data-verify="0" data-group="0">
-                    <td>'.esc_html($data->id).'</td>
-                    <td>'.esc_html($data->name).'</td>
-                    <td>'.esc_html($created_date).'</td>
-                    <td><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume</a></td>
+                    <td><div class="thead-data">Id</div>'.esc_html($data->id).'</td>
+                    <td><div class="thead-data">Name</div>'.esc_html($data->name).'</td>
+                    <td><div class="thead-data">Date</div>'.esc_html($created_date).'</td>
+                    <td><div class="thead-data">Action</div><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume</a></td>
                 </tr>';
                 }
             }else{
@@ -928,7 +928,7 @@ class OAM_Helper{
             <table>
                 <thead>
                     <tr>
-                        <th>Order ID</th>
+                        <th>ID</th>
                         <th>Name</th>
                         <th>Date</th>
                         <th>Action</th>
@@ -941,10 +941,10 @@ class OAM_Helper{
                     
                     $resume_url = esc_url(home_url("/order-process?pid=$data->id"));
                     $html .= '<tr data-id="52" data-verify="0" data-group="0">
-                    <td>'.esc_html($data->id).'</td>
-                    <td>'.esc_html($data->name).'</td>
-                    <td>'.esc_html($created_date).'</td>
-                    <td><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume</a></td>
+                    <td><div class="thead-data">Id</div>'.esc_html($data->id).'</td>
+                    <td><div class="thead-data">Name</div>'.esc_html($data->name).'</td>
+                    <td><div class="thead-data">Date</div>'.esc_html($created_date).'</td>
+                    <td><div class="thead-data">Action</div><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume</a></td>
                 </tr>';
                 }
             }else{
