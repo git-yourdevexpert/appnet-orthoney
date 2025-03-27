@@ -568,9 +568,11 @@ document.getElementById('search-button').addEventListener('click', async functio
                         title: "Success",
                         text: addData.message,
                         icon: "success",
-                        timer: 1500,
                         showConfirmButton: false,
                     });
+                    setTimeout(function () {
+                        window.location.reload();
+                      }, 1000);
                 } else {
                     Swal.fire({
                         title: "Error",
