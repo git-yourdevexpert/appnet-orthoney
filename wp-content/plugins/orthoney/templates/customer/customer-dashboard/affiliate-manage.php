@@ -35,7 +35,7 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                         <tr>
                             <th>Affiliate Code</th>
                             <th>Affiliate Name</th>
-                            <th>Block/Unblock</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,9 +43,9 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                             $is_blocked = in_array($affiliate['ID'], $blocked_affiliates);
                             ?>
                             <tr>
-                                <td><?php echo isset($affiliate['token']) ? esc_html($affiliate['token']) : ''; ?></td>
-                                <td><?php echo esc_html($affiliate['display_name']); ?></td>
-                                <td>
+                                <td><div class="thead-data">Affiliate Code</div><?php echo isset($affiliate['token']) ? esc_html($affiliate['token']) : ''; ?></td>
+                                <td><div class="thead-data">Affiliate Name</div><?php echo esc_html($affiliate['display_name']); ?></td>
+                                <td><div class="thead-data">Action</div>
                                     <button class="affiliate-block-btn w-btn <?php echo $is_blocked ? 'us-btn-style_2' : 'us-btn-style_1' ?>" 
                                         data-affiliate="<?php echo esc_attr($affiliate['ID']); ?>"
                                         data-blocked="<?php echo esc_attr($is_blocked ? '1' : '0'); ?>">

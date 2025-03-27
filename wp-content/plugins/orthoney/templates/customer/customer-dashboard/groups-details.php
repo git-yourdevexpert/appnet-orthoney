@@ -75,7 +75,7 @@ if (!empty($recipients)) :
 
     <div class="order-process-block" id="customer-dashboard-recipient-list" data-groupid="<?php echo $group_id; ?>">
         <div class="heading-title">
-            <h5 class="block-title"><?php echo 'Unique'; ?> Recipient List</h5>
+            <h5 class="block-title"><?php echo ($group_id == 'unique_recipients') ? 'Unique' : ''; ?> Recipient List</h5>
         </div>
 
         <div class="heading-title">
