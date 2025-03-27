@@ -1291,9 +1291,7 @@ class OAM_Ajax{
         $filename = 'fail-recipients-' . $id . '.csv';
         if ($type == 'process') {
             $recipient_table = OAM_Helper::$order_process_recipient_table;
-            $allRecords = $wpdb->get_results($wpdb->prepare("
-                SELECT * FROM {$recipient_table} WHERE user_id = %d AND pid = %d  AND visibility = %
-            ", $user, $id, 1));
+            $allRecords = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$recipient_table} WHERE user_id = %d AND pid = %d  AND visibility = %d", $user, $id, 1));
            
         
             foreach ($allRecords as $record) {
