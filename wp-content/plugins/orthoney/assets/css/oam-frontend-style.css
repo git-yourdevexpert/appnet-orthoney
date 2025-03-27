@@ -5400,7 +5400,7 @@ h1.checkout-title:after {
     margin-bottom: 30px;
   }
 
-  .is-mobile .wp-block-woocommerce-checkout-order-summary-block.checkout-order-summary-block-fill-wrapper {
+  html body .wp-block-woocommerce-checkout-order-summary-block.checkout-order-summary-block-fill-wrapper {
     display: none;
   }
 }
