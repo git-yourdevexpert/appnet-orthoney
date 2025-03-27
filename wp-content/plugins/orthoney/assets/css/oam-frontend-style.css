@@ -4975,7 +4975,7 @@ body .order-process-block button.show-password-input:empty {
 }
 
 body .register-form input:not(.input-checkbox, .button),
-body .register-form input:focus {
+body .register-form input:focus:not(.input-checkbox, .button) {
   min-height: 39px !important;
   line-height: 39px !important;
   color: #333;
