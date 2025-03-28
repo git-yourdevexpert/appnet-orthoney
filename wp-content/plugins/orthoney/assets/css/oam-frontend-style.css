@@ -5037,6 +5037,11 @@ body .register-form input:focus:not(.input-checkbox, .button) {
   color: #ffffff !important;
 }
 
+.order-process-block .woocommerce-Address address {
+  color: #000;
+  font-size: 18px;
+}
+
 @media (min-width: 993px) {
 
   .order-process-block table td .thead-data,
