@@ -5138,6 +5138,10 @@ table tr.hide {
   margin: 0;
 }
 
+body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-change-admin-menu-item {
+  display: none;
+}
+
 /* responsive */
 
 @media (min-width: 993px) {
