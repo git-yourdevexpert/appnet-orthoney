@@ -90,10 +90,16 @@ class OAM_CUSTOM {
      * Override WooCommerce My Account dashboard template
      */
     public function custom_woocommerce_myaccount_template($template, $template_name, $template_path) {
+        error_log("Template Name: " . $template_name); // Debugging
         if ($template_name === 'myaccount/dashboard.php' && get_query_var('pagename') === 'customer-dashboard' && !is_wc_endpoint_url()) {
             $custom_template = OH_PLUGIN_DIR_PATH . '/templates/customer/customer-dashboard/dashboard.php';
+            error_log("Dashboard Template Path: " . $custom_template); // Debugging
+            return file_exists($custom_template) ? $custom_template : $template;
+        }else{
+            $custom_template = OH_PLUGIN_DIR_PATH . '/templates/woocommerce/'.$template_name;
             return file_exists($custom_template) ? $custom_template : $template;
         }
+    
         return $template;
     }
 

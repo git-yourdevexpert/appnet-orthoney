@@ -18,7 +18,8 @@
 defined( 'ABSPATH' ) || exit;
 
 do_action( 'woocommerce_before_edit_account_form' ); ?>
-
+<div class="order-process-block">
+<div class="heading-title"><h5 class="block-title">My Profile</h5></div>
 <form class="woocommerce-EditAccountForm edit-account" action="" method="post" <?php do_action( 'woocommerce_edit_account_form_tag' ); ?> >
 
 	<?php do_action( 'woocommerce_edit_account_form_start' ); ?>
@@ -81,7 +82,7 @@ do_action( 'woocommerce_before_edit_account_form' ); ?>
 		do_action( 'woocommerce_edit_account_form' );
 	?>
 
-	<p>
+	<p class="text-right">
 		<?php wp_nonce_field( 'save_account_details', 'save-account-details-nonce' ); ?>
 		<button type="submit" class="woocommerce-Button button<?php echo esc_attr( wc_wp_theme_get_element_class_name( 'button' ) ? ' ' . wc_wp_theme_get_element_class_name( 'button' ) : '' ); ?>" name="save_account_details" value="<?php esc_attr_e( 'Save changes', 'woocommerce' ); ?>"><?php esc_html_e( 'Save changes', 'woocommerce' ); ?></button>
 		<input type="hidden" name="action" value="save_account_details" />
@@ -89,5 +90,5 @@ do_action( 'woocommerce_before_edit_account_form' ); ?>
 
 	<?php do_action( 'woocommerce_edit_account_form_end' ); ?>
 </form>
-
+</div>
 <?php do_action( 'woocommerce_after_edit_account_form' ); ?>
