@@ -14,9 +14,19 @@ if (class_exists('user_switching') && method_exists('user_switching', 'get_old_u
     }
 }
 
+?>
 
-$details = OAM_AFFILIATE_Helper::get_affiliate_details($affiliate_id);
+<div class="order-block-wrap">
+    <div class="order-process-dashboard heading-open-sans">
+        <div class="dashboard-block">
+            <?php 
+            $details = OAM_AFFILIATE_Helper::get_affiliate_details($affiliate_id);
+            echo OAM_AFFILIATE_Helper::affiliate_details($affiliate_id, $details);
+            
+            echo OAM_AFFILIATE_Helper::affiliate_order_list($details, 5);
+            ?>
+        </div>
+    </div>
+</div>
 
-
-echo OAM_AFFILIATE_Helper::affiliate_details($affiliate_id, $details);
-echo OAM_AFFILIATE_Helper::affiliate_order_list($details, 5);
+<?php

@@ -264,21 +264,29 @@ class OAM_AFFILIATE_Helper {
 
         $html = '';
 
-        $html .= "<h4>Order List</h4>";
+        $html .= '<div class="recent-commissions">
+                    <div class="dashboard-card">
+                        <div class="recipient-lists-block custom-table">
+                            <div class="row-block">
+                                <h4>Recent Commissions</h4>
+                                <div class="see-all">
+                                    <button class="w-btn us-btn-style_1">View all</button>
+                                </div>
+                            </div>';
 
         $count = 0;
         
         if(!empty($details['orders'])){
         $orders =  explode(',', $details['orders']);
         
-        if(!empty($orders)){
+        $html .= "<table><thead><tr>
 
-            $html .= "<table><thead><tr>
-            <th>Order ID</th>
-            <th>Status</th>
-            <th>Customer Name</th>
-            <th>Total</th>
-            </tr></thead><tbody>";
+        <th>Order ID</th>
+        <th>Status</th>
+        <th>Customer Name</th>
+        <th>Total</th>
+        </tr></thead><tbody>";
+        if(!empty($orders)){
 
             foreach ($orders as $order_id) { // Ensure $order_id is used correctly
                 $order = wc_get_order($order_id); // Fetch order by ID
@@ -298,13 +306,21 @@ class OAM_AFFILIATE_Helper {
                 }
             }
 
-            $html .= "</tbody></table>";
-
+            
+        }else{
+             $html .= "<tr><td colspan='4'>Order is not found!</td></tr>";
         }
+        if($count == 0){                
+            $html .= "<tr><td colspan='4'>Order is not found!</td></tr>";
+        }
+        $html .= "</tbody></table>";
     }
-
+    
+    $html .= " </div>
+                    </div>
+                </div>";
         if($count >  $limit){
-            $html .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/order-list/')) . '">View All Orders</a></div>';
+            // $html .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/order-list/')) . '">View All Orders</a></div>';
         }
         return  $html;
 
@@ -317,25 +333,71 @@ class OAM_AFFILIATE_Helper {
         $affiliate = get_userdata($affiliate_id);
 
         $html = '';
+        
+        $html .= '<div class="dashboard-heading block-row">
+                    <div class="item">
+                        <div class="row-block">
+                            <h3 class="block-title">'.(!empty($affiliate->display_name) ? esc_html($affiliate->display_name) : 'N/A').'</h3>
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="block-row three-block-col">
+                    <div class="place-order item">
+                        <div class="row-block">
+                            <h4 class="block-title">Total Earning</h4>
+                            <div class="see-all">
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30" height="30" /></div>
+                            </div>
+                        </div>
+                        <div class="sub-heading">$'.(!empty($details['total_earnings']) ? esc_html($details['total_earnings']) : '0.00').'</div>
+                    </div>
+                    <div class="place-order item">
+                        <div class="row-block">
+                            <h4 class="block-title">Paid</h4>
+                            <div class="see-all">
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30" height="30" /></div>
+                            </div>
+                        </div>
+                        <div class="sub-heading">$'.(!empty($details['paid']) ? esc_html($details['paid']) : '0.00').'</div>
+                    </div>
+                    <div class="place-order item">
+                        <div class="row-block">
+                            <h4 class="block-title">Refunds</h4>
+                            <div class="see-all">
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30" height="30" /></div>
+                            </div>
+                        </div>
+                        <div class="sub-heading">$'.(!empty($details['refunds']) ? esc_html($details['refunds']) : '0.00').'</div>
+                    </div>
+                    <div class="place-order item">
+                        <div class="row-block">
+                            <h4 class="block-title">Active Balance</h4>
+                            <div class="see-all">
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30" height="30" /></div>
+                            </div>
+                        </div>
+                        <div class="sub-heading">$'.(!empty($details['refunds']) ? esc_html($details['refunds']) : '0.00').'</div>
+                    </div>
+                    <div class="place-order item">
+                        <div class="row-block">
+                            <h4 class="block-title">Total Orders</h4>
+                            <div class="see-all">
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30"  height="30" /></div>
+                            </div>
+                        </div>
+                        <div class="sub-heading">'.(!empty($details['orders']) ? count(explode(',', $details['orders'])) : '0').'</div>
+                    </div>
+                </div>';
 
-        $html .= "<h3>Affiliate: " . (!empty($affiliate->display_name) ? esc_html($affiliate->display_name) : 'N/A') . "</h3>";
 
-        $html .= "<p><strong>Total Earnings:</strong> $" . (!empty($details['total_earnings']) ? esc_html($details['total_earnings']) : '0.00') . "</p>";
-
-        $html .= "<p><strong>Paid:</strong> $" . (!empty($details['paid']) ? esc_html($details['paid']) : '0.00') . "</p>";
-
-        $html .= "<p><strong>Refunds:</strong> $" . (!empty($details['refunds']) ? esc_html($details['refunds']) : '0.00') . "</p>";
-
-        $html .= "<p><strong>Active Balance:</strong> $" . (!empty($details['active_balance']) ? esc_html($details['active_balance']) : '0.00') . "</p>";
-
-        return  $html;
+                return  $html;
 
     }
 
 
 
     public static function get_affiliate_details($affiliate_id) {
-
         global $wpdb;
 
         $total_earnings = 0;
@@ -365,7 +427,7 @@ class OAM_AFFILIATE_Helper {
            $results = $wpdb->get_results( $wpdb->prepare(
             "SELECT SUM(amount) as total_amount, GROUP_CONCAT(order_id) as order_ids 
              FROM {$wpdb->prefix}yith_wcaf_commissions 
-             WHERE affiliate_id = %d AND status = 'pending'",
+             WHERE affiliate_id = %d",
             $affiliate_id
         ) );
         
