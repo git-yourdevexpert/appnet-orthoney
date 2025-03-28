@@ -4608,6 +4608,10 @@ html body .w-btn.outline-btn.round-btn:hover i {
   border: 1px solid #e3e7f0;
 }
 
+body .woocommerce .order-process-block .button {
+  text-transform: capitalize;
+}
+
 .dashboard-block .block-row {
   display: grid;
   gap: 24px;
