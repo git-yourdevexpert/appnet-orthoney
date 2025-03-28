@@ -139,17 +139,13 @@ class OAM_AFFILIATE_Helper {
     public static function manage_user_popup(){
 
         ?>
+      
 
-        <div id="user-manage-popup" class="lity-hide black-mask full-popup" style="background: white;">
-
-            <h2>User Details</h2>
-
+        <div id="user-manage-popup" class="lity-hide black-mask full-popup popup-show">
+            <h3>Team Member Details</h3>
             <?php 
-
             echo self::get_user_affiliate_form();
-
             ?>
-
         </div>
 
         <?php
