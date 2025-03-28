@@ -158,7 +158,7 @@ class OAM_AFFILIATE_Helper {
 
         ob_start(); ?>
 
-        <div id="edit-user-form" class="edit-affiliate-form">
+        <div id="edit-user-form" class="edit-affiliate-form woocommerce">
             <form method="POST" class="grid-two-col" id="addUserForm">
                 <input type="hidden" id="user_id" name="user_id" required />
                 <div class="form-row gfield--width-half">
