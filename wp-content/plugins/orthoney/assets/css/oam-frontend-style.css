@@ -5004,6 +5004,39 @@ body .register-form input:focus:not(.input-checkbox, .button) {
   margin-bottom: 0;
 }
 
+.order-process-block .woocommerce-Address .woocommerce-Address-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 30px;
+  border-bottom: 2px solid #e0e8ef;
+  padding-bottom: 30px;
+}
+
+.order-process-block .woocommerce-Address .woocommerce-Address-title .block-title {
+  margin: 0;
+}
+
+.order-process-block .woocommerce-Address .woocommerce-Address-title .edit {
+  font-size: 13px;
+  line-height: 1.2 !important;
+  font-weight: 600;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  border-radius: 4px;
+  padding: 1.2em 2.4em;
+  background: var(--color-content-primary);
+  border-color: transparent;
+  color: #ffffff !important;
+}
+
+.order-process-block .woocommerce-Address .woocommerce-Address-title .edit {
+  background: var(--color-content-secondary);
+  border-color: transparent;
+  color: #ffffff !important;
+}
+
 @media (min-width: 993px) {
 
   .order-process-block table td .thead-data,
