@@ -20,12 +20,31 @@ class OAM_COMMON_Custom {
         add_action('user_registration_after_login_form', array($this, 'add_login_link_pl_login_form'));
         add_action('user_registration_before_customer_login_form', array($this, 'add_content_pl_login_form'));
         add_shortcode('customer_login_button', array($this, 'custom_login_button_shortcode'));
+        add_filter('body_class', array($this, 'custom_body_class'));
     }
 
     public static function init() {
         // Add any initialization logic here
     }
 
+    public function custom_body_class($classes) {
+        // Add your custom class
+        $affiliate_dashboard_id = get_page_by_path('affiliate-dashboard');
+        if ($affiliate_dashboard_id) {
+            $classes[] = 'affiliate-dashboard';
+        }
+        if (is_user_logged_in()) {
+            $user = wp_get_current_user();
+            if (!empty($user->roles)) {
+                foreach ($user->roles as $role) {
+                    $classes[] = 'role-' . sanitize_html_class($role);
+                }
+            }
+        } 
+
+    
+        return $classes;
+    }
     public static function sub_order_error_log($message) {
         $log_file = WP_CONTENT_DIR . '/logs/sub-order-error.log';
         
