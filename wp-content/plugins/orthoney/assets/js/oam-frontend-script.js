@@ -271,7 +271,7 @@ document.addEventListener('click', function (event) {
         Swal.fire({
             title: 'Are you sure?',
             html: 'You are removing <strong>' + groupName + '</strong> recipient list.',
-            icon: 'warning',
+            icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
@@ -570,7 +570,7 @@ document.addEventListener('click', function (event) {
         Swal.fire({
             title: 'Are you sure?',
             text: 'You are removing ' + recipientname,
-            icon: 'warning',
+            icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',

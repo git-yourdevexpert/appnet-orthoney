@@ -657,7 +657,7 @@ document.addEventListener("DOMContentLoaded", function () {
             Swal.fire({
               title: "Are you sure?",
               text: `Total ${totalCount} records found for ${recipientname}. Keep this record and delete the other ${totalCount - 1}`,
-              icon: "warning",
+              icon: "question",
               showCancelButton: true,
               confirmButtonColor: "#3085d6",
               cancelButtonColor: "#d33",

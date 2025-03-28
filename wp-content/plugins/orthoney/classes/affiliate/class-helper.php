@@ -163,59 +163,32 @@ class OAM_AFFILIATE_Helper {
         ob_start(); ?>
 
         <div id="edit-user-form" class="edit-affiliate-form">
-
             <form method="POST" id="addUserForm">
-
                 <input type="hidden" id="user_id" name="user_id" required />
-
                 <label>First Name</label>
-
                 <input type="text" id="first_name" name="first_name" required data-error-message="Please enter a First Name." />
-
                 <span class="error-message"></span>
-
                 <label>Last Name</label>
-
                 <input type="text" id="last_name" name="last_name" required data-error-message="Please enter a Last Name." />
-
                 <span class="error-message"></span>
-
                 <label>Email</label>
-
                 <input type="email" id="email" name="email" required data-error-message="Please enter a valid Email." />
-
                 <span class="error-message"></span>
-
                 <label>Phone Number</label>
-
                 <input type="text" id="phone" name="phone" class="phone-input" required data-error-message="Please enter a Phone Number." />
-
                 <span class="error-message"></span>
-
                 <label>Type</label>
-
                 <select name="type" id="affiliate_type" required data-error-message="Please select a Type.">
-
                     <option value="">Select a Type</option>
-
                     <option value="primary-contact">Primary Contact</option>
-
                     <option value="co-chair">Co-Chair</option>
-
                     <option value="alternative-contact">Alternative Contact</option>
-
                 </select>
-
                 <span class="error-message"></span>
-
                 <button class="add-user us-btn-style_1" type="submit">Save</button>
-
             </form>
-
             <div id="user-message"></div>
-
         </div>
-
         <?php
 
         return ob_get_clean();
@@ -226,18 +199,13 @@ class OAM_AFFILIATE_Helper {
 
     public static function affiliate_dashboard_navbar($user_roles = array()){
 
-
-
         $output = '';
 
         if ( in_array( 'yith_affiliate', $user_roles) OR  in_array( 'affiliate_team_member', $user_roles)) {
 
             $output = '<div class="affiliate-dashboard">';
-
             $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard')) . '">Dashboard</a></div>';
-
             $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/my-profile/')) . '">My Profile</a></div>';
-
             $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/order-list/')) . '">Order List</a></div>';
 
             if ( ! in_array( 'affiliate_team_member', $user_roles)) {
@@ -249,7 +217,6 @@ class OAM_AFFILIATE_Helper {
             }
 
             $output .= '<div class="btn"><a href="' . esc_url(wp_logout_url(home_url())) . '">Logout</a></div>';
-
             $output .= '</div>';
 
         return $output;
@@ -259,21 +226,24 @@ class OAM_AFFILIATE_Helper {
     }
 
        
-
-    public static function affiliate_order_list($details, $limit = 5) {
+    public static function affiliate_order_list($details, $limit = 9999999) {
         $html = '';
-        
+        $current_url = home_url($_SERVER['REQUEST_URI']) . '/order-list/';
+    
         if (!empty($details['orders'])) {
-            $orders = explode(',', $details['orders']);
+            $orders = $details['orders'];
             $html .= '<div class="recent-commissions">
                         <div class="dashboard-card">
                             <div class="recipient-lists-block custom-table">
                                 <div class="row-block">
-                                    <h4>Recent Commissions</h4>
-                                    <div class="see-all">
-                                        <button class="w-btn us-btn-style_1">View all</button>
-                                    </div>
-                                </div><table>
+                                    <h4>Recent Commissions</h4>';
+            
+            if ($limit != 9999999) {
+                $html .= '<div class="see-all"><a href="' . esc_url($current_url) . '" class="w-btn us-btn-style_1">View all</a></div>';
+            }
+            
+            $html .= '</div>
+                      <table>
                         <thead>
                             <tr>
                                 <th>Order ID</th>
@@ -283,45 +253,38 @@ class OAM_AFFILIATE_Helper {
                             </tr>
                         </thead>
                         <tbody>';
-            
+    
             $count = 0;
-            
-            if (!empty($orders)) {
-                foreach ($orders as $order_id) {
-                    $order = wc_get_order($order_id);
-                    if (!$order) continue;
-                    
-                    $count++;
-                    if ($count <= $limit) {
-                        $html .= "<tr>
-                                    <td>#{$order->get_id()}</td>
-                                    <td>{$order->get_status()}</td>
-                                    <td>{$order->get_billing_first_name()} {$order->get_billing_last_name()}</td>
-                                    <td>" . wc_price($order->get_total()) . "</td>
-                                  </tr>";
-                    }
+    
+            foreach ($orders as $order_id) {
+                $order = wc_get_order($order_id);
+                if (!$order) continue;
+    
+                $count++;
+                if ($count <= $limit) {
+                    $html .= "<tr>
+                                <td><div class='thead-data'>Order ID</div>#{$order->get_id()}</td>
+                                <td><div class='thead-data'>Status</div>{$order->get_status()}</td>
+                                <td><div class='thead-data'>Customer Name</div>{$order->get_billing_first_name()} {$order->get_billing_last_name()}</td>
+                                <td><div class='thead-data'>Total</div>" . wc_price($order->get_total()) . "</td>
+                              </tr>";
                 }
             }
-            
+    
             if ($count == 0) {
                 $html .= "<tr><td colspan='4'>Order not found!</td></tr>";
             }
-            
-            $html .= "</tbody></table>";
-            $html .= "</div>
-                        </div>
-                    </div>";
-            
-            if ($count > $limit) {
-                // Uncomment below line to add a "View All Orders" link
-                // $html .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/order-list/')) . '">View All Orders</a></div>';
-            }
+    
+            $html .= '</tbody></table>
+                      </div>
+                    </div>
+                  </div>';
         }
-        
+    
         return $html;
     }
     
-
+    
     
 
     public static function affiliate_details($affiliate_id, $details){
@@ -380,7 +343,7 @@ class OAM_AFFILIATE_Helper {
                                 <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30"  height="30" /></div>
                             </div>
                         </div>
-                        <div class="sub-heading">'.(!empty($details['orders']) ? count(explode(',', $details['orders'])) : '0').'</div>
+                        <div class="sub-heading">'.(!empty($details['orders']) ? count( $details['orders']) : '0').'</div>
                     </div>
                 </div>';
 

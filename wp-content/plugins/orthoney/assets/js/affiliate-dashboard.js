@@ -244,6 +244,8 @@ document.addEventListener('click', function (event) {
     if (event.target.id === 'save-profile') {
         event.preventDefault();
         if (!validateForm(this)) return; // Stop submission if validation fails
+
+        
         const form = document.querySelector('#affiliate-profile-form');
         const formData = new FormData(form);
         formData.append('action', 'update_affiliate_profile');
@@ -287,46 +289,92 @@ document.addEventListener('click', function (event) {
 
 //Change Affiliate Admin user
 document.addEventListener("DOMContentLoaded", function() {
-    const changeRoleBtn =  document.getElementById("changeRoleBtn");
-    if(changeRoleBtn){
-    document.getElementById("changeRoleBtn").addEventListener("click", function(event) {
-        event.preventDefault();
-        var userDropdown = document.getElementById("userDropdown");
-        var selectedUserId = userDropdown.value;
+    const changeRoleBtn = document.getElementById("changeRoleBtn");
+    
+    if (changeRoleBtn) {
+        changeRoleBtn.addEventListener("click", function(event) {
+            event.preventDefault();
+            // process_group_popup();
 
-        console.log("Selected User ID:", selectedUserId);
+            const userDropdown = document.getElementById("userDropdown");
+            const selectedUserId = userDropdown?.value;
 
-        if (!selectedUserId) {
-            alert("Please select a user.");
-            return;
-        }
+            console.log("Selected User ID:", selectedUserId);
 
-        let formData = new FormData();
-        formData.append("action", "change_user_role_logout"); // WordPress AJAX action
-        formData.append("security", oam_ajax.nonce);  // nonce.
-        formData.append("selected_user_id", selectedUserId);
-
-        fetch(oam_ajax.ajax_url, {
-            method: 'POST',
-            body: formData,
-        })
-        .then(response => response.json()) // Directly parse JSON
-        .then(data => {
-            console.log("Parsed JSON:", data);
-            if (data.success) {
-                alert(data?.message || "Role changed...");
-                window.location.reload();
-            } else {
-                alert(data.data?.message || "Error occurred!");
+            if (!selectedUserId) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Please select a team member.',
+                    icon: 'error',
+                });
+                return;
             }
-        })
-        .catch(error => {
-            console.error("AJAX Error:", error);
-            alert("Something went wrong. Please try again.");
+            
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Do you really want to change permission?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, I do',
+                cancelButtonText: 'No, I do not',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                reverseButtons: true,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    process_group_popup();
+                    let formData = new FormData();
+                    formData.append("action", "change_user_role_logout"); // WordPress AJAX action
+                    formData.append("security", oam_ajax?.nonce || "");  // Ensure nonce is available
+                    formData.append("selected_user_id", selectedUserId);
+
+                    fetch(oam_ajax?.ajax_url || "", {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(response => response.json()) // Directly parse JSON
+                    .then(data => {
+                        console.log("Parsed JSON:", data);
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Change permission successfully.',
+                                text: '',
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false,
+                                timerProgressBar: true
+                            });
+
+                            setTimeout(() => {
+                                const userTr = userDropdown.closest("tr"); // Adjust based on your HTML structure
+                                if (userTr) userTr.remove();
+                                window.location.reload();
+                            }, 1500);
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.data?.message || 'An error occurred while changing permission.',
+                                icon: 'error',
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error("AJAX Error:", error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Something went wrong. Please try again.',
+                            icon: 'error',
+                        });
+                    });
+                }
+            });
         });
-    });
     }
 });
+
 
 //Edit Sales Representative Profile 
 document.addEventListener('click', function (event) {
@@ -609,7 +657,7 @@ document.addEventListener('click', async function (event) {
         Swal.fire({
             title: 'Are you sure?',
             text: "Do you want to resend the email?",
-            icon: 'warning',
+            icon: 'question',
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             showCancelButton: true,
