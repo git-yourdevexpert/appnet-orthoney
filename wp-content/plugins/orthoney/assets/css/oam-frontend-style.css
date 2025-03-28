@@ -5031,7 +5031,7 @@ body .register-form input:focus:not(.input-checkbox, .button) {
   color: #ffffff !important;
 }
 
-.order-process-block .woocommerce-Address .woocommerce-Address-title .edit {
+.order-process-block .woocommerce-Address .woocommerce-Address-title .edit:hover {
   background: var(--color-content-secondary);
   border-color: transparent;
   color: #ffffff !important;
