@@ -150,11 +150,13 @@ class OAM_AFFILIATE_Helper
         <div id="user-manage-popup" class="lity-hide black-mask full-popup" style="background: white;">
             <div class="heading-title">
                 <h3 class="block-title">User Details</h3>
-                <?php
+                <div class="order-process-block">
+                    <?php
 
-                echo self::get_user_affiliate_form();
+                    echo self::get_user_affiliate_form();
 
-                ?>
+                    ?>
+                </div>
             </div>
         </div>
 
@@ -169,7 +171,7 @@ class OAM_AFFILIATE_Helper
 
         ob_start(); ?>
 
-        <div id="edit-user-form" class="edit-affiliate-form order-process-block">
+        <div id="edit-user-form" class="edit-affiliate-form">
             <form method="POST" id="addUserForm">
                 <input type="hidden" id="user_id" name="user_id" required />
                 <label>First Name</label>
