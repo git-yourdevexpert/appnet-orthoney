@@ -260,71 +260,67 @@ class OAM_AFFILIATE_Helper {
 
        
 
-    public static function affiliate_order_list($details, $limit = 5){
-
+    public static function affiliate_order_list($details, $limit = 5) {
         $html = '';
-
-        $html .= '<div class="recent-commissions">
-                    <div class="dashboard-card">
-                        <div class="recipient-lists-block custom-table">
-                            <div class="row-block">
-                                <h4>Recent Commissions</h4>
-                                <div class="see-all">
-                                    <button class="w-btn us-btn-style_1">View all</button>
-                                </div>
-                            </div>';
-
-        $count = 0;
         
-        if(!empty($details['orders'])){
-        $orders =  explode(',', $details['orders']);
-        
-        $html .= "<table><thead><tr>
-
-        <th>Order ID</th>
-        <th>Status</th>
-        <th>Customer Name</th>
-        <th>Total</th>
-        </tr></thead><tbody>";
-        if(!empty($orders)){
-
-            foreach ($orders as $order_id) { // Ensure $order_id is used correctly
-                $order = wc_get_order($order_id); // Fetch order by ID
+        if (!empty($details['orders'])) {
+            $orders = explode(',', $details['orders']);
+            $html .= '<div class="recent-commissions">
+                        <div class="dashboard-card">
+                            <div class="recipient-lists-block custom-table">
+                                <div class="row-block">
+                                    <h4>Recent Commissions</h4>
+                                    <div class="see-all">
+                                        <button class="w-btn us-btn-style_1">View all</button>
+                                    </div>
+                                </div><table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Status</th>
+                                <th>Customer Name</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>';
             
-                if (!$order) continue; // Skip if order is not found
+            $count = 0;
             
-                $count++;
-            
-                if ($count <= $limit) {
-                    $html .= "<tr>
-                        <td>#{$order->get_id()}</td>
-                        <td>{$order->get_status()}</td>
-                      
-                        <td>{$order->get_billing_first_name()} {$order->get_billing_last_name()}</td>
-                        <td>" . wc_price($order->get_total()) . "</td>
-                    </tr>";
+            if (!empty($orders)) {
+                foreach ($orders as $order_id) {
+                    $order = wc_get_order($order_id);
+                    if (!$order) continue;
+                    
+                    $count++;
+                    if ($count <= $limit) {
+                        $html .= "<tr>
+                                    <td>#{$order->get_id()}</td>
+                                    <td>{$order->get_status()}</td>
+                                    <td>{$order->get_billing_first_name()} {$order->get_billing_last_name()}</td>
+                                    <td>" . wc_price($order->get_total()) . "</td>
+                                  </tr>";
+                    }
                 }
             }
-
             
-        }else{
-             $html .= "<tr><td colspan='4'>Order is not found!</td></tr>";
+            if ($count == 0) {
+                $html .= "<tr><td colspan='4'>Order not found!</td></tr>";
+            }
+            
+            $html .= "</tbody></table>";
+            $html .= "</div>
+                        </div>
+                    </div>";
+            
+            if ($count > $limit) {
+                // Uncomment below line to add a "View All Orders" link
+                // $html .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/order-list/')) . '">View All Orders</a></div>';
+            }
         }
-        if($count == 0){                
-            $html .= "<tr><td colspan='4'>Order is not found!</td></tr>";
-        }
-        $html .= "</tbody></table>";
+        
+        return $html;
     }
     
-    $html .= " </div>
-                    </div>
-                </div>";
-        if($count >  $limit){
-            // $html .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/order-list/')) . '">View All Orders</a></div>';
-        }
-        return  $html;
-
-    }
 
     
 
@@ -332,9 +328,7 @@ class OAM_AFFILIATE_Helper {
 
         $affiliate = get_userdata($affiliate_id);
 
-        $html = '';
-        
-        $html .= '<div class="dashboard-heading block-row">
+        $html = '<div class="dashboard-heading block-row">
                     <div class="item">
                         <div class="row-block">
                             <h3 class="block-title">'.(!empty($affiliate->display_name) ? esc_html($affiliate->display_name) : 'N/A').'</h3>
@@ -399,54 +393,45 @@ class OAM_AFFILIATE_Helper {
 
     public static function get_affiliate_details($affiliate_id) {
         global $wpdb;
-
-        $total_earnings = 0;
-        $paid = 0;
-        $refunds = 0;
-        $active_balance = 0;
-        $orders = [];
-
+    
         $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
-
-
+        
+        // Initialize default values
+        $data = [
+            'total_earnings' => 0,
+            'paid'           => 0,
+            'refunds'        => 0,
+            'active_balance' => 0,
+            'orders'         => [],
+        ];
+    
         // Get affiliate data from the database
         $affiliate = $wpdb->get_row(
             $wpdb->prepare("SELECT * FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d", $affiliate_id)
         );
-
-        if(!empty($affiliate)){
-            // Get total earnings, paid, refunds, and balance
-
-            $total_earnings = $affiliate->earnings;
-            $paid = $affiliate->paid;
-            $refunds = $affiliate->refunds;
-            // $active_balance = $affiliate->refunds;
-          
-           $affiliate_id = $affiliate->ID; 
-            
-           $results = $wpdb->get_results( $wpdb->prepare(
-            "SELECT SUM(amount) as total_amount, GROUP_CONCAT(order_id) as order_ids 
-             FROM {$wpdb->prefix}yith_wcaf_commissions 
-             WHERE affiliate_id = %d",
-            $affiliate_id
-        ) );
-        
-        if ( !empty($results) ) {
-            $active_balance = $results[0]->total_amount ;
-            $orders = $results[0]->order_ids;
-        } 
-        
-            // Fetch orders for the affiliate
     
+        if ($affiliate) {
+            $data['total_earnings'] = $affiliate->earnings;
+            $data['paid'] = $affiliate->paid;
+            $data['refunds'] = $affiliate->refunds;
+            $affiliate_id = $affiliate->ID;
+    
+            // Get active balance and order IDs
+            $results = $wpdb->get_row($wpdb->prepare(
+                "SELECT SUM(c.amount) AS total_amount, GROUP_CONCAT(c.order_id) AS order_ids 
+                 FROM {$wpdb->prefix}yith_wcaf_commissions c
+                 INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+                 WHERE c.affiliate_id = %d AND o.parent_order_id = 0",
+                $affiliate_id
+            ));
+    
+            if ($results) {
+                $data['active_balance'] = $results->total_amount ?: 0;
+                $data['orders'] = $results->order_ids ? explode(',', $results->order_ids) : [];
+            }
         }
-        return [
-            'total_earnings'  => $total_earnings,
-            'paid'            => $paid,
-            'refunds'         => $refunds,
-            'active_balance'  => $active_balance,
-            'orders'          => $orders,
-        ];
         
+        return $data;
     }
     
 
