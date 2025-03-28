@@ -5770,6 +5770,10 @@ table tr.hide {
     border-radius: 6px;
   }
 
+  .dashboard-block .block-row.three-block-col {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
 }
 
 @media (max-width: 480px) {
@@ -5810,10 +5814,6 @@ table tr.hide {
   .incomplete-order-block.custom-table table td .thead-data:before {
     left: inherit;
     right: 100%;
-  }
-
-  .dashboard-block .block-row.three-block-col {
-    grid-template-columns: repeat(1, 1fr);
   }
 }
 
