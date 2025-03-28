@@ -179,7 +179,7 @@ document.addEventListener('click', function (event) {
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'Do you really want to remove this User?',
+            text: 'Do you really want to remove this team member?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -205,7 +205,7 @@ document.addEventListener('click', function (event) {
                     if (data.success) {
                         Swal.fire({
                             title: 'Deleted!',
-                            text: 'The user has been removed successfully.',
+                            text: 'The team member has been removed successfully.',
                             icon: 'success',
                             timer: 2000,
                             showConfirmButton: false,
