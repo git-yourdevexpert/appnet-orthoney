@@ -23,6 +23,7 @@ class OAM_Helper{
     public static $oh_affiliate_customer_linker; 
 
     public static $users_table;
+    public static $users_meta_table;
     
     // Define directories
     public static $all_uploaded_csv_dir;
@@ -48,6 +49,7 @@ class OAM_Helper{
         self::$oh_affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker'; 
 
         self::$users_table = $wpdb->prefix . 'users';
+        self::$users_meta_table = $wpdb->prefix . 'usermeta';
 
         self::$customer_dashboard_link = home_url('customer-dashboard');
         self::$all_uploaded_csv_dir = WP_CONTENT_DIR . '/all-uploaded-files/';
