@@ -4612,6 +4612,10 @@ body .woocommerce .order-process-block .button {
   text-transform: capitalize;
 }
 
+.woocommerce-MyAccount-content .order-process-block .heading-title {
+  margin-bottom: 28px;
+}
+
 .dashboard-block .block-row {
   display: grid;
   gap: 24px;
