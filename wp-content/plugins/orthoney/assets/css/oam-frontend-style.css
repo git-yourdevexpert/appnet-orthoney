@@ -5447,6 +5447,10 @@ table tr.hide {
     flex: 50% 0 0;
   }
 
+  .dashboard-block .block-row.three-block-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
 }
 
 @media(max-width: 782px) {
@@ -5806,6 +5810,10 @@ table tr.hide {
   .incomplete-order-block.custom-table table td .thead-data:before {
     left: inherit;
     right: 100%;
+  }
+
+  .dashboard-block .block-row.three-block-col {
+    grid-template-columns: repeat(1, 1fr);
   }
 }
 
