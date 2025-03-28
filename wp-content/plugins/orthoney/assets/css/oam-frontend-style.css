@@ -5134,6 +5134,10 @@ table tr.hide {
 
 /* end */
 
+.order-process-block .heading-title .block-title {
+  margin: 0;
+}
+
 /* responsive */
 
 @media (min-width: 993px) {
