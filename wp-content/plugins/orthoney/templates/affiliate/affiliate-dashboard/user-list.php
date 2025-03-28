@@ -22,7 +22,7 @@ if(!empty($affiliate_users )){
 <div class="order-process-block">
 <div class="heading-title">
     <h3 class="block-title">User List</h3>
-    <a href="#user-manage-popup" class="add-user w-btn us-btn-style_1" data-lity data-popup="#user-manage-popup">Add User</a>
+    <a href="#user-manage-popup" class="add-user w-btn us-btn-style_1" data-lity data-popup="#user-manage-popup">Add new member</a>
 </div>
 <table class="wp-list-table widefat fixed striped">
     <thead>
