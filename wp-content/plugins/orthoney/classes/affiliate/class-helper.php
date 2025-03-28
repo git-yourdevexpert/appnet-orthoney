@@ -227,7 +227,7 @@ class OAM_AFFILIATE_Helper {
             $output .= '<div class="btn"><a href="' . esc_url(wp_logout_url(home_url())) . '">Logout</a></div>';
             $output .= '</div>';
 
-        return $output;
+        return '';
 
         }
 
