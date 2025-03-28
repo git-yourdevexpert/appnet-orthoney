@@ -23,10 +23,10 @@ $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
 
 //TODO
 ?>
-<div class="col-right">
+<div class="order-process-block">
+<div class="heading-title"><h3 class="block-title">My Profile</h3></div>
     <div class="affiliate-profile" id="update-affiliate-form">
-       
-        <div class="heading-title"><h3 class="block-title">My Profile</h3></div>
+    
         <form id="affiliate-profile-form">
             <div class="profile-fields site-form grid-two-col">
                 <div class="form-row gfield--width-half">
@@ -84,7 +84,7 @@ $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
                     <input type="text" name="tax_id" id="tax_id" value="<?php echo esc_attr($tax_id); ?>" data-error-message="Please enter a Tax ID">
                     <span class="error-message"></span>
                 </div>
-                <div class="form-row">
+                <div class="form-row text-right">
                     <button type="button" class="add-user us-btn-style_1" id="save-profile">Save</button>
 
                 </div>
@@ -92,4 +92,5 @@ $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
         </form>
         <div id="profile-message"></div>
     </div>
+</div>
 </div>

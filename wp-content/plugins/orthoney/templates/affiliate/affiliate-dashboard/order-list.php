@@ -4,8 +4,16 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-echo '<h2>Welcome to the Order List</h2>';
-
-$details = OAM_AFFILIATE_Helper::get_affiliate_details($affiliate_id);
-
-echo OAM_AFFILIATE_Helper::affiliate_order_list($details, 5);
+?>
+<div class="order-block-wrap">
+    <div class="order-process-dashboard heading-open-sans">
+        <div class="dashboard-block">
+        <div class="heading-title"><h3 class="block-title">Order list</h3></div>
+            <?php
+            $details = OAM_AFFILIATE_Helper::get_affiliate_details($affiliate_id);
+            echo OAM_AFFILIATE_Helper::affiliate_order_list($details);
+            ?>
+        </div>
+    </div>
+</div>
+<?php
