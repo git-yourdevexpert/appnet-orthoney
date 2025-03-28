@@ -5679,6 +5679,7 @@ body .register-form input:focus:not(.input-checkbox, .button) {
   .incomplete-order-block.order-process-block td {
     padding: 0 0.7rem 10px;
     flex-wrap: wrap;
+    border-left: 1px solid #dee2e6;
   }
 
   .incomplete-order-block.order-process-block .thead-data,
@@ -5692,6 +5693,7 @@ body .register-form input:focus:not(.input-checkbox, .button) {
     border-right: 0px;
     border-left: 0px;
     padding-left: 0;
+    position: relative;
   }
 
   .incomplete-order-block.order-process-block .thead-data:after,
