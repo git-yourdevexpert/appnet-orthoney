@@ -1822,64 +1822,90 @@ class OAM_Ajax{
     public function orthoney_affiliate_status_toggle_block_handler() {
         global $wpdb;
         $user_id = get_current_user_id();
-        $oh_affiliate_customer_relation_table = OAM_Helper::$oh_affiliate_customer_relation_table;
+        $oh_affiliate_customer_linker = OAM_Helper::$oh_affiliate_customer_linker;
 
+        $customer_id = get_current_user_id();
+        $affiliate_id = intval($_POST['affiliate_id']);
+        $status = intval($_POST['status']);
 
-        $affiliate_id = sanitize_text_field($_POST['affiliate_id']);
-        $status = sanitize_text_field($_POST['status']);
+        $update_status = -1;
+        if($status == 0){
+            $update_status = 1;
+        }
+        
+        $update_status;
+        $update_result = $wpdb->update(
+            $oh_affiliate_customer_linker,
+            ['status' => $update_status],
+            [
+                'affiliate_id' => $affiliate_id, 
+                'customer_id' => $customer_id
+            ],
+            ['%d'], ['%d', '%d']
+        );
 
-        if ($status == 'block') {
-            $wpdb->insert($oh_affiliate_customer_relation_table, [
-                'user_id' => $user_id,
-                'affiliate_id' => $affiliate_id
-            ]);
-        } elseif ($status == 'unblock') {
-            $wpdb->delete($oh_affiliate_customer_relation_table, [
-                'user_id' => $user_id,
-                'affiliate_id' => $affiliate_id
-            ]);
-        } else {
-            wp_send_json_error(['message' => 'Invalid action']);
+        if ($update_status == 1) {
+            wp_send_json_error(['message' => 'The organization has been blocked.']);
+        }else{
+            wp_send_json_success(['message' => 'The organization has been unblocked.']);
         }
 
         wp_send_json_success();
     }
     
-    
     public function search_affiliates_handler() {
         $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
         $filter = isset($_POST['filter']) ? sanitize_text_field($_POST['filter']) : 'all';
 
-        $affiliates_content = OAM_Helper::manage_affiliates_content($search, $filter, 1);
+        $affiliates_content = OAM_Helper::manage_affiliates_content($search);
 
-        $affiliates_data = json_decode($affiliates_content, true);
+        $result = json_decode($affiliates_content, true);
 
-        $affiliates = $affiliates_data['data']['affiliates'];
-        $blocked_affiliates = $affiliates_data['data']['blocked_affiliates'];
+        $affiliates = $result['data']['user_info'];
+        $blocked_affiliates = $result['data']['affiliates'];
         
+        $html = 0;
         ?>
         <table>
             <thead><tr><th>Affiliate Code</th><th>Affiliate Name</th><th>Block/Unblock</th></tr></thead>
             <tbody>
                 <?php 
                 if(!empty($affiliates)){
-                foreach ($affiliates as $affiliate){
-                        $is_blocked = in_array($affiliate['ID'], $blocked_affiliates);
-                    ?>
-                <tr>
-                    <td><?php echo esc_html($affiliate['token']); ?></td>
-                    <td><?php echo esc_html($affiliate['display_name']); ?></td>
-                    <td>
-                    <button class="affiliate-block-btn w-btn <?php echo $is_blocked ? 'us-btn-style_2' : 'us-btn-style_1' ?>" 
-                        data-affiliate="<?php echo esc_attr($affiliate['token']); ?>"
-                            data-blocked="<?php echo $is_blocked ? '1' : '0'; ?>">
-                            <?php echo $is_blocked ? 'Unblock' : 'Block'; ?>
-                        </button>
-                    </td>
-                </tr>
-                <?php } }else{
-                    echo '<tr><td colspan="3">Not Affiliate Found!</td></tr>';
-                } ?>
+                    foreach ($affiliates as $key => $affiliate): 
+                        $is_blocked = $result['data']['affiliates'][$key]['status'];
+                       
+                        if($is_blocked == $filter OR  $filter == 'all'){
+                        $token = $result['data']['affiliates'][$key]['token'];
+                        $current_url = home_url(add_query_arg([], $_SERVER['REQUEST_URI']));
+                        $html = 1;
+                            ?>
+                            <tr>
+                                <td><div class="thead-data">Token</div><?php echo esc_html($affiliate['token']); ?></td>
+                                <td><div class="thead-data">Name</div><?php echo esc_html($affiliate['display_name']); ?></td>
+                                <td><div class="thead-data">Action</div>
+                                <?php 
+                                if($is_blocked != 0){
+                                ?>
+                                <button class="affiliate-block-btn w-btn <?php echo ($is_blocked == 1) ? 'us-btn-style_1' : 'us-btn-style_2' ?>" 
+                                    data-affiliate="<?php echo esc_attr($affiliate['user_id']); ?>"
+                                        data-blocked="<?php echo ($is_blocked == 1) ? '1' : '0'; ?>">
+                                        <?php echo ($is_blocked == 1) ? 'Block' : 'Unblock'; ?>
+                                    </button>
+                                    <?php }else{ ?>
+                                        <a href="<?php echo $current_url.'?action=organization-link&token='.$token; ?>" class="w-btn us-btn-style_1">Link to Organization</a>
+                                    <?php } ?>
+                                </td>
+                            </tr>
+                        <?php 
+                        }
+                        endforeach; 
+                 }else{
+                    echo '<tr><td colspan="3">No organization found!</td></tr>';
+                } 
+                if($html == 0){
+                    echo '<tr><td colspan="3">No organization found!</td></tr>';
+                }
+                ?>
             </tbody>
         </table>
         <?php 

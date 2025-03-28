@@ -911,7 +911,7 @@ document.addEventListener('click', function (event) {
 document.addEventListener('click', function (event) {
     if (event.target.classList.contains('affiliate-block-btn')) {
         event.preventDefault();
-        let isBlocked = event.target.getAttribute('data-blocked') === '1'; // Ensure it's compared as a string
+        let isBlocked = event.target.getAttribute('data-blocked');
         let action = isBlocked ? 'unblock' : 'block';
         let affiliateCode = event.target.getAttribute('data-affiliate');
 
@@ -935,7 +935,7 @@ document.addEventListener('click', function (event) {
                     body: new URLSearchParams({
                         action: 'affiliate_status_toggle_block',
                         affiliate_id: affiliateCode,
-                        status: action
+                        status: isBlocked
                     }),
                 })
                 .then(response => response.json())
