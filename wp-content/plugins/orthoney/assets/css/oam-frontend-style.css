@@ -4458,6 +4458,7 @@ body .wc-block-components-radio-control .wc-block-components-radio-control__inpu
   margin: 0 12px 0 0px;
   padding-right: 12px;
   position: relative;
+  line-height: 1.1;
 }
 
 .top-bar-menu ul li a {
@@ -4912,8 +4913,6 @@ h1.checkout-title:after {
 /* end */
 
 
-
-
 .yith-wcaf-registration-form .forms-container .register-title {
   width: 100%;
 }
@@ -5050,6 +5049,88 @@ body .register-form input:focus:not(.input-checkbox, .button) {
 .woocommerce .form-row span#account_display_name_description {
   font-size: 14px;
 }
+
+/* dev css */
+.recipient-group-section.failed-recipient-show #failCSVData .heading-title p,
+.recipient-group-section.failed-recipient-show #failCSVData .editRecipient,
+.recipient-group-section.failed-recipient-show #failCSVData .deleteRecipient {
+  display: none;
+}
+
+table tr.hide {
+  display: none;
+}
+
+#duplicateCSVData tr.hide {
+  display: table-row;
+}
+
+.select2-container.select2-container--default.select2-container--open {
+  z-index: 999999 !important;
+}
+
+.loader {
+  transition: all 0.5s ease-in-out;
+  display: block;
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.5);
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999999;
+}
+
+.loader>div>.swal2-html-container {
+  margin-bottom: 25px;
+}
+
+.loader>div>h2 {
+  font-size: 28px;
+  padding-top: 25px;
+}
+
+.loader>div {
+  width: var(--swal2-width);
+  max-width: 100%;
+  transform: translate(-50%, -50%);
+  border-radius: 10px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background-color: #fff;
+  padding: 25px;
+  text-align: center;
+}
+
+.loader .loader-5 {
+  margin: auto;
+  width: 2.2em;
+  height: 2.2em;
+  animation: swal2-rotate-loading 1.5s linear 0s infinite normal;
+  border-width: .25em;
+  border-style: solid;
+  border-radius: 100%;
+  border-color: #2778c4 rgba(0, 0, 0, 0) #2778c4 rgba(0, 0, 0, 0);
+}
+
+@keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+/* end */
 
 /* responsive */
 
@@ -5776,13 +5857,15 @@ body .register-form input:focus:not(.input-checkbox, .button) {
   }
 
 
-  .order-process-block table td, .custom-table table td {
+  .order-process-block table td,
+  .custom-table table td {
     padding: 0 0.7rem 10px;
     flex-wrap: wrap;
     border-left: 1px solid #dee2e6;
   }
 
-  .order-process-block table td .thead-data, .custom-table table td .thead-data{
+  .order-process-block table td .thead-data,
+  .custom-table table td .thead-data {
     flex: 100% 0 0;
     margin-bottom: 10px;
     margin-top: 0;
@@ -5798,7 +5881,7 @@ body .register-form input:focus:not(.input-checkbox, .button) {
   .order-process-block table td .thead-data:after,
   .custom-table table td .thead-data:after,
   .order-process-block table td .thead-data:before,
-  .custom-table table td .thead-data:before{
+  .custom-table table td .thead-data:before {
     content: '';
     position: absolute;
     left: 100%;
