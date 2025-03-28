@@ -4648,6 +4648,8 @@ body .woocommerce .order-process-block .button {
 .place-order .block-title {
   font-size: 22px;
   font-weight: 500;
+  margin: 0;
+  flex: 1 0 0;
 }
 
 .order-process-block table,
@@ -5772,6 +5774,28 @@ table tr.hide {
 
   .dashboard-block .block-row.three-block-col {
     grid-template-columns: repeat(1, 1fr);
+  }
+
+  .place-order .block-title {
+    font-size: 20px;
+  }
+
+  .icon-card {
+    width: 34px;
+    height: 34px;
+  }
+
+  .icon-card img {
+    width: 20px;
+  }
+
+  .place-order .row-block {
+    padding: 0 24px 16px;
+    margin-bottom: 16px;
+  }
+
+  .dashboard-block .block-row .item{
+    padding: 16px 0;
   }
 
 }
