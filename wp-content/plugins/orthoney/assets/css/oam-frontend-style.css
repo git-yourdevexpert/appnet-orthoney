@@ -5794,8 +5794,12 @@ table tr.hide {
     margin-bottom: 16px;
   }
 
-  .dashboard-block .block-row .item{
+  .dashboard-block .block-row .item {
     padding: 16px 0;
+  }
+
+  .dashboard-block .dashboard-heading .item {
+    padding: 16px 24px;
   }
 
 }
