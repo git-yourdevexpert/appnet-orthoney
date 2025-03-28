@@ -5280,7 +5280,7 @@ body .register-form input:focus:not(.input-checkbox, .button) {
 
     padding: 0.6rem 0.7rem;
 
-    flex: 130px 0 0;
+    flex: 100px 0 0;
 
     margin-right: 15px;
 
@@ -5289,6 +5289,7 @@ body .register-form input:focus:not(.input-checkbox, .button) {
     border-left: 1px solid #dee2e6;
     margin-top: -10px;
     margin-bottom: -10px;
+    line-height: 1.1;
 
   }
 
@@ -5772,6 +5773,45 @@ body .register-form input:focus:not(.input-checkbox, .button) {
   .grid-two-col .footer-btn button[type="submit"],
   .grid-two-col .footer-btn button[type="button"] {
     width: 100%;
+  }
+
+
+  .order-process-block table td, .custom-table table td {
+    padding: 0 0.7rem 10px;
+    flex-wrap: wrap;
+    border-left: 1px solid #dee2e6;
+  }
+
+  .order-process-block table td .thead-data, .custom-table table td .thead-data{
+    flex: 100% 0 0;
+    margin-bottom: 10px;
+    margin-top: 0;
+    margin-left: 0;
+    margin-right: 0;
+    display: block;
+    border-right: 0px;
+    border-left: 0px;
+    padding-left: 0;
+    position: relative;
+  }
+
+  .order-process-block table td .thead-data:after,
+  .custom-table table td .thead-data:after,
+  .order-process-block table td .thead-data:before,
+  .custom-table table td .thead-data:before{
+    content: '';
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background: #ebeff6;
+    width: 100%;
+    height: 100%;
+  }
+
+  .order-process-block table td .thead-data:before,
+  .custom-table table td .thead-data:before {
+    left: inherit;
+    right: 100%;
   }
 }
 
