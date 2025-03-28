@@ -1,10 +1,11 @@
 <?php
 // Prevent direct access
+echo ' <div class="order-process-block">';
 if (!defined('ABSPATH')) {
     exit;
 }
 
-echo '<h2>Welcome to the User List</h2>';
+echo '<div class="heading-title"><h3 class="block-title">Welcome to the User List</h3></div>';
 
 ?>
 
@@ -19,6 +20,7 @@ if(!empty($affiliate_users )){
 ?>
 
 <!-- User Table -->
+
 <table class="wp-list-table widefat fixed striped">
     <thead>
         <tr>
@@ -50,8 +52,10 @@ if(!empty($affiliate_users )){
          endif; ?>
     </tbody>
 </table>
+
 <?php 
     }else{
         echo '<p>No affiliate team member found!</p>';
     }
 ?>
+</div>

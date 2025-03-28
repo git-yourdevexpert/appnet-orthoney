@@ -10,37 +10,31 @@ if (!defined('ABSPATH')) {
 
 
 
-class OAM_AFFILIATE_Helper
-{
+class OAM_AFFILIATE_Helper {
 
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
 
 
-    public static function init()
-    {
+    public static function init() {
 
     }
 
 
 
-    public static function getRandomChars($string, $length = 3)
-    {
+    public static function getRandomChars($string, $length = 3) {
         $string = str_replace(' ', '', $string); // Remove spaces
         $stringArray = str_split($string);
-
+    
         if (strlen($string) < $length) {
             return strtoupper($string); // Return as is if it's too short
         }
-
+    
         shuffle($stringArray); // Shuffle characters randomly
         return strtoupper(implode('', array_slice($stringArray, 0, $length))); // Take first 3 shuffled chars
     }
-
-    public static function affiliate_status_check($user_id)
-    {
+    
+    public static function affiliate_status_check($user_id) {
 
         global $wpdb;
 
@@ -64,7 +58,7 @@ class OAM_AFFILIATE_Helper
 
         if (!$affiliate) {
 
-            return json_encode(['success' => false, 'message' => 'You are not registered as an affiliate.']);
+            return json_encode(['success' => false, 'message'=> 'You are not registered as an affiliate.']);
 
         }
 
@@ -78,29 +72,29 @@ class OAM_AFFILIATE_Helper
 
             return json_encode([
 
-                'success' => false,
+                'success' => false, 
 
-                'message' => 'You are Banned please contact to the admin.',
+                'message'=> 'You are Banned please contact to the admin.',
 
-                'reason' => $ban_message
+                'reason'=> $ban_message
 
             ]);
 
-
+            
 
         } elseif (isset($affiliate->enabled)) {
 
             if ($affiliate->enabled == 0) {
 
-
+                
 
                 return json_encode([
 
-                    'success' => false,
+                    'success' => false, 
 
-                    'message' => 'You has been pending Approval.',
+                    'message'=> 'You has been pending Approval.',
 
-                    'reason' => ''
+                    'reason'=> ''
 
                 ]);
 
@@ -112,11 +106,11 @@ class OAM_AFFILIATE_Helper
 
                 return json_encode([
 
-                    'success' => false,
+                    'success' => false, 
 
-                    'message' => 'You account has been Rejected.',
+                    'message'=> 'You account has been Rejected.',
 
-                    'reason' => $reject_message
+                    'reason'=> $reject_message
 
                 ]);
 
@@ -124,50 +118,47 @@ class OAM_AFFILIATE_Helper
 
         }
 
-
+        
 
         return json_encode([
 
-            'success' => true,
+            'success' => true, 
 
-            'message' => '',
+            'message'=> '',
 
-            'reason' => ''
+            'reason'=> ''
 
         ]);
 
-
+       
 
     }
 
 
 
-    public static function manage_user_popup()
-    {
+    public static function manage_user_popup(){
 
         ?>
 
         <div id="user-manage-popup" class="lity-hide black-mask full-popup" style="background: white;">
-            <div class="heading-title">
-                <h3 class="block-title">User Details</h3>
-                <div class="order-process-block">
-                    <?php
 
-                    echo self::get_user_affiliate_form();
+            <h2>User Details</h2>
 
-                    ?>
-                </div>
-            </div>
+            <?php 
+
+            echo self::get_user_affiliate_form();
+
+            ?>
+
         </div>
 
         <?php
 
     }
 
+    
 
-
-    public static function get_user_affiliate_form()
-    {
+    public static function get_user_affiliate_form() {
 
         ob_start(); ?>
 
@@ -184,8 +175,7 @@ class OAM_AFFILIATE_Helper
                 <input type="email" id="email" name="email" required data-error-message="Please enter a valid Email." />
                 <span class="error-message"></span>
                 <label>Phone Number</label>
-                <input type="text" id="phone" name="phone" class="phone-input" required
-                    data-error-message="Please enter a Phone Number." />
+                <input type="text" id="phone" name="phone" class="phone-input" required data-error-message="Please enter a Phone Number." />
                 <span class="error-message"></span>
                 <label>Type</label>
                 <select name="type" id="affiliate_type" required data-error-message="Please select a Type.">
@@ -207,19 +197,18 @@ class OAM_AFFILIATE_Helper
 
 
 
-    public static function affiliate_dashboard_navbar($user_roles = array())
-    {
+    public static function affiliate_dashboard_navbar($user_roles = array()){
 
         $output = '';
 
-        if (in_array('yith_affiliate', $user_roles) or in_array('affiliate_team_member', $user_roles)) {
+        if ( in_array( 'yith_affiliate', $user_roles) OR  in_array( 'affiliate_team_member', $user_roles)) {
 
             $output = '<div class="affiliate-dashboard">';
             $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard')) . '">Dashboard</a></div>';
             $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/my-profile/')) . '">My Profile</a></div>';
             $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/order-list/')) . '">Order List</a></div>';
 
-            if (!in_array('affiliate_team_member', $user_roles)) {
+            if ( ! in_array( 'affiliate_team_member', $user_roles)) {
 
                 $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/change-admin/')) . '">Change Admin</a></div>';
                 $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/link-customer/')) . '">Link Customer</a></div>';
@@ -230,18 +219,17 @@ class OAM_AFFILIATE_Helper
             $output .= '<div class="btn"><a href="' . esc_url(wp_logout_url(home_url())) . '">Logout</a></div>';
             $output .= '</div>';
 
-            return $output;
+        return $output;
 
         }
 
     }
 
-
-    public static function affiliate_order_list($details, $limit = 9999999)
-    {
+       
+    public static function affiliate_order_list($details, $limit = 9999999) {
         $html = '';
         $current_url = home_url($_SERVER['REQUEST_URI']) . '/order-list/';
-
+    
         if (!empty($details['orders'])) {
             $orders = $details['orders'];
             $html .= '<div class="recent-commissions">
@@ -249,11 +237,11 @@ class OAM_AFFILIATE_Helper
                             <div class="recipient-lists-block custom-table">
                                 <div class="row-block">
                                     <h4>Recent Commissions</h4>';
-
+            
             if ($limit != 9999999) {
                 $html .= '<div class="see-all"><a href="' . esc_url($current_url) . '" class="w-btn us-btn-style_1">View all</a></div>';
             }
-
+            
             $html .= '</div>
                       <table>
                         <thead>
@@ -265,14 +253,13 @@ class OAM_AFFILIATE_Helper
                             </tr>
                         </thead>
                         <tbody>';
-
+    
             $count = 0;
-
+    
             foreach ($orders as $order_id) {
                 $order = wc_get_order($order_id);
-                if (!$order)
-                    continue;
-
+                if (!$order) continue;
+    
                 $count++;
                 if ($count <= $limit) {
                     $html .= "<tr>
@@ -283,32 +270,31 @@ class OAM_AFFILIATE_Helper
                               </tr>";
                 }
             }
-
+    
             if ($count == 0) {
                 $html .= "<tr><td colspan='4'>Order not found!</td></tr>";
             }
-
+    
             $html .= '</tbody></table>
                       </div>
                     </div>
                   </div>';
         }
-
+    
         return $html;
     }
+    
+    
+    
 
-
-
-
-    public static function affiliate_details($affiliate_id, $details)
-    {
+    public static function affiliate_details($affiliate_id, $details){
 
         $affiliate = get_userdata($affiliate_id);
 
         $html = '<div class="dashboard-heading block-row">
                     <div class="item">
                         <div class="row-block">
-                            <h3 class="block-title">' . (!empty($affiliate->display_name) ? esc_html($affiliate->display_name) : 'N/A') . '</h3>
+                            <h3 class="block-title">'.(!empty($affiliate->display_name) ? esc_html($affiliate->display_name) : 'N/A').'</h3>
                             
                         </div>
                     </div>
@@ -318,82 +304,81 @@ class OAM_AFFILIATE_Helper
                         <div class="row-block">
                             <h4 class="block-title">Total Earning</h4>
                             <div class="see-all">
-                                <div class="icon-card"><img alt="speedicon" src="' . OH_PLUGIN_DIR_URL . '/assets/image/speedicon.svg" width="30" height="30" /></div>
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30" height="30" /></div>
                             </div>
                         </div>
-                        <div class="sub-heading">$' . (!empty($details['total_earnings']) ? esc_html($details['total_earnings']) : '0.00') . '</div>
+                        <div class="sub-heading">$'.(!empty($details['total_earnings']) ? esc_html($details['total_earnings']) : '0.00').'</div>
                     </div>
                     <div class="place-order item">
                         <div class="row-block">
                             <h4 class="block-title">Paid</h4>
                             <div class="see-all">
-                                <div class="icon-card"><img alt="speedicon" src="' . OH_PLUGIN_DIR_URL . '/assets/image/speedicon.svg" width="30" height="30" /></div>
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30" height="30" /></div>
                             </div>
                         </div>
-                        <div class="sub-heading">$' . (!empty($details['paid']) ? esc_html($details['paid']) : '0.00') . '</div>
+                        <div class="sub-heading">$'.(!empty($details['paid']) ? esc_html($details['paid']) : '0.00').'</div>
                     </div>
                     <div class="place-order item">
                         <div class="row-block">
                             <h4 class="block-title">Refunds</h4>
                             <div class="see-all">
-                                <div class="icon-card"><img alt="speedicon" src="' . OH_PLUGIN_DIR_URL . '/assets/image/speedicon.svg" width="30" height="30" /></div>
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30" height="30" /></div>
                             </div>
                         </div>
-                        <div class="sub-heading">$' . (!empty($details['refunds']) ? esc_html($details['refunds']) : '0.00') . '</div>
+                        <div class="sub-heading">$'.(!empty($details['refunds']) ? esc_html($details['refunds']) : '0.00').'</div>
                     </div>
                     <div class="place-order item">
                         <div class="row-block">
                             <h4 class="block-title">Active Balance</h4>
                             <div class="see-all">
-                                <div class="icon-card"><img alt="speedicon" src="' . OH_PLUGIN_DIR_URL . '/assets/image/speedicon.svg" width="30" height="30" /></div>
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30" height="30" /></div>
                             </div>
                         </div>
-                        <div class="sub-heading">$' . (!empty($details['refunds']) ? esc_html($details['refunds']) : '0.00') . '</div>
+                        <div class="sub-heading">$'.(!empty($details['refunds']) ? esc_html($details['refunds']) : '0.00').'</div>
                     </div>
                     <div class="place-order item">
                         <div class="row-block">
                             <h4 class="block-title">Total Orders</h4>
                             <div class="see-all">
-                                <div class="icon-card"><img alt="speedicon" src="' . OH_PLUGIN_DIR_URL . '/assets/image/speedicon.svg" width="30"  height="30" /></div>
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30"  height="30" /></div>
                             </div>
                         </div>
-                        <div class="sub-heading">' . (!empty($details['orders']) ? count($details['orders']) : '0') . '</div>
+                        <div class="sub-heading">'.(!empty($details['orders']) ? count( $details['orders']) : '0').'</div>
                     </div>
                 </div>';
 
 
-        return $html;
+                return  $html;
 
     }
 
 
 
-    public static function get_affiliate_details($affiliate_id)
-    {
+    public static function get_affiliate_details($affiliate_id) {
         global $wpdb;
-
+    
         $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
-
+        
         // Initialize default values
         $data = [
             'total_earnings' => 0,
-            'paid' => 0,
-            'refunds' => 0,
+            'paid'           => 0,
+            'refunds'        => 0,
             'active_balance' => 0,
-            'orders' => [],
+            'orders'         => [],
         ];
-
+    
         // Get affiliate data from the database
         $affiliate = $wpdb->get_row(
             $wpdb->prepare("SELECT * FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d", $affiliate_id)
         );
-
+    
         if ($affiliate) {
             $data['total_earnings'] = $affiliate->earnings;
             $data['paid'] = $affiliate->paid;
             $data['refunds'] = $affiliate->refunds;
             $affiliate_id = $affiliate->ID;
-
+    
             // Get active balance and order IDs
             $results = $wpdb->get_row($wpdb->prepare(
                 "SELECT SUM(c.amount) AS total_amount, GROUP_CONCAT(c.order_id) AS order_ids 
@@ -402,16 +387,16 @@ class OAM_AFFILIATE_Helper
                  WHERE c.affiliate_id = %d AND o.parent_order_id = 0",
                 $affiliate_id
             ));
-
+    
             if ($results) {
                 $data['active_balance'] = $results->total_amount ?: 0;
                 $data['orders'] = $results->order_ids ? explode(',', $results->order_ids) : [];
             }
         }
-
+        
         return $data;
     }
-
+    
 
 }
 
