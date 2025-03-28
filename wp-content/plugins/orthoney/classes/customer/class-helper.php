@@ -20,7 +20,7 @@ class OAM_Helper{
     public static $group_recipient_table;
     public static $yith_wcaf_affiliates_table;
     public static $oh_affiliate_customer_relation_table;
-    public static $oh_affiliate_customer_linker; //oh_affiliate_customer_linker
+    public static $oh_affiliate_customer_linker; 
 
     public static $users_table;
     
@@ -45,7 +45,7 @@ class OAM_Helper{
         self::$group_recipient_table = $wpdb->prefix . 'oh_group_recipient';
         self::$yith_wcaf_affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
         self::$oh_affiliate_customer_relation_table = $wpdb->prefix . 'oh_affiliate_customer_relation';
-        self::$oh_affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker'; //oh_affiliate_customer_linker
+        self::$oh_affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker'; 
 
         self::$users_table = $wpdb->prefix . 'users';
 
@@ -64,71 +64,40 @@ class OAM_Helper{
     public static function manage_affiliates_content($search = '', $filter = '', $return_type = 0) {
         global $wpdb;
         $yith_wcaf_affiliates_table = self::$yith_wcaf_affiliates_table;
-        $oh_affiliate_customer_relation_table = self::$oh_affiliate_customer_relation_table;
+        $oh_affiliate_customer_linker = self::$oh_affiliate_customer_linker;
         $users_table = self::$users_table;
 
         $user_id = get_current_user_id();
 
-        // Base SQL query
-        $queryParts = ["a.enabled = 1"];
-        $queryParams = [];
-        $blocked_affiliates = [];
-
-        // Apply search filter if necessary
-        if (!empty($search)) {
-            $queryParts[] = "(a.token LIKE %s OR u.display_name LIKE %s)";
-            array_push($queryParams, '%' . $wpdb->esc_like($search) . '%', '%' . $wpdb->esc_like($search) . '%');
-        }
-
-        // Get blocked affiliates for the logged-in user
-        $blocked_affiliates = $wpdb->get_col($wpdb->prepare(
-            "SELECT affiliate_id FROM $oh_affiliate_customer_relation_table WHERE user_id = %d",
+        $affiliates = $wpdb->get_results($wpdb->prepare(
+            "SELECT affiliate_id, status, token FROM $oh_affiliate_customer_linker WHERE customer_id = %d",
             $user_id
         ));
-
-        if ($filter == 'unblocked' && empty($blocked_affiliates)) {
-            return json_encode(['success' => false, 'message'=> 'No blocked organization found.']);
-        }
-        if (!empty($filter) && $filter != 'All') {
-            if (!empty($blocked_affiliates)) {
-                $placeholders = implode(',', array_fill(0, count($blocked_affiliates), '%d'));
-            }
-            // Apply filter logic correctly
-            if ($filter == 'blocked' && !empty($blocked_affiliates)) {
-                $queryParts[] = "a.ID NOT IN ($placeholders)";
-            } 
-            if ($filter == 'unblocked' && !empty($blocked_affiliates)) {
-                $queryParts[] = "a.ID IN ($placeholders)";                    
-            }
-            if(!empty($blocked_affiliates)){
-                $queryParams = array_merge($queryParams, $blocked_affiliates);
-            }
-        }
         
+        if (!empty($affiliates)) {
+            // Extract affiliate IDs
+            $ids = array_column($affiliates, 'affiliate_id');
         
-        // Build final SQL query
-        $sql = "SELECT a.ID, a.token, u.display_name , a.user_id
-        FROM $yith_wcaf_affiliates_table AS a
-        JOIN $users_table AS u ON a.user_id = u.ID
-        WHERE " . implode(" AND ", $queryParts) . " 
-        ORDER BY u.display_name ASC";
-
+            if (!empty($ids)) {
+                // Convert array into a comma-separated list of integers
+                $affiliates_list = implode(',', array_map('intval', $ids));
         
-        // Prepare and execute query
-        if (!empty($queryParams)) {
-            $query = $wpdb->prepare($sql, ...$queryParams);
+                $query = "SELECT a.ID, a.token, u.display_name, a.user_id 
+                          FROM {$yith_wcaf_affiliates_table} AS a 
+                          JOIN {$users_table} AS u ON a.user_id = u.ID 
+                          WHERE u.ID IN ($affiliates_list)";
+        
+                $user_info = $wpdb->get_results($query);
+            } else {
+                $user_info = [];
+            }
         } else {
-            $query = $sql;
-        }
-        $affiliates = $wpdb->get_results($query);
-
-        if (!$affiliates) {
-            return json_encode(['success' => false, 'message'=> 'No blocked affiliates found.']);
+            $user_info = []; // No affiliates found
         }
 
         $resultData = [
+            'user_info' => $user_info,
             'affiliates' => $affiliates,
-            'blocked_affiliates' => $blocked_affiliates,
         ];
 
         return json_encode(['success' => true, 'data'=> $resultData]);

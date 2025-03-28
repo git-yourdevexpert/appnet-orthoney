@@ -121,26 +121,29 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             $affiliateList = OAM_Helper::manage_affiliates_content('', 'blocked');
                             $affiliateList = json_decode($affiliateList, true);
 
+                          
 
                             echo '<select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an affiliate.">';
                             echo '<option ' . selected($affiliate, '0', false) . ' value="OrtHoney">Unaffiliated</option>';
                             
-                            if (!empty($affiliateList['data']['affiliates'])) {
-                                foreach ($affiliateList['data']['affiliates']  as $data) {
-                                    echo $user_id = $data['user_id'];
-                                    $states = WC()->countries->get_states('US');
-                                    $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
-                                    $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
-                                    $state_name = isset($states[$state]) ? $states[$state] : $state;
-                                    $value = '[' . $data['token'] . '] ' . $data['display_name'];
-                                    if (!empty($city)) {
-                                        $value .= ', ' . $city;
-                                    }
-                                    if (!empty($state)) {
-                                        $value .= ', ' . $state_name;
-                                    }
+                            if (!empty($affiliateList['data']['user_info'])) {
+                                foreach ($affiliateList['data']['user_info']  as $key => $data) {
+                                    if($affiliateList['data']['affiliates'][$key]['status'] == 1){
+                                        $user_id = $data['ID'];
+                                        $states = WC()->countries->get_states('US');
+                                        $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
+                                        $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
+                                        $state_name = isset($states[$state]) ? $states[$state] : $state;
+                                        $value = '[' . $data['token'] . '] ' . $data['display_name'];
+                                        if (!empty($city)) {
+                                            $value .= ', ' . $city;
+                                        }
+                                        if (!empty($state)) {
+                                            $value .= ', ' . $state_name;
+                                        }
 
-                                    echo '<option ' . selected($user_id, $affiliate, false) . ' value="' . esc_attr($user_id) . '">' . esc_html($value) . '</option>';
+                                        echo '<option ' . selected($user_id, $affiliate, false) . ' value="' . esc_attr($user_id) . '">' . esc_html($value) . '</option>';
+                                    }
                                 }
 
                             }

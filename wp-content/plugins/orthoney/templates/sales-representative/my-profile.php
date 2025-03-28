@@ -14,7 +14,8 @@ $email = $user_data->user_email;
 ?>
 
 <div class="col-right">
-    <h2 class="heading-title">My Profile</h2>
+    
+    <div class="heading-title"><h3 class="block-title">My Profile</h3></div>
     <form id="sales-rep-profile-form" class="site-form">
         <div class="grid-two-col">
             <div class="form-row gfield--width-half">

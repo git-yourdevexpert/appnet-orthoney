@@ -9,7 +9,7 @@ class OAM_Hooks {
      * Constructor to hook into WooCommerce template loading.
      */
     public function __construct() {
-        add_filter('woocommerce_locate_template', array($this, 'custom_plugin_woocommerce_template'), 10, 3);
+        // add_filter('woocommerce_locate_template', array($this, 'custom_plugin_woocommerce_template'), 10, 3);
     }
 
     /**

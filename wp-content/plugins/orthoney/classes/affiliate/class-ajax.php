@@ -40,7 +40,7 @@ class OAM_AFFILIATE_Ajax{
         $token = isset($_POST['token']) ? sanitize_text_field($_POST['token']) : '';
     
         if (empty($token)) {
-            wp_send_json(['success' => false, 'message' => 'Invalid token.']);
+            wp_send_json(['success' => false, 'message' => 'You have failed to link with the organization.']);
         }
     
         global $wpdb;
@@ -57,12 +57,14 @@ class OAM_AFFILIATE_Ajax{
                     ['%d'],
                     ['%s']
                 );
-                wp_send_json(['success' => true, 'message' => 'Link successfully!']);
+                wp_send_json(['success' => true, 'message' => 'You have successfully linked with the organization!']);
             } elseif ($existing_request->status == 1) {
-                wp_send_json(['success' => true, 'message' => 'Already linked successfully!']);
+                wp_send_json(['success' => true, 'message' => 'You are already linked with the organization.']);
+            }else{
+                wp_send_json(['success' => true, 'message' => 'You have blocked the organization.']);
             }
         } else {
-            wp_send_json(['success' => false, 'message' => 'Token not found.']);
+            wp_send_json(['success' => false, 'message' => 'You have failed to link with the organization.']);
         }
     }
 

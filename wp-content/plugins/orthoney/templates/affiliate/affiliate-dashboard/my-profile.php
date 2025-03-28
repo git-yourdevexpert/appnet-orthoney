@@ -25,7 +25,8 @@ $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
 ?>
 <div class="col-right">
     <div class="affiliate-profile" id="update-affiliate-form">
-        <h2 class="heading-title">My Profile</h2>
+       
+        <div class="heading-title"><h3 class="block-title">My Profile</h3></div>
         <form id="affiliate-profile-form">
             <div class="profile-fields site-form grid-two-col">
                 <div class="form-row gfield--width-half">
