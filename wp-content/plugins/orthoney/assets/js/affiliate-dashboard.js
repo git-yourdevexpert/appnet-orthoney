@@ -515,6 +515,8 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 //Link Customer by email code
+const searchbutton = document.querySelector('#search-button');
+if(searchbutton){
 document.getElementById('search-button').addEventListener('click', async function () {
     const emailInput = document.getElementById('customer-email-search');
     const form = emailInput.closest('form') || document.body;
@@ -648,7 +650,7 @@ document.getElementById('search-button').addEventListener('click', async functio
         });
     }
 });
-
+}
 //Resend email button code 
 document.addEventListener('click', async function (event) {
     if (event.target.classList.contains('resend-email-btn')) {

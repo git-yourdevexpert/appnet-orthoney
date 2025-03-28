@@ -4,13 +4,9 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-echo '<h2>Welcome to the User List</h2>';
-
 ?>
 
 <!-- Add User Button -->
-
-
 <?php
 // Get users with the 'affiliate_team_member' role
 $affiliate_users = get_users(['role' => 'affiliate_team_member']);

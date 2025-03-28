@@ -744,7 +744,7 @@ Edit button JS start
 document.addEventListener('click', function (event) {
     if (event.target.classList.contains('editRecipient') || event.target.classList.contains('viewRecipient')) {
         event.preventDefault();
-        process_group_popup();
+        // process_group_popup();
         
         const target = event.target;
 

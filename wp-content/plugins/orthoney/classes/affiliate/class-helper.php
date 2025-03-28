@@ -159,29 +159,41 @@ class OAM_AFFILIATE_Helper {
         ob_start(); ?>
 
         <div id="edit-user-form" class="edit-affiliate-form">
-            <form method="POST" id="addUserForm">
+            <form method="POST" class="grid-two-col" id="addUserForm">
                 <input type="hidden" id="user_id" name="user_id" required />
-                <label>First Name</label>
-                <input type="text" id="first_name" name="first_name" required data-error-message="Please enter a First Name." />
-                <span class="error-message"></span>
-                <label>Last Name</label>
-                <input type="text" id="last_name" name="last_name" required data-error-message="Please enter a Last Name." />
-                <span class="error-message"></span>
-                <label>Email</label>
-                <input type="email" id="email" name="email" required data-error-message="Please enter a valid Email." />
-                <span class="error-message"></span>
-                <label>Phone Number</label>
-                <input type="text" id="phone" name="phone" class="phone-input" required data-error-message="Please enter a Phone Number." />
-                <span class="error-message"></span>
-                <label>Type</label>
-                <select name="type" id="affiliate_type" required data-error-message="Please select a Type.">
-                    <option value="">Select a Type</option>
-                    <option value="primary-contact">Primary Contact</option>
-                    <option value="co-chair">Co-Chair</option>
-                    <option value="alternative-contact">Alternative Contact</option>
-                </select>
-                <span class="error-message"></span>
-                <button class="add-user us-btn-style_1" type="submit">Save</button>
+                <div class="form-row gfield--width-half">
+                    <label for="first_name"> First Name</label>
+                    <input type="text" id="first_name" name="first_name" required data-error-message="Please enter a First Name." />
+                    <span class="error-message"></span>
+                </div>
+                <div class="form-row gfield--width-half">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" required data-error-message="Please enter a Last Name." />
+                    <span class="error-message"></span>
+                </div>
+                <div class="form-row gfield--width-full">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required data-error-message="Please enter a valid Email." />
+                    <span class="error-message"></span>
+                </div>
+                <div class="form-row gfield--width-full">
+                    <label for="phone">Phone Number</label>
+                    <input type="text" id="phone" name="phone" class="phone-input" required data-error-message="Please enter a Phone Number." />
+                    <span class="error-message"></span>
+                </div>
+                <div class="form-row gfield--width-full">
+                <label for="affiliate_type">Type</label>
+                    <select name="type" id="affiliate_type" required data-error-message="Please select a Type.">
+                        <option value="">Select a Type</option>
+                        <option value="primary-contact">Primary Contact</option>
+                        <option value="co-chair">Co-Chair</option>
+                        <option value="alternative-contact">Alternative Contact</option>
+                    </select>
+                    <span class="error-message"></span>
+                </div>
+                <div class="footer-btn gfield--width-full">
+                    <button class="add-user us-btn-style_1" type="submit">Save</button>
+                </div>
             </form>
             <div id="user-message"></div>
         </div>
