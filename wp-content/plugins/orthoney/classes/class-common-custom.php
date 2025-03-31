@@ -236,7 +236,7 @@ class OAM_COMMON_Custom {
             $output .= '<li>Hi, ' . $display_name . '!</li>';
             if (in_array('administrator', $roles)) {
                 $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
-                $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
+                $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Organization Area</a></li>';
                 $output .= '<li><a href="' . site_url('/sales-representative-dashboard') . '">Sales Representative Area</a></li>';
             } else {
                 // Check for customer without affiliate roles
@@ -247,7 +247,7 @@ class OAM_COMMON_Custom {
                         $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
                     }
                     if (in_array('yith_affiliate', $roles) || in_array('affiliate_team_member', $roles)) {
-                        $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
+                        $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Organization Area</a></li>';
                     }
                     if (in_array('sales_representative', $roles)) {
                         $output .= '<li><a href="' . site_url('/sales-representative-dashboard') . '">Sales Representative Area</a></li>';
@@ -258,7 +258,7 @@ class OAM_COMMON_Custom {
             $output .= '<li><a href="' . wp_logout_url(site_url()) . '">Logout</a></li>';
         } else {
             $output .= '<li><a href="' . ur_get_login_url() . '">Customer Login</a></li>';
-            $output .= '<li><a href="' . site_url('/affiliate-login') . '">Affiliate Login</a></li>';
+            $output .= '<li><a href="' . site_url('/affiliate-login') . '">Organization Login</a></li>';
         }
     
         $output .= '</ul>';
