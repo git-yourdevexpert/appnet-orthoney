@@ -222,8 +222,9 @@ class OAM_COMMON_Custom {
         $display_name = $user->display_name;
         
         $output = '<ul>';
-        $output .= '<li>Hi, ' . $display_name . '!</li>';
+        
         if (is_user_logged_in()) {
+            $output .= '<li>Hi, ' . $display_name . '!</li>';
             if (in_array('administrator', $roles)) {
                 $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
                 $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
