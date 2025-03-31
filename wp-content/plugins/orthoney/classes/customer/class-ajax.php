@@ -809,7 +809,7 @@ class OAM_Ajax{
         $delivery_line_2 = !empty($stepData['single_order_address_2']) ? $stepData['single_order_address_2'] : '';
         $city = !empty($stepData['single_order_city']) ? $stepData['single_order_city'] : '';
         $state = !empty($stepData['single_order_state']) ? $stepData['single_order_state'] : '';
-        $country = !empty($stepData['single_order_country']) ? $stepData['single_order_country'] : '';
+        $country = !empty($stepData['single_order_country']) ? $stepData['single_order_country'] : 'US';
         $zipcode = !empty($stepData['single_order_zipcode']) ? $stepData['single_order_zipcode'] : '';
         $quantity = !empty($stepData['single_address_quantity']) ? $stepData['single_address_quantity'] : '';
 
@@ -823,8 +823,6 @@ class OAM_Ajax{
                 }
             }
         }
-
-        
 
         update_user_meta($user_id, 'shipping_address_1', $delivery_line_1);
         update_user_meta($user_id, 'shipping_address_2', $delivery_line_2);
