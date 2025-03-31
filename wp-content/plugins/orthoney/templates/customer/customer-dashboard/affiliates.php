@@ -28,60 +28,62 @@ $result = json_decode($manage_affiliates_content, true);
 
 if (!empty($result) && isset($result['success']) && $result['success']) {
     $affiliates = $result['data']['user_info'];
-    $blocked_affiliates = $result['data']['affiliates'];
-
-    if(!empty($affiliates)){
+    $blocked_affiliates = $result['data']['affiliates'];    
     ?>
-        <div class="affiliate-dashboard order-process-block">
-            <h3>All Organizations</h3>
-            <!-- Search and filter options -->
-            <div class="filter-container">
-                <input type="text" id="search-affiliates" placeholder="Search Organization">
-                <select id="filter-block-status">
-                    <option value="all">All organization</option>
-                    <option value="blocked">Blocked</option>
-                    <option value="unblocked">Unblocked</option>
-                </select>
-                 <button id="affiliate-filter-button" class="w-btn us-btn-style_2">Filter</button>
-            </div>
-            <div id="affiliate-results">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Token</th>
-                            <th>Name</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach ($affiliates as $key => $affiliate): 
-                        $is_blocked = $result['data']['affiliates'][$key]['status'];
-                        $token = $result['data']['affiliates'][$key]['token'];
-                        $current_url = home_url(add_query_arg([], $_SERVER['REQUEST_URI']));
-                            ?>
-                            <tr>
-                                <td><div class="thead-data">Token</div><?php echo esc_html($affiliate['token']); ?></td>
-                                <td><div class="thead-data">Name</div><?php echo esc_html($affiliate['display_name']); ?></td>
-                                <td><div class="thead-data">Action</div>
-                                <?php 
-                                if($is_blocked != 0){
-                                ?>
-                                <button class="affiliate-block-btn w-btn <?php echo ($is_blocked == 1) ? 'us-btn-style_1' : 'us-btn-style_2' ?>" 
-                                    data-affiliate="<?php echo esc_attr($affiliate['ID']); ?>"
-                                        data-blocked="<?php echo ($is_blocked == 1) ? '1' : '0'; ?>">
-                                        <?php echo ($is_blocked == 1) ? 'Block' : 'Unblock'; ?>
-                                    </button>
-                                    <?php }else{ ?>
-                                        <a href="<?php echo $current_url.'?action=organization-link&token='.$token; ?>" class="w-btn us-btn-style_1">Link to Organization</a>
-                                    <?php } ?>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+    <div class="affiliate-dashboard order-process-block">
+        <h3>All Organizations</h3>
+        <!-- Search and filter options -->
+        <div class="filter-container">
+            <input type="text" id="search-affiliates" placeholder="Search Organization">
+            <select id="filter-block-status">
+                <option value="all">All organization</option>
+                <option value="blocked">Blocked</option>
+                <option value="unblocked">Unblocked</option>
+            </select>
+                <button id="affiliate-filter-button" class="w-btn us-btn-style_2">Filter</button>
         </div>
-        <?php 
-    }
+        <div id="affiliate-results">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Token</th>
+                        <th>Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php 
+                if(!empty($affiliates)){
+                foreach ($affiliates as $key => $affiliate){
+                    $is_blocked = $result['data']['affiliates'][$key]['status'];
+                    $token = $result['data']['affiliates'][$key]['token'];
+                    $current_url = home_url(add_query_arg([], $_SERVER['REQUEST_URI']));
+                        ?>
+                        <tr>
+                            <td><div class="thead-data">Token</div><?php echo esc_html($affiliate['token']); ?></td>
+                            <td><div class="thead-data">Name</div><?php echo esc_html($affiliate['display_name']); ?></td>
+                            <td><div class="thead-data">Action</div>
+                            <?php 
+                            if($is_blocked != 0){
+                            ?>
+                            <button class="affiliate-block-btn w-btn <?php echo ($is_blocked == 1) ? 'us-btn-style_1' : 'us-btn-style_2' ?>" 
+                                data-affiliate="<?php echo esc_attr($affiliate['ID']); ?>"
+                                    data-blocked="<?php echo ($is_blocked == 1) ? '1' : '0'; ?>">
+                                    <?php echo ($is_blocked == 1) ? 'Block' : 'Unblock'; ?>
+                                </button>
+                                <?php }else{ ?>
+                                    <a href="<?php echo $current_url.'?action=organization-link&token='.$token; ?>" class="w-btn us-btn-style_1">Link to Organization</a>
+                                <?php } ?>
+                            </td>
+                        </tr>
+                    <?php } }else{ ?>
+                        <tr><td colspan="3">No Organization found! </td></tr>
+                        <?php } ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <?php 
+    
 }
 ?>
