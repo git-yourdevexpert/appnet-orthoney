@@ -5818,6 +5818,11 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
     padding: 16px 24px;
   }
 
+  .place-order .block-title {
+    flex: 100% 0 0;
+    margin-bottom: 16px;
+  }
+
 }
 
 @media (max-width: 480px) {
