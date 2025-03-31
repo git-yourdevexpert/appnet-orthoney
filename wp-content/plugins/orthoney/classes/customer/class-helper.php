@@ -807,7 +807,7 @@ class OAM_Helper{
                 foreach ($results as $data) {
                     $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->timestamp));
                     
-                    $resume_url = '#';
+                    $resume_url = esc_url(OAM_Helper::$customer_dashboard_link.'/groups/details/'.$data->id);
                     $html .= '<tr data-id="52" data-verify="0" data-group="0">
                     <td><div class="thead-data">Id</div>'.esc_html($data->id).'</td>
                     <td><div class="thead-data">Name</div>'.esc_html($data->name).'</td>
@@ -972,7 +972,8 @@ class OAM_Helper{
                 if(!empty($results)){
                 foreach ($results as $data) {
                     $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->timestamp));
-                    
+
+
                     $resume_url = esc_url(OAM_Helper::$customer_dashboard_link.'/groups/details/'.$data->id);
                     $html .= '<tr data-id="52" data-verify="0" data-group="0">
                     <td><div class="thead-data">ID</div>'.esc_html($data->id).'</td>
