@@ -9,9 +9,18 @@ if (!defined('ABSPATH')) {
 <!-- Add User Button -->
 <?php
 // Get users with the 'affiliate_team_member' role
-$affiliate_users = get_users(['role' => 'affiliate_team_member']);
+$affiliate_users = get_users([
+    'role'       => 'affiliate_team_member',
+    'meta_query' => [
+        [
+            'key'   => 'associated_affiliate_id',
+            'value' => get_current_user_id(),
+            'compare' => '='
+        ]
+    ]
+]);
 echo OAM_AFFILIATE_Helper::manage_user_popup();
-if(!empty($affiliate_users )){
+
 ?>
 
 <!-- User Table -->
@@ -20,6 +29,7 @@ if(!empty($affiliate_users )){
     <h3 class="block-title">Team Member List</h3>
     <a href="#user-manage-popup" class="add-user w-btn us-btn-style_1" data-lity data-popup="#user-manage-popup">Add new member</a>
 </div>
+
 <table class="wp-list-table widefat fixed striped">
     <thead>
         <tr>
@@ -32,8 +42,8 @@ if(!empty($affiliate_users )){
     </thead>
     <tbody>
         <?php 
-        if (!empty($affiliate_users)) :
-            foreach ($affiliate_users as $user) :
+        if (!empty($affiliate_users)) {
+            foreach ($affiliate_users as $user) {
                 $phone = get_user_meta($user->ID, 'billing_phone', true);
                 $affiliate_type = get_field('field_67c830a35d448', 'user_' . $user->ID);
                 ?>
@@ -45,13 +55,12 @@ if(!empty($affiliate_users )){
                     <td><div class='thead-data'>Action</div><button class="edit-user-form-btn far fa-edit" data-popup="#user-manage-popup" data-userid="<?php echo esc_attr($user->ID); ?>"></button><button class="delete-user far fa-trash" data-userid="<?php echo esc_attr($user->ID); ?>"></button></td>
                 </tr>
                 <?php
-            endforeach;
-         endif; ?>
+                }
+            }else{
+                ?>
+                <tr><td colspan="5">No Team member is not found!</td></tr>
+                <?php
+            } ?>
     </tbody>
 </table>
 </div>
-<?php 
-    }else{
-        echo '<p>No affiliate team member found!</p>';
-    }
-?>

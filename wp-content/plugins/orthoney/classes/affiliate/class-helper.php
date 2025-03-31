@@ -209,14 +209,14 @@ class OAM_AFFILIATE_Helper {
 
         $output = '';
 
-        if ( in_array( 'yith_affiliate', $user_roles) OR  in_array( 'affiliate_team_member', $user_roles) OR in_array('administrator', $user_roles)) {
+        if ( in_array( 'yith_affiliate', $user_roles) OR  in_array( 'affiliate_team_member', $user_roles)) {
 
             $output = '<div class="affiliate-dashboard">';
             $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard')) . '">Dashboard</a></div>';
             $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/my-profile/')) . '">My Profile</a></div>';
             $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/order-list/')) . '">Order List</a></div>';
 
-            if ( !( in_array( 'affiliate_team_member', $user_roles ) ) || in_array( 'administrator', $user_roles ) ) {
+            if ( ! in_array( 'affiliate_team_member', $user_roles)) {
 
                 $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/change-admin/')) . '">Change Admin</a></div>';
                 $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/link-customer/')) . '">Link Customer</a></div>';

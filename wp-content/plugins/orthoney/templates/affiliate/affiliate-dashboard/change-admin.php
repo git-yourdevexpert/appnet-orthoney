@@ -14,10 +14,9 @@ $users_table = OAM_Helper::$users_table;
 $users = $wpdb->get_results($wpdb->prepare(
     "SELECT u.ID, u.display_name 
      FROM {$users_table} u
-     JOIN {$users_meta_table} m2 ON u.ID = m2.user_id AND m2.meta_key = 'wp_capabilities'
-     WHERE m2.meta_value LIKE %s AND u.ID != %d",
-    '%affiliate_team_member%',
-    $get_current_user_id
+     JOIN {$users_meta_table} m2 ON u.ID = m2.user_id AND m2.meta_key = 'associated_affiliate_id'
+     WHERE m2.meta_value = %d AND m2.user_id != %d" ,
+    $get_current_user_id,$get_current_user_id
 ));
 ?>
 
