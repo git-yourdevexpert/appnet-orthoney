@@ -4458,6 +4458,8 @@ body .wc-block-components-radio-control .wc-block-components-radio-control__inpu
 .l-header .l-subheader.at_top{
   height: auto;
   line-height: inherit;
+  padding-top: 8px;
+  padding-bottom: 10px;
 }
 
 .top-bar-menu ul li {
