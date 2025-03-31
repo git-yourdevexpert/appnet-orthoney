@@ -779,6 +779,7 @@ class OAM_Ajax{
         $user_id = get_current_user_id();
 
         $process_id = !empty($stepData['pid']) ? $stepData['pid'] : '';
+        $status = isset($_POST['status']) ? $_POST['status'] : 0;
 
 
         $processQuery = $wpdb->prepare("
@@ -803,7 +804,6 @@ class OAM_Ajax{
             }
         }
         
-
         $currentStep = !empty($stepData['currentStep']) ? $stepData['currentStep'] : '';
         $delivery_line_1 = !empty($stepData['single_order_address_1']) ? $stepData['single_order_address_1'] : '';
         $delivery_line_2 = !empty($stepData['single_order_address_2']) ? $stepData['single_order_address_2'] : '';
@@ -813,63 +813,66 @@ class OAM_Ajax{
         $zipcode = !empty($stepData['single_order_zipcode']) ? $stepData['single_order_zipcode'] : '';
         $quantity = !empty($stepData['single_address_quantity']) ? $stepData['single_address_quantity'] : '';
 
-        $validate_address_result =  OAM_Helper::validate_address($delivery_line_1, $delivery_line_2, $city, $state, $zipcode);
+        if($status == 0){
+            $validate_address_result =  OAM_Helper::validate_address($delivery_line_1, $delivery_line_2, $city, $state, $zipcode);
 
-        $data = json_decode($validate_address_result, true);
-        if(!empty($data)){
-            if($data['success'] === false){
-                wp_send_json_error(['message' => $data['message']]);
-            }else{
-                update_user_meta($user_id, 'shipping_address_1', $delivery_line_1);
-                update_user_meta($user_id, 'shipping_address_2', $delivery_line_2);
-                update_user_meta($user_id, 'shipping_city', $city);
-                update_user_meta($user_id, 'shipping_state', $state);
-                update_user_meta($user_id, 'shipping_country', $country);
-                update_user_meta($user_id, 'shipping_postcode', $zipcode);
-
-                //clear the cart
-                if (class_exists('WC_Cart')) {
-                    WC()->cart->empty_cart(); // First, clear the cart
-                    
-                    $product_id = OAM_COMMON_Custom::get_product_id();
-
-                    $custom_price = 50; // Set custom price per unit
-
-                    $product = wc_get_product($product_id);
-                    $custom_price = $custom_price;
-
-                    $custom_data = array(
-                        'custom_data' => array(
-                            'new_price' => $custom_price,
-                            'single_order' => 1,
-                            'process_id' => $process_id
-                        )
-                    );
-                    
-                    WC()->cart->add_to_cart($product_id, $quantity, 0, array(), $custom_data);
-
+            $data = json_decode($validate_address_result, true);
+            if(!empty($data)){
+                if($data['success'] === false){
+                    wp_send_json_error(['message' => $data['message']]);
                 }
-
-                $updateData = [
-                    'order_type'  => sanitize_text_field('single_order'),
-                ];
-    
-                $wpdb->update(
-                    $order_process_table,
-                    $updateData,
-                    ['id' => $process_id]
-                );
-
-                // Get checkout page URL
-                $checkout_url = wc_get_checkout_url();
-
-                wp_send_json_success([
-                    'message' => 'Address is Verify',
-                    'checkout_url' => $checkout_url
-                ]);
-
             }
         }
+
+        
+
+        update_user_meta($user_id, 'shipping_address_1', $delivery_line_1);
+        update_user_meta($user_id, 'shipping_address_2', $delivery_line_2);
+        update_user_meta($user_id, 'shipping_city', $city);
+        update_user_meta($user_id, 'shipping_state', $state);
+        update_user_meta($user_id, 'shipping_country', $country);
+        update_user_meta($user_id, 'shipping_postcode', $zipcode);
+
+        //clear the cart
+        if (class_exists('WC_Cart')) {
+            WC()->cart->empty_cart(); // First, clear the cart
+            
+            $product_id = OAM_COMMON_Custom::get_product_id();
+
+            $custom_price = 50; // Set custom price per unit
+
+            $product = wc_get_product($product_id);
+            $custom_price = $custom_price;
+
+            $custom_data = array(
+                'custom_data' => array(
+                    'new_price' => $custom_price,
+                    'single_order' => 1,
+                    'process_id' => $process_id
+                )
+            );
+            
+            WC()->cart->add_to_cart($product_id, $quantity, 0, array(), $custom_data);
+
+        }
+
+        $updateData = [
+            'order_type'  => sanitize_text_field('single_order'),
+        ];
+
+        $wpdb->update(
+            $order_process_table,
+            $updateData,
+            ['id' => $process_id]
+        );
+
+        // Get checkout page URL
+        $checkout_url = wc_get_checkout_url();
+
+        wp_send_json_success([
+            'message' => 'Address is Verify',
+            'checkout_url' => $checkout_url
+        ]);
     }
     
     /**

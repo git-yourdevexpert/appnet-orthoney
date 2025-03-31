@@ -62,9 +62,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     if ($result) {
                         $setData = json_decode($result->data) ?? [];
 
-                        if(empty($setData)){
-                            echo 'empty';
-                        }
+                        // echo "<pre>";
+                        // print_r( $setData);
+                        // echo "</pre>";
                         $currentStep = max(0, (int) $result->step);
                         $csv_name = $result->csv_name ?? '';
                         $group_name = $result->name ?? '';
@@ -517,10 +517,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         $singleAddressCheckoutStatus = $data->singleAddressCheckoutStatus ?? '';
         $checkoutProceedStatus = $data->checkout_proceed_with_multi_addresses_status ?? '';
 
+        
         echo '<div class="step" id="step5">';
-        if($currentStep == 4){
-
-            if (!empty($data->delivery_preference)) {
+        if (!empty($data->delivery_preference)) {
+            if($currentStep == 4 OR $data->delivery_preference == 'single_address' ){
                 if ($data->delivery_preference == 'single_address') {
                     self::single_address_form($currentStep);
                 }

@@ -1305,8 +1305,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then((data) => {
               if (data.success) {
                 console.log('success');
-                  singleAddressDataSaveAjax(1);
-                
+                singleAddressDataSaveAjax(1);
               } else {
                 Swal.fire({
                   title: "Address Not Verified!",
