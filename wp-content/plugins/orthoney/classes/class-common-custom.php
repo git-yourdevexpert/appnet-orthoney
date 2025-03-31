@@ -12,12 +12,11 @@ class OAM_COMMON_Custom {
         add_action('user_register', array($this, 'check_userrole_update_meta'));
         add_filter('acf/settings/save_json', array($this, 'oh_acf_json_save_path'));
         add_filter('acf/settings/load_json', array($this, 'oh_acf_json_load_paths'));
-        add_action('template_redirect', array($this, 'modify_passwordless_login_url'));
+        
 
         add_action('template_redirect', array($this, 'redirect_logged_in_user_to_dashboard'));
         // add_action('user_registration_after_submit_buttons', array($this, 'add_login_user_registration_after_submit_buttons'));
 
-        add_action( 'wp_login', array($this, 'custom_redirect_admin_if_has_admin_role'), 10, 2);
         add_action('user_registration_after_login_form', array($this, 'add_login_link_pl_login_form'));
         add_action('user_registration_before_customer_login_form', array($this, 'add_content_pl_login_form'));
         add_shortcode('customer_login_button', array($this, 'custom_login_button_shortcode'));
@@ -95,6 +94,69 @@ class OAM_COMMON_Custom {
     }
 
     public static function redirect_logged_in_user_to_dashboard() {
+
+     /**
+     * Save password 
+     */
+        if (isset($_POST['save_password'])) {
+            if (!isset($_POST['save-password-nonce']) || !wp_verify_nonce($_POST['save-password-nonce'], 'save_password')) {
+                wc_add_notice(__('Security check failed. Try again.', 'woocommerce'), 'error');
+                return;
+            }
+    
+            $user_id = get_current_user_id();
+            $current_password = !empty($_POST['password_current']) ? $_POST['password_current'] : '';
+            $new_password = !empty($_POST['password_1']) ? $_POST['password_1'] : '';
+            $confirm_password = !empty($_POST['password_2']) ? $_POST['password_2'] : '';
+    
+            // Validate password fields
+            if (empty($new_password) || empty($confirm_password)) {
+                wc_add_notice(__('Please enter a new password.', 'woocommerce'), 'error');
+                return;
+            }
+    
+            if ($new_password !== $confirm_password) {
+                wc_add_notice(__('New passwords do not match.', 'woocommerce'), 'error');
+                return;
+            }
+    
+            // Verify current password
+            $user = get_user_by('ID', $user_id);
+            if (!wp_check_password($current_password, $user->user_pass, $user_id)) {
+                wc_add_notice(__('Current password is incorrect.', 'woocommerce'), 'error');
+                return;
+            }
+    
+            // Update password
+            wp_set_password($new_password, $user_id);
+            wc_add_notice(__('Password changed successfully.', 'woocommerce'), 'success');
+            wp_redirect(wc_get_page_permalink('myaccount')); // Refresh page
+            exit;
+        }
+
+        
+     /**
+     * Modify Password Less login URL
+     */
+
+        if (isset($_GET['pl']) && $_GET['pl'] == 'true'){
+            $user_id = get_current_user_id();
+            $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
+
+            if ( in_array( 'yith_affiliate', $user_roles) OR  in_array( 'affiliate_team_member', $user_roles)) { 
+                wp_redirect( home_url( '/affiliate-dashboard/' ) );
+                exit;
+            } 
+            if ( in_array( 'administrator', $user_roles)) { 
+                wp_redirect( home_url( '/wp-admin/' ) );
+                exit;
+            } 
+            if ( in_array( 'customer', $user_roles)) { 
+                wp_redirect( home_url( '/customer-dashboard/' ) );
+                exit;
+            }            
+        }
+
         // Check if the user is logged in and visiting the login page
         if ( is_user_logged_in() && is_page('login') ) {
             $user = wp_get_current_user();
@@ -148,14 +210,6 @@ class OAM_COMMON_Custom {
         }
     }
 
-    public static function custom_redirect_admin_if_has_admin_role( $user_login, $user ) {
-        // Check if the user has the 'administrator' role
-        if ( in_array( 'administrator', (array) $user->roles ) ) {
-            wp_safe_redirect( admin_url() ); // Redirect to WP Admin Dashboard
-            exit; // Stop further execution
-        }
-    }
-
     public static function add_content_pl_login_form() {
         if (isset($_GET['pl']) && $_GET['pl'] == 'true'){
             echo '<div class="custom-login-paragraph"><p>Please enter your email in the field below. A login link will be sent to your email, allowing you to log in automatically without a password.</p></div>';
@@ -166,9 +220,9 @@ class OAM_COMMON_Custom {
         $user = wp_get_current_user();
         $roles = $user->roles;
         $display_name = $user->display_name;
-        $output = 'Hi, ' . $display_name . '!';
-        $output .= '<ul>';
-    
+        
+        $output = '<ul>';
+        $output .= '<li>Hi, ' . $display_name . '!</li>';
         if (is_user_logged_in()) {
             if (in_array('administrator', $roles)) {
                 $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
@@ -200,6 +254,7 @@ class OAM_COMMON_Custom {
         $output .= '</ul>';
         return $output;
     }
+
 
     /**
      * ACF JSON Load Paths.
@@ -281,31 +336,7 @@ class OAM_COMMON_Custom {
         return $product_id = get_field('orthoney_product_selector','options');
     }
 
-     /**
-     * Modify Password Less login URL
-     */
 
-    public static function modify_passwordless_login_url() {
-        
-        if (isset($_GET['pl']) && $_GET['pl'] == 'true'){
-            $user_id = get_current_user_id();
-            $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
-
-            if ( in_array( 'yith_affiliate', $user_roles) OR  in_array( 'affiliate_team_member', $user_roles)) { 
-                wp_redirect( home_url( '/affiliate-dashboard/' ) );
-                exit;
-            } 
-            if ( in_array( 'administrator', $user_roles)) { 
-                wp_redirect( home_url( '/wp-admin/' ) );
-                exit;
-            } 
-            if ( in_array( 'customer', $user_roles)) { 
-                wp_redirect( home_url( '/customer-dashboard/' ) );
-                exit;
-            }            
-        }
-       
-    }
      /**
      * info block
      */
@@ -322,6 +353,7 @@ class OAM_COMMON_Custom {
         
         return '';
     }
+    
  
 }
 
