@@ -89,7 +89,7 @@ class OAM_Helper{
                      FROM {$yith_wcaf_affiliates_table} AS a 
                      JOIN {$users_table} AS u ON a.user_id = u.ID 
                      WHERE u.ID IN ($affiliates_list) 
-                     AND (u.display_name LIKE %s OR a.token LIKE %s) AND a.token != '",
+                     AND (u.display_name LIKE %s OR a.token LIKE %s) AND a.token != ''",
                     "%{$search_term}%", "%{$search_term}%"
                 );
         
