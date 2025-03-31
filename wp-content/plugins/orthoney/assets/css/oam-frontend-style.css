@@ -4453,9 +4453,10 @@ body .wc-block-components-radio-control .wc-block-components-radio-control__inpu
   align-items: center;
   gap: 0;
   flex-wrap: wrap;
+  row-gap: 4px;
 }
 
-.l-header .l-subheader.at_top{
+.l-header .l-subheader.at_top {
   height: auto;
   line-height: inherit;
   padding-top: 8px;
@@ -5872,6 +5873,14 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   .incomplete-order-block.custom-table table td .thead-data:before {
     left: inherit;
     right: 100%;
+  }
+
+  .top-bar-menu ul li {
+    font-size: 13px;
+  }
+
+  .top-bar-menu ul li a {
+    font-size: 13px;
   }
 }
 
