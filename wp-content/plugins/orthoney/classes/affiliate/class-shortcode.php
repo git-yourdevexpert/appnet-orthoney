@@ -27,67 +27,53 @@ class OAM_AFFILIATE_Shortcode
         $user_id = get_current_user_id();
         $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
     
-        if (in_array('yith_affiliate', $user_roles) || in_array('affiliate_team_member', $user_roles)) {
+        if (in_array('yith_affiliate', $user_roles) || in_array('affiliate_team_member', $user_roles) || in_array('administrator', $user_roles)) {
             $affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true);
             $affiliate_status_check = OAM_AFFILIATE_Helper::affiliate_status_check($affiliate_id);
             $result = json_decode($affiliate_status_check, true);
-    
-            // Check if the user is a team member and override the status message
-            if (in_array('affiliate_team_member', $user_roles) && isset($result['message']) && $result['message'] === 'You are not registered as an affiliate.') {
-                // Allow access to the dashboard for affiliate_team_member
+
+            if (in_array('administrator', $user_roles)) {
                 echo OAM_AFFILIATE_Helper::affiliate_dashboard_navbar($user_roles);
-    
                 $endpoint = get_query_var('affiliate_endpoint');
                 $template_path = OH_PLUGIN_DIR_PATH . '/templates/affiliate/affiliate-dashboard/';
     
-                if ($endpoint === 'my-profile' && file_exists($template_path . 'my-profile.php')) {
-                    include_once $template_path . 'my-profile.php';
-                } elseif ($endpoint === 'user-list' && file_exists($template_path . 'user-list.php')) {
-                    echo '<div class="oam-access-denied-message">You do not have access to this page.</div>';
-                } elseif ($endpoint === 'order-list' && file_exists($template_path . 'order-list.php')) {
-                    include_once $template_path . 'order-list.php';
-                } elseif ($endpoint === 'change-admin' && file_exists($template_path . 'change-admin.php')) {
-                    echo '<div class="oam-access-denied-message">You do not have access to this page.</div>';
-                } elseif ($endpoint === 'link-customer' && file_exists($template_path . 'link-customer.php')) {
-                    echo '<div class="oam-access-denied-message">You do not have access to this page.</div>';
+                if (file_exists($template_path . $endpoint . '.php')) {
+                    include_once $template_path . $endpoint . '.php';
                 } else {
                     include_once $template_path . 'dashboard.php';
                 }
-            } elseif (!empty($result) && isset($result['success'])) {
-                // Regular flow for yith_affiliate or any other status
-                if ($result['success'] == 1) {
-                    echo OAM_AFFILIATE_Helper::affiliate_dashboard_navbar($user_roles);
+            } elseif ((in_array('affiliate_team_member', $user_roles)) && isset($result['message']) && $result['message'] === 'You are not registered as an affiliate.') {
+                echo OAM_AFFILIATE_Helper::affiliate_dashboard_navbar($user_roles);
+                $endpoint = get_query_var('affiliate_endpoint');
+                $template_path = OH_PLUGIN_DIR_PATH . '/templates/affiliate/affiliate-dashboard/';
     
-                    $endpoint = get_query_var('affiliate_endpoint');
-                    $template_path = OH_PLUGIN_DIR_PATH . '/templates/affiliate/affiliate-dashboard/';
-    
-                    if ($endpoint === 'my-profile' && file_exists($template_path . 'my-profile.php')) {
-                        include_once $template_path . 'my-profile.php';
-                    } elseif ($endpoint === 'user-list' && file_exists($template_path . 'user-list.php')) {
-                        include_once $template_path . 'user-list.php';
-                    } elseif ($endpoint === 'order-list' && file_exists($template_path . 'order-list.php')) {
-                        include_once $template_path . 'order-list.php';
-                    } elseif ($endpoint === 'change-admin' && file_exists($template_path . 'change-admin.php')) {
-                        include_once $template_path . 'change-admin.php';
-                    }elseif ($endpoint === 'link-customer' && file_exists($template_path . 'link-customer.php')) {
-                        include_once $template_path . 'link-customer.php';
-                    } else {
-                        include_once $template_path . 'dashboard.php';
-                    }
+                if (in_array($endpoint, ['my-profile', 'order-list', 'change-admin', 'user-list', 'link-customer']) && file_exists($template_path . $endpoint . '.php')) {
+                    include_once $template_path . $endpoint . '.php';
                 } else {
-                    // Error messages if success is not 1
-                    if (!empty($result['message'])) {
-                        $message = $result['message'];
-                        $url = home_url('/customer-dashboard');
-                        $btn_name = 'Customer Dashboard';
-                        return OAM_COMMON_Custom::message_design_block($message, $url, $btn_name);
-                    }
-                    if (!empty($result['reason'])) {
-                        $message = $result['reason'];
-                        $url = home_url('/customer-dashboard');
-                        $btn_name = 'Customer Dashbaord';
-                        return OAM_COMMON_Custom::message_design_block($message, $url, $btn_name);
-                    }
+                    echo '<div class="oam-access-denied-message">You do not have access to this page.</div>';
+                }
+            } elseif (!empty($result) && isset($result['success']) && $result['success'] == 1) {
+                echo OAM_AFFILIATE_Helper::affiliate_dashboard_navbar($user_roles);
+                $endpoint = get_query_var('affiliate_endpoint');
+                $template_path = OH_PLUGIN_DIR_PATH . '/templates/affiliate/affiliate-dashboard/';
+    
+                if (file_exists($template_path . $endpoint . '.php')) {
+                    include_once $template_path . $endpoint . '.php';
+                } else {
+                    include_once $template_path . 'dashboard.php';
+                }
+            } else {
+                if (!empty($result['message'])) {
+                    $message = $result['message'];
+                    $url = home_url('/customer-dashboard');
+                    $btn_name = 'Customer Dashboard';
+                    return OAM_COMMON_Custom::message_design_block($message, $url, $btn_name);
+                }
+                if (!empty($result['reason'])) {
+                    $message = $result['reason'];
+                    $url = home_url('/customer-dashboard');
+                    $btn_name = 'Customer Dashboard';
+                    return OAM_COMMON_Custom::message_design_block($message, $url, $btn_name);
                 }
             }
         } else {
