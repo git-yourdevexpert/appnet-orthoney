@@ -817,7 +817,7 @@ class OAM_Helper{
                 </tr>';
                 }
             }else{
-                $html .= '<tr><td colspan="4">No incomplete orders available.</td></tr>';
+                $html .= '<tr><td colspan="4">No '.($title ? $title : 'data ').' available.</td></tr>';
             }
                 $html .= '</tbody>
             </table>
