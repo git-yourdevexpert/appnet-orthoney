@@ -96,31 +96,28 @@ do_action( 'woocommerce_before_edit_account_form' ); ?>
 <div class="order-process-block">
 <div class="heading-title"><h3 class="block-title"><?php esc_html_e('Change Password', 'woocommerce'); ?></h3></div>
 <div class="woocommerce-change-password-wrapper">
-    
+    <h2><?php esc_html_e('Change Password', 'woocommerce'); ?></h2>
     <form class="woocommerce-ChangePasswordForm change-password" action="" method="post">
         <p class="woocommerce-form-row woocommerce-form-row--wide form-row">
-            <label for="password_current"><?php esc_html_e('Current password (leave blank to leave unchanged)', 'woocommerce'); ?></label>
+            <label for="password_current"><?php esc_html_e('Current password', 'woocommerce'); ?></label>
             <input type="password" class="woocommerce-Input woocommerce-Input--password input-text" name="password_current" id="password_current" />
         </p>
-		<div class="clear"></div>
 
         <p class="woocommerce-form-row woocommerce-form-row--wide form-row">
-            <label for="password_1"><?php esc_html_e('New password (leave blank to leave unchanged)', 'woocommerce'); ?></label>
+            <label for="password_1"><?php esc_html_e('New password', 'woocommerce'); ?></label>
             <input type="password" class="woocommerce-Input woocommerce-Input--password input-text" name="password_1" id="password_1" />
         </p>
-		<div class="clear"></div>
 
         <p class="woocommerce-form-row woocommerce-form-row--wide form-row">
             <label for="password_2"><?php esc_html_e('Confirm new password', 'woocommerce'); ?></label>
             <input type="password" class="woocommerce-Input woocommerce-Input--password input-text" name="password_2" id="password_2" />
         </p>
 
-		<div class="clear"></div>
-        <p class="text-right">
-            <?php wp_nonce_field('save_account_details', 'save-account-details-nonce'); ?>
-            <button type="submit" class="woocommerce-Button button" name="save_account_details" value="<?php esc_attr_e('Save Password', 'woocommerce'); ?>"><?php esc_html_e('Save Password', 'woocommerce'); ?></button>
-            <input type="hidden" name="action" value="save_account_details" />
+        <p>
+            <?php wp_nonce_field('save_password', 'save-password-nonce'); ?>
+            <button type="submit" class="woocommerce-Button button" name="save_password" value="<?php esc_attr_e('Save Password', 'woocommerce'); ?>"><?php esc_html_e('Save Password', 'woocommerce'); ?></button>
         </p>
     </form>
 </div>
+
 </div>
