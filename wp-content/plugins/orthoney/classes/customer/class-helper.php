@@ -812,7 +812,7 @@ class OAM_Helper{
                     <td><div class="thead-data">Id</div>'.esc_html($data->id).'</td>
                     <td><div class="thead-data">Name</div>'.esc_html($data->name).'</td>
                     <td><div class="thead-data">Date</div>'.esc_html($created_date).'</td>
-                    <td><div class="thead-data">Action</div><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume</a></td>
+                    <td><div class="thead-data">Action</div><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="resume icon">Open</a></td>
                 </tr>';
                 }
             }else{
@@ -916,13 +916,12 @@ class OAM_Helper{
                 foreach ($results as $data) {
                     $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->created));
                     
-                    $resume_url = esc_url(OAM_Helper::$customer_dashboard_link.'/failed-recipients/details'.$data->id);
-                    
+                    $resume_url = esc_url(OAM_Helper::$customer_dashboard_link.'/failed-recipients/details/'.$data->id);
                     $html .= '<tr data-id="52" data-verify="0" data-group="0">
                     <td><div class="thead-data">Id</div>'.esc_html($data->id).'</td>
                     <td><div class="thead-data">Name</div>'.esc_html($data->name).'</td>
                     <td><div class="thead-data">Date</div>'.esc_html($created_date).'</td>
-                    <td><div class="thead-data">Action</div><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume</a></td>
+                    <td><div class="thead-data">Action</div><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="resume">Open</a></td>
                 </tr>';
                 }
             }else{
