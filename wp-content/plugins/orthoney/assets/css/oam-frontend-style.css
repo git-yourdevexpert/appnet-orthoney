@@ -5142,6 +5142,14 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-change-
   display: none;
 }
 
+body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-link-customer-menu-item {
+  display: none
+}
+
+body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-list-menu-item {
+  display: none
+}
+
 /* responsive */
 
 @media (min-width: 993px) {
