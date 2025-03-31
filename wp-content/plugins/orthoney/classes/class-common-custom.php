@@ -17,6 +17,7 @@ class OAM_COMMON_Custom {
         add_action('template_redirect', array($this, 'redirect_logged_in_user_to_dashboard'));
         // add_action('user_registration_after_submit_buttons', array($this, 'add_login_user_registration_after_submit_buttons'));
 
+        add_action( 'wp_login', array($this, 'custom_redirect_admin_if_has_admin_role'), 10, 2);
         add_action('user_registration_after_login_form', array($this, 'add_login_link_pl_login_form'));
         add_action('user_registration_before_customer_login_form', array($this, 'add_content_pl_login_form'));
         add_shortcode('customer_login_button', array($this, 'custom_login_button_shortcode'));
@@ -144,6 +145,14 @@ class OAM_COMMON_Custom {
     public static function add_login_link_pl_login_form() {
         if (isset($_GET['pl']) && $_GET['pl'] == 'true'){
             echo '<div class="custom-login-btn"><a href="' .esc_url( ur_get_login_url() ) . '">Login with Password</a></div>';
+        }
+    }
+
+    public static function custom_redirect_admin_if_has_admin_role( $user_login, $user ) {
+        // Check if the user has the 'administrator' role
+        if ( in_array( 'administrator', (array) $user->roles ) ) {
+            wp_safe_redirect( admin_url() ); // Redirect to WP Admin Dashboard
+            exit; // Stop further execution
         }
     }
 
