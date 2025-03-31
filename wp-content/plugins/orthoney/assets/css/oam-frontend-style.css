@@ -4455,6 +4455,11 @@ body .wc-block-components-radio-control .wc-block-components-radio-control__inpu
   flex-wrap: wrap;
 }
 
+.l-header .l-subheader.at_top{
+  height: auto;
+  line-height: inherit;
+}
+
 .top-bar-menu ul li {
   margin: 0 12px 0 0px;
   padding-right: 12px;
