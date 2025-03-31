@@ -4468,7 +4468,7 @@ body .wc-block-components-radio-control .wc-block-components-radio-control__inpu
   height: auto;
 }
 
-body .header_hor .l-subheader-cell.at_right>*{
+html body.header_hor .l-subheader-cell.at_right>*{
   margin-left: 0;
 }
 
