@@ -4592,7 +4592,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
 
 .dashboard-block .w-btn.us-btn-style_1:hover {
   background-color: #00afaa;
-  color: #fff;
+  color: #fff !important;
 }
 
 .order-block-wrap {
@@ -5140,6 +5140,14 @@ table tr.hide {
 
 body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-change-admin-menu-item {
   display: none;
+}
+
+body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-link-customer-menu-item {
+  display: none
+}
+
+body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-list-menu-item {
+  display: none
 }
 
 /* responsive */
@@ -5808,6 +5816,11 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-change-
 
   .dashboard-block .dashboard-heading .item {
     padding: 16px 24px;
+  }
+
+  .place-order .block-title {
+    flex: 100% 0 0;
+    margin-bottom: 16px;
   }
 
 }

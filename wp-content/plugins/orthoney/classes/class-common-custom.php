@@ -159,14 +159,20 @@ class OAM_COMMON_Custom {
         $output = '<ul>';
     
         if (is_user_logged_in()) {
-            if (in_array('customer', $roles) && !in_array('yith_affiliate', $roles) && !in_array('affiliate_team_member', $roles)) {
+            if (in_array('administrator', $roles)) {
                 $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
+                $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
             } else {
-                if (in_array('customer', $roles)) {
+                // Check for customer without affiliate roles
+                if (in_array('customer', $roles) && !in_array('yith_affiliate', $roles) && !in_array('affiliate_team_member', $roles)) {
                     $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
-                }
-                if (in_array('yith_affiliate', $roles) || in_array('affiliate_team_member', $roles)) {
-                    $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
+                } else {
+                    if (in_array('customer', $roles)) {
+                        $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
+                    }
+                    if (in_array('yith_affiliate', $roles) || in_array('affiliate_team_member', $roles)) {
+                        $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
+                    }
                 }
             }
             // Add logout link
