@@ -155,14 +155,19 @@ class OAM_COMMON_Custom {
 
     public function custom_login_button_shortcode() {
         $user = wp_get_current_user();
+        $roles = $user->roles;
         $output = '<ul>';
     
         if (is_user_logged_in()) {
-            if (in_array('customer', $user->roles)) {
+            if (in_array('customer', $roles) && !in_array('yith_affiliate', $roles) && !in_array('affiliate_team_member', $roles)) {
                 $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
             } else {
-                $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
-                $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
+                if (in_array('customer', $roles)) {
+                    $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
+                }
+                if (in_array('yith_affiliate', $roles) || in_array('affiliate_team_member', $roles)) {
+                    $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
+                }
             }
             // Add logout link
             $output .= '<li><a href="' . wp_logout_url(site_url()) . '">Logout</a></li>';
