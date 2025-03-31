@@ -27,6 +27,39 @@ class OAM_COMMON_Custom {
         // Add any initialization logic here
     }
 
+    public static function set_affiliate_cookie($token, $remove = 0) {
+        global $wpdb;
+
+        if ($remove == 1) {
+            // Remove the cookies
+            setcookie('yith_wcaf_referral_token', '', time() - 3600, "/", "", true, true);
+            setcookie('yith_wcaf_referral_history', '', time() - 3600, "/", "", true, true);
+            echo "yith_wcaf_referral_removed";
+            return;
+        }
+
+        if ($token !== 'Orthoney') {
+            $yith_wcaf_affiliates_table = OAM_helper::$yith_wcaf_affiliates_table;
+
+            // Correct query execution
+            $processExistResult = $wpdb->get_var($wpdb->prepare("
+                SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d
+            ", $token));
+
+            if (!$processExistResult) {
+                echo "Affiliate token not found.";
+                return;
+            }
+
+            setcookie('yith_wcaf_referral_token', $processExistResult);
+            setcookie('yith_wcaf_referral_history', $processExistResult);
+        } else {
+            
+            setcookie('yith_wcaf_referral_token', $token);
+            setcookie('yith_wcaf_referral_history', $token);
+        }
+    }
+
     public function custom_body_class($classes) {
         // Add your custom class
         $affiliate_dashboard_id = get_page_by_path('affiliate-dashboard');

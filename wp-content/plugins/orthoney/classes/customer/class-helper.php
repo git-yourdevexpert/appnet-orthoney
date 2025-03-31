@@ -19,7 +19,6 @@ class OAM_Helper{
     public static $group_table;
     public static $group_recipient_table;
     public static $yith_wcaf_affiliates_table;
-    public static $oh_affiliate_customer_relation_table;
     public static $oh_affiliate_customer_linker; 
 
     public static $users_table;
@@ -45,7 +44,7 @@ class OAM_Helper{
         self::$group_table = $wpdb->prefix . 'oh_group';
         self::$group_recipient_table = $wpdb->prefix . 'oh_group_recipient';
         self::$yith_wcaf_affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
-        self::$oh_affiliate_customer_relation_table = $wpdb->prefix . 'oh_affiliate_customer_relation';
+        
         self::$oh_affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker'; 
 
         self::$users_table = $wpdb->prefix . 'users';
@@ -817,7 +816,7 @@ class OAM_Helper{
                 </tr>';
                 }
             }else{
-                $html .= '<tr><td colspan="4">No '.($title ? $title : 'data ').' available.</td></tr>';
+                $html .= '<tr><td colspan="4">No '.($title ? $title : 'data').' available.</td></tr>';
             }
                 $html .= '</tbody>
             </table>

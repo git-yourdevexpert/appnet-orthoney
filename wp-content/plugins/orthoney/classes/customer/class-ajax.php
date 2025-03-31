@@ -894,11 +894,14 @@ class OAM_Ajax{
         }
 
         $currentStep = intval($_POST['currentStep']);
-    
+
         global $wpdb;
     
         $order_process_table = OAM_Helper::$order_process_table;
         
+        if(isset($_POST['affiliate_select'])){
+            OAM_COMMON_Custom::set_affiliate_cookie($_POST['affiliate_select']);
+        }
         
         // Ensure data is safely serialized as a JSON string
         $data = [
@@ -981,6 +984,8 @@ class OAM_Ajax{
         $data = [
             'step'    => sanitize_text_field($currentStep),
         ];
+
+
 
         $result = $wpdb->update(
             $order_process_table,

@@ -25,8 +25,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             );
         }
 
-        
         ob_start();
+    
         $failed_recipients_details = get_query_var('failed-recipients-details');
         if (!empty($failed_recipients_details)) {
             self::$atts_process_id = intval($failed_recipients_details);
@@ -61,10 +61,16 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     
                     if ($result) {
                         $setData = json_decode($result->data) ?? [];
+
+                        if(empty($setData)){
+                            echo 'empty';
+                        }
                         $currentStep = max(0, (int) $result->step);
                         $csv_name = $result->csv_name ?? '';
                         $group_name = $result->name ?? '';
                     }
+                }else{
+
                 }
                 ?>
                 <form id="multiStepForm" method="POST" enctype="multipart/form-data">
@@ -109,6 +115,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         if (!empty($data)) {
             $affiliate = $data->affiliate_select != '' ? $data->affiliate_select : 'Orthoney';
         }
+        OAM_COMMON_Custom::set_affiliate_cookie($affiliate);
         ?>
         <div class="step" id="step1">
             <div class="g-cols wpb_row via_grid laptops-cols_inherit tablets-cols_inherit mobiles-cols_1 valign_top type_default step-one">
@@ -121,10 +128,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             $affiliateList = OAM_Helper::manage_affiliates_content('', 'blocked');
                             $affiliateList = json_decode($affiliateList, true);
 
-                          
-
                             echo '<select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an affiliate.">';
-                            echo '<option ' . selected($affiliate, '0', false) . ' value="OrtHoney">Unaffiliated</option>';
+                            echo '<option ' . selected($affiliate, '0', false) . ' value="Orthoney">Unaffiliated</option>';
                             
                             if (!empty($affiliateList['data']['user_info'])) {
                                 foreach ($affiliateList['data']['user_info']  as $key => $data) {
@@ -142,7 +147,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                             $value .= ', ' . $state_name;
                                         }
 
-                                        echo '<option ' . selected($user_id, $affiliate, false) . ' value="' . esc_attr($user_id) . '">' . esc_html($value) . '</option>';
+                                        
+
+                                        echo '<option  data-token="'.$data['token'].'" ' . selected($user_id, $affiliate, false) . ' value="' . esc_attr($user_id) . '">' . esc_html($value) . '</option>';
                                     }
                                 }
 

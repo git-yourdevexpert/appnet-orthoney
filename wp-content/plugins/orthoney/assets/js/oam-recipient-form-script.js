@@ -254,10 +254,7 @@ document.addEventListener("DOMContentLoaded", function () {
               if (deliveryPreference.value !== "single_address") {
                 console.log("2");
                 currentStep +=
-                  uploadTypeOutput.value === "add-manually" ||
-                  uploadTypeOutput.value === "select-group"
-                    ? 2
-                    : 1;
+                  uploadTypeOutput.value === "add-manually" || uploadTypeOutput.value === "select-group" ? 2 : 1;
                 // currentStep = Math.min(currentStep, steps.length - 1);
                 console.log("currentStep", currentStep);
                 if (uploadTypeOutput.value === "add-manually") {
@@ -314,6 +311,18 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
           console.log("5");
           currentStep++;
+          if(currentStep == 1){
+            const affiliateSelect = document.querySelector('#affiliate_select');
+            const selectedOption = affiliateSelect.options[affiliateSelect.selectedIndex];
+            const dataToken = selectedOption.getAttribute('data-token');
+            
+            if (dataToken) {
+              console.log(dataToken);
+              document.cookie = `yith_wcaf_referral_token=${dataToken}; path=/; max-age=${1 * 86400}`;
+              document.cookie = `yith_wcaf_referral_history=${dataToken}; path=/; max-age=${1 * 86400}`;
+            }
+          
+          }
           showStep(currentStep);
           processDataSaveAjax(pid?.value || "0", currentStep);
         }

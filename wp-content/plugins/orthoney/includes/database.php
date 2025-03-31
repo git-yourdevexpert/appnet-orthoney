@@ -159,13 +159,7 @@ function orthoney_create_custom_tables() {
             PRIMARY KEY (id)
         ) ENGINE=InnoDB {$wpdb->get_charset_collate()} AUTO_INCREMENT=10000;",
 
-        'affiliate_customer_relation' => "CREATE TABLE {$tables['affiliate_customer_relation']} (
-            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,        
-            user_id BIGINT(20) NOT NULL,
-            affiliate_id BIGINT(20) NOT NULL,
-            blocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id)
-        ) ENGINE=InnoDB {$wpdb->get_charset_collate()};"
+       
     ];
 
     // Execute the SQL queries only if the table doesn't exist
