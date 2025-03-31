@@ -4463,7 +4463,7 @@ body .wc-block-components-radio-control .wc-block-components-radio-control__inpu
   padding-bottom: 10px;
 }
 
-.l-header.sticky .l-subheader.at_top {
+body .l-header.sticky .l-subheader.at_top {
   line-height: inherit;
   height: auto;
 }
