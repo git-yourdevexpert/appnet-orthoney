@@ -46,11 +46,12 @@ if (!empty($customers)) { ?>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($customers as $customer) {?>
+                <?php foreach ($customers as $customer) {
+                    $nonce = wp_create_nonce('switch_to_user_' . $customer->ID); ?>
                 <tr>
                     <td><?php echo esc_html($customer->display_name); ?></td>
                     <td><?php echo esc_html($customer->user_email); ?></td>
-                    <td><button class="customer-login-btn w-btn us-btn-style_1"  data-user-id="<?php echo esc_attr($customer->ID); ?>" data-nonce="<?php echo esc_attr(wp_create_nonce('switch_to_user_' . $customer->ID)); ?>"> Login </button></td>
+                    <td><button class="customer-login-btn w-btn us-btn-style_1"  data-user-id="<?php echo esc_attr($customer->ID); ?>" data-nonce="<?php echo esc_attr($nonce); ?>"> Login </button></td>
                 </tr>
                 <?php } ?>
             </tbody>

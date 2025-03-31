@@ -426,25 +426,34 @@ document.addEventListener('click', function (event) {
     if (event.target.classList.contains('customer-login-btn') || event.target.classList.contains('organization-login-btn')) {
         event.preventDefault();
         process_group_popup();
-        
-        const userId = event.target.getAttribute('data-user-id');
+
+        const userid = event.target.getAttribute('data-user-id');
         const nonce = event.target.getAttribute('data-nonce');
         const type = event.target.classList.contains('organization-login-btn') ? 'affiliate' : 'customer';
 
-        const params = new URLSearchParams({
-            action: 'auto_login_request_to_sales_rep',
-            user_id: userId,
-            nonce: nonce,
-            type: type,
-            security: oam_ajax?.nonce || ''
-        });
+        if (!userid || !nonce) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Missing user data. Please try again.',
+                icon: 'error',
+            });
+            return;
+        }
 
-        fetch(`${oam_ajax.ajax_url}?${params.toString()}`, {
-            method: 'GET',
+        fetch(oam_ajax.ajax_url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                action: 'auto_login_request_to_sales_rep',
+                user_id: userid,
+                nonce: nonce,
+                type: type,
+                security: oam_ajax?.nonce || ''
+            }),
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
+            if (data.success && data.url) {
                 window.location.href = data.url; // Perform the redirect
             } else {
                 Swal.fire({
