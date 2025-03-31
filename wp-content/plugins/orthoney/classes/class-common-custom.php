@@ -166,7 +166,7 @@ class OAM_COMMON_Custom {
         $user = wp_get_current_user();
         $roles = $user->roles;
         $display_name = $user->display_name;
-        $output .= 'Hi, ' . $display_name . '!';
+        $output = 'Hi, ' . $display_name . '!';
         $output .= '<ul>';
     
         if (is_user_logged_in()) {
