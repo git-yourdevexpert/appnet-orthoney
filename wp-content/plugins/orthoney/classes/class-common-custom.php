@@ -165,12 +165,15 @@ class OAM_COMMON_Custom {
     public function custom_login_button_shortcode() {
         $user = wp_get_current_user();
         $roles = $user->roles;
-        $output = '<ul>';
+        $display_name = $user->display_name;
+        $output .= 'Hi, ' . $display_name . '!';
+        $output .= '<ul>';
     
         if (is_user_logged_in()) {
             if (in_array('administrator', $roles)) {
                 $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
                 $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
+                $output .= '<li><a href="' . site_url('/sales-representative-dashboard') . '">Sales Representative Area</a></li>';
             } else {
                 // Check for customer without affiliate roles
                 if (in_array('customer', $roles) && !in_array('yith_affiliate', $roles) && !in_array('affiliate_team_member', $roles)) {
@@ -181,6 +184,9 @@ class OAM_COMMON_Custom {
                     }
                     if (in_array('yith_affiliate', $roles) || in_array('affiliate_team_member', $roles)) {
                         $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Affiliate Area</a></li>';
+                    }
+                    if (in_array('sales_representative', $roles)) {
+                        $output .= '<li><a href="' . site_url('/sales-representative-dashboard') . '">Sales Representative Area</a></li>';
                     }
                 }
             }
