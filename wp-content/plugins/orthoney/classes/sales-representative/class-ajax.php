@@ -74,18 +74,19 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
     */
     public function auto_login_request_to_sales_rep_handler() {
         check_ajax_referer('oam_nonce', 'security');
-    
+        
         if (!is_user_logged_in()) {
             wp_send_json(['success' => false, 'message' => 'You must be logged in.']);
         }
     
-        $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : 0;
-        $nonce = isset($_GET['nonce']) ? sanitize_text_field($_GET['nonce']) : '';
-        $type = isset($_GET['type']) ? sanitize_text_field($_GET['type']) : '';
+        $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+        $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : '';
     
         if (!$user_id || !$nonce || !wp_verify_nonce($nonce, 'switch_to_user_' . $user_id)) {
-            wp_send_json(['success' => false, 'message' => 'Invalid data or nonce.']);
-        }
+            wp_send_json(['success' => false, 'message' => 'Invalid nonce or expired.']);
+        }        
+        
     
         // Determine redirect URL based on type
         $redirect_url = ($type === 'affiliate') 
