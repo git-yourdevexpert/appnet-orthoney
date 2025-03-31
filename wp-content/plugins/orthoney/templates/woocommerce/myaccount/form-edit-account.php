@@ -96,7 +96,7 @@ do_action( 'woocommerce_before_edit_account_form' ); ?>
 <div class="order-process-block">
 <div class="heading-title"><h3 class="block-title"><?php esc_html_e('Change Password', 'woocommerce'); ?></h3></div>
 <div class="woocommerce-change-password-wrapper">
-    <h2><?php esc_html_e('Change Password', 'woocommerce'); ?></h2>
+   
     <form class="woocommerce-ChangePasswordForm change-password" action="" method="post">
         <p class="woocommerce-form-row woocommerce-form-row--wide form-row">
             <label for="password_current"><?php esc_html_e('Current password', 'woocommerce'); ?></label>
