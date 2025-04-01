@@ -39,7 +39,7 @@ $email = $user_data->user_email;
                 <span class="error-message"></span>
             </div>
         </div>
-        <button type="button" class="add-user us-btn-style_1" id="sales-rep-save-profile">Update Profile</button>
+        <p class="text-right"><button type="button" class="add-user us-btn-style_1" id="sales-rep-save-profile">Update Profile</button></p>
     </form>
     <div id="sales-rep-profile-update"></div>
 </div>
