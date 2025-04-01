@@ -39,7 +39,7 @@ class OAM_COMMON_Custom {
 
         foreach ($roles as $role) {
             if (isset($redirects[$role])) {
-                return home_url($redirects[$role]);
+                return home_url($w[$role]);
                 exit;
             }
         }
@@ -148,9 +148,9 @@ class OAM_COMMON_Custom {
 
     public static function redirect_logged_in_user_to_dashboard() {
 
-     /**
-     * Save password 
-     */
+        /**
+         * Save password 
+         */
         if (isset($_POST['save_password'])) {
             if (!isset($_POST['save-password-nonce']) || !wp_verify_nonce($_POST['save-password-nonce'], 'save_password')) {
                 wc_add_notice(__('Security check failed. Try again.', 'woocommerce'), 'error');
@@ -188,19 +188,19 @@ class OAM_COMMON_Custom {
         }
 
         
-     /**
-     * Modify Password Less login URL
-     */
+        /**
+         * Modify Password Less login URL
+         */
 
         if (isset($_GET['pl']) && $_GET['pl'] == 'true'){
             $user_id = get_current_user_id();
             $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
-
-            wp_redirect(self::redirect_user_based_on_role($user_roles));
-            exit;
-                      
+            if(!empty($user_roles)){
+                wp_redirect(self::redirect_user_based_on_role($user_roles));
+                exit;
+            }
         }
-
+        
         // Check if the user is logged in and visiting the login page
         if ( is_user_logged_in() && is_page('login') ) {
             $user = wp_get_current_user();
