@@ -4468,7 +4468,7 @@ body .l-header.sticky .l-subheader.at_top {
   height: auto;
 }
 
-html body.header_hor .l-subheader-cell.at_right>*{
+html body.header_hor .l-subheader-cell.at_right>* {
   margin-left: 0;
 }
 
@@ -5167,6 +5167,25 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-link-cu
 
 body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-list-menu-item {
   display: none
+}
+
+.sales-representative-dashboard {
+  display: none;
+}
+
+.sales-representative-dashbaord .block-row .place-order.item .see-all {
+  display: none;
+}
+
+.no-customers {
+  max-width: 550px;
+  margin: 0 auto;
+  border: 1px solid #dee2e6;
+  background-color: #ebeff6;
+  text-align: center;
+  padding: 8px 10px;
+  color: #333;
+  border-radius: 4px;
 }
 
 /* responsive */
