@@ -519,7 +519,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         
         echo '<div class="step" id="step5">';
         if (!empty($data->delivery_preference)) {
-            if($currentStep == 4 OR $data->delivery_preference == 'single_address' ){
+            if($currentStep == 4 OR $data->delivery_preference == 'single_address' OR $data->delivery_preference == 'multiple_address'){
                 if ($data->delivery_preference == 'single_address') {
                     self::single_address_form($currentStep);
                 }

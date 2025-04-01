@@ -13,7 +13,6 @@ class OAM_COMMON_Custom {
         add_filter('acf/settings/save_json', array($this, 'oh_acf_json_save_path'));
         add_filter('acf/settings/load_json', array($this, 'oh_acf_json_load_paths'));
         
-
         add_action('template_redirect', array($this, 'redirect_logged_in_user_to_dashboard'));
         // add_action('user_registration_after_submit_buttons', array($this, 'add_login_user_registration_after_submit_buttons'));
 
@@ -28,6 +27,10 @@ class OAM_COMMON_Custom {
         // Add any initialization logic here
     }
 
+    public static function get_product_custom_price($product_id, $affiliate_id) {
+        $product = wc_get_product( $product_id );
+        return $price = $product ? $product->get_price() : 15;
+    }
     public static function redirect_user_based_on_role($roles) {
         $redirects = [
             'administrator'         => '/wp-admin/',

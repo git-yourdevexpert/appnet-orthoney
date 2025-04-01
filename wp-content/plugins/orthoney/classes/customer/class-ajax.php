@@ -62,6 +62,9 @@ class OAM_Ajax{
      * 
 	 */ 
     public function add_items_to_cart($data, $product_id) {
+        global $wpdb;
+    
+        $order_process_table = OAM_Helper::$order_process_table;
         if (!function_exists('WC')) {
             die('WooCommerce is not loaded.');
         }
@@ -84,7 +87,23 @@ class OAM_Ajax{
             $state        = sanitize_text_field($customer['state']);
             $zipcode      = sanitize_text_field($customer['zipcode']);
             $quantity     = (int) $customer['quantity'];
-            $custom_price = 50; // Set custom price
+            
+            $processQuery = $wpdb->prepare("
+                SELECT order_id, data
+                FROM {$order_process_table}
+                WHERE id = %d 
+                ",  $process_id);
+
+            $affiliate_id = 0;
+            $processResult = $wpdb->get_row($processQuery);
+
+            if(!empty($processResult)){
+                $order = wc_get_order( $processResult->order_id);
+                $affiliate_id = json_decode($processResult->data)->affiliate_select;
+            }
+
+            $product_id = OAM_COMMON_Custom::get_product_id();
+            $custom_price = OAM_COMMON_Custom::get_product_custom_price($product_id, $affiliate_id);
     
             // Unique key to ensure separate cart items
             $unique_key = uniqid('custom_', true);
@@ -783,17 +802,18 @@ class OAM_Ajax{
 
 
         $processQuery = $wpdb->prepare("
-        SELECT order_id
+        SELECT order_id, data
         FROM {$order_process_table}
         WHERE user_id = %d 
         AND id = %d 
         ", $user_id, $process_id);
 
+        $affiliate_id = 0;
         $processResult = $wpdb->get_row($processQuery);
 
-        
         if(!empty($processResult)){
             $order = wc_get_order( $processResult->order_id);
+            $affiliate_id = json_decode($processResult->data)->affiliate_select;
             if ($order) {
                 $order_key = $order->get_order_key();
                 $order_url = wc_get_endpoint_url('view-order', $processResult->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order_key;
@@ -837,10 +857,7 @@ class OAM_Ajax{
             
             $product_id = OAM_COMMON_Custom::get_product_id();
 
-            $custom_price = 50; // Set custom price per unit
-
-            $product = wc_get_product($product_id);
-            $custom_price = $custom_price;
+            $custom_price = OAM_COMMON_Custom::get_product_custom_price($product_id, $affiliate_id);
 
             $custom_data = array(
                 'custom_data' => array(
