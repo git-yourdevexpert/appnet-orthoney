@@ -102,8 +102,32 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
             wp_send_json(['success' => false, 'message' => 'User not found.']);
         }
 
+        $sessions = WP_Session_Tokens::get_instance($target->ID);
+        $all_sessions = $sessions->get_all();
+
+        // Filter out sessions with the [switched_from_id] key
+        $filtered_sessions = array();
+        foreach ($all_sessions as $token => $session) {
+            if (!isset($session['switched_from_id'])) {
+                $filtered_sessions[$token] = $session;
+            }
+        }
+
+        // Update the sessions with the filtered list
+        if (count($filtered_sessions) !== count($all_sessions)) {
+            $sessions->destroy_all();
+            
+            // Re-add the filtered sessions
+            foreach ($filtered_sessions as $token => $session_data) {
+                $sessions->update($token, $session_data);
+            }
+        }
+    
+        $user_roles = OAM_COMMON_Custom::get_user_role_by_id($target);
+
+        
         // Generate switch URL using User Switching plugin
-        $login_url = User_Switching::switch_to_url($user);
+        $login_url = User_Switching::switch_to_url($user)."&redirect_to=".OAM_COMMON_Custom::redirect_user_based_on_role($target->roles);
 
         wp_send_json(['success' => true, 'url' => esc_url_raw(html_entity_decode($login_url))]);
     }
