@@ -181,6 +181,7 @@ class OAM_WC_CRON_Suborder {
                     // Add custom meta to sub-order item
                     $order_item->add_meta_data('_recipient_recipient_id', $recipient_id, true);
                     $order_item->add_meta_data('_recipient_company_name', $company_name, true);
+                    $order_item->add_meta_data('order_process_by', OAM_COMMON_Custom::old_user_id(), true);
     
                     $sub_order->add_item($order_item);
                 }
@@ -214,8 +215,6 @@ class OAM_WC_CRON_Suborder {
                     ['id' => $recipient_id]
                 );
                 
-                $sub_order->update_metadata('order_process_by', OAM_COMMON_Custom::old_user_id());
-                $sub_order->save();
     
                 $wpdb->insert($group_recipient_table, [
                     'user_id'           => $recipients->user_id ?? 0,
@@ -239,13 +238,14 @@ class OAM_WC_CRON_Suborder {
                     'greeting'          => sanitize_text_field($recipients->greeting),
                 ]);
 
+                OAM_COMMON_Custom::sub_order_error_log("All sub-orders created for Main Order ID: $order_id and Sub Order ID: ".$sub_order->get_id()." with 2-second intervals.");
     
                 // 2-second delay before creating the next sub-order
                 sleep(2);
             }
         }
     
-        OAM_COMMON_Custom::sub_order_error_log("All sub-orders created for Order ID: $order_id with 2-second intervals.");
+       
     }
 }
 new OAM_WC_CRON_Suborder();
