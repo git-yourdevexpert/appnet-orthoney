@@ -13,7 +13,7 @@ $phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true);
 $email = $user_data->user_email;
 ?>
 
-<div class="col-right">
+<div class="order-process-block">
     
     <div class="heading-title"><h3 class="block-title">My Profile</h3></div>
     <form id="sales-rep-profile-form" class="site-form">
