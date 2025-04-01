@@ -275,6 +275,8 @@ class OAM_COMMON_Custom {
             }
             // Add logout link
             $output .= '<li><a href="' . wp_logout_url(site_url()) . '">Logout</a></li>';
+            $output .= self::switch_back_user();
+            
         } else {
             $output .= '<li><a href="' . ur_get_login_url() . '">Customer Login</a></li>';
             $output .= '<li><a href="' . site_url('/affiliate-login') . '">Organization Login</a></li>';
