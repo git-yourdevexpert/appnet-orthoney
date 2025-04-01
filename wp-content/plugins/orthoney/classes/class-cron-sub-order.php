@@ -29,9 +29,10 @@ class OAM_WC_CRON_Suborder {
         if (!$main_order) {
             return;
         }
-        
+    
 
-        update_metadata('order', $order_id, 'order_process_by', OAM_COMMON_Custom::old_user_id());
+        $main_order->update_meta_data('order_process_by', OAM_COMMON_Custom::old_user_id());
+        $main_order->save();
     
         $order_items = $main_order->get_items();
         $order_items_count = count($order_items);
@@ -200,6 +201,7 @@ class OAM_WC_CRON_Suborder {
                 $sub_order->set_parent_id($order_id);
                 $sub_order->calculate_totals();
                 $sub_order->set_status('processing');
+                
                 $sub_order->save();
     
                 // Update main order item with recipient info
@@ -211,6 +213,9 @@ class OAM_WC_CRON_Suborder {
                     ['order_id' => $sub_order->get_id()],
                     ['id' => $recipient_id]
                 );
+                
+                $sub_order->update_metadata('order_process_by', OAM_COMMON_Custom::old_user_id());
+                $sub_order->save();
     
                 $wpdb->insert($group_recipient_table, [
                     'user_id'           => $recipients->user_id ?? 0,
@@ -234,7 +239,6 @@ class OAM_WC_CRON_Suborder {
                     'greeting'          => sanitize_text_field($recipients->greeting),
                 ]);
 
-                update_metadata('order', $sub_order->get_id(), 'order_process_by', OAM_COMMON_Custom::old_user_id());
     
                 // 2-second delay before creating the next sub-order
                 sleep(2);
