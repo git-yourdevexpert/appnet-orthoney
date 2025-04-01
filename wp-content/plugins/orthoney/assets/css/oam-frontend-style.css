@@ -5938,6 +5938,16 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   .top-bar-menu ul li a {
     font-size: 13px;
   }
+
+  .btn-with-arrow {
+    padding-right: 26px;
+    font-size: 14px;
+  }
+  
+  .btn-with-arrow:after {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 @media (max-width: 395px) {
