@@ -3,6 +3,15 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+
+$user_id = get_current_user_id();
+$user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
+if (in_array('yith_affiliate', $user_roles) || in_array('affiliate_team_member', $user_roles) || in_array('administrator', $user_roles)) {
+    $affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+    if($affiliate_id == ''){
+        $affiliate_id = $user_id;
+    }
+}
 global $wpdb;
 $table_name = OAM_Helper::$oh_affiliate_customer_linker;
 
@@ -10,8 +19,9 @@ $table_name = OAM_Helper::$oh_affiliate_customer_linker;
 $requests = $wpdb->get_results(
     "SELECT id, customer_id, affiliate_id, token, timestamp, status 
      FROM $table_name 
-     WHERE status IN (0, 1)"
+     WHERE status IN (0, 1) AND  affiliate_id = $user_id"
 );
+
 ?>
 <div class="affiliate-dashboard order-process-block">
     <h3>Customers</h3>
