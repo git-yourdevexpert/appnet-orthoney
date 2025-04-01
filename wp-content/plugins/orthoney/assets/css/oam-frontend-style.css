@@ -5189,6 +5189,27 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   border-radius: 4px;
 }
 
+.btn-with-arrow {
+  position: relative;
+  padding-right: 28px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.btn-with-arrow:after {
+  content: '';
+  position: absolute;
+  background-image: url(../image/direction-arrow.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: brightness(0) saturate(100%) invert(99%) sepia(0%) saturate(0%) hue-rotate(262deg) brightness(106%) contrast(101%);
+  width: 22px;
+  height: 22px;
+  right: 0;
+  top: 1px;
+  transform: rotate(180deg);
+}
+
 /* responsive */
 
 @media (min-width: 993px) {
