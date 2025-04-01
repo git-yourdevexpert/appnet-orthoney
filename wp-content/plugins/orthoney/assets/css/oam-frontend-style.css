@@ -5408,6 +5408,8 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 
     padding-right: 20px;
 
+    word-break: break-all;
+
   }
 
   .order-process-block table td .thead-data,
@@ -5428,6 +5430,7 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
     margin-top: -10px;
     margin-bottom: -10px;
     line-height: 1.1;
+    word-break: break-all;
 
   }
 
