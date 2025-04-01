@@ -28,6 +28,57 @@ class OAM_COMMON_Custom {
         // Add any initialization logic here
     }
 
+    public static function redirect_user_based_on_role($roles) {
+        $redirects = [
+            'administrator'         => '/wp-admin/',
+            'yith_affiliate'        => '/affiliate-dashboard/',
+            'affiliate_team_member' => '/affiliate-dashboard/',
+            'sales_representative'  => '/sales-representative-dashboard/',
+            'customer'              => '/customer-dashboard/'
+        ];
+
+        foreach ($roles as $role) {
+            if (isset($redirects[$role])) {
+                return home_url($redirects[$role]);
+                exit;
+            }
+        }
+    }
+
+    public static function old_user_id() {
+        $user_id = 0;
+        if (class_exists('user_switching') && method_exists('user_switching', 'get_old_user')) {
+
+            $old_user = user_switching::get_old_user();
+            if(!empty($old_user)){
+                $user_id = $old_user->ID;
+            }
+        }
+        return $user_id;
+    }
+
+    public static function switch_to_user($user_id) {
+        $user = get_user_by('ID',$user_id);
+        return User_Switching::switch_to_url( $user);
+    }
+
+    public static function switch_back_user() {
+        $html = '';
+        if (class_exists('user_switching') && method_exists('user_switching', 'get_old_user')) {
+
+            $old_user = user_switching::get_old_user();
+
+            if ($old_user) {
+                user_switching::switch_back_url($old_user);
+                $redirect_to = urlencode(self::redirect_user_based_on_role($old_user->roles));
+                $switch_back_url = user_switching::switch_back_url($old_user) . '&redirect_to=' . $redirect_to;
+        
+                 $html .='<a href="' . esc_url($switch_back_url) . '" class="switch-back-btn w-btn us-btn-style_1">Switch Back to ' . esc_html($old_user->display_name) . '</a>';
+            }
+        }
+        return $html;
+    }
+    
     public static function set_affiliate_cookie($token, $remove = 0) {
         global $wpdb;
 
@@ -93,6 +144,7 @@ class OAM_COMMON_Custom {
         // Write to the log file
         file_put_contents($log_file, $log_message, FILE_APPEND);
     }
+   
 
     public static function redirect_logged_in_user_to_dashboard() {
 
@@ -144,57 +196,24 @@ class OAM_COMMON_Custom {
             $user_id = get_current_user_id();
             $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
 
-            if ( in_array( 'yith_affiliate', $user_roles) OR  in_array( 'affiliate_team_member', $user_roles)) { 
-                wp_redirect( home_url( '/affiliate-dashboard/' ) );
-                exit;
-            } 
-            if ( in_array( 'administrator', $user_roles)) { 
-                wp_redirect( home_url( '/wp-admin/' ) );
-                exit;
-            } 
-            if ( in_array( 'customer', $user_roles)) { 
-                wp_redirect( home_url( '/customer-dashboard/' ) );
-                exit;
-            }            
+            wp_redirect(self::redirect_user_based_on_role($user_roles));
+            exit;
+                      
         }
 
         // Check if the user is logged in and visiting the login page
         if ( is_user_logged_in() && is_page('login') ) {
             $user = wp_get_current_user();
             
-            // Example: Redirect based on user role
-            if ( in_array('yith_affiliate', $user->roles) || in_array('affiliate_team_member', $user->roles) ) {
-                wp_redirect(site_url('/affiliate-dashboard'));
-                exit;
-            } elseif ( in_array('customer', $user->roles) ) {
-                wp_redirect(site_url('/customer-dashboard'));
-                exit;
-            } elseif ( in_array('sales_representative', $user->roles) ) {
-                wp_redirect(site_url('/sales-representative-dashboard'));
-                exit;
-            } else {
-                wp_redirect(site_url('/home'));
-                exit;
-            }
+            wp_redirect(self::redirect_user_based_on_role($user->roles));
+            exit;
         }
 
         if ( is_user_logged_in() && is_page('registration') ) {
             $user = wp_get_current_user();
             
-            // Example: Redirect based on user role
-            if ( in_array('yith_affiliate', $user->roles) || in_array('affiliate_team_member', $user->roles) ) {
-                wp_redirect(site_url('/affiliate-dashboard'));
-                exit;
-            } elseif ( in_array('customer', $user->roles) ) {
-                wp_redirect(site_url('/customer-dashboard'));
-                exit;
-            } elseif ( in_array('sales_representative', $user->roles) ) {
-                wp_redirect(site_url('/sales-representative-dashboard'));
-                exit;
-            } else {
-                wp_redirect(site_url('/home'));
-                exit;
-            }
+            wp_redirect(self::redirect_user_based_on_role($user->roles));
+            exit;
         }
     }
 
@@ -233,7 +252,7 @@ class OAM_COMMON_Custom {
         $output = '<ul>';
         
         if (is_user_logged_in()) {
-            $output .= '<li>Hi, ' . $display_name . ' !</li>';
+            $output .= '<li>Hi, ' . $display_name . '!</li>';
             if (in_array('administrator', $roles)) {
                 $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
                 $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Organization Area</a></li>';

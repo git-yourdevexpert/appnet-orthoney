@@ -428,10 +428,8 @@ document.addEventListener('click', function (event) {
         process_group_popup();
 
         const userid = event.target.getAttribute('data-user-id');
-        const nonce = event.target.getAttribute('data-nonce');
-        const type = event.target.classList.contains('organization-login-btn') ? 'affiliate' : 'customer';
 
-        if (!userid || !nonce) {
+        if (!userid) {
             Swal.fire({
                 title: 'Error',
                 text: 'Missing user data. Please try again.',
@@ -446,15 +444,14 @@ document.addEventListener('click', function (event) {
             body: new URLSearchParams({
                 action: 'auto_login_request_to_sales_rep',
                 user_id: userid,
-                nonce: nonce,
-                type: type,
                 security: oam_ajax?.nonce || ''
             }),
         })
         .then(response => response.json())
         .then(data => {
             if (data.success && data.url) {
-                window.location.href = data.url; // Perform the redirect
+                console.log(decodeURIComponent(data.url));
+                window.location.href = decodeURIComponent(data.url); // Perform the redirect
             } else {
                 Swal.fire({
                     title: 'Error',

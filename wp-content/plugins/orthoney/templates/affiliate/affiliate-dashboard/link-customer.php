@@ -53,9 +53,13 @@ $requests = $wpdb->get_results(
                         
                         // Show resend button if status is pending
                         if ($request->status == 0) {
-                            echo '<td><div class="thead-data">Action</div><button class="resend-email-btn" data-customer-id="' . esc_attr($request->customer_id) . '">Resend Email</button></td>';
+                            echo '<td><div class="thead-data">Action</div><button class="resend-email-btn w-btn us-btn-style_1" data-customer-id="' . esc_attr($request->customer_id) . '">Resend Email</button></td>';
                         } else {
-                            echo '<td><div class="thead-data">Action</div>-</td>';
+                            if ($request->status == 1) {
+                                echo '<td><div class="thead-data">Action</div><button class="customer-login-btn w-btn us-btn-style_1" data-user-id="' . esc_attr($request->customer_id) . '">Login to Customer</button></td>';
+                            }else{
+                                echo '<td><div class="thead-data">Action</div>-</td>';
+                            }
                         }
                         
                         echo '</tr>';

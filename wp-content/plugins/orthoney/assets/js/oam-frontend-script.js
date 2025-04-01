@@ -1205,52 +1205,6 @@ document.addEventListener('click', function (event) {
     }
 });
 
-
-
-//Switching Sales Rep to Customer or Organization
-document.addEventListener('click', function (event) {
-    if (event.target.classList.contains('customer-login-btn') || event.target.classList.contains('organization-login-btn')) {
-        event.preventDefault();
-        process_group_popup();
-        
-        const userId = event.target.getAttribute('data-user-id');
-        const nonce = event.target.getAttribute('data-nonce');
-        const type = event.target.classList.contains('organization-login-btn') ? 'affiliate' : 'customer';
-
-        const params = new URLSearchParams({
-            action: 'auto_login_request_to_sales_rep',
-            user_id: userId,
-            nonce: nonce,
-            type: type,
-            security: oam_ajax?.nonce || ''
-        });
-
-        fetch(`${oam_ajax.ajax_url}?${params.toString()}`, {
-            method: 'GET',
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = data.url; // Perform the redirect
-            } else {
-                Swal.fire({
-                    title: 'Error',
-                    text: data.message || 'Failed to generate login URL.',
-                    icon: 'error',
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Fetch Error:', error);
-            Swal.fire({
-                title: 'Error',
-                text: 'An error occurred while generating the login URL.',
-                icon: 'error',
-            });
-        });
-    }
-});
-
 //Hide default user switching button
 document.addEventListener('DOMContentLoaded', function () {
     const switchBackLink = document.querySelector('.woocommerce-MyAccount-navigation-link--user-switching-switch-back');
