@@ -77,33 +77,33 @@ class OAM_SALES_REPRESENTATIVE_Shortcode
             return '<p>No recent customers found.</p>';
         }
     
-        $output = '<div class="recent-customers custom-table">';
-        $output .= '<h3>Recent Customers</h3>';
-        $output .= '<table border="1" cellpadding="10" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th>Customer Name</th>
-                                <th>Email</th>
-                            </tr>
-                        </thead>
-                        <tbody>';
-    
-        foreach ($customers as $index => $customer) {
-            if ($index >= $limit) break;
-            $output .= '<tr>';
-            $output .= '<td>' . esc_html($customer->display_name) . '</td>';
-            $output .= '<td>' . esc_html($customer->user_email) . '</td>';
-            $output .= '</tr>';
-        }
-    
-        $output .= '</tbody></table>';
-    
-        // Adjust view all button visibility
-        if (count($customers) > $limit) {
-            $output .= '<a href="/sales-representative-dashboard/manage-customer/" class="view-all-button w-btn us-btn-style_1 outline-btn">See All</a>';
-        }
-    
-        $output .= '</div>';
+        $output = '<div class="recipient-lists-block custom-table">
+            <div class="row-block">
+                <h4>Recent Customers</h4>
+                <div class="see-all">';
+                    if (count($customers) > $limit) { 
+                        $output .= '<a class="w-btn us-btn-style_1" href="/sales-representative-dashboard/manage-customer/">See all</a>';
+                    }
+                $output .= '</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>';
+                foreach ($customers as $index => $customer) {
+                    if ($index >= $limit) break;
+                    $output .= '<tr data-id="52" data-verify="0" data-group="0">';
+                    $output .= '<td><div class="thead-data">Customer Name</div>' . esc_html($customer->display_name) . '</td>';
+                    $output .= '<td><div class="thead-data">Email</div>' . esc_html($customer->user_email) . '</td>';
+                    $output .= '</tr>';
+                }
+                $output .= '</tbody>
+            </table>
+        </div>';
         return $output;
     }
 
@@ -127,42 +127,42 @@ class OAM_SALES_REPRESENTATIVE_Shortcode
             return '<p>No recent organization found.</p>';
         }
     
-        $output = '<div class="recent-organization custom-table">';
-        $output .= '<h3>Recent Organization</h3>';
-        $output .= '<table border="1" cellpadding="10" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th>Organization Name</th>
-                                <th>City</th>
-                                <th>State</th>
-                                <th>Zip Code</th>
-                            </tr>
-                        </thead>
-                        <tbody>';
-    
-        foreach ($organizations as $index => $organization) {
-            if ($index >= $limit) break;
-            $organization_name = get_user_meta($organization->ID, '_yith_wcaf_name_of_your_organization', true);
-            $city = get_user_meta($organization->ID, '_yith_wcaf_city', true);
-            $state = get_user_meta($organization->ID, '_yith_wcaf_state', true);
-            $code = get_user_meta($organization->ID, '_yith_wcaf_zipcode', true);
-    
-            $output .= '<tr>';
-            $output .= '<td>' . esc_html($organization_name ?: 'N/A') . '</td>';
-            $output .= '<td>' . esc_html($city ?: 'N/A') . '</td>';
-            $output .= '<td>' . esc_html($state ?: 'N/A') . '</td>';
-            $output .= '<td>' . esc_html($code ?: 'N/A') . '</td>';
-            $output .= '</tr>';
-        }
-    
-        $output .= '</tbody></table>';
-    
-        // Adjust view all button visibility
-        if (count($organizations) > $limit) {
-            $output .= '<a href="/sales-representative-dashboard/manage-organization/" class="view-all-button w-btn us-btn-style_1 outline-btn">See All</a>';
-        }
-    
-        $output .= '</div>';
+        $output = '<div class="recipient-lists-block custom-table">
+            <div class="row-block">
+                <h4>Recent Organization</h4>
+                <div class="see-all">';
+                    if (count($organizations) > $limit) { 
+                        $output .= '<a class="w-btn us-btn-style_1" href="/sales-representative-dashboard/manage-organization/">See all</a>';
+                    }
+                $output .= '</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Organization Name</th>
+                        <th>City</th>
+                        <th>State</th>
+                        <th>Zip Code</th>
+                    </tr>
+                </thead>
+                <tbody>';
+                foreach ($organizations as $index => $organization) {
+                    if ($index >= $limit) break;
+                    $organization_name = get_user_meta($organization->ID, '_yith_wcaf_name_of_your_organization', true);
+                    $city = get_user_meta($organization->ID, '_yith_wcaf_city', true);
+                    $state = get_user_meta($organization->ID, '_yith_wcaf_state', true);
+                    $code = get_user_meta($organization->ID, '_yith_wcaf_zipcode', true);
+
+                    $output .= '<tr data-id="52" data-verify="0" data-group="0">';
+                    $output .= '<td><div class="thead-data">Organization Name</div>' . esc_html($customer->display_name) . '</td>';
+                    $output .= '<td><div class="thead-data">City</div>' . esc_html($city ?: 'N/A') . '</td>';
+                    $output .= '<td><div class="thead-data">State</div>' . esc_html($state ?: 'N/A') . '</td>';
+                    $output .= '<td><div class="thead-data">Zip Code</div>' . esc_html($code ?: 'N/A') . '</td>';
+                    $output .= '</tr>';
+                }
+                $output .= '</tbody>
+            </table>
+        </div>';
         return $output;
     }
     
