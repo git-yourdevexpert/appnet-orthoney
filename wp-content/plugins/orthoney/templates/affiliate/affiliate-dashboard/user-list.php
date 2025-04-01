@@ -8,6 +8,8 @@ if (!defined('ABSPATH')) {
 
 <!-- Add User Button -->
 <?php
+
+
 // Get users with the 'affiliate_team_member' role
 $affiliate_users = get_users([
     'role'       => 'affiliate_team_member',
