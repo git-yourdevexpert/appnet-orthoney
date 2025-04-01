@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
         <div class="dashboard-block">
             <?php 
             
-            echo OAM_COMMON_Custom::switch_back_user();
+            // echo OAM_COMMON_Custom::switch_back_user();
             
             $details = OAM_AFFILIATE_Helper::get_affiliate_details($affiliate_id);
             echo OAM_AFFILIATE_Helper::affiliate_details($affiliate_id, $details);

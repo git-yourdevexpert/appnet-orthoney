@@ -20,6 +20,9 @@ if ($redirect_back_user_id) {
                 <h3 class="block-title">Welcome to the Customer Dashboard</h3>
                 <div class="block-row">
                     <?php 
+
+                    // echo OAM_COMMON_Custom::switch_back_user();
+                    
                     $title = 'Place Order';
                     $content = 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid qui, assumenda adipisci tenetur nemo culpa repellendus quaerat aut magni quidem. Inventore expedita voluptas facere ipsa alias fugiat non nulla recusandae! Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid qui, assumenda adipisci tenetur nemo culpa repellendus quaerat aut magni quidem. Inventore expedita voluptas facere ipsa alias fugiat non nulla recusandae!';
                    
