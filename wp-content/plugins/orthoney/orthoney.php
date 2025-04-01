@@ -62,7 +62,7 @@ require_once OH_PLUGIN_DIR_PATH . 'classes/sales-representative/class-sales-repr
 register_activation_hook(__FILE__, 'orthoney_create_custom_tables');
 
 // Refresh database if requested
-if(isset($_GET['database_refresh']) && $_GET['database_refresh'] == 'okay' ){
+if(isset($_GET['database_refresh']) && ($_GET['database_refresh'] == 'okay' OR $_GET['database_refresh'] == 'new') ){
     add_action('init', 'orthoney_create_custom_tables');
 }
 
@@ -96,6 +96,8 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
         return $url;
     }
 }
+
+
 
 
 

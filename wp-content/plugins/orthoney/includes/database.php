@@ -39,6 +39,28 @@ function orthoney_create_custom_tables() {
             $wpdb->query("DROP TABLE IF EXISTS $table");
         }
     }
+    if (isset($_GET['database_refresh']) && $_GET['database_refresh'] == 'new') {
+        $table_names = [
+            $wpdb->prefix . 'oh_order_process_recipient_activate_log',
+            $wpdb->prefix . 'oh_files_upload_activity_log',
+            $wpdb->prefix . 'oh_order_process'
+        ];
+        
+        // Loop through each table
+        foreach ($table_names as $table_name) {
+            // Check if the 'process_by' column exists in the table
+            $column_exists = $wpdb->get_results("SHOW COLUMNS FROM {$table_name} LIKE 'process_by'");
+        
+            if (empty($column_exists)) {
+                // If the column does not exist, add it after 'user_id'
+                $wpdb->query(
+                    "ALTER TABLE {$table_name} 
+                    ADD COLUMN process_by BIGINT(20) UNSIGNED NOT NULL 
+                    AFTER user_id"
+                );
+            }
+        }
+    }
 
     // Load the upgrade script
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -118,6 +140,7 @@ function orthoney_create_custom_tables() {
         'files_upload_activity_log_table' => "CREATE TABLE {$tables['files_upload_activity_log_table']} (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
             user_id BIGINT(20) UNSIGNED NOT NULL,
+            process_by BIGINT(20) DEFAULT 0,
             related_id BIGINT(20) UNSIGNED NOT NULL,
             name VARCHAR(255) NOT NULL,
             status TINYINT(1) DEFAULT 0,
@@ -144,6 +167,7 @@ function orthoney_create_custom_tables() {
         'order_process_table' => "CREATE TABLE {$tables['order_process_table']} (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
             user_id BIGINT(20) NOT NULL,
+            process_by BIGINT(20) DEFAULT 0,
             group_id BIGINT(20) DEFAULT 0,
             order_id BIGINT(20) UNSIGNED DEFAULT 0,
             order_type TEXT NULL,
@@ -171,4 +195,6 @@ function orthoney_create_custom_tables() {
             dbDelta($sql);
         }
     }
+
+    
 }
