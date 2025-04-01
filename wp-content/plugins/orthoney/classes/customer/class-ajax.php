@@ -907,6 +907,7 @@ class OAM_Ajax{
         // Ensure data is safely serialized as a JSON string
         $data = [
             'user_id'  => get_current_user_id(),
+            'process_by'  => OAM_COMMON_Custom::old_user_id(),
             'data'     => wp_json_encode($stepData),
             'step'     => sanitize_text_field($currentStep),
             'greeting' => sanitize_text_field($stepData['greeting']),

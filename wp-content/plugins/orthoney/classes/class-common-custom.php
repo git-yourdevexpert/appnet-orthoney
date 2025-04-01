@@ -49,7 +49,7 @@ class OAM_COMMON_Custom {
         $user_id = 0;
         if (class_exists('user_switching') && method_exists('user_switching', 'get_old_user')) {
 
-            $old_user = user_switching::get_old_user();
+            $old_user = User_Switching::get_old_user();
             if(!empty($old_user)){
                 $user_id = $old_user->ID;
             }

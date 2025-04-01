@@ -33,7 +33,6 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         } else {
             self::$atts_process_id = 0;
         }
-
     
         echo "<div class='order-block-wrap'>
                 <div class='loader multiStepForm'>

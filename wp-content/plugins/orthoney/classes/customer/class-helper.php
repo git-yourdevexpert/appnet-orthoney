@@ -210,15 +210,16 @@ class OAM_Helper{
         global $wpdb;
         
         $insert_data = [
-            'user_id'     => get_current_user_id(),
-            'related_id'  => $process_id,
-            'name'        => sanitize_text_field($file_path ? basename($file_path) : ''),
-            'status'      => $status ? 1 : 0,
-            'method'      => sanitize_text_field($method),
-            'update_log'  => sanitize_textarea_field($message),
-            'user_agent'  => OAM_Helper::get_user_agent(),
-            'user_ip'     => OAM_Helper::get_user_ip(),
-            'timestamp'   => current_time('mysql'),
+            'user_id'        => get_current_user_id(),
+            'process_by'     => OAM_COMMON_Custom::old_user_id(),
+            'related_id'     => $process_id,
+            'name'           => sanitize_text_field($file_path ? basename($file_path) : ''),
+            'status'         => $status ? 1 : 0,
+            'method'         => sanitize_text_field($method),
+            'update_log'     => sanitize_textarea_field($message),
+            'user_agent'     => OAM_Helper::get_user_agent(),
+            'user_ip'        => OAM_Helper::get_user_ip(),
+            'timestamp'      => current_time('mysql'),
         ];
         
         $wpdb->insert(OAM_Helper::$files_activate_log_table, $insert_data);
@@ -328,13 +329,15 @@ class OAM_Helper{
     
     public static function order_process_recipient_activate_log($recipient_id, $status, $changes, $method = 'process') {
         if($recipient_id != '' && $recipient_id != 0){
+            
             global $wpdb;
             $order_process_recipient_activate_log_table = OAM_Helper::$order_process_recipient_activate_log_table;
             $data = [
                 'user_id'         => get_current_user_id(),
+                'process_by '     => OAM_COMMON_Custom::old_user_id(),
                 'recipient_id'    => $recipient_id,
                 'type'            => sanitize_text_field($status),
-                'method'            => sanitize_text_field($method),
+                'method'          => sanitize_text_field($method),
                 'update_log'      => sanitize_textarea_field($changes),
                 'user_agent'      => OAM_Helper::get_user_agent(),
                 'user_ip'         => OAM_Helper::get_user_ip(),
