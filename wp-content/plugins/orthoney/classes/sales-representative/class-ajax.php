@@ -74,29 +74,40 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
     */
     public function auto_login_request_to_sales_rep_handler() {
         check_ajax_referer('oam_nonce', 'security');
-        
+
         if (!is_user_logged_in()) {
             wp_send_json(['success' => false, 'message' => 'You must be logged in.']);
         }
-    
+
         $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
-        $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
-        $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : '';
-    
-        if (!$user_id || !$nonce || !wp_verify_nonce($nonce, 'switch_to_user_' . $user_id)) {
-            wp_send_json(['success' => false, 'message' => 'Invalid nonce or expired.']);
-        }        
-        
-    
-        // Determine redirect URL based on type
-        $redirect_url = ($type === 'affiliate') 
-            ? home_url('/affiliate-dashboard/') 
-            : home_url('/customer-dashboard/');
-    
-        $login_url = home_url("/wp-login.php?action=switch_to_user&user_id={$user_id}&nr=1&_wpnonce={$nonce}&redirect_to=" . urlencode($redirect_url));
-    
-        wp_send_json(['success' => true, 'url' => $login_url]);
+        $current_user = wp_get_current_user();
+        $target = get_userdata($user_id);
+
+        if (!$target) {
+            wp_send_json(['success' => false, 'message' => 'Could not switch users.']);
+        }
+
+        if (!$user_id || !get_user_by('ID', $user_id)) {
+            wp_send_json(['success' => false, 'message' => 'Invalid user ID.']);
+        }
+
+        // Ensure the current user has permission to switch users.
+        if (!current_user_can('switch_users')) {
+            wp_send_json(['success' => false, 'message' => 'You do not have permission to switch users.']);
+        }
+
+        $user = get_user_by('ID', $user_id);
+
+        if (!$user) {
+            wp_send_json(['success' => false, 'message' => 'User not found.']);
+        }
+
+        // Generate switch URL using User Switching plugin
+        $login_url = User_Switching::switch_to_url($user);
+
+        wp_send_json(['success' => true, 'url' => esc_url_raw(html_entity_decode($login_url))]);
     }
+    
     
     
 }
