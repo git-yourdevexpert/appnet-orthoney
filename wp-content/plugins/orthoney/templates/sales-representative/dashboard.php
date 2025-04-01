@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
 ?>
 
 <div class="order-block-wrap">
-    <div class="order-process-dashboard heading-open-sans">
+    <div class="order-process-dashboard heading-open-sans sales-representative-dashbaord">
         <div class="dashboard-block">
             <h3 class="block-title">Welcome to the Sales Representative Dashboard</h3>
             <div class="block-row">
