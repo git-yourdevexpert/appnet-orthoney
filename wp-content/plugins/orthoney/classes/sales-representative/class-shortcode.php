@@ -154,7 +154,7 @@ class OAM_SALES_REPRESENTATIVE_Shortcode
                     $code = get_user_meta($organization->ID, '_yith_wcaf_zipcode', true);
 
                     $output .= '<tr data-id="52" data-verify="0" data-group="0">';
-                    $output .= '<td><div class="thead-data">Organization Name</div>' . esc_html($customer->display_name) . '</td>';
+                    $output .= '<td><div class="thead-data">Organization Name</div>' . esc_html($organization_name ?: 'N/A') . '</td>';
                     $output .= '<td><div class="thead-data">City</div>' . esc_html($city ?: 'N/A') . '</td>';
                     $output .= '<td><div class="thead-data">State</div>' . esc_html($state ?: 'N/A') . '</td>';
                     $output .= '<td><div class="thead-data">Zip Code</div>' . esc_html($code ?: 'N/A') . '</td>';
