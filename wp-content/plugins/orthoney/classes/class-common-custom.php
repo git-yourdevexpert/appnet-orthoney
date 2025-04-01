@@ -39,7 +39,7 @@ class OAM_COMMON_Custom {
 
         foreach ($roles as $role) {
             if (isset($redirects[$role])) {
-                return home_url($w[$role]);
+                return home_url($redirects[$role]);
                 exit;
             }
         }
