@@ -5177,7 +5177,8 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   display: none;
 }
 
-.no-customers {
+.no-customers,
+.no-organizations {
   max-width: 550px;
   margin: 0 auto;
   border: 1px solid #dee2e6;
