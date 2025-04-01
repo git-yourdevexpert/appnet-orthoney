@@ -5420,7 +5420,7 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 
     padding: 0.6rem 0.7rem;
 
-    flex: 100px 0 0;
+    flex: 180px 0 0;
 
     margin-right: 15px;
 
@@ -5516,6 +5516,9 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 @media(max-width: 782px) {
   .admin-bar .select2-container--open .select2-dropdown {
     margin-top: 46px !important;
+  }
+  .order-process-block table td .thead-data, .custom-table table td .thead-data{
+    flex: 100px 0 0;
   }
 }
 
