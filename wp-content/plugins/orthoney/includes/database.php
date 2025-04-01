@@ -60,6 +60,19 @@ function orthoney_create_custom_tables() {
                 );
             }
         }
+
+       $recipient_activate_log_table =  $wpdb->prefix . 'oh_order_process_recipient_activate_log';
+        $column_exists = $wpdb->get_results("SHOW COLUMNS FROM {$recipient_activate_log_table} LIKE 'method'");
+        
+            if (empty($column_exists)) {
+                // If the column does not exist, add it after 'user_id'
+                $wpdb->query(
+                    "ALTER TABLE {$recipient_activate_log_table} 
+                    ADD COLUMN method VARCHAR(255) NOT NULL
+                    AFTER type"
+                );
+            }
+            
     }
 
     // Load the upgrade script
@@ -157,6 +170,7 @@ function orthoney_create_custom_tables() {
             user_id BIGINT(20) UNSIGNED NOT NULL,
             recipient_id BIGINT(20) UNSIGNED NOT NULL,
             type VARCHAR(255) NOT NULL,
+            method VARCHAR(255) NOT NULL,
             update_log TEXT NULL,
             user_agent TEXT NULL,
             user_ip TEXT NULL,

@@ -334,7 +334,7 @@ class OAM_Helper{
             $order_process_recipient_activate_log_table = OAM_Helper::$order_process_recipient_activate_log_table;
             $data = [
                 'user_id'         => get_current_user_id(),
-                'process_by '     => OAM_COMMON_Custom::old_user_id(),
+                'process_by'      => intval(OAM_COMMON_Custom::old_user_id()),
                 'recipient_id'    => $recipient_id,
                 'type'            => sanitize_text_field($status),
                 'method'          => sanitize_text_field($method),

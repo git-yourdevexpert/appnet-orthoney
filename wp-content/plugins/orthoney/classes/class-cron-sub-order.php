@@ -29,6 +29,9 @@ class OAM_WC_CRON_Suborder {
         if (!$main_order) {
             return;
         }
+        
+
+        update_metadata('order', $order_id, 'order_process_by', OAM_COMMON_Custom::old_user_id());
     
         $order_items = $main_order->get_items();
         $order_items_count = count($order_items);
@@ -230,6 +233,8 @@ class OAM_WC_CRON_Suborder {
                     'reasons'           => sanitize_text_field($recipients->reasons),
                     'greeting'          => sanitize_text_field($recipients->greeting),
                 ]);
+
+                update_metadata('order', $sub_order->get_id(), 'order_process_by', OAM_COMMON_Custom::old_user_id());
     
                 // 2-second delay before creating the next sub-order
                 sleep(2);
