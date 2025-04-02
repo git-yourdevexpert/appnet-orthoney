@@ -11,7 +11,7 @@ class OAM_Hooks {
     public function __construct() {
         // add_filter('woocommerce_locate_template', array($this, 'custom_plugin_woocommerce_template'), 10, 3);
         add_action('init', array($this,'grant_switch_users_capability'));
-        add_action('after_setup_theme', array($this'add_dynamic_menu_items'));
+        add_action('after_setup_theme', array($this,'add_dynamic_menu_items'));
     }
 
     /**
