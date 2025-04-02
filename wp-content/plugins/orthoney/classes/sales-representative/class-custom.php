@@ -28,8 +28,9 @@ class OAM_SALES_REPRESENTATIVE_Custom {
      */
     public function sales_representative_dashboard_handler() {
 
-        $parsedUrl = parse_url(SALES_REPRESENTATIVE_DASHBOARD_LINK, PHP_URL_PATH);
-        $slug = trim($parsedUrl, '/');
+        $parsedUrl = SALES_REPRESENTATIVE_DASHBOARD_LINK;
+        $newdUrl = str_replace(home_url(), '' ,$parsedUrl);
+        $slug = trim($newdUrl, '/');
         if (!empty($slug)) {
             $sales_representative_dashboard_id = get_page_by_path($slug);
         

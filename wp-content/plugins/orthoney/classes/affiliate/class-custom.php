@@ -18,9 +18,10 @@ class OAM_AFFILIATE_Custom {
      */
     public function affiliate_dashboard_handler() {
 
-        $parsedUrl = parse_url(ORGANIZATION_DASHBOARD_LINK, PHP_URL_PATH);
-        $slug = trim($parsedUrl, '/');
-
+        $parsedUrl = ORGANIZATION_DASHBOARD_LINK;
+        $newdUrl = str_replace(home_url(), '' ,$parsedUrl);
+        $slug = trim($newdUrl, '/');
+        
         if (!empty($slug)) {
             $affiliate_dashboard_id = get_page_by_path($slug);
         

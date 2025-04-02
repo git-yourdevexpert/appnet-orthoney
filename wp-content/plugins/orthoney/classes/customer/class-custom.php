@@ -39,8 +39,11 @@ class OAM_CUSTOM {
             add_rewrite_endpoint($endpoint, EP_ROOT | EP_PAGES);
         }
 
-        $parsedUrl = parse_url(CUSTOMER_DASHBOARD_LINK, PHP_URL_PATH);
-        $slug = trim($parsedUrl, '/');
+        
+        $parsedUrl = CUSTOMER_DASHBOARD_LINK;
+        $newdUrl = str_replace(home_url(), '' ,$parsedUrl);
+        $slug = trim($newdUrl, '/');
+        
         // Updated rewrite rule to work with customer-dashboard slug
         if (!empty($slug)) {
             add_rewrite_rule(
