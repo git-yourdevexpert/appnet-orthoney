@@ -1996,9 +1996,17 @@ class OAM_Ajax{
                     $download_button = "<a href='".esc_url($download_url)."' class='w-btn us-btn-style_1 outline-btn round-btn' download data-tippy='Download Recipients File'><i class='far fa-download'></i></a>";
                 }
     
+                if($data->process_by == 0){
+                    $display_name= "-";
+                }else{
+                    $user_info = get_userdata($data->process_by);
+                    $display_name = $user_info->display_name;
+                }
+
                 $table_content .= "<tr>
                 <td><div class='thead-data'>Sr No</div>" . esc_html($data->id) . "</td>
                 <td><div class='thead-data'>Name</div>" . esc_html($data->name) . "</td>
+                <td><div class='thead-data'>Process By</div>" . esc_html($display_name) . "</td>
                 <td><div class='thead-data'>Date</div>". esc_html($created_date). "</td>
                 <td><div class='thead-data'>Action</div> <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>".($failed == 1 ? 'View Recipients' : 'Resume Order' )."</a> ".($failed != 1 ? $download_button : '' )." </td>
                 </tr>";
