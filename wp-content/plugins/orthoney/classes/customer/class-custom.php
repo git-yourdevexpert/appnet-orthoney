@@ -42,29 +42,31 @@ class OAM_CUSTOM {
         $parsedUrl = parse_url(CUSTOMER_DASHBOARD_LINK, PHP_URL_PATH);
         $slug = trim($parsedUrl, '/');
         // Updated rewrite rule to work with customer-dashboard slug
-        add_rewrite_rule(
-            $slug.'/failed-recipients/details/([0-9]+)/?$', 
-            'index.php?pagename='.$slug.'&failed-recipients-details=$matches[1]', 
-            'top'
-        );
+        if (!empty($slug)) {
+            add_rewrite_rule(
+                $slug.'/failed-recipients/details/([0-9]+)/?$', 
+                'index.php?pagename='.$slug.'&failed-recipients-details=$matches[1]', 
+                'top'
+            );
 
-        add_rewrite_rule(
-            $slug.'/groups/details/([0-9a-z_]+)/?$', 
-            'index.php?pagename='.$slug.'&groups-details=$matches[1]', 
-            'top'
-        );
+            add_rewrite_rule(
+                $slug.'/groups/details/([0-9a-z_]+)/?$', 
+                'index.php?pagename='.$slug.'&groups-details=$matches[1]', 
+                'top'
+            );
 
-        // Load custom templates for My Account endpoints
-        $base_path = OH_PLUGIN_DIR_PATH . "templates/customer/customer-dashboard/";
-        foreach ($endpoints as $endpoint) {
-            add_action("woocommerce_account_{$endpoint}_endpoint", function () use ($base_path, $endpoint) {
-                $template = $base_path . "{$endpoint}.php";
-                if (file_exists($template)) {
-                    include $template;
-                } else {
-                    echo "<p>Template file not found: {$endpoint}.php</p>";
-                }
-            });
+            // Load custom templates for My Account endpoints
+            $base_path = OH_PLUGIN_DIR_PATH . "templates/customer/customer-dashboard/";
+            foreach ($endpoints as $endpoint) {
+                add_action("woocommerce_account_{$endpoint}_endpoint", function () use ($base_path, $endpoint) {
+                    $template = $base_path . "{$endpoint}.php";
+                    if (file_exists($template)) {
+                        include $template;
+                    } else {
+                        echo "<p>Template file not found: {$endpoint}.php</p>";
+                    }
+                });
+            }
         }
 
         

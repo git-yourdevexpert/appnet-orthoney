@@ -21,11 +21,13 @@ class OAM_AFFILIATE_Custom {
         $parsedUrl = parse_url(ORGANIZATION_DASHBOARD_LINK, PHP_URL_PATH);
         $slug = trim($parsedUrl, '/');
 
-        $affiliate_dashboard_id = get_page_by_path($slug);
-    
-        if ($affiliate_dashboard_id) {
-            add_rewrite_rule($slug.'/([^/]+)/?$', 'index.php?pagename='.$slug.'&affiliate_endpoint=$matches[1]', 'top');
-            add_rewrite_endpoint('affiliate_endpoint', EP_PAGES);
+        if (!empty($slug)) {
+            $affiliate_dashboard_id = get_page_by_path($slug);
+        
+            if ($affiliate_dashboard_id) {
+                add_rewrite_rule($slug.'/([^/]+)/?$', 'index.php?pagename='.$slug.'&affiliate_endpoint=$matches[1]', 'top');
+                add_rewrite_endpoint('affiliate_endpoint', EP_PAGES);
+            }
         }
     }
 

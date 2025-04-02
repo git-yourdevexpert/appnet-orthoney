@@ -30,11 +30,13 @@ class OAM_SALES_REPRESENTATIVE_Custom {
 
         $parsedUrl = parse_url(SALES_REPRESENTATIVE_DASHBOARD_LINK, PHP_URL_PATH);
         $slug = trim($parsedUrl, '/');
-        $sales_representative_dashboard_id = get_page_by_path($slug);
-    
-        if ($sales_representative_dashboard_id) {
-            add_rewrite_rule($slug.'/([^/]+)/?$', 'index.php?pagename='.$slug.'&sales_representative_endpoint=$matches[1]', 'top');
-            add_rewrite_endpoint('sales_representative_endpoint', EP_PAGES);
+        if (!empty($slug)) {
+            $sales_representative_dashboard_id = get_page_by_path($slug);
+        
+            if ($sales_representative_dashboard_id) {
+                add_rewrite_rule($slug.'/([^/]+)/?$', 'index.php?pagename='.$slug.'&sales_representative_endpoint=$matches[1]', 'top');
+                add_rewrite_endpoint('sales_representative_endpoint', EP_PAGES);
+            }
         }
     }
 
