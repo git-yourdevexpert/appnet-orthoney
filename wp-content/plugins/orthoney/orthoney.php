@@ -76,15 +76,8 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
         $custom_url = ''; // Default login link
         $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user->ID);
 
-        if (in_array('customer', $user_roles)) { 
-            $custom_url = home_url('/customer-dashboard/');
-        }
-        if (in_array('yith_affiliate', $user_roles) || in_array('affiliate_team_member', $user_roles)) { 
-            $custom_url = home_url('/affiliate-dashboard/');
-        } 
-        if (in_array('administrator', $user_roles)) { 
-            $custom_url = home_url('/wp-admin/');
-        }
+        $custom_url = OAM_COMMON_Custom::redirect_user_based_on_role($user_roles);
+
         $arr_params = array( 'action', 'uid', 'token', 'nonce' );
         $url_params = array(
             'uid'   => $user->ID,
