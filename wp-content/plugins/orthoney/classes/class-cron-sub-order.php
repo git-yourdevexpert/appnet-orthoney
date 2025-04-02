@@ -18,6 +18,7 @@ class OAM_WC_CRON_Suborder {
         if (!$order_id) {
             return;
         }
+        
     
         global $wpdb;
         
@@ -41,6 +42,7 @@ class OAM_WC_CRON_Suborder {
         $process_id = 0;
         $recipient_id = 0;
     
+     
         foreach ($order_items as $item) {   
             $single_order_meta = $item->get_meta('single_order', true);
             
@@ -48,16 +50,28 @@ class OAM_WC_CRON_Suborder {
                 $single_order = 1;
                 $process_id = $item->get_meta('process_id', true) ?: 0;
             } else {
-                $single_order = $item->get_meta('_recipient_order_type', true) ?: '';
-                $process_id = $item->get_meta('_recipient_process_id', true) ?: 0;
-                $recipient_id = $item->get_meta('_recipient_recipient_id', true) ?: 0;
+                if($item->get_meta('_recipient_order_type', true) != ''){
+                    $single_order = $item->get_meta('_recipient_order_type', true);
+                }
+                if($item->get_meta('_recipient_process_id', true) != ''){
+                    $process_id = $item->get_meta('_recipient_process_id', true);
+                }
+
+                if($item->get_meta('_recipient_recipient_id', true) != ''){
+                    $recipient_id = $item->get_meta('_recipient_recipient_id', true);
+                }
+                if($process_id != ''){
+                    break;
+                }
             }
         }
     
+        
         $order_type = ($single_order == 1) ? 'single-order' : 'multi-recipient-order';
     
         if ($process_id) {
-            $wpdb->update(
+    
+                $wpdb->update(
                 $order_process_table,
                 ['order_type' => $order_type, 'order_id' => $order_id],
                 ['id' => $process_id]
@@ -87,11 +101,11 @@ class OAM_WC_CRON_Suborder {
         // Insert if group does not exist
         if (!$group_id) {
             $wpdb->insert($group_table, [
-                'user_id'  => $processData->user_id,
-                'pid'      => $process_id,
-                'order_id' => $order_id,
+                'user_id'    => $processData->user_id,
+                'pid'        => $process_id,
+                'order_id'   => $order_id,
                 'visibility' => 1,
-                'name'     => sanitize_text_field($processData->name),
+                'name'       => sanitize_text_field($processData->name),
             ]);
             $group_id = $wpdb->insert_id;
         }
@@ -101,8 +115,8 @@ class OAM_WC_CRON_Suborder {
                 "SELECT COUNT(id) FROM $group_recipient_table WHERE group_id = %d",
                 $group_id
             ));
-    
-            if ($groupRecipientCount !== $order_items_count && !wp_next_scheduled('create_sub_order', [$order_id, $group_id, $process_id])) {
+
+            if ($groupRecipientCount != $order_items_count && !wp_next_scheduled('create_sub_order', [$order_id, $group_id, $process_id])) {
                 wp_schedule_single_event(time() + 90, 'create_sub_order', [$order_id, $group_id, $process_id]);
                 OAM_COMMON_Custom::sub_order_error_log("Scheduled cron job for Order ID: $order_id");
             }
@@ -181,7 +195,7 @@ class OAM_WC_CRON_Suborder {
                     // Add custom meta to sub-order item
                     $order_item->add_meta_data('_recipient_recipient_id', $recipient_id, true);
                     $order_item->add_meta_data('_recipient_company_name', $company_name, true);
-                    $order_item->add_meta_data('order_process_by', OAM_COMMON_Custom::old_user_id(), true);
+                    // $order_item->add_meta_data('order_process_by', OAM_COMMON_Custom::old_user_id(), true);
     
                     $sub_order->add_item($order_item);
                 }

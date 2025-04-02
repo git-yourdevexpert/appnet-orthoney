@@ -47,6 +47,7 @@ class OAM_Ajax{
         // Done
         
 		add_action( 'wp_ajax_deleted_group', array( $this, 'orthoney_deleted_group_handler' ) );
+		add_action( 'wp_ajax_orthoney_customer_order_process_ajax', array( $this, 'orthoney_customer_order_process_ajax_handler' ) );
         
         // TODO
         add_action( 'wp_ajax_orthoney_process_to_checkout_ajax', array( $this, 'orthoney_process_to_checkout_ajax_handler' ) );
@@ -1937,6 +1938,134 @@ class OAM_Ajax{
         wp_die();
     }
 
+    public function orthoney_customer_order_process_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+        
+        $user_id = get_current_user_id();
+        $current_page = isset($_POST['page']) ? max(1, intval($_POST['page'])) : 1;
+        $items_per_page = 10;
+        $offset = ($current_page - 1) * $items_per_page;
+    
+        $wc_orders_table = $wpdb->prefix . 'wc_orders';
+    
+        // Get total items count
+        $total_items = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wc_orders_table} WHERE customer_id = %d AND parent_order_id = %d",
+            $user_id, 0
+        ));
+    
+        // Fetch paginated order data
+        $processQuery = $wpdb->prepare(
+            "SELECT * FROM {$wc_orders_table} WHERE customer_id = %d AND parent_order_id = %d ORDER BY date_updated_gmt DESC LIMIT %d OFFSET %d",
+            $user_id, 0, $items_per_page, $offset
+        );
+    
+        $total_pages = (int) ceil($total_items / $items_per_page);
+        $results = $wpdb->get_results($processQuery);
+        
+        $table_content = '';
+    
+        if (!empty($results)) {
+            foreach ($results as $data) {
+                $main_order = wc_get_order($data->id);
+    
+                // **Prevent Fatal Error: Skip if order is null**
+                if (!$main_order) {
+                    continue;
+                }
+    
+                // Get order statuses
+                $statuses = $wpdb->get_results(
+                    $wpdb->prepare(
+                        "SELECT status, COUNT(*) as count FROM {$wc_orders_table} WHERE customer_id = %d AND parent_order_id = %d GROUP BY status",
+                        $user_id, $data->id
+                    ),
+                    OBJECT_K
+                );
+    
+                $status_counts = [];
+                foreach ($statuses as $status => $status_data) {
+                    $status_counts[$status] = $status_data->count;
+                }
+    
+                // Generate status HTML
+                $status_html = '';
+                if ($status_counts) {
+                    foreach ($status_counts as $key => $value) {
+                        $status_html .= '<span class="'.esc_html(wc_get_order_status_name($key)).'">(' . esc_html($value) . ') ' . esc_html(wc_get_order_status_name($key)) . '</span> ';
+                    }
+                }
+    
+                // Format date
+                $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->date_created_gmt));
+    
+                // Get order details
+                $first_name = $main_order->get_billing_first_name();
+                $last_name = $main_order->get_billing_last_name();
+                $order_total = wc_price($main_order->get_total());
+                $total_quantity = 0;
+    
+                // Calculate total quantity
+                foreach ($main_order->get_items() as $item) {
+                    $single_order_meta = $item->get_meta('single_order', true);
+            
+                    if (!empty($single_order_meta) && $single_order_meta == 1) {
+                        $single_order = 'Single Address';
+                    }else{
+                        if($item->get_meta('_recipient_order_type', true) != ''){
+                            $single_order = 'Multi Address';
+                        }
+                    }
+                    $total_quantity += $item->get_quantity();
+                }
+    
+                // Order view URL
+                $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "view-order/" . $data->id);
+    
+                // Get affiliate referral ID
+                $referral_id = $main_order->get_meta('_yith_wcaf_referral', true) ?: 'Orthoney';
+    
+                // Table row output
+                $table_content .= "<tr>
+                    <td><div class='thead-data'>Order No</div>" . esc_html($data->id) . "</td>
+                    <td><div class='thead-data'>Date</div>" . esc_html($created_date) . "</td>
+                    <td><div class='thead-data'>Billing Name</div>" . esc_html($first_name . ' ' . $last_name) . "</td>
+                    <td><div class='thead-data'>Affiliate Code</div>" . ($referral_id ? esc_html($referral_id) : 'Orthoney') . "</td>
+                    <td><div class='thead-data'>Total Honey Jar</div>" . esc_html($total_quantity) . "</td>
+                    <td><div class='thead-data'>Total Recipient</div>" . esc_html(count($main_order->get_items())) . "</td>
+                    <td><div class='thead-data'>Type</div>" . $single_order . "</td>
+                    <td class='order-status'><div class='thead-data'>Status</div>" . $status_html . "</td>
+                    <td><div class='thead-data'>Price</div>" . $order_total . "</td>
+                    <td><div class='thead-data'>Action</div>
+                        <a data-tippy='View Order' href='" . esc_url($resume_url) . "' class='far fa-eye'></a>
+                        <a data-tippy='Download Invoice' href='#' class='far fa-download'></a>
+                    </td>
+                </tr>";
+            }
+        }
+    
+        // Pagination HTML
+        $pagination = '';
+        if ($total_pages > 1) {
+            for ($i = 1; $i <= $total_pages; $i++) {
+                $active_class = ($current_page == $i) ? 'active' : '';
+                $pagination .= "<a href='javascript:;' class='" . esc_attr($active_class) . "' data-page='" . esc_attr($i) . "'>" . esc_html($i) . "</a> ";
+            }
+        }
+    
+        // Return JSON response
+        wp_send_json_success([
+            'table_content' => $table_content,
+            'pagination' => $pagination,
+            'current_page' => $current_page,
+            'total_pages' => $total_pages,
+        ]);
+        wp_die();
+    }
+    
+
+
     public function orthoney_incomplete_order_process_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
@@ -1997,7 +2126,7 @@ class OAM_Ajax{
                 }
     
                 if($data->process_by == 0){
-                    $display_name= "-";
+                    $display_name= "Self";
                 }else{
                     $user_info = get_userdata($data->process_by);
                     $display_name = $user_info->display_name;

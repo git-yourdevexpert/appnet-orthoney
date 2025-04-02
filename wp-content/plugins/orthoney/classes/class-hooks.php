@@ -23,33 +23,33 @@ class OAM_Hooks {
                 'id' => 21, // Menu ID
                 'items' => [
                     'Dashboard' => SALES_REPRESENTATIVE_DASHBOARD_LINK,
-                    'Manage Customer' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-customer',
-                    'Manage Organization' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-organization',
-                    'My Profile' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'my-profile',
+                    'Manage Customer' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-customer/',
+                    'Manage Organization' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-organization/',
+                    'My Profile' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'my-profile/',
                 ]
             ],
             'organization-menu' => [ // Menu slug
                 'id' => 20, // Menu ID
                 'items' => [
                     'Dashboard' => ORGANIZATION_DASHBOARD_LINK,
-                    'My Profile' => ORGANIZATION_DASHBOARD_LINK . 'my-profile',
-                    'Order List' => ORGANIZATION_DASHBOARD_LINK . 'order-list',
-                    'Change Admin' => ORGANIZATION_DASHBOARD_LINK . 'change-admin',
-                    'Link Customer' => ORGANIZATION_DASHBOARD_LINK . 'link-customer',
-                    'User List' => ORGANIZATION_DASHBOARD_LINK . 'user-list',
+                    'My Profile' => ORGANIZATION_DASHBOARD_LINK . 'my-profile/',
+                    'Order List' => ORGANIZATION_DASHBOARD_LINK . 'order-list/',
+                    'Change Admin' => ORGANIZATION_DASHBOARD_LINK . 'change-admin/',
+                    'Link Customer' => ORGANIZATION_DASHBOARD_LINK . 'link-customer/',
+                    'User List' => ORGANIZATION_DASHBOARD_LINK . 'user-list/',
                 ]
             ],
             'customer-menu' => [ // Menu slug
                 'id' => 19, // Menu ID
                 'items' => [
                     'Dashboard' => CUSTOMER_DASHBOARD_LINK,
-                    'Incomplete Order' => CUSTOMER_DASHBOARD_LINK . 'incomplete-order',
-                    'Failed Recipients' => CUSTOMER_DASHBOARD_LINK . 'failed-recipients',
-                    'Orders' => CUSTOMER_DASHBOARD_LINK . 'orders',
-                    'Groups' => CUSTOMER_DASHBOARD_LINK . 'groups',
-                    'Organizations' => CUSTOMER_DASHBOARD_LINK . 'organizations',
-                    'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account',
-                    'Edit Address' => CUSTOMER_DASHBOARD_LINK . 'edit-address',
+                    'Incomplete Order' => CUSTOMER_DASHBOARD_LINK . 'incomplete-order/',
+                    'Failed Recipients' => CUSTOMER_DASHBOARD_LINK . 'failed-recipients/',
+                    'Orders' => CUSTOMER_DASHBOARD_LINK . 'orders/',
+                    'Groups' => CUSTOMER_DASHBOARD_LINK . 'groups/',
+                    'Organizations' => CUSTOMER_DASHBOARD_LINK . 'organizations/',
+                    'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account/',
+                    'Edit Address' => CUSTOMER_DASHBOARD_LINK . 'edit-address/',
                 ]
             ]
         ];

@@ -64,7 +64,7 @@ do_action( 'woocommerce_before_customer_login_form' ); ?>
 			</p>
 			
 			<p class="woocommerce-LostPassword lost_password">
-				Not a customer yet? <a href="<?php echo esc_url( home_url('/registration' ) ); ?>"><?php esc_html_e( 'Sign Up Here', 'woocommerce' ); ?></a>
+				Not a customer yet? <a href="<?php echo esc_url( CUSTOMER_REGISTER_LINK ); ?>"><?php esc_html_e( 'Sign Up Here', 'woocommerce' ); ?></a>
 			</p>
 
 			<?php do_action( 'woocommerce_login_form_end' ); ?>
