@@ -100,6 +100,9 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
         $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user->ID);
 
         $custom_url = OAM_COMMON_Custom::redirect_user_based_on_role($user_roles);
+        if($custom_url == home_url('wp-admin')){
+            $custom_url = home_url();
+        }
 
         $arr_params = array( 'action', 'uid', 'token', 'nonce' );
         $url_params = array(
@@ -112,10 +115,6 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
         return $url;
     }
 }
-
-
-
-
 
 
 // /affiliate-dashboard-user-list-menu-item
