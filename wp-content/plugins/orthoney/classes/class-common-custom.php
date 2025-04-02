@@ -33,16 +33,16 @@ class OAM_COMMON_Custom {
     }
     public static function redirect_user_based_on_role($roles) {
         $redirects = [
-            'administrator'         => '/wp-admin/',
-            'yith_affiliate'        => '/affiliate-dashboard/',
-            'affiliate_team_member' => '/affiliate-dashboard/',
-            'sales_representative'  => '/sales-representative-dashboard/',
-            'customer'              => '/customer-dashboard/'
+            'administrator'         => home_url('wp-admin'),
+            'yith_affiliate'        => ORGANIZATION_DASHBOARD_LINK,
+            'affiliate_team_member' => ORGANIZATION_DASHBOARD_LINK,
+            'sales_representative'  => SALES_REPRESENTATIVE_DASHBOARD_LINK,
+            'customer'              => CUSTOMER_DASHBOARD_LINK
         ];
 
         foreach ($roles as $role) {
             if (isset($redirects[$role])) {
-                return home_url($redirects[$role]);
+                return $redirects[$role];
                 exit;
             }
         }
@@ -257,22 +257,22 @@ class OAM_COMMON_Custom {
         if (is_user_logged_in()) {
             $output .= '<li>Hi, ' . $display_name . '!</li>';
             if (in_array('administrator', $roles)) {
-                $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
-                $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Organization Area</a></li>';
-                $output .= '<li><a href="' . site_url('/sales-representative-dashboard') . '">Sales Representative Area</a></li>';
+                $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Area</a></li>';
+                $output .= '<li><a href="' . ORGANIZATION_DASHBOARD_LINK . '">Organization Area</a></li>';
+                $output .= '<li><a href="' . SALES_REPRESENTATIVE_DASHBOARD_LINK . '">Sales Representative Area</a></li>';
             } else {
                 // Check for customer without affiliate roles
                 if (in_array('customer', $roles) && !in_array('yith_affiliate', $roles) && !in_array('affiliate_team_member', $roles)) {
-                    $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
+                    $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Area</a></li>';
                 } else {
                     if (in_array('customer', $roles)) {
-                        $output .= '<li><a href="' . site_url('/customer-dashboard') . '">Customer Area</a></li>';
+                        $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Area</a></li>';
                     }
                     if (in_array('yith_affiliate', $roles) || in_array('affiliate_team_member', $roles)) {
-                        $output .= '<li><a href="' . site_url('/affiliate-dashboard') . '">Organization Area</a></li>';
+                        $output .= '<li><a href="' . ORGANIZATION_DASHBOARD_LINK . '">Organization Area</a></li>';
                     }
                     if (in_array('sales_representative', $roles)) {
-                        $output .= '<li><a href="' . site_url('/sales-representative-dashboard') . '">Sales Representative Area</a></li>';
+                        $output .= '<li><a href="' . SALES_REPRESENTATIVE_DASHBOARD_LINK . '">Sales Representative Area</a></li>';
                     }
                 }
             }
@@ -282,7 +282,7 @@ class OAM_COMMON_Custom {
             
         } else {
             $output .= '<li><a href="' . ur_get_login_url() . '">Customer Login</a></li>';
-            $output .= '<li><a href="' . site_url('/affiliate-login') . '">Organization Login</a></li>';
+            $output .= '<li><a href="' . ORGANIZATION_LOGIN_LINK . '">Organization Login</a></li>';
         }
     
         $output .= '</ul>';
@@ -379,7 +379,7 @@ class OAM_COMMON_Custom {
             return '<div class="place-order item">
             <div class="row-block">
             <h4 class="block-title">' . esc_html($title) . '</h4>
-            <div class="see-all"><a href="'.esc_html(home_url('order-process')).'" class="w-btn us-btn-style_1">Order Now</a></div>
+            <div class="see-all"><a href="'.esc_url(ORDER_PROCESS_LINK).'" class="w-btn us-btn-style_1">Order Now</a></div>
             </div>
             <div class="description">' . esc_html($content) . '</div>
             </div>';

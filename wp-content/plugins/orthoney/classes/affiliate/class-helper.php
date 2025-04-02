@@ -212,15 +212,15 @@ class OAM_AFFILIATE_Helper {
         if ( in_array( 'yith_affiliate', $user_roles) OR  in_array( 'affiliate_team_member', $user_roles)) {
 
             $output = '<div class="affiliate-dashboard">';
-            $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard')) . '">Dashboard</a></div>';
-            $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/my-profile/')) . '">My Profile</a></div>';
-            $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/order-list/')) . '">Order List</a></div>';
+            $output .= '<div class="btn"><a href="' . esc_url(ORGANIZATION_DASHBOARD_LINK) . '">Dashboard</a></div>';
+            $output .= '<div class="btn"><a href="' . esc_url(ORGANIZATION_DASHBOARD_LINK.'/my-profile/') . '">My Profile</a></div>';
+            $output .= '<div class="btn"><a href="' . esc_url(ORGANIZATION_DASHBOARD_LINK.'/order-list/') . '">Order List</a></div>';
 
             if ( ! in_array( 'affiliate_team_member', $user_roles)) {
 
-                $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/change-admin/')) . '">Change Admin</a></div>';
-                $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/link-customer/')) . '">Link Customer</a></div>';
-                $output .= '<div class="btn"><a href="' . esc_url(site_url('/affiliate-dashboard/user-list/')) . '">User List</a></div>';
+                $output .= '<div class="btn"><a href="' . esc_url(ORGANIZATION_DASHBOARD_LINK.'/change-admin/') . '">Change Admin</a></div>';
+                $output .= '<div class="btn"><a href="' . esc_url(ORGANIZATION_DASHBOARD_LINK.'/link-customer/') . '">Link Customer</a></div>';
+                $output .= '<div class="btn"><a href="' . esc_url(ORGANIZATION_DASHBOARD_LINK.'/user-list/') . '">User List</a></div>';
 
             }
 
@@ -303,7 +303,6 @@ class OAM_AFFILIATE_Helper {
                     <div class="item">
                         <div class="row-block">
                             <h3 class="block-title">'.(!empty($affiliate->display_name) ? esc_html($affiliate->display_name) : 'N/A').'</h3>
-                            
                         </div>
                     </div>
                 </div>

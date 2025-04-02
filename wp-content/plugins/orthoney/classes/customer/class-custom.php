@@ -32,23 +32,25 @@ class OAM_CUSTOM {
             'recipients-list',
             'groups',
             'groups-details',
-            'affiliates'
+            'organizations'
         ];
         
         foreach ($endpoints as $endpoint) {
             add_rewrite_endpoint($endpoint, EP_ROOT | EP_PAGES);
         }
 
+        $parsedUrl = parse_url(CUSTOMER_DASHBOARD_LINK, PHP_URL_PATH);
+        $slug = trim($parsedUrl, '/');
         // Updated rewrite rule to work with customer-dashboard slug
         add_rewrite_rule(
-            'customer-dashboard/failed-recipients/details/([0-9]+)/?$', 
-            'index.php?pagename=customer-dashboard&failed-recipients-details=$matches[1]', 
+            $slug.'/failed-recipients/details/([0-9]+)/?$', 
+            'index.php?pagename='.$slug.'&failed-recipients-details=$matches[1]', 
             'top'
         );
 
         add_rewrite_rule(
-            'customer-dashboard/groups/details/([0-9a-z_]+)/?$', 
-            'index.php?pagename=customer-dashboard&groups-details=$matches[1]', 
+            $slug.'/groups/details/([0-9a-z_]+)/?$', 
+            'index.php?pagename='.$slug.'&groups-details=$matches[1]', 
             'top'
         );
 
@@ -78,7 +80,7 @@ class OAM_CUSTOM {
             'failed-recipients' => __('Failed Recipients', OH_DOMAIN),
             'orders'            => __('Orders', OH_DOMAIN),
             'groups'            => __('Recipient Lists', OH_DOMAIN),
-            'affiliates'        => __('Organizations', OH_DOMAIN),
+            'organizations'     => __('Organizations', OH_DOMAIN),
             'edit-account'      => __('My Profile', OH_DOMAIN),
             'edit-address'      => __('Edit Address', OH_DOMAIN),
         ];
@@ -90,7 +92,7 @@ class OAM_CUSTOM {
      * Override WooCommerce My Account dashboard template
      */
     public function custom_woocommerce_myaccount_template($template, $template_name, $template_path) {
-        if ($template_name === 'myaccount/dashboard.php' && get_query_var('pagename') === 'customer-dashboard' && !is_wc_endpoint_url()) {
+        if ($template_name === 'myaccount/dashboard.php' && !is_wc_endpoint_url()) {
             $custom_template = OH_PLUGIN_DIR_PATH . '/templates/customer/customer-dashboard/dashboard.php';
             return file_exists($custom_template) ? $custom_template : $template;
         }else{

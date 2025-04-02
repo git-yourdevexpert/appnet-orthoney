@@ -25,10 +25,10 @@ class OAM_SALES_REPRESENTATIVE_Helper {
         if ( in_array( 'sales_representative', $user_roles) || in_array('administrator', $user_roles)) {
             $output = '<div class="sales-representative-dashboard">';
 
-            $output .= '<div class="btn"><a href="' . esc_url(site_url('/sales-representative-dashboard')) . '">Dashboard</a></div>';
-            $output .= '<div class="btn"><a href="' . esc_url(site_url('/sales-representative-dashboard/manage-customer/')) . '">Manage Customer</a></div>';
-            $output .= '<div class="btn"><a href="' . esc_url(site_url('/sales-representative-dashboard/manage-organization/')) . '">Manage Organization</a></div>';
-            $output .= '<div class="btn"><a href="' . esc_url(site_url('/sales-representative-dashboard/my-profile/')) . '">My Profile</a></div>';
+            $output .= '<div class="btn"><a href="' . esc_url(SALES_REPRESENTATIVE_DASHBOARD_LINK) . '">Dashboard</a></div>';
+            $output .= '<div class="btn"><a href="' . esc_url(SALES_REPRESENTATIVE_DASHBOARD_LINK.'manage-customer/') . '">Manage Customer</a></div>';
+            $output .= '<div class="btn"><a href="' . esc_url(SALES_REPRESENTATIVE_DASHBOARD_LINK.'manage-organization/') . '">Manage Organization</a></div>';
+            $output .= '<div class="btn"><a href="' . esc_url(SALES_REPRESENTATIVE_DASHBOARD_LINK.'my-profile/') . '">My Profile</a></div>';
             $output .= '<div class="btn"><a href="' . esc_url(wp_logout_url(home_url())) . '">Logout</a></div>';
 
             $output .= '</div>';

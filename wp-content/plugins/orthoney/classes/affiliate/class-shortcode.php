@@ -65,13 +65,13 @@ class OAM_AFFILIATE_Shortcode
             } else {
                 if (!empty($result['message'])) {
                     $message = $result['message'];
-                    $url = home_url('/customer-dashboard');
+                    $url = CUSTOMER_DASHBOARD_LINK;
                     $btn_name = 'Customer Dashboard';
                     return OAM_COMMON_Custom::message_design_block($message, $url, $btn_name);
                 }
                 if (!empty($result['reason'])) {
                     $message = $result['reason'];
-                    $url = home_url('/customer-dashboard');
+                    $url = CUSTOMER_DASHBOARD_LINK;
                     $btn_name = 'Customer Dashboard';
                     return OAM_COMMON_Custom::message_design_block($message, $url, $btn_name);
                 }

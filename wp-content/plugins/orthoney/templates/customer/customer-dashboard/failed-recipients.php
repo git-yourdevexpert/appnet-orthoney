@@ -4,6 +4,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+
 $user_id = get_current_user_id();
 $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
 

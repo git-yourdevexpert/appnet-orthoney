@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
 class OAM_SALES_REPRESENTATIVE_Custom {
 
     /**
-     * Constructor to hook into Affiliate template loading.
+     * Constructor to hook into sales representative template loading.
      */
     public function __construct() {
         add_action('init', array($this, 'sales_representative_dashboard_handler'));
@@ -24,13 +24,16 @@ class OAM_SALES_REPRESENTATIVE_Custom {
         });
     }
      /**
-     * Affiliate callback
+     * sales representative callback
      */
     public function sales_representative_dashboard_handler() {
-        $affiliate_dashboard_id = get_page_by_path('sales-representative-dashboard');
+
+        $parsedUrl = parse_url(SALES_REPRESENTATIVE_DASHBOARD_LINK, PHP_URL_PATH);
+        $slug = trim($parsedUrl, '/');
+        $sales_representative_dashboard_id = get_page_by_path($slug);
     
-        if ($affiliate_dashboard_id) {
-            add_rewrite_rule('sales-representative-dashboard/([^/]+)/?$', 'index.php?pagename=sales-representative-dashboard&sales_representative_endpoint=$matches[1]', 'top');
+        if ($sales_representative_dashboard_id) {
+            add_rewrite_rule($slug.'/([^/]+)/?$', 'index.php?pagename='.$slug.'&sales_representative_endpoint=$matches[1]', 'top');
             add_rewrite_endpoint('sales_representative_endpoint', EP_PAGES);
         }
     }

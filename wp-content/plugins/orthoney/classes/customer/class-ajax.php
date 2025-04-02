@@ -1984,9 +1984,9 @@ class OAM_Ajax{
                 $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->created));
 
                 if($failed != 1){
-                    $resume_url = esc_url(home_url("/order-process?pid=$data->id"));
+                    $resume_url = esc_url(ORDER_PROCESS_LINK."?pid=".$data->id);
                 }else{
-                    $resume_url = esc_url(home_url("/customer-dashboard/failed-recipients/details/".$data->id));
+                    $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK."failed-recipients/details/".$data->id);
                 }
 
                 $download_button = '';

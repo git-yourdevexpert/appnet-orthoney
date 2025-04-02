@@ -9,7 +9,7 @@ $redirect_back_user_id = get_transient('redirect_back_user_' . $current_user_id)
 
 if ($redirect_back_user_id) {
     $nonce = wp_create_nonce('auto_login_' . $redirect_back_user_id);
-    $back_url = home_url('/?action=auto_login&user_id=' . $redirect_back_user_id . '&nonce=' . $nonce . '&redirect_to=' . urlencode('/sales-representative-dashboard/'));
+    $back_url = home_url('/?action=auto_login&user_id=' . $redirect_back_user_id . '&nonce=' . $nonce . '&redirect_to=' . urlencode(SALES_REPRESENTATIVE_DASHBOARD_LINK));
     echo '<a href="' . esc_url($back_url) . '" class="button">Back to Previous User</a>';
 }
 

@@ -50,7 +50,7 @@ class OAM_Helper{
         self::$users_table = $wpdb->prefix . 'users';
         self::$users_meta_table = $wpdb->prefix . 'usermeta';
 
-        self::$customer_dashboard_link = home_url('customer-dashboard');
+        self::$customer_dashboard_link = CUSTOMER_DASHBOARD_LINK;
         self::$all_uploaded_csv_dir = WP_CONTENT_DIR . '/all-uploaded-files/';
         self::$process_recipients_csv_dir = WP_CONTENT_DIR . '/process-recipients-files/';
         self::$process_recipients_csv_url = WP_CONTENT_URL . '/process-recipients-files/';
@@ -865,7 +865,7 @@ class OAM_Helper{
                 foreach ($results as $data) {
                     $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->created));
                     
-                    $resume_url = esc_url(home_url("/order-process?pid=$data->id"));
+                    $resume_url = esc_url(ORDER_PROCESS_LINK."?pid=$data->id");
                     $html .= '<tr data-id="52" data-verify="0" data-group="0">
                     <td><div class="thead-data">Id</div>'.esc_html($data->id).'</td>
                     <td><div class="thead-data">Name</div>'.esc_html($data->name).'</td>

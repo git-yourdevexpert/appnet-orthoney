@@ -22,7 +22,7 @@ if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins',
 $required_columns = ['full name','Company Name', 'Mailing Address', 'Suite/Apt', 'city', 'state', 'zipcode', 'quantity', 'greeting'];
 
 if ( ! defined( 'OH_REQUIRED_COLUMNS' ) ) {
-	define( 'OH_REQUIRED_COLUMNS', $required_columns );
+    define( 'OH_REQUIRED_COLUMNS', $required_columns );
 }
 
 if ( ! defined( 'OH_PLUGIN_DIR_URL' ) ) {
@@ -35,7 +35,28 @@ if ( ! defined( 'OH_DOMAIN' ) ) {
 	define( 'OH_DOMAIN', 'ORTHONEY'  );
 }
 
-// Include necessary files
+
+$link_array = array(
+    'customer_dashboard_link'             => 'CUSTOMER_DASHBOARD_LINK', 
+    'organization_dashboard_link'         => 'ORGANIZATION_DASHBOARD_LINK',
+    'sales_representative_dashboard_link' => 'SALES_REPRESENTATIVE_DASHBOARD_LINK',
+    'customer_login_link'                 => 'CUSTOMER_LOGIN_LINK',
+    'customer_register_link'              => 'CUSTOMER_REGISTER_LINK',
+    'organization_login_link'             => 'ORGANIZATION_LOGIN_LINK',
+    'organization_register_link'          => 'ORGANIZATION_REGISTER_LINK',
+    'order_process_link'                  => 'ORDER_PROCESS_LINK'
+);
+
+foreach ($link_array as $key => $constant_name) {
+    if ( ! defined($constant_name) ) {
+        $link = get_field($key, 'options');
+        if ($link) {
+            define($constant_name, $link['url']);
+        }
+    }
+}
+
+// Include required files
 require_once OH_PLUGIN_DIR_PATH . 'includes/database.php';
 
 require_once OH_PLUGIN_DIR_PATH . 'classes/class-wc.php';
@@ -94,6 +115,8 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 
 
 
+
+// /affiliate-dashboard-user-list-menu-item
 // if (!function_exists('user_has_role')) {
 //     function user_has_role($user_id, $roles_to_check = []) {
 //         $user = get_userdata($user_id);
