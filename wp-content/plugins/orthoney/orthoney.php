@@ -52,6 +52,8 @@ foreach ($link_array as $key => $constant_name) {
         $link = get_field($key, 'options');
         if ($link) {
             define($constant_name, $link['url']);
+        }else{
+            define($constant_name, home_url());
         }
     }
 }
