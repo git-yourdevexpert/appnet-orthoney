@@ -205,14 +205,14 @@ class OAM_COMMON_Custom {
         }
         
         // Check if the user is logged in and visiting the login page
-        if (is_user_logged_in() && (
-            (defined('CUSTOMER_LOGIN_LINK') && home_url($_SERVER['REQUEST_URI']) == CUSTOMER_LOGIN_LINK) ||
-            (defined('CUSTOMER_REGISTER_LINK') && home_url($_SERVER['REQUEST_URI']) == CUSTOMER_REGISTER_LINK) ||
-            (defined('ORGANIZATION_LOGIN_LINK') && home_url($_SERVER['REQUEST_URI']) == ORGANIZATION_LOGIN_LINK) ||
-            (defined('ORGANIZATION_REGISTER_LINK') && home_url($_SERVER['REQUEST_URI']) == ORGANIZATION_REGISTER_LINK)
-        )) {
+        if ( is_user_logged_in() && ( 
+            home_url( $_SERVER['REQUEST_URI'] ) ==  CUSTOMER_LOGIN_LINK  ||  
+            home_url( $_SERVER['REQUEST_URI'] ) ==  CUSTOMER_REGISTER_LINK  ||  
+            home_url( $_SERVER['REQUEST_URI'] ) ==  ORGANIZATION_LOGIN_LINK  ||  
+            home_url( $_SERVER['REQUEST_URI'] ) ==  ORGANIZATION_REGISTER_LINK
+            ) ) {
             $user = wp_get_current_user();
-            error_log('Current URL: ' . home_url($_SERVER['REQUEST_URI']));
+            
             wp_redirect(self::redirect_user_based_on_role($user->roles));
             exit;
         }
