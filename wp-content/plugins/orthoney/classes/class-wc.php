@@ -43,8 +43,6 @@ class OAM_WC_Customizer {
         add_filter( 'woocommerce_thankyou_order_received_text', array($this, 'custom_thankyou_order_received_text'), 10, 2 );
         add_action('woocommerce_thankyou', array($this, 'add_labels_to_order_overview'), 20);
 
-        add_filter('woocommerce_get_myaccount_page_permalink', array($this, 'custom_role_base_link'));
-
     }
 
     /**
@@ -568,11 +566,6 @@ class OAM_WC_Customizer {
         <?php $order_details_url = $order->get_view_order_url();
         echo '<div class="view-order-btn"><a href="' . esc_url($order_details_url) . '" class="button">View Order Details</a></div>';?>
         <?php
-    }
-
-    public static function custom_role_base_link($url) {
-        $user = wp_get_current_user();    
-        return self::redirect_user_based_on_role($user->roles); // Return the correct URL
     }
 }
 
