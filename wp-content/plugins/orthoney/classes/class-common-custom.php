@@ -23,7 +23,6 @@ class OAM_COMMON_Custom {
         add_filter('body_class', array($this, 'custom_body_class'));
 
         add_filter('user_registration_reset_password_redirect', array($this, 'reset_password_redirection'), 10, 2);
-        
     }
 
     public static function init() {
@@ -214,10 +213,12 @@ class OAM_COMMON_Custom {
             home_url( $_SERVER['REQUEST_URI'] ) ==  ORGANIZATION_LOGIN_LINK  ||  
             home_url( $_SERVER['REQUEST_URI'] ) ==  ORGANIZATION_REGISTER_LINK
             ) ) {
+
             $user = wp_get_current_user();
             
             wp_redirect(self::redirect_user_based_on_role($user->roles));
             exit;
+            
         }
 
     }
@@ -393,6 +394,7 @@ class OAM_COMMON_Custom {
     public static function reset_password_redirection ($redirect, $user) {
         return self::redirect_user_based_on_role($user->roles); // Return the correct URL
     }
+ 
 }
 
 // Instantiate and initialize
