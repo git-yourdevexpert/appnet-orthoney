@@ -87,6 +87,7 @@ class OAM_Ajax{
             $city         = sanitize_text_field($customer['city']);
             $state        = sanitize_text_field($customer['state']);
             $zipcode      = sanitize_text_field($customer['zipcode']);
+            $greeting      = sanitize_text_field($customer['greeting']);
             $quantity     = (int) $customer['quantity'];
             
             $processQuery = $wpdb->prepare("
@@ -125,6 +126,7 @@ class OAM_Ajax{
                 'city'         => $city,
                 'state'        => $state,
                 'zipcode'      => $zipcode,
+                'greeting'     => $greeting,
                 'unique_key'   => $unique_key,
             ]);
         }
@@ -241,6 +243,7 @@ class OAM_Ajax{
                     "state"          => trim($recipient->state) ?? '',
                     "zipcode"        => trim($recipient->zipcode) ?? '',
                     "quantity"       => $recipient->quantity ?? 1,
+                    "greeting"       => trim($recipient->greeting) ?? '',
                 ];
             }
         
@@ -1992,9 +1995,13 @@ class OAM_Ajax{
                 // Generate status HTML
                 $status_html = '';
                 if ($status_counts) {
+                    
                     foreach ($status_counts as $key => $value) {
                         $status_html .= '<span class="'.esc_html($key).'">(' . esc_html($value) . ') ' . esc_html(wc_get_order_status_name($key)) . '</span> ';
                     }
+                }
+                if($status_html == ''){
+                    $status_html = 'Recipient Order is Preparing.';
                 }
     
                 // Format date

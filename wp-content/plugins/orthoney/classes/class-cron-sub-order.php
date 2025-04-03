@@ -116,11 +116,12 @@ class OAM_WC_CRON_Suborder {
                 $group_id
             ));
 
-            if ($groupRecipientCount != $order_items_count && !wp_next_scheduled('create_sub_order', [$order_id, $group_id, $process_id])) {
+             if ($groupRecipientCount != $order_items_count && !wp_next_scheduled('create_sub_order', [$order_id, $group_id, $process_id])) {
                 wp_schedule_single_event(time() + 90, 'create_sub_order', [$order_id, $group_id, $process_id]);
                 OAM_COMMON_Custom::sub_order_error_log("Scheduled cron job for Order ID: $order_id");
             }
         }
+       
     }
 
     public function process_sub_order_creation_handler($order_id, $group_id, $process_id) {
@@ -128,18 +129,18 @@ class OAM_WC_CRON_Suborder {
     
         $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
         $group_recipient_table = OAM_Helper::$group_recipient_table;
-    
+
         if (!$order_id) {
             OAM_COMMON_Custom::sub_order_error_log("Invalid Order ID in process_sub_order_creation");
             return;
         }
-    
+
         $main_order = wc_get_order($order_id);
         if (!$main_order) {
             OAM_COMMON_Custom::sub_order_error_log("Main order not found for Order ID: $order_id");
             return;
         }
-    
+
         $customer_id = $main_order->get_customer_id();
         $billing_data = [
             'first_name' => $main_order->get_billing_first_name(),
@@ -154,52 +155,56 @@ class OAM_WC_CRON_Suborder {
             'email'      => $main_order->get_billing_email(),
             'phone'      => $main_order->get_billing_phone(),
         ];
-    
-        $order_items = $main_order->get_items();
-    
-        // Process all items in ONE cron execution with 10s delay
-        foreach ($order_items as $item_id => $item) {
+
+        foreach ($main_order->get_items() as $item_id => $item) {
             $recipient_id = $item->get_meta('_recipient_recipient_id', true);
             $company_name = $item->get_meta('_recipient_company_name', true);
-    
-            $recipientQuery = $wpdb->prepare(
+            $greeting = $item->get_meta('greeting', true);
+
+            OAM_COMMON_Custom::sub_order_error_log("recipient_id: $recipient_id, company_name: $company_name");
+
+            // Fetch recipient details
+            $recipients = $wpdb->get_row($wpdb->prepare(
                 "SELECT * FROM {$order_process_recipient_table} WHERE id = %d",
                 $recipient_id
-            );
-    
-            $recipients = $wpdb->get_row($recipientQuery);
-    
+            ));
+
             if ($recipients && $recipients->order_id == 0) {
                 $sub_order = wc_create_order();
-    
+
                 if ($customer_id) {
                     $sub_order->set_customer_id($customer_id);
                 }
-    
+
                 $custom_full_name = $item->get_meta('full_name', true);
                 $sub_order->set_address($billing_data, 'billing');
                 $sub_order->set_billing_email($billing_data['email']);
-    
+
+                // Set order-level metadata
+                $sub_order->update_meta_data('_recipient_recipient_id', $recipient_id);
+                $sub_order->update_meta_data('_recipient_company_name', $company_name);
+                $sub_order->update_meta_data('greeting', $greeting);
+
                 $product_id = $item->get_product_id();
                 $quantity   = $item->get_quantity();
-    
-                $product = wc_get_product($product_id);
+                $product    = wc_get_product($product_id);
+
                 if ($product) {
                     $order_item = new WC_Order_Item_Product();
                     $order_item->set_product($product);
                     $order_item->set_quantity($quantity);
                     $order_item->set_subtotal(0);
                     $order_item->set_total(0);
-                    $order_item->set_order_id($sub_order->get_id());
-    
-                    // Add custom meta to sub-order item
-                    $order_item->add_meta_data('_recipient_recipient_id', $recipient_id, true);
-                    $order_item->add_meta_data('_recipient_company_name', $company_name, true);
-                    // $order_item->add_meta_data('order_process_by', OAM_COMMON_Custom::old_user_id(), true);
-    
+
+                    // Set item-level metadata
+                    $order_item->update_meta_data('_recipient_recipient_id', $recipient_id);
+                    $order_item->update_meta_data('_recipient_company_name', $company_name);
+                    $order_item->update_meta_data('greeting', $greeting);
+
                     $sub_order->add_item($order_item);
                 }
-    
+
+                // Set shipping address
                 $shipping_data = [
                     'first_name' => $custom_full_name ?: $billing_data['first_name'],
                     'last_name'  => '',
@@ -210,26 +215,22 @@ class OAM_WC_CRON_Suborder {
                     'postcode'   => $item->get_meta('_recipient_zipcode', true) ?? '',
                     'country'    => 'US',
                 ];
-    
+
                 $sub_order->set_address($shipping_data, 'shipping');
                 $sub_order->set_shipping_total(0);
                 $sub_order->set_parent_id($order_id);
                 $sub_order->calculate_totals();
                 $sub_order->set_status('processing');
-                
                 $sub_order->save();
-    
-                // Update main order item with recipient info
-                wc_update_order_item_meta($item_id, '_recipient_recipient_id', $recipient_id);
-                wc_update_order_item_meta($item_id, '_recipient_company_name', $company_name);
-    
+
+                // Update order reference in recipient table
                 $wpdb->update(
                     $order_process_recipient_table,
                     ['order_id' => $sub_order->get_id()],
                     ['id' => $recipient_id]
                 );
-                
-    
+
+                // Insert into group recipient table
                 $wpdb->insert($group_recipient_table, [
                     'user_id'           => $recipients->user_id ?? 0,
                     'recipient_id'      => $recipient_id,
@@ -252,14 +253,12 @@ class OAM_WC_CRON_Suborder {
                     'greeting'          => sanitize_text_field($recipients->greeting),
                 ]);
 
-                OAM_COMMON_Custom::sub_order_error_log("All sub-orders created for Main Order ID: $order_id and Sub Order ID: ".$sub_order->get_id()." with 2-second intervals.");
-    
-                // 2-second delay before creating the next sub-order
+                OAM_COMMON_Custom::sub_order_error_log("Sub-order created for Main Order ID: $order_id | Sub Order ID: " . $sub_order->get_id());
+
+                // 2-second delay before next sub-order creation
                 sleep(2);
             }
         }
-    
-       
     }
 }
 new OAM_WC_CRON_Suborder();

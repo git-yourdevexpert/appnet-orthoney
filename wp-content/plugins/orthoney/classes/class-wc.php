@@ -396,12 +396,27 @@ class OAM_WC_Customizer {
         if (isset($values['recipient_id'])) {
             $item->add_meta_data('_recipient_recipient_id', $values['recipient_id'], true);
         }
+
+        if (isset($values['_recipient_recipient_id'])) {
+            $item->add_meta_data('_recipient_recipient_id', $values['_recipient_recipient_id'], true);
+        }
+
         if (isset($values['process_id'])) {
             $item->add_meta_data('_recipient_process_id', $values['process_id'], true);
         }
+
+        if (isset($values['greeting'])) {
+            $item->add_meta_data('greeting', $values['greeting'], true);
+        }
+
         if (isset($values['company_name'])) {
             $item->add_meta_data('_recipient_company_name', $values['company_name'], true);
         }
+
+        if (isset($values['_recipient_company_name'])) {
+            $item->add_meta_data('_recipient_company_name', $values['_recipient_company_name'], true);
+        }
+        
         if (isset($values['address_1'])) {
             $item->add_meta_data('_recipient_address_1', $values['address_1'], true);
         }
