@@ -43,9 +43,9 @@ class OAM_Hooks {
                 'id' => 19, // Menu ID
                 'items' => [
                     'Dashboard' => CUSTOMER_DASHBOARD_LINK,
+                    'Orders' => CUSTOMER_DASHBOARD_LINK . 'orders/',
                     'Incomplete Order' => CUSTOMER_DASHBOARD_LINK . 'incomplete-order/',
                     'Failed Recipients from Prv. Orders' => CUSTOMER_DASHBOARD_LINK . 'failed-recipients/',
-                    'Orders' => CUSTOMER_DASHBOARD_LINK . 'orders/',
                     'Recipients List' => CUSTOMER_DASHBOARD_LINK . 'groups/',
                     'Associated Organizations' => CUSTOMER_DASHBOARD_LINK . 'organizations/',
                     'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account/',
