@@ -205,18 +205,19 @@ class OAM_COMMON_Custom {
         }
         
         // Check if the user is logged in and visiting the login page
-        if ( is_user_logged_in() && ( 
-            home_url( $_SERVER['REQUEST_URI'] ) ==  CUSTOMER_LOGIN_LINK  ||  
-            home_url( $_SERVER['REQUEST_URI'] ) ==  CUSTOMER_REGISTER_LINK  ||  
-            home_url( $_SERVER['REQUEST_URI'] ) ==  ORGANIZATION_LOGIN_LINK  ||  
-            home_url( $_SERVER['REQUEST_URI'] ) ==  ORGANIZATION_REGISTER_LINK
-            ) ) {
-
+        if ( is_user_logged_in() && in_array(
+            untrailingslashit(esc_url_raw(home_url($_SERVER['REQUEST_URI']))),
+                [
+                    untrailingslashit(esc_url_raw(CUSTOMER_LOGIN_LINK)),
+                    untrailingslashit(esc_url_raw(CUSTOMER_REGISTER_LINK)),
+                    untrailingslashit(esc_url_raw(ORGANIZATION_LOGIN_LINK)),
+                    untrailingslashit(esc_url_raw(ORGANIZATION_REGISTER_LINK))
+                ]
+            )
+        ) {
             $user = wp_get_current_user();
-            
             wp_redirect(self::redirect_user_based_on_role($user->roles));
             exit;
-            
         }
 
     }
