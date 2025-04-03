@@ -212,7 +212,7 @@ class OAM_COMMON_Custom {
             home_url( $_SERVER['REQUEST_URI'] ) ==  ORGANIZATION_REGISTER_LINK
             ) ) {
             $user = wp_get_current_user();
-            
+            error_log('Current URL: ' . home_url($_SERVER['REQUEST_URI']));
             wp_redirect(self::redirect_user_based_on_role($user->roles));
             exit;
         }
