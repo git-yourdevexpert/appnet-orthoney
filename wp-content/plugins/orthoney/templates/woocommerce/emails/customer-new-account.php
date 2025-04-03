@@ -26,6 +26,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email );
 $user_email = is_object($email) ? $email->recipient : $email;
 $user = get_user_by('email', $user_email);
 $custom_url = OAM_COMMON_Custom::redirect_user_based_on_role($user->roles);
+error_log($custom_url);
 ?>
 
 <?php echo $email_improvements_enabled ? '<div class="email-introduction">' : ''; ?>
