@@ -1097,6 +1097,79 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+//customer order process code
+document.addEventListener("DOMContentLoaded", function () {
+    function fetchOrders(page = 1, $failed = 0) {
+        process_group_popup();
+        const params = new URLSearchParams();
+        params.append("action", "orthoney_customer_order_process_ajax");
+        params.append("page", page);
+        params.append("failed", $failed);
+        params.append("security", oam_ajax.nonce);
+
+        fetch(oam_ajax.ajax_url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: params.toString()
+        })
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.getElementById("customer-order-data");
+            const paginationDiv = document.getElementById("customer-order-pagination");
+
+            if (data.success) {
+                const responseData = data.data;
+                tableBody.innerHTML = responseData.table_content;
+                paginationDiv.innerHTML = responseData.pagination;
+                initTippy();
+               
+            } else {
+                Swal.fire({
+                    title: "Error",
+                    text: data.data?.message || "Something went wrong. Please try again",
+                    icon: "error",
+                });
+            }
+            setTimeout(() => {
+                Swal.close();
+            }, 500);
+        })
+        .catch(() => {
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while updating the customer Order.',
+                icon: 'error',
+            });
+        });
+    }
+
+    const Incomplete_orders = document.querySelector(".customer-order-block #customer-order-data");
+    if (Incomplete_orders) {
+
+        if (Incomplete_orders.hasAttribute('data-failed')) {
+            fetchOrders(1, 1);
+        }else{
+            fetchOrders(1);
+        }
+        
+        document.addEventListener('click', function (event) {
+            if (event.target.matches('#customer-order-pagination a')) {
+                event.preventDefault();
+                const page = event.target.getAttribute('data-page');
+                if (page) {
+                    if (Incomplete_orders.hasAttribute('data-failed')) {
+                        fetchOrders(page, 1);
+                    }else{
+                        fetchOrders(page);
+                    }
+                }
+            }
+        });
+    }
+});
+
 
 //group order process code
 document.addEventListener("DOMContentLoaded", function () {
