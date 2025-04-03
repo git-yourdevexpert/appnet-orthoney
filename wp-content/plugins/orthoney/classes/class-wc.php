@@ -572,7 +572,8 @@ class OAM_WC_Customizer {
 
     public static function custom_role_base_link($url) {
         $user = wp_get_current_user();
-        return OAM_COMMON_Custom::redirect_user_based_on_role($user->roles); // Return the correct URL
+        $custom_url = OAM_COMMON_Custom::redirect_user_based_on_role($user->roles);
+        return !empty($custom_url) ? $custom_url : $url; // Ensure a fallback
     }
 }
 
