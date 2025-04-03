@@ -23,7 +23,8 @@ $email_improvements_enabled = FeaturesUtil::feature_is_enabled( 'email_improveme
 
 do_action( 'woocommerce_email_header', $email_heading, $email ); 
 
-$user_email = is_object($email) ? $email->recipient : $email;
+$user_email = isset( $email ) && is_object( $email ) ? $email->get_recipient() : '';
+error_log($user_email);
 $user = get_user_by('email', $user_email);
 $custom_url = OAM_COMMON_Custom::redirect_user_based_on_role($user->roles);
 error_log($custom_url);
