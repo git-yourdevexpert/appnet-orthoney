@@ -204,12 +204,16 @@ class OAM_COMMON_Custom {
             }
         }
         
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+        $host = $_SERVER['HTTP_HOST'] ?? ''; 
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        $full_page_url = $protocol . $host . $uri;
         // Check if the user is logged in and visiting the login page
         if ( is_user_logged_in() && ( 
-            $_SERVER['SCRIPT_URI']  ==  CUSTOMER_LOGIN_LINK  ||  
-            $_SERVER['SCRIPT_URI']  ==  CUSTOMER_REGISTER_LINK  ||  
-            $_SERVER['SCRIPT_URI']  ==  ORGANIZATION_LOGIN_LINK  ||  
-            $_SERVER['SCRIPT_URI']  ==  ORGANIZATION_REGISTER_LINK
+            $full_page_url ==  CUSTOMER_LOGIN_LINK  ||  
+            $full_page_url ==  CUSTOMER_REGISTER_LINK  ||  
+            $full_page_url ==  ORGANIZATION_LOGIN_LINK  ||  
+            $full_page_url ==  ORGANIZATION_REGISTER_LINK
             ) ) {
 
             $user = wp_get_current_user();
