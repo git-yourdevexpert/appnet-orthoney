@@ -91,7 +91,6 @@ class OAM_COMMON_Custom {
             // Remove the cookies
             setcookie('yith_wcaf_referral_token', '', time() - 3600, "/", "", true, true);
             setcookie('yith_wcaf_referral_history', '', time() - 3600, "/", "", true, true);
-            echo "yith_wcaf_referral_removed";
             return;
         }
 
@@ -104,7 +103,6 @@ class OAM_COMMON_Custom {
             ", $token));
 
             if (!$processExistResult) {
-                echo "Affiliate token not found.";
                 return;
             }
 
