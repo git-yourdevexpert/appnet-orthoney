@@ -1993,7 +1993,7 @@ class OAM_Ajax{
                 $status_html = '';
                 if ($status_counts) {
                     foreach ($status_counts as $key => $value) {
-                        $status_html .= '<span class="'.esc_html(wc_get_order_status_name($key)).'">(' . esc_html($value) . ') ' . esc_html(wc_get_order_status_name($key)) . '</span> ';
+                        $status_html .= '<span class="'.esc_html($key).'">(' . esc_html($value) . ') ' . esc_html(wc_get_order_status_name($key)) . '</span> ';
                     }
                 }
     
