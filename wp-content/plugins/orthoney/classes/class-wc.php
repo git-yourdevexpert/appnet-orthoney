@@ -382,6 +382,9 @@ class OAM_WC_Customizer {
         if (isset($values['custom_data']['single_order'])) {
             $item->add_meta_data('single_order', $values['custom_data']['single_order'], true);
         }
+        if (isset($values['custom_data']['greeting'])) {
+            $item->add_meta_data('greeting', $values['custom_data']['greeting'], true);
+        }
     
         if (isset($values['custom_data']['process_id'])) {
             $item->add_meta_data('process_id', $values['custom_data']['process_id'], true);
@@ -512,12 +515,14 @@ class OAM_WC_Customizer {
                 $custom_content .= '<div class="item"><a href="#viewAllRecipientsPopupCheckout" class="viewAllRecipientsPopupCheckout btn-underline" data-lity>View All Recipients Details</a></div>';
                 // Popup Content
                 $custom_content .= '<div id="viewAllRecipientsPopupCheckout" class="lity-popup-normal lity-hide">
-                    <div class="popup-show order-process-block">
-                        <h3>All Recipients Details</h3>
-                        <table>
+                <div class="popup-show order-process-block">
+                <h3>All Recipients Details</h3>
+                <div class="table-wrapper">
+                <table>
                             <thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th></tr></thead>
                             <tbody>' . $table_content . '</tbody>
                         </table>
+                        </div>
                     </div>
                 </div></div>';
     
