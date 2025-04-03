@@ -40,14 +40,12 @@ $order_order_process_result = $wpdb->get_var(
 );
 ?>
 
-<div class="order-process-block">
-	<div class="recipient-group-section ">
-		<div id="recipient-order-data" class="table-data">
-			<div class="download-csv">
-				<div class="heading-title">
-					<div>
-						<h5 class="table-title">#<?php echo $order->get_order_number() ?> Recipient Order</h5>
-						<p> 
+<div class="order-process-block customer-order-details-section">
+	<div class=" ">
+
+	<div class="customer-order-details-nav">
+	<h3>#<?php echo $order->get_order_number() ?> Recipient Order</h3>
+	<p> 
 							<?php 
 							$order_process_by = '';
 							if($order_order_process_result != 0){
@@ -66,6 +64,22 @@ $order_order_process_result = $wpdb->get_var(
 							?>
 						
 						</p>
+		<label>
+			
+			<span><img decoding="async" src="http://appnet-orthoney.local/wp-content/plugins/orthoney/assets/image/address.png" alt="" class="address-icon">Order Details</span>
+		</label>
+		<label>
+			
+			<span><img decoding="async" src="http://appnet-orthoney.local/wp-content/plugins/orthoney/assets/image/destination.png" alt="" class="address-icon">Recipient Orders</span>
+		</label>
+	</div>
+
+		<div id="recipient-order-data" class="table-data">
+			<div class="download-csv">
+				<div class="heading-title">
+					<div>
+						
+						
 					</div>
 					<div>
 						<button data-tippy="Cancel All Recipient Orders" class="btn-underline">Cancel All Recipient Orders</button></div>
@@ -141,7 +155,7 @@ $order_order_process_result = $wpdb->get_var(
 			</table>
 		</div> 
 		<div id="main-order-details">
-		<div class="recipient-view-details-wrapper"><ul><li><label>Full Name:</label><span> Jane Son</span></li><li><label>Company Name: </label><span>Vertex Industries</span></li><li><label>Mailing Address: </label><span>101, Main St</span></li><li><label>Suite/Apt#: </label><span></span></li><li><label>City: </label><span>New York</span></li><li><label>State: </label><span>NY</span></li><li><label>Quantity: </label><span>3</span></li></ul><div class="recipient-view-greeting-box"><label>Greeting: </label><span></span></div></div>
+		<div class="order-details-wrapper"><ul><li><label>Full Name:</label><span> Jane Son</span></li><li><label>Company Name: </label><span>Vertex Industries</span></li><li><label>Mailing Address: </label><span>101, Main St</span></li><li><label>Suite/Apt#: </label><span></span></li><li><label>City: </label><span>New York</span></li><li><label>State: </label><span>NY</span></li><li><label>Quantity: </label><span>3</span></li></ul><div class="recipient-view-greeting-box"><label>Greeting: </label><span></span></div></div>
 		<?php do_action( 'woocommerce_view_order', $order_id ); ?>
 		</div>
 	</div>
