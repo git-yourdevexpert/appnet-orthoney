@@ -21,6 +21,9 @@ class OAM_COMMON_Custom {
         add_action('user_registration_before_customer_login_form', array($this, 'add_content_pl_login_form'));
         add_shortcode('customer_login_button', array($this, 'custom_login_button_shortcode'));
         add_filter('body_class', array($this, 'custom_body_class'));
+
+        add_filter('user_registration_reset_password_redirect', array($this, 'reset_password_redirection'), 10, 2);
+        
     }
 
     public static function init() {
@@ -387,7 +390,10 @@ class OAM_COMMON_Custom {
         return '';
     }
     
- 
+    public static function reset_password_redirection ($redirect, $user) {
+        wp_redirect(self::redirect_user_based_on_role($user_roles));
+        exit;
+    }
 }
 
 // Instantiate and initialize
