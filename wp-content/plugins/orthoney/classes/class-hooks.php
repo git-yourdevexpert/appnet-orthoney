@@ -44,12 +44,12 @@ class OAM_Hooks {
                 'items' => [
                     'Dashboard' => CUSTOMER_DASHBOARD_LINK,
                     'Incomplete Order' => CUSTOMER_DASHBOARD_LINK . 'incomplete-order/',
-                    'Failed Recipients' => CUSTOMER_DASHBOARD_LINK . 'failed-recipients/',
+                    'Failed Recipients from Prv. Orders' => CUSTOMER_DASHBOARD_LINK . 'failed-recipients/',
                     'Orders' => CUSTOMER_DASHBOARD_LINK . 'orders/',
-                    'Groups' => CUSTOMER_DASHBOARD_LINK . 'groups/',
-                    'Organizations' => CUSTOMER_DASHBOARD_LINK . 'organizations/',
+                    'Recipients List' => CUSTOMER_DASHBOARD_LINK . 'groups/',
+                    'Associated Organizations' => CUSTOMER_DASHBOARD_LINK . 'organizations/',
                     'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account/',
-                    'Edit Address' => CUSTOMER_DASHBOARD_LINK . 'edit-address/',
+                   
                 ]
             ]
         ];

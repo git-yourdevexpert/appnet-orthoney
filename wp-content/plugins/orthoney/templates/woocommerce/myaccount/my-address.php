@@ -33,6 +33,7 @@ if ( ! wc_ship_to_billing_address_only() && wc_shipping_enabled() ) {
 		'woocommerce_my_account_get_addresses',
 		array(
 			'billing' => __( 'Billing address', 'woocommerce' ),
+			'shipping' => __( 'Shipping address', 'woocommerce' ),
 		),
 		$customer_id
 	);
@@ -45,7 +46,7 @@ $col    = 1;
 <p>
 	<?php echo apply_filters( 'woocommerce_my_account_my_address_description', esc_html__( 'The following addresses will be used on the checkout page by default.', 'woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 </p>
-
+<div>
 <?php if ( ! wc_ship_to_billing_address_only() && wc_shipping_enabled() ) : ?>
 	<div class="u-columns woocommerce-Addresses col2-set addresses">
 <?php endif; ?>
@@ -86,7 +87,7 @@ $col    = 1;
 	</div>
 
 <?php endforeach; ?>
-
+</div>
 <?php if ( ! wc_ship_to_billing_address_only() && wc_shipping_enabled() ) : ?>
 	</div>
 	<?php

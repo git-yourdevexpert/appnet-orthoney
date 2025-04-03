@@ -836,6 +836,7 @@ class OAM_Ajax{
         $country = !empty($stepData['single_order_country']) ? $stepData['single_order_country'] : 'US';
         $zipcode = !empty($stepData['single_order_zipcode']) ? $stepData['single_order_zipcode'] : '';
         $quantity = !empty($stepData['single_address_quantity']) ? $stepData['single_address_quantity'] : '';
+        $greeting = !empty($stepData['single_address_greeting']) ? $stepData['single_address_greeting'] : '';
 
         if($status == 0){
             $validate_address_result =  OAM_Helper::validate_address($delivery_line_1, $delivery_line_2, $city, $state, $zipcode);
@@ -867,7 +868,8 @@ class OAM_Ajax{
                 'custom_data' => array(
                     'new_price' => $custom_price,
                     'single_order' => 1,
-                    'process_id' => $process_id
+                    'process_id' => $process_id,
+                    'greeting' => $greeting
                 )
             );
             
