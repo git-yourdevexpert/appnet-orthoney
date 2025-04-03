@@ -392,7 +392,7 @@ class OAM_COMMON_Custom {
     
     public static function reset_password_redirection ($redirect, $user) {
         $user = wp_get_current_user();
-        wp_redirect(self::redirect_user_based_on_role($user_roles));
+        wp_redirect(self::redirect_user_based_on_role($user->roles));
         exit;
     }
 }
