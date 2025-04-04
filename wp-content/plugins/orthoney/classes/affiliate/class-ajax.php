@@ -110,7 +110,7 @@ class OAM_AFFILIATE_Ajax{
         $affiliate_name = get_userdata($affiliate_id)->display_name;
         $message = "Hello,\n\nYou have received an affiliate request from {$affiliate_name}.\n\n";
         $message .= "Please approve or reject the request using the following link:\n";
-        $message .= home_url("/?action=organization-link&token={$token}");
+        $message .= "<a href=". home_url("/?action=organization-link&token={$token}") ."> Link to Customer </a>";
         wp_mail($customer_email, $subject, $message, ['Content-Type: text/plain; charset=UTF-8']);
     }
 
