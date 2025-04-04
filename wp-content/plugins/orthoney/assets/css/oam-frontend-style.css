@@ -5210,6 +5210,10 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   transform: rotate(180deg);
 }
 
+span.required {
+  color: #ff4f55;
+}
+
 /* responsive */
 
 @media (min-width: 993px) {
