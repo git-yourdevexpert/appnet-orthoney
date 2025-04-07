@@ -52,6 +52,7 @@ class OAM_Ajax{
         // TODO
         add_action( 'wp_ajax_orthoney_process_to_checkout_ajax', array( $this, 'orthoney_process_to_checkout_ajax_handler' ) );
         add_action( 'wp_ajax_get_alreadyorder_popup', array( $this, 'get_alreadyorder_popup_handler' ) );
+        add_action( 'wp_ajax_remove_recipients_already_order_this_year', array( $this, 'remove_recipients_already_order_this_year_handler' ) );
         add_action( 'wp_ajax_create_group', array( $this, 'orthoney_create_group_handler' ) );
         // TODO
 
@@ -304,6 +305,54 @@ class OAM_Ajax{
     
     
     /**
+	 * AJAX handler function that remove recipients already order this year handler
+	 *
+	 * @return JSON 
+     * 
+	 */ 
+    public function remove_recipients_already_order_this_year_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        
+        global $wpdb;
+        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+        $ids = isset($_POST['ids']) ? sanitize_text_field($_POST['ids']) : '';
+    
+        if (empty($ids)) {
+            wp_send_json_error(['message' => 'No valid recipients provided. Please try again.']);
+        }
+    
+        // Sanitize and convert to integer array
+        $id_array = array_filter(array_map('intval', explode(',', $ids)));
+    
+        if (empty($id_array)) {
+            wp_send_json_error(['message' => 'No valid recipients provided. Please try again.']);
+        }
+    
+        // Prepare SQL placeholders
+        $placeholders = implode(',', array_fill(0, count($id_array), '%d'));
+    
+        // Update visibility
+        $sql = "
+            UPDATE $order_process_recipient_table
+            SET visibility = 0
+            WHERE id IN ($placeholders)
+        ";
+    
+        $result = $wpdb->query($wpdb->prepare($sql, $id_array));
+    
+        // Log actions for each ID
+        foreach ($id_array as $id) {
+            OAM_Helper::order_process_recipient_activate_log($id, 'deleted', 'remove already ordered', 'process');
+        }
+    
+        wp_send_json_success([
+            'updated' => $result,
+            'message' => 'Recipients removed successfully.'
+        ]);
+    }
+    
+    
+    /**
 	 * AJAX handler function that edit process name
 	 *
 	 * @return JSON 
@@ -368,6 +417,7 @@ class OAM_Ajax{
                     "UPDATE $recipient_table SET visibility = 0 WHERE id IN ($placeholders)",
                     ...$delete_ids_array // Spread operator for passing array values dynamically
                 );
+                
     
                 $result = $wpdb->query($sql);
     
@@ -1256,7 +1306,12 @@ class OAM_Ajax{
         
                 // Generate Success HTML
                 if(!empty($successData)){
-                    $successHtml .= '<div class="heading-title"><div><h5 class="table-title">Verified Recipients</h5></div></div>';
+                    $successHtml .= '<div class="heading-title">
+                    <div><h5 class="table-title">Verified Recipients</h5></div>
+                    <div>
+                    <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove recipient for the already placed order">Remove Recipient</button>
+                    <button class="viewSuccessRecipientsAlreadyOrder btn-underline" data-status="0" data-tippy="View recipient for the already placed order" style="display:none">View Already Order</button>
+                    </div></div>';
                     $successHtml .=  OAM_Helper::get_table_recipient_content($successData , $customGreeting);
                 }
                 

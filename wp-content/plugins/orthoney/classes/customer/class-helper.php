@@ -177,7 +177,7 @@ class OAM_Helper{
                 $filtered_ids_string = implode(',', $filtered_ids);
                 $AlreadyOrderHtml = '';
                 if($alreadyOrder == 0){
-                 $AlreadyOrderHtml = (!empty($filtered_ids) ? '<button data-recipientname="'.$data->full_name.'" data-tippy="'.$data->full_name.' has already received a jar this year." class="alreadyOrderButton"><i class="far  fa-exclamation-circle"></i></button>' : '');
+                 $AlreadyOrderHtml = (!empty($filtered_ids) ? '<button data-recipientname="'.$data->full_name.'" data-tippy="'.$data->full_name.' has already received a jar this year." style="color:red" class="alreadyOrderButton btn-underline">Already Ordered</button>' : '');
                 }
                 if($data->verified == 0){
                     $reasonsHtml = '<div>No';
@@ -212,11 +212,9 @@ class OAM_Helper{
                     $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->timestamp));
                     $html .= '<td data-label="Create Date"><div class="thead-data">Create Date</div>'.$created_date.'</td>';
                 }
-                if($AlreadyOrderHtml == ''){
+                
                     $html .= '<td data-label="Full Name"><div class="thead-data">Full Name</div><input type="hidden" name="'.(($reverify == 1) ? "recipientAddressIds[]" : "recipientIds[]").'" value="'.$id.'">'.$data->full_name.'</td>';
-                }else{
-                    $html .= '<td data-label="Full Name" class="alreadyOrderFullName"><div class="thead-data">Full Name</div><input type="hidden" name="'.(($reverify == 1) ? "recipientAddressIds[]" : "recipientIds[]").'" value="'.$id.'">'.$AlreadyOrderHtml .$data->full_name.'</td>';
-                }
+                
                 $html .= '<td data-label="Company name"><div class="thead-data">Company name</div>'.($data->company_name != "" ? $data->company_name : '') .'</td>';
                 
                 $html .= $addressPartsHtml;

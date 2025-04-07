@@ -443,7 +443,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             </div>
                             <div>
                                 <button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button><br>
-                                <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove recipient for the already placed order">Remove recipient</button>
+                                <!-- <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove recipient for the already placed order">Remove recipient</button> -->
                             </div>
                         </div>
                     </div>

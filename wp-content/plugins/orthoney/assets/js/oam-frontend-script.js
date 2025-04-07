@@ -60,6 +60,7 @@ function initTippy() {
         arrow: true,
         allowHTML: true,
         followCursor: true,
+        trigger: 'mouseenter focus',
     });
 }
 
@@ -675,7 +676,9 @@ if (recipientManageForm) {
         process_group_popup();
 
         let address_verified = 0;
-        if (document.getElementById("unverifiedRecord") || document.getElementById("verifiedRecord")) {
+        const step = document.querySelector(".step-nav-item.active").getAttribute('data-step');
+        if(step == 4){
+        // if (document.getElementById("unverifiedRecord") || document.getElementById("verifiedRecord")) {
             address_verified = 1;
         }
 
@@ -850,28 +853,83 @@ document.addEventListener('click', function (event) {
         }
     }
 
-    if (event.target.classList.contains('removeRecipientsAlreadyOrder')) {
-        let uniqueValues = new Set();
+    if (event.target.classList.contains('viewSuccessRecipientsAlreadyOrder')) {
+        event.preventDefault();
     
-        ["failCSVData", "successCSVData", "duplicateCSVData", "newCSVData"].forEach((id) => {
+        const status = event.target.getAttribute('data-status');
+    
+        if (status == '0') {
+            event.target.setAttribute('data-status', '1');
+            event.target.textContent = "View All Recipients";
+    
+            ["successCSVData"].forEach((id) => {
+                document.querySelectorAll(`#${id} tr`).forEach((row) => {
+                    let alreadyOrder = row.getAttribute("data-alreadyorder");
+                    if (alreadyOrder) {
+                        row.classList.remove("hide");
+                    } else {
+                        row.classList.add("hide");
+                    }
+                });
+    
+                const el = document.querySelector(`#${id} .view-all-recipients`);
+                if (el) {
+                    el.style.display = "none";
+                }
+            });
+    
+        } else {
+            event.target.setAttribute('data-status', '0');
+            event.target.textContent = "View Already Order";
+    
+            ["successCSVData"].forEach((id) => {
+                const rows = document.querySelectorAll(`#${id} tr`);
+                rows.forEach((row, index) => {
+                    // hide all rows
+                    row.classList.add("hide");
+                });
+    
+                // Show only first 10 rows
+                for (let i = 0; i < 10; i++) {
+                    if (rows[i]) {
+                        rows[i].classList.remove("hide");
+                    }
+                }
+    
+                const el = document.querySelector(`#${id} .view-all-recipients`);
+                if (el) {
+                    el.style.display = "block";
+                }
+            });
+        }
+    }
+    
+
+    if (event.target.classList.contains('removeRecipientsAlreadyOrder')) {
+        event.preventDefault();
+     
+        let count = 0;
+        let idList = [];
+        // ["failCSVData", "successCSVData", "duplicateCSVData", "newCSVData"].forEach((id) => {
+        
+        ["successCSVData"].forEach((id) => {
             document.querySelectorAll(`#${id} tr`).forEach((row) => {
                 let alreadyOrder = row.getAttribute("data-alreadyorder");
                 if (alreadyOrder) {
-                    alreadyOrder.split(",").forEach((value) => {
-                        let trimmedValue = value.trim(); // Remove any spaces
-                        if (trimmedValue) {
-                            uniqueValues.add(trimmedValue); // Add to Set (auto handles uniqueness)
-                        }
-                    });
+                    count += 1;
+        
+                    let dataId = row.getAttribute("data-id");
+                    if (dataId) {
+                        idList.push(dataId);
+                    }
+        
                 }
             });
         });
-    
-        let uniqueArray = Array.from(uniqueValues); // Convert Set to Array
-        console.log(uniqueArray);
+        
 
         Swal.fire({
-            title: 'Are you sure you want to remove '+ uniqueArray.length + ' recipients who have already received a jar this year?',
+            title: 'Are you sure you want to remove '+ count + ' recipients who have already received a jar this year?',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -883,49 +941,48 @@ document.addEventListener('click', function (event) {
         }).then((result) => {
             if (result.isConfirmed) {
                
-                // fetch(oam_ajax.ajax_url, {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/x-www-form-urlencoded',
-                //     },
-                //     body: new URLSearchParams({
-                //         action: 'affiliate_status_toggle_block',
-                //         affiliate_id: affiliateCode,
-                //         status: isBlocked
-                //     }),
-                // })
-                // .then(response => response.json())
-                // .then(data => {
-                //     if (data.success) {
-                //         Swal.fire({
-                //             title: 'Organization status changed successfully!',
-                //             icon: 'success',
-                //             showConfirmButton: false,
-                //             timerProgressBar: false
-                //         });
+                fetch(oam_ajax.ajax_url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'remove_recipients_already_order_this_year',
+                        ids: idList,
+                        security: oam_ajax.nonce,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: data.data.message,
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timerProgressBar: false
+                        });
 
-                //         setTimeout(function() {
-                //             window.location.reload();
-                //         }, 1500);
-                //     } else {
-                //         Swal.fire({
-                //             title: 'Error',
-                //             text: data.data.message || 'Failed to change status for organization.',
-                //             icon: 'error',
-                //         });
-                //     }
-                // })
-                // .catch(() => {
-                //     Swal.fire({
-                //         title: 'Error',
-                //         text: 'An error occurred while changing status for organization.',
-                //         icon: 'error',
-                //     });
-                // });
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.data.message || 'Failed to recipients removed.',
+                            icon: 'error',
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'An error occurred while recipients removed.',
+                        icon: 'error',
+                    });
+                });
             }
         });
 
-        // TODO 
     }
 
     if (event.target.classList.contains('alreadyOrderButton')) {
@@ -972,6 +1029,29 @@ document.addEventListener('click', function (event) {
     }
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+
+    count = 0;
+    ["successCSVData"].forEach((id) => {
+        document.querySelectorAll(`#${id} tr`).forEach((row) => {
+            let alreadyOrder = row.getAttribute("data-alreadyorder");
+            if (alreadyOrder) {
+                count += 1;
+            }
+        });
+    });
+
+    const viewSuccessRecipientsAlreadyOrder = document.querySelector(".viewSuccessRecipientsAlreadyOrder");
+    const removeRecipientsAlreadyOrder = document.querySelector(".removeRecipientsAlreadyOrder");
+    if(count != 0){
+        viewSuccessRecipientsAlreadyOrder.style.display = 'inline-block';
+        removeRecipientsAlreadyOrder.style.display = 'inline-block';
+    }else{
+        viewSuccessRecipientsAlreadyOrder.style.display = 'none';
+        removeRecipientsAlreadyOrder.style.display = 'none';
+    }
+
+});
 
 /*
 Edit button JS END
