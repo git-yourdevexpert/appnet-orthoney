@@ -51,6 +51,7 @@ class OAM_Helper{
         self::$users_meta_table = $wpdb->prefix . 'usermeta';
 
         self::$customer_dashboard_link = CUSTOMER_DASHBOARD_LINK;
+        self::$organization_dashboard_link = ORGANIZATION_DASHBOARD_LINK;
         self::$all_uploaded_csv_dir = WP_CONTENT_DIR . '/all-uploaded-files/';
         self::$process_recipients_csv_dir = WP_CONTENT_DIR . '/process-recipients-files/';
         self::$process_recipients_csv_url = WP_CONTENT_URL . '/process-recipients-files/';
