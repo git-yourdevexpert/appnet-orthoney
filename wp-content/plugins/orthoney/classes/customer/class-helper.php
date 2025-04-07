@@ -27,6 +27,7 @@ class OAM_Helper{
     // Define directories
     public static $all_uploaded_csv_dir;
     public static $customer_dashboard_link;
+    public static $organization_dashboard_link;
     public static $process_recipients_csv_dir;
     public static $process_recipients_csv_url;
     public static $group_recipients_csv_dir;
