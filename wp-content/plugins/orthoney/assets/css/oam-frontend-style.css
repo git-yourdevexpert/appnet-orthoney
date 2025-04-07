@@ -5241,6 +5241,10 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   align-items: center;
   margin-bottom: -3px
 }
+.woocommerce h1,
+.woocommerce h2, .woocommerce h3, .woocommerce h4, .woocommerce h5, .woocommerce h6 {
+  font-family: var(--h1-font-family) !important;
+}
 /* responsive */
 
 @media (min-width: 993px) {
