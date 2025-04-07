@@ -5216,6 +5216,35 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   gap: 70px;
 }
 
+.user-registration .form-row .ur-checkbox-list {
+  display: flex;
+
+}
+
+.user-registration .user-registration-message {
+  width: 100%;
+}
+
+.wc-block-components-form .wc-block-components-checkout-step {
+  display: none
+}
+
+.no-available-msg {
+  text-align: center;
+}
+
+.woocommerce-form-row .span.required {
+  color: #ff4f55;
+}
+.ur-submit-button .ur-front-spinner{
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: -3px
+}
+.woocommerce h1,
+.woocommerce h2, .woocommerce h3, .woocommerce h4, .woocommerce h5, .woocommerce h6 {
+  font-family: var(--h1-font-family) !important;
+}
 /* responsive */
 
 @media (min-width: 993px) {
