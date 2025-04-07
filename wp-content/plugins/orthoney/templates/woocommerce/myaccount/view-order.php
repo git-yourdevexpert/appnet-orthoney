@@ -1,4 +1,5 @@
 <?php
+
 /**
  * View Order
  *
@@ -17,7 +18,7 @@
  * @version 3.0.0
  */
 
-defined( 'ABSPATH' ) || exit;
+defined('ABSPATH') || exit;
 
 $notes = $order->get_customer_order_notes();
 ?>
@@ -30,59 +31,61 @@ $sub_order_result = $wpdb->get_results(
 	$wpdb->prepare(
 		"SELECT id FROM {$wc_orders_table} WHERE parent_order_id = %d",
 		$order->get_order_number()
-	),	
+	),
 );
 $order_order_process_result = $wpdb->get_var(
-    $wpdb->prepare(
-        "SELECT meta_value FROM {$wc_orders_meta_table} WHERE order_id = %d AND meta_key = %s",
-        $order_id, 'order_process_by'
-    )
+	$wpdb->prepare(
+		"SELECT meta_value FROM {$wc_orders_meta_table} WHERE order_id = %d AND meta_key = %s",
+		$order_id,
+		'order_process_by'
+	)
 );
 ?>
 
 <div class="order-process-block customer-order-details-section">
 	<div class=" ">
+		<div class="heading-title">
+			<div>
+				<div class="customer-order-details-nav">
+					<h3>#<?php echo $order->get_order_number() ?> Recipient Order</h3>
+					<p>
+						<?php
+						$order_process_by = '';
+						if ($order_order_process_result != 0) {
+							$user_info = get_userdata($order_order_process_result);
+							$display_name = $user_info->display_name;
+							$order_process_by = ' and Process by <mark class="order-status"> ' . $display_name . '</mark>';
+						}
 
-	<div class="customer-order-details-nav">
-	<h3>#<?php echo $order->get_order_number() ?> Recipient Order</h3>
-	<p> 
-							<?php 
-							$order_process_by = '';
-							if($order_order_process_result != 0){
-								$user_info = get_userdata($order_order_process_result);
-								$display_name = $user_info->display_name;
-								$order_process_by = ' and Process by <mark class="order-status"> '.$display_name.'</mark>';
-							}
-							
-							printf(
-									/* translators: 1: order number 2: order date 3: process by */
-									esc_html__( 'Order #%1$s was placed on %2$s%3$s.', 'woocommerce' ),
-									'<mark class="order-number">' . $order->get_order_number() . '</mark>',
-									'<mark class="order-date">' . wc_format_datetime( $order->get_date_created() ) . '</mark>',
-									$order_process_by 
-								);
-							?>
-						
-						</p>
-		<label>
-			
-			<span><img decoding="async" src="http://appnet-orthoney.local/wp-content/plugins/orthoney/assets/image/address.png" alt="" class="address-icon">Order Details</span>
-		</label>
-		<label>
-			
-			<span><img decoding="async" src="http://appnet-orthoney.local/wp-content/plugins/orthoney/assets/image/destination.png" alt="" class="address-icon">Recipient Orders</span>
-		</label>
-	</div>
+						printf(
+							/* translators: 1: order number 2: order date 3: process by */
+							esc_html__('Order #%1$s was placed on %2$s%3$s.', 'woocommerce'),
+							'<mark class="order-number">' . $order->get_order_number() . '</mark>',
+							'<mark class="order-date">' . wc_format_datetime($order->get_date_created()) . '</mark>',
+							$order_process_by
+						);
+						?>
+
+					</p>
+				</div>
+			</div>
+			<div>
+			<?php do_action( 'woocommerce_view_order', $order_id ); ?>
+			</div>
+		</div>
+
+
 
 		<div id="recipient-order-data" class="table-data">
 			<div class="download-csv">
 				<div class="heading-title">
 					<div>
-						
-						
+
+
 					</div>
 					<div>
-						<button data-tippy="Cancel All Recipient Orders" class="btn-underline">Cancel All Recipient Orders</button></div>
+						<button data-tippy="Cancel All Recipient Orders" class="btn-underline">Cancel All Recipient Orders</button>
+					</div>
 				</div>
 			</div>
 			<table>
@@ -99,7 +102,7 @@ $order_order_process_result = $wpdb->get_var(
 				</thead>
 				<tbody>
 					<?php
-					if(!empty($sub_order_result)){
+					if (!empty($sub_order_result)) {
 						foreach ($sub_order_result as $key => $order) {
 							$order_details = wc_get_order($order->id);
 							$first_name 	= $order_details->get_shipping_first_name();
@@ -114,12 +117,12 @@ $order_order_process_result = $wpdb->get_var(
 							$company_name = '-';
 							$status = $order_details->get_status();
 							$status_label = 'wc-' . $order_details->get_status();
-							
+
 							foreach ($order_details->get_items() as $item_id => $item) {
 								$company_name = $item->get_meta('_recipient_company_name', true);
 								$total_quantity += $item->get_quantity();
 							}
-							?>
+					?>
 							<tr data-id="<?php echo $order->id ?>" data-verify="0" data-group="0">
 								<td data-label="Order ID">
 									<div class="thead-data">Order ID</div><input type="hidden" name="recipientIds[]" value="<?php echo $order->id ?>"><?php echo $order->id ?>
@@ -143,22 +146,17 @@ $order_order_process_result = $wpdb->get_var(
 									<div class="thead-data">Action</div>
 									<button class="far fa-eye" data-tippy="View Details"></button>
 									<button class="far fa-edit" data-tippy="Edit Details"></button><button data-recipientname="<?php echo $first_name ?>" data-tippy="Remove Recipient" class="deleteRecipient far fa-times"></button>
-									
+
 								</td>
 							</tr>
-							<?php
+					<?php
 
 						}
 					}
 					?>
 				</tbody>
 			</table>
-		</div> 
-		<div id="main-order-details">
-		<div class="order-details-wrapper"><ul><li><label>Full Name:</label><span> Jane Son</span></li><li><label>Company Name: </label><span>Vertex Industries</span></li><li><label>Mailing Address: </label><span>101, Main St</span></li><li><label>Suite/Apt#: </label><span></span></li><li><label>City: </label><span>New York</span></li><li><label>State: </label><span>NY</span></li><li><label>Quantity: </label><span>3</span></li></ul><div class="recipient-view-greeting-box"><label>Greeting: </label><span></span></div></div>
-		<?php do_action( 'woocommerce_view_order', $order_id ); ?>
 		</div>
+
 	</div>
 </div>
-
-
