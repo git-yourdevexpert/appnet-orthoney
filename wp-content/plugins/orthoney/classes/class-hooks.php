@@ -32,11 +32,11 @@ class OAM_Hooks {
                 'id' => 20, // Menu ID
                 'items' => [
                     'Dashboard' => ORGANIZATION_DASHBOARD_LINK,
-                    'My Profile' => ORGANIZATION_DASHBOARD_LINK . 'my-profile/',
-                    'Order List' => ORGANIZATION_DASHBOARD_LINK . 'order-list/',
+                    'Orders' => ORGANIZATION_DASHBOARD_LINK . 'order-list/',
                     'Change Admin' => ORGANIZATION_DASHBOARD_LINK . 'change-admin/',
-                    'Link Customer' => ORGANIZATION_DASHBOARD_LINK . 'link-customer/',
-                    'User List' => ORGANIZATION_DASHBOARD_LINK . 'user-list/',
+                    'Linked Customers' => ORGANIZATION_DASHBOARD_LINK . 'link-customer/',
+                    'Organization Users' => ORGANIZATION_DASHBOARD_LINK . 'user-list/',
+                    'My Profile' => ORGANIZATION_DASHBOARD_LINK . 'my-profile/',
                 ]
             ],
             'customer-menu' => [ // Menu slug
