@@ -66,7 +66,7 @@ $requests = $wpdb->get_results(
                             echo '<td><div class="thead-data">Action</div><button class="resend-email-btn w-btn us-btn-style_1" data-customer-id="' . esc_attr($request->customer_id) . '">Resend Email</button></td>';
                         } else {
                             if ($request->status == 1) {
-                                echo '<td><div class="thead-data">Action</div><button class="customer-login-btn w-btn us-btn-style_1" data-user-id="' . esc_attr($request->customer_id) . '">Login to Customer</button></td>';
+                                echo '<td><div class="thead-data">Action</div><button class="customer-login-btn w-btn us-btn-style_1" data-user-id="' . esc_attr($request->customer_id) . '">Login as Customer</button></td>';
                             }else{
                                 echo '<td><div class="thead-data">Action</div>-</td>';
                             }
