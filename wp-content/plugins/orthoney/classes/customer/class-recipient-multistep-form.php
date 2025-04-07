@@ -124,7 +124,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 <div class="organization-step">
                     <h3 class="block-title">Select Organization</h3>
                     <div class="wpb_column vc_column_container steps-column">
-                        <p>Your Affiliate is the participating organization that you want to benefit from your honey purchase.</p>
+                        <p>Your Organization is the participating organization that you want to benefit from your honey purchase.</p>
                         <div>
                             <?php
                             

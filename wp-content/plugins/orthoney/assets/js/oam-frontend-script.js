@@ -878,6 +878,7 @@ document.addEventListener('click', function (event) {
         if (status == '0') {
             event.target.setAttribute('data-status', '1');
             event.target.textContent = "View All Recipients";
+            event.target.setAttribute('data-status', 'Back to view all the verified recipients.');
     
             ["successCSVData"].forEach((id) => {
                 document.querySelectorAll(`#${id} tr`).forEach((row) => {
@@ -898,7 +899,7 @@ document.addEventListener('click', function (event) {
         } else {
             event.target.setAttribute('data-status', '0');
             event.target.textContent = "View Already Ordered Recipients";
-    
+            event.target.setAttribute('data-status', 'View all recipients who have already placed an order this season.');
             ["successCSVData"].forEach((id) => {
                 const rows = document.querySelectorAll(`#${id} tr`);
                 rows.forEach((row, index) => {
