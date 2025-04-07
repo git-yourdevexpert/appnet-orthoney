@@ -744,7 +744,7 @@ Edit button JS start
 document.addEventListener('click', function (event) {
     if (event.target.classList.contains('editRecipient') || event.target.classList.contains('viewRecipient')) {
         event.preventDefault();
-        // process_group_popup();
+        process_group_popup();
         
         const target = event.target;
 
@@ -823,11 +823,11 @@ document.addEventListener('click', function (event) {
                         const viewpopup = document.querySelector('#recipient-view-details-popup .recipient-view-details-wrapper');
                         viewpopup.innerHTML = html;
                     }
-                    Swal.close();
                     setTimeout(function() {
                         lity(event.target.getAttribute('data-popup'));
-                       
+                        
                     }, 250);
+                    Swal.close();
                     
                 } else {
                     Swal.fire({
@@ -846,6 +846,128 @@ document.addEventListener('click', function (event) {
             });
         }else{
             lity(event.target.getAttribute('data-popup'));
+            Swal.close();
+        }
+    }
+
+    if (event.target.classList.contains('removeRecipientsAlreadyOrder')) {
+        let uniqueValues = new Set();
+    
+        ["failCSVData", "successCSVData", "duplicateCSVData", "newCSVData"].forEach((id) => {
+            document.querySelectorAll(`#${id} tr`).forEach((row) => {
+                let alreadyOrder = row.getAttribute("data-alreadyorder");
+                if (alreadyOrder) {
+                    alreadyOrder.split(",").forEach((value) => {
+                        let trimmedValue = value.trim(); // Remove any spaces
+                        if (trimmedValue) {
+                            uniqueValues.add(trimmedValue); // Add to Set (auto handles uniqueness)
+                        }
+                    });
+                }
+            });
+        });
+    
+        let uniqueArray = Array.from(uniqueValues); // Convert Set to Array
+        console.log(uniqueArray);
+
+        Swal.fire({
+            title: 'Are you sure you want to remove '+ uniqueArray.length + ' recipients who have already received a jar this year?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, I want',
+            cancelButtonText: 'No, I do not',
+            allowOutsideClick: true,
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+               
+                // fetch(oam_ajax.ajax_url, {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/x-www-form-urlencoded',
+                //     },
+                //     body: new URLSearchParams({
+                //         action: 'affiliate_status_toggle_block',
+                //         affiliate_id: affiliateCode,
+                //         status: isBlocked
+                //     }),
+                // })
+                // .then(response => response.json())
+                // .then(data => {
+                //     if (data.success) {
+                //         Swal.fire({
+                //             title: 'Organization status changed successfully!',
+                //             icon: 'success',
+                //             showConfirmButton: false,
+                //             timerProgressBar: false
+                //         });
+
+                //         setTimeout(function() {
+                //             window.location.reload();
+                //         }, 1500);
+                //     } else {
+                //         Swal.fire({
+                //             title: 'Error',
+                //             text: data.data.message || 'Failed to change status for organization.',
+                //             icon: 'error',
+                //         });
+                //     }
+                // })
+                // .catch(() => {
+                //     Swal.fire({
+                //         title: 'Error',
+                //         text: 'An error occurred while changing status for organization.',
+                //         icon: 'error',
+                //     });
+                // });
+            }
+        });
+
+        // TODO 
+    }
+
+    if (event.target.classList.contains('alreadyOrderButton')) {
+        event.preventDefault();
+        process_group_popup();
+        const target = event.target;
+
+        const recipientTr = target.closest('tr');
+
+        if(recipientTr){
+            const alreadyorder = recipientTr.getAttribute('data-alreadyorder');
+            const recipientname = target.getAttribute('data-recipientname');
+            fetch(oam_ajax.ajax_url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    action: 'get_alreadyorder_popup',
+                    id: alreadyorder,
+                    security: oam_ajax.nonce,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const viewAllAlreadyOrderPopup = document.querySelector('#viewAllAlreadyOrderPopup');
+                    
+                    viewAllAlreadyOrderPopup.querySelector('tbody').innerHTML = data.data.data;
+                    viewAllAlreadyOrderPopup.querySelector('h3 span').innerHTML = recipientname;
+                    setTimeout(function() {
+                        lity('#viewAllAlreadyOrderPopup');
+                    }, 250);
+                    Swal.close();
+                }
+            }).catch(() => {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while removing the recipient.',
+                    icon: 'error',
+                });
+            });;
         }
     }
 });
@@ -917,13 +1039,14 @@ document.addEventListener('click', function (event) {
 
         Swal.fire({
             title: 'Are you sure you want to ' + action + ' this organization?',
-            icon: 'warning',
+            icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, I want',
             cancelButtonText: 'Cancel',
-            allowOutsideClick: true
+            allowOutsideClick: true,
+            reverseButtons: true,
         }).then((result) => {
             if (result.isConfirmed) {
                

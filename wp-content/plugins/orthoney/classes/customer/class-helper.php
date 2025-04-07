@@ -131,11 +131,54 @@ class OAM_Helper{
     public static function get_table_recipient_content($dataArray, $customGreeting, $reverify = 0, $duplicate = 0, $alreadyOrder = 0) {
         $html = '';
         $reasonsHtml = '';
+        global $wpdb;
+        
+        $year = date('Y');
+
+        $group_recipient_table = OAM_Helper::$group_recipient_table;
+        $start_date = "$year-01-01 00:00:00";
+        $end_date = "$year-12-31 23:59:59";
+
         if(!empty($dataArray)){
             foreach ($dataArray as $data) {
                 $id = $data->id;
                 $reasons = '';
 
+                $addressParts = array_filter([$data->address_1, $data->address_2, $data->city, $data->state, $data->zipcode]);
+                // Fetch records using `DATETIME` format for filtering
+                $result = $wpdb->get_results($wpdb->prepare(
+                    "SELECT id, address_1, address_2 ,city, state, zipcode FROM {$group_recipient_table} 
+                    WHERE full_name = %s 
+                    
+                    AND user_id = %d
+                    AND `timestamp` BETWEEN %s AND %s",
+                    $data->full_name, get_current_user_id(),$start_date, $end_date
+                ));
+
+                // Normalize and merge input address values
+                $search_address = implode(' ', $addressParts); // Merge input address fields
+                $search_address = str_replace([',', '.'], '', $search_address);
+                $search_address = trim($search_address);
+
+                // Filter results and extract only IDs
+                $filtered_ids = array_map(function ($record) use ($search_address) {
+                    // Merge database fields for comparison
+                    $merged_address = implode(' ', array_filter([$record->address_1, $record->address_2, $record->city, $record->state, $record->zipcode]));
+                    $merged_address = str_replace([',', '.'], '', $merged_address);
+                    $merged_address = trim($merged_address);
+
+                    return strcasecmp($search_address, $merged_address) === 0 ? $record->id : null;
+                }, $result);
+
+                // Remove null values
+                $filtered_ids = array_filter($filtered_ids);
+
+                // Convert to a comma-separated string
+                $filtered_ids_string = implode(',', $filtered_ids);
+                $AlreadyOrderHtml = '';
+                if($alreadyOrder == 0){
+                 $AlreadyOrderHtml = (!empty($filtered_ids) ? '<button data-recipientname="'.$data->full_name.'" data-tippy="'.$data->full_name.' has already received a jar this year." class="alreadyOrderButton"><i class="far  fa-exclamation-circle"></i></button>' : '');
+                }
                 if($data->verified == 0){
                     $reasonsHtml = '<div>No';
                     if (!empty($data->reasons)) {
@@ -148,7 +191,7 @@ class OAM_Helper{
                     $reasonsHtml .= '</div>';
                 }
                 
-                $addressParts = array_filter([$data->address_1, $data->address_2, $data->city, $data->state, $data->zipcode]);
+                
                 if (!empty($addressParts)) {
                     $addressPartsHtml = '<td data-label="Address"><div class="thead-data">Address</div>' . implode(', ', $addressParts) . '</td>';
                 } else {
@@ -163,15 +206,17 @@ class OAM_Helper{
                     $greetingHtml = '<div>' . $customGreeting . '</div>';
                 }
 
-                
-
-                $html .= '<tr data-id="'.$id.'" '.(($duplicate != 1)? 'data-verify="'.$data->verified.'" data-group="'.$duplicate.'"': '').'>';
+                $html .= '<tr data-alreadyorder="'.(!empty($filtered_ids) ? implode(',', $filtered_ids) : '').'" data-id="'.$id.'" '.(($duplicate != 1)? 'data-verify="'.$data->verified.'" data-group="'.$duplicate.'"': '').'>';
                 if($alreadyOrder != 0){
                     $html .= '<td data-label="Order Id"><div class="thead-data">Order Id</div>'.($data->order_id != "" ? $data->order_id : '') .'</td>';
                     $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->timestamp));
                     $html .= '<td data-label="Create Date"><div class="thead-data">Create Date</div>'.$created_date.'</td>';
                 }
-                $html .= '<td data-label="Full Name"><div class="thead-data">Full Name</div><input type="hidden" name="'.(($reverify == 1) ? "recipientAddressIds[]" : "recipientIds[]").'" value="'.$id.'">'.$data->full_name.'</td>';
+                if($AlreadyOrderHtml == ''){
+                    $html .= '<td data-label="Full Name"><div class="thead-data">Full Name</div><input type="hidden" name="'.(($reverify == 1) ? "recipientAddressIds[]" : "recipientIds[]").'" value="'.$id.'">'.$data->full_name.'</td>';
+                }else{
+                    $html .= '<td data-label="Full Name" class="alreadyOrderFullName"><div class="thead-data">Full Name</div><input type="hidden" name="'.(($reverify == 1) ? "recipientAddressIds[]" : "recipientIds[]").'" value="'.$id.'">'.$AlreadyOrderHtml .$data->full_name.'</td>';
+                }
                 $html .= '<td data-label="Company name"><div class="thead-data">Company name</div>'.($data->company_name != "" ? $data->company_name : '') .'</td>';
                 
                 $html .= $addressPartsHtml;
@@ -196,7 +241,7 @@ class OAM_Helper{
                         if($duplicate == 1){
                             $html .= '<button class="keep_this_and_delete_others" data-recipientname="'.$data->full_name.'"  data-popup="#recipient-manage-popup" data-tippy="Keep this and delete others">Keep this and delete others</button>';
                         }
-                        $html .= '<button class="viewRecipient far fa-eye" data-tippy="View Recipient Details" data-popup="#recipient-view-details-popup"></button><button class="editRecipient far fa-edit" data-tippy="Edit Recipient Details" data-popup="#recipient-manage-popup"></button><button data-recipientname="'.$data->full_name.'" data-tippy="Remove Recipient" class="deleteRecipient far fa-trash"></button>';
+                        $html .= '<button class="viewRecipient far fa-eye" data-tippy="View Recipient Details" data-popup="#recipient-view-details-popup"></button><button class="editRecipient far fa-edit" data-tippy="Edit Recipient Details" data-popup="#recipient-manage-popup"></button><button data-recipientname="'.$data->full_name.'" data-tippy="Remove Recipient" class="deleteRecipient far fa-trash"></button>'.$AlreadyOrderHtml;
                         $html .= '</td>';
                     }
                 }

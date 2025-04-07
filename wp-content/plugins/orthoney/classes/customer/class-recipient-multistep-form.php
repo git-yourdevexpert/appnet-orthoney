@@ -1,5 +1,6 @@
 <?php
 // Prevent direct access
+//http://appnet-orthoney.local/order-process/?pid=10104
 
 if (!defined('ABSPATH')) {
     exit;
@@ -10,7 +11,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     /**
      * Define class Constructor
      **/
-    private  static $atts_process_id;
+    private static $atts_process_id;
+    private static $current_user_id;
     public function __construct(){
         add_shortcode('recipient_multistep_form', array($this, 'recipient_multistep_form_handler'));
     }
@@ -33,6 +35,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         } else {
             self::$atts_process_id = 0;
         }
+        self::$current_user_id = get_current_user_id();
     
         echo "<div class='order-block-wrap'>
                 <div class='loader multiStepForm'>
@@ -52,7 +55,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 if (!empty($_GET['pid'])) {
                     global $wpdb;
                     $order_process_table = OAM_Helper::$order_process_table;
-                    $user = get_current_user_id();
+                    $user = self::$current_user_id;
                     $result = $wpdb->get_row($wpdb->prepare(
                         "SELECT * FROM {$order_process_table} WHERE user_id = %d AND id = %d",
                         $user, intval($_GET['pid'])
@@ -124,21 +127,41 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         <p>Your Affiliate is the participating organization that you want to benefit from your honey purchase.</p>
                         <div>
                             <?php
-                            $affiliateList = OAM_Helper::manage_affiliates_content('', 'blocked');
-                            $affiliateList = json_decode($affiliateList, true);
+                            
+                            global $wpdb;
 
+                            $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
+                            $oh_affiliate_customer_linker = OAM_Helper::$oh_affiliate_customer_linker;
+                            $users_table = OAM_Helper::$users_table;
+                            $query = $wpdb->prepare(
+                                "SELECT a.ID, a.token, u.display_name, a.user_id 
+                                FROM {$yith_wcaf_affiliates_table} AS a 
+                                JOIN {$users_table} AS u ON a.user_id = u.ID 
+                                WHERE a.user_id NOT IN (
+                                    SELECT affiliate_id 
+                                    FROM {$oh_affiliate_customer_linker} 
+                                    WHERE customer_id = %d AND status != %d
+                                )",
+                                self::$current_user_id, 1
+                            );
+
+                            $affiliateList = $wpdb->get_results($query);
+
+                            // $affiliateList = OAM_Helper::manage_affiliates_content('', 'blocked');
+                            // $affiliateList = json_decode($affiliateList, true);
+                         
                             echo '<select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an affiliate.">';
                             echo '<option ' . selected($affiliate, '0', false) . ' value="Orthoney">Unaffiliated</option>';
                             
-                            if (!empty($affiliateList['data']['user_info'])) {
-                                foreach ($affiliateList['data']['user_info']  as $key => $data) {
-                                    if($affiliateList['data']['affiliates'][$key]['status'] == 1){
-                                        $user_id = $data['ID'];
+                            if (!empty($affiliateList)) {
+                                foreach ($affiliateList  as $key => $data) {
+                                    if($data->token != ''){
+                                        $user_id = $data->user_id;
                                         $states = WC()->countries->get_states('US');
                                         $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
                                         $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
                                         $state_name = isset($states[$state]) ? $states[$state] : $state;
-                                        $value = '[' . $data['token'] . '] ' . $data['display_name'];
+                                        $value = '[' . $data->token . '] ' . $data->display_name;
                                         if (!empty($city)) {
                                             $value .= ', ' . $city;
                                         }
@@ -146,9 +169,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                             $value .= ', ' . $state_name;
                                         }
 
-                                        
-
-                                        echo '<option  data-token="'.$data['token'].'" ' . selected($user_id, $affiliate, false) . ' value="' . esc_attr($user_id) . '">' . esc_html($value) . '</option>';
+                                        echo '<option  data-token="'.$data->token.'" ' . selected($user_id, $affiliate, false) . ' value="' . esc_attr($user_id) . '">' . esc_html($value) . '</option>';
                                     }
                                 }
 
@@ -232,7 +253,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         value="<?php echo $multiple_address_output ?>">
                                         <div class="multiple-address-grid">
                                         <?php 
-                                    $user = get_current_user_id();
+                                    $user = self::$current_user_id;
                                     $getGroupList = OAM_Helper::getGroupList($user);
                                     if(!empty($getGroupList)){
                                     ?>
@@ -247,7 +268,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     <div class="groups-wrapper input-wrapp" style="<?php echo $upload_type_output == 'select-group' ? '' : 'display:none' ?>">
                                         <!-- <h4>Choose from existing recipient list</h4> -->
                                         <div class="bg-card">
-                                            <select name="groups[]" data-error-message="Please select a group." multiple >
+                                            <select name="groups[]" data-error-message="Please select a Recipient List." multiple >
                                                 <?php 
                                                 foreach ($getGroupList as $key => $data) {
                                                     $selected = '';
@@ -383,16 +404,14 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 if(self::$atts_process_id != 0){
                     global $wpdb;
                     $order_process_table = OAM_Helper::$order_process_table;
-                    $user_id = get_current_user_id();
+                    $user_id = self::$current_user_id;
 
                     $total_items = (int) $wpdb->get_var($wpdb->prepare(
                         "SELECT COUNT(*) FROM {$order_process_table} WHERE id = %d AND user_id = %d AND step = %d AND order_id != %d AND order_type = %s",
                         self::$atts_process_id, $user_id, 5, 0 ,'multi-recipient-order'
                     ));
                     if($total_items == 0){
-                        
                          echo  'Failed recipient is not found';
-                        
                         return;
                     }
                 }
@@ -401,13 +420,13 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 $oam_ajax = new OAM_Ajax();
                 // Fetch recipient data based on 'pid' parameter
                 if (isset($_GET['pid']) && $_GET['pid'] != '') {
-                    $data = $oam_ajax->orthoney_get_csv_recipient_ajax_handler(get_current_user_id(), $_GET['pid'], self::$atts_process_id);
+                    $data = $oam_ajax->orthoney_get_csv_recipient_ajax_handler(self::$current_user_id, $_GET['pid'], self::$atts_process_id);
                 } else {
-                    $data = $oam_ajax->orthoney_get_csv_recipient_ajax_handler(get_current_user_id(), '', self::$atts_process_id);
+                    $data = $oam_ajax->orthoney_get_csv_recipient_ajax_handler(self::$current_user_id, '', self::$atts_process_id);
                 }
 
                 if(self::$atts_process_id != 0){
-                    $data = $oam_ajax->orthoney_get_csv_recipient_ajax_handler(get_current_user_id(), self::$atts_process_id, self::$atts_process_id);
+                    $data = $oam_ajax->orthoney_get_csv_recipient_ajax_handler(self::$current_user_id, self::$atts_process_id, self::$atts_process_id);
                 }
                 $result = json_decode($data, true);
 
@@ -423,7 +442,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 <?php endif; ?>
                             </div>
                             <div>
-                                <button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button>
+                                <button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button><br>
+                                <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove recipient for the already placed order">Remove recipient</button>
                             </div>
                         </div>
                     </div>
@@ -437,7 +457,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             'fail'     => 'Failed',
                             'success'  => 'Success',
                             'duplicate' => 'Duplicate',
-                            'alreadyOrder' => 'Already Ordered',
+                            // 'alreadyOrder' => 'Already Ordered',
                             'new'      => 'New'
                         ];
                         if(self::$atts_process_id != 0){
@@ -493,7 +513,6 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 data-successCount="<?php echo $result['data']['successCount']; ?>"
                                 data-newCount="<?php echo $result['data']['newCount']; ?>"
                                 data-failCount="<?php echo $result['data']['failCount']; ?>"
-                                data-alreadyOrderCount="<?php echo $result['data']['alreadyOrderCount']; ?>"
                                 data-duplicateCount="<?php echo $result['data']['duplicateCount']; ?>">
                                 Next
                             </button>
@@ -581,9 +600,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         }
     }
 
-
     public static function single_address_form($currentStep){
-        $user_id = get_current_user_id();
+        $user_id = self::$current_user_id;
         $shipping_address = array(
             'address_1'  => get_user_meta($user_id, 'shipping_address_1', true),
             'address_2'  => get_user_meta($user_id, 'shipping_address_2', true),
@@ -639,6 +657,29 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     public static function popups(){
         echo OAM_Helper::manage_recipient_popup();
         echo OAM_Helper::view_details_recipient_popup();
+
+        ?>
+        <div id="viewAllAlreadyOrderPopup" class="lity-popup-normal lity-hide">
+            <div class="popup-show order-process-block">
+                <h3>List of orders for <span></span> received a jar this year.</h3>
+                <div class="table-wrapper">
+                    <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Full Name</th>
+                            <th>Company Name</th>
+                            <th>Address</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php
     }
 }
 

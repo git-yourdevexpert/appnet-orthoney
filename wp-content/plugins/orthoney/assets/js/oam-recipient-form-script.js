@@ -292,11 +292,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 uploadTypeOutput &&
                 uploadTypeOutput.value !== "" &&
                 uploadTypeOutput.value !== "select-group" &&
-                (uploadTypeOutput.value !== "add-manually" ||
-                  deliveryPreference.value !== "single_address")
+                (uploadTypeOutput.value !== "add-manually" || deliveryPreference.value !== "single_address")
               ) {
                 console.log("33");
-                showStep(currentStep);
+                
+                if (uploadTypeOutput.value === "upload-csv") {
+                  showStep(currentStep);
+                }else{
+                  process_group_popup();
+                }
               }
               processDataSaveAjax(pid?.value || "0", currentStep);
             }
@@ -389,9 +393,6 @@ document.addEventListener("DOMContentLoaded", function () {
             html += `<li class="total-recipients"><span>Total Recipients: </span> ${(parseInt(verifiedCount) + parseInt(unverifiedCount))}</li></ul>`;
           }
           
-
-          
-
           
           const result = await Swal.fire({
             title:  html,
@@ -774,9 +775,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
           
-          if (parseInt(alreadyOrderCount) !== 0) {
-            html += `<div><small>${alreadyOrderCount} recipients have already received the Jar this year.</small></div>`;
-          }
+          // if (parseInt(alreadyOrderCount) !== 0) {
+          //   html += `<div><small>${alreadyOrderCount} recipients have already received the Jar this year.</small></div>`;
+          // }
 
           if (failCount != 0 || duplicateCount != 0 || newCount != 0 || successCount != 0) {
             html += "<div class='exceptions'><strong>Exceptions: </strong><ul>";
@@ -1542,26 +1543,33 @@ function addRecipientManuallyPopup(reload) {
   }
   console.log("check 1");
   let emptyDivs = [];
+
   const step_nav = document.querySelector(".step-nav-item.active");
   if (step_nav.getAttribute("data-step") == 3) {
     ["failCSVData", "successCSVData", "duplicateCSVData", "newCSVData"].forEach(
       (id) => {
         let div = document.getElementById(id);
-        if (div && div.innerHTML.trim() === "") {
+        if (div && div.innerHTML.trim() !== "") {
           emptyDivs.push(id);
         }
       }
     );
-    
+
+    console.log('emptyDivs'+emptyDivs.length);
     const upload_type_output = document.querySelector(
       'input[name="upload_type_output"]:checked'
     );
-    if (emptyDivs.length === 4 && upload_type_output.value == "add-manually" && getURLParam('failed-recipients') != 'true') {
+    if (emptyDivs.length == 0 && (upload_type_output.value == "add-manually" || getURLParam('failed-recipients') != 'true')) {
       let button = document.querySelector(
         "#multiStepForm button.editRecipient"
       );
+      setTimeout(() => {
+        Swal.close();
+      }, 1500);
       if (button) {
-        button.click();
+        setTimeout(() => {
+          button.click();
+        }, 1500);
       }
     }
   }

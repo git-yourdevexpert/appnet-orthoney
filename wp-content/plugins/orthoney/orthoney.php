@@ -117,6 +117,7 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 }
 
 
+
 // /affiliate-dashboard-user-list-menu-item
 // if (!function_exists('user_has_role')) {
 //     function user_has_role($user_id, $roles_to_check = []) {

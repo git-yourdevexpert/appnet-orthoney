@@ -51,6 +51,7 @@ class OAM_Ajax{
         
         // TODO
         add_action( 'wp_ajax_orthoney_process_to_checkout_ajax', array( $this, 'orthoney_process_to_checkout_ajax_handler' ) );
+        add_action( 'wp_ajax_get_alreadyorder_popup', array( $this, 'get_alreadyorder_popup_handler' ) );
         add_action( 'wp_ajax_create_group', array( $this, 'orthoney_create_group_handler' ) );
         // TODO
 
@@ -308,6 +309,43 @@ class OAM_Ajax{
 	 * @return JSON 
      * 
 	 */ 
+    public function get_alreadyorder_popup_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+        $group_recipient_table = OAM_Helper::$group_recipient_table;
+        $id =  ($_POST['id']) ? $_POST['id'] : '';
+        if (!empty($id)) {
+            $ids = explode(',', $id);
+            
+            if (!empty($ids)) {
+                
+                $placeholders = implode(',', array_fill(0, count($ids), '%d'));
+
+                $query = $wpdb->prepare(
+                    "SELECT * FROM {$group_recipient_table} WHERE id IN ($placeholders)",
+                    ...$ids
+                );
+    
+                $results = $wpdb->get_results($query);
+
+                
+                if ($result !== false) {
+                    $data = OAM_Helper::get_table_recipient_content($results, '',  0,  0, 1);
+                    wp_send_json_success(['message' => 'Records updated successfully.', 'data' => $data]);
+                } else {
+                    wp_send_json_error(['message' => 'Orders not found. Please try again.']);
+                }
+            }
+            wp_send_json_error(['message' => 'Orders not found. Please try again.']);
+        }
+        wp_send_json_error(['message' => 'Orders not found. Please try again.']);
+    }
+    /**
+	 * AJAX handler function that edit process name
+	 *
+	 * @return JSON 
+     * 
+	 */ 
     public function orthoney_keep_this_and_delete_others_recipient_handler() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
@@ -358,7 +396,7 @@ class OAM_Ajax{
         $group_table   = OAM_Helper::$group_table;
 
         $process_id  = isset($_POST['pid']) ? intval($_POST['pid']) : 0;
-        $name    = isset($_POST['group_name']) ? sanitize_text_field($_POST['group_name']) : 'unknown_'.$process_id;
+        $name    = isset($_POST['group_name']) ? sanitize_text_field($_POST['group_name']) : 'Recipient List '.$process_id;
         $method    = isset($_POST['method']) ? $_POST['method'] : 'order-process';
 
         $check_process_status = OAM_COMMON_Custom::check_process_exist($name, $process_id);
@@ -560,7 +598,7 @@ class OAM_Ajax{
         $current_chunk = isset($_POST['current_chunk']) ? intval($_POST['current_chunk']) : 0;
         $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) : 0;
         $process_id = isset($_POST['pid']) ? intval($_POST['pid']) : '';
-        $process_name = (isset($_POST['csv_name']) && !empty($_POST['csv_name'])) ? sanitize_text_field($_POST['csv_name']) : 'unknown_' . $process_id;
+        $process_name = (isset($_POST['csv_name']) && !empty($_POST['csv_name'])) ? sanitize_text_field($_POST['csv_name']) : 'Recipient List ' . $process_id;
         
         $check_process_status = OAM_COMMON_Custom::check_process_exist($process_name, $process_id);
         
@@ -960,7 +998,7 @@ class OAM_Ajax{
                 $process_id = $wpdb->insert_id;
     
                 $updateData = [
-                    'name'        => sanitize_text_field('unknown_' . $process_id),
+                    'name'        => sanitize_text_field('Recipient List ' . $process_id),
                     'modified'    =>  current_time('mysql'),
                 ];
     
@@ -1062,9 +1100,11 @@ class OAM_Ajax{
         
         if($user != 0 OR $user != ''){
             global $wpdb;
+            $year = date('Y');
             $group_recipient_table = OAM_Helper::$group_recipient_table;
-            $start_date = get_field('free_shipping_start_date', 'option');
-            $end_date = get_field('free_shipping_end_date', 'option');
+            $start_date = "$year-01-01 00:00:00";
+            $end_date = "$year-12-31 23:59:59";
+            
 
             $tableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Status</th><th>Action</th></tr></thead><tbody>';
 
@@ -1128,35 +1168,36 @@ class OAM_Ajax{
                 $recordMap[$key][] = $record;
 
 
-                // Fetch records using `DATETIME` format for filtering
-                $result = $wpdb->get_results($wpdb->prepare(
-                    "SELECT * FROM {$group_recipient_table} 
-                    WHERE full_name = %s 
-                    AND city = %s 
-                    AND state = %s 
-                    AND zipcode = %s 
-                    AND user_id = %d
-                    AND `timestamp` BETWEEN %s AND %s",
-                    $record->full_name, $record->city, $record->state,  $record->zipcode, $user,$start_date, $end_date
-                ));
+                // // Fetch records using `DATETIME` format for filtering
+                // $result = $wpdb->get_results($wpdb->prepare(
+                //     "SELECT * FROM {$group_recipient_table} 
+                //     WHERE full_name = %s 
+                //     AND company_name = %s 
+                //     AND city = %s 
+                //     AND state = %s 
+                //     AND zipcode = %s 
+                //     AND user_id = %d
+                //     AND `timestamp` BETWEEN %s AND %s",
+                //     $record->full_name, $record->company_name,$record->city, $record->state,  $record->zipcode, $user,$start_date, $end_date
+                // ));
 
-                // Normalize and merge input address values
-                $search_address = $record->address_1 . $record->address_2; // Merge address_1 and address_2
-                $search_address = str_replace([',', '.'], '', $search_address);
-                $search_address = trim($search_address);
+                // // Normalize and merge input address values
+                // $search_address = $record->address_1 . $record->address_2; // Merge address_1 and address_2
+                // $search_address = str_replace([',', '.'], '', $search_address);
+                // $search_address = trim($search_address);
 
-                // Filter results by merging address_1 and address_2 in the database
-                $filtered_results = array_filter($result, function ($record) use ($search_address) {
-                    // Merge database address_1 and address_2
-                    $merged_address = trim($record->address_1 . ' ' . $record->address_2);
-                    $merged_address = str_replace([',', '.'], '', $merged_address);
+                // // Filter results by merging address_1 and address_2 in the database
+                // $filtered_results = array_filter($result, function ($record) use ($search_address) {
+                //     // Merge database address_1 and address_2
+                //     $merged_address = trim($record->address_1 . ' ' . $record->address_2);
+                //     $merged_address = str_replace([',', '.'], '', $merged_address);
 
-                    // Compare merged values
-                    return strcasecmp($search_address, $merged_address) === 0;
-                });
+                //     // Compare merged values
+                //     return strcasecmp($search_address, $merged_address) === 0;
+                // });
 
 
-                $alreadyOrderGroups = $filtered_results;
+                // $alreadyOrderGroups = $filtered_results;
 
             }
     
@@ -1220,10 +1261,10 @@ class OAM_Ajax{
                 }
                 
                 
-                if(!empty($alreadyOrderGroups)){
-                    $alreadyOrderHtml .= '<div class="heading-title"><div><h5 class="table-title">Already Ordered</h5><p> Honey is already ordered for '.count($alreadyOrderGroups).' Recipients this year</p></div></div>';
-                    $alreadyOrderHtml .= OAM_Helper::get_table_recipient_content($alreadyOrderGroups , $customGreeting, 0 , 0 , 1);
-                }
+                // if(!empty($alreadyOrderGroups)){
+                //     $alreadyOrderHtml .= '<div class="heading-title"><div><h5 class="table-title">Already Ordered</h5><p> Honey is already ordered for '.count($alreadyOrderGroups).' Recipients this year</p></div></div>';
+                //     $alreadyOrderHtml .= OAM_Helper::get_table_recipient_content($alreadyOrderGroups , $customGreeting, 0 , 0 , 1);
+                // }
 
                 // Wrap tables with headers
                 if($newDataHtml != ''){
@@ -1232,9 +1273,9 @@ class OAM_Ajax{
                 if($successHtml != ''){
                     $successHtml = $tableStart.$successHtml.$tableEnd;
                 }
-                if($alreadyOrderHtml != ''){
-                    $alreadyOrderHtml = $alreadyOrderTableStart.$alreadyOrderHtml.$tableEnd;
-                }
+                // if($alreadyOrderHtml != ''){
+                //     $alreadyOrderHtml = $alreadyOrderTableStart.$alreadyOrderHtml.$tableEnd;
+                // }
 
                 if($duplicateHtml != ''){
                     $duplicateHtml = $duplicateTableStart.$duplicateHtml.$tableEnd;
