@@ -5233,7 +5233,7 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   text-align: center;
 }
 
-.woocommerce-form-row .span.required {
+.woocommerce-form-row span.required {
   color: #ff4f55;
 }
 .ur-submit-button .ur-front-spinner{
