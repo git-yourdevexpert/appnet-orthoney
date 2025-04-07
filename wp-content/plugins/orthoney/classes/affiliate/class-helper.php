@@ -280,7 +280,7 @@ class OAM_AFFILIATE_Helper {
             }
     
             if ($count == 0) {
-                $html .= "<tr><td colspan='4'>Order not found!</td></tr>";
+                $html .= "<tr><td colspan='4' class='no-available-msg'>Order not found!</td></tr>";
             }
     
             $html .= '</tbody></table>

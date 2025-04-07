@@ -60,7 +60,7 @@ echo OAM_AFFILIATE_Helper::manage_user_popup();
                 }
             }else{
                 ?>
-                <tr><td colspan="5">No Team member is not found!</td></tr>
+                <tr><td colspan="5" class="no-available-msg">No Team member is not found!</td></tr>
                 <?php
             } ?>
     </tbody>

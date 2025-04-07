@@ -2026,10 +2026,10 @@ class OAM_Ajax{
                         }
                         endforeach; 
                  }else{
-                    echo '<tr><td colspan="3">No organization found!</td></tr>';
+                    echo '<tr><td colspan="3" class="no-available-msg">No organization found!</td></tr>';
                 } 
                 if($html == 0){
-                    echo '<tr><td colspan="3">No organization found!</td></tr>';
+                    echo '<tr><td colspan="3" class="no-available-msg">No organization found!</td></tr>';
                 }
                 ?>
             </tbody>
@@ -2246,7 +2246,7 @@ class OAM_Ajax{
                 </tr>";
             }
         } else {
-            $table_content = '<tr><td colspan="4">No data available</td></tr>';
+            $table_content = '<tr><td colspan="4" class="no-available-msg">No data available</td></tr>';
         }
     
         $pagination = '';
@@ -2345,7 +2345,7 @@ class OAM_Ajax{
                 </tr>";
             }
         } else {
-            $table_content = '<tr><td colspan="4">No data available</td></tr>';
+            $table_content = '<tr><td colspan="4" class="no-available-msg">No data available</td></tr>';
         }
     
         $pagination = '';

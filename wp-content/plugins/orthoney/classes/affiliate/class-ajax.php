@@ -351,7 +351,7 @@ class OAM_AFFILIATE_Ajax{
         if (empty($user_id)) {
             // Check if the email is already in use
             if (email_exists($email)) {
-                wp_send_json(['success' => false, 'message' => esc_html__('Affiliate Member already exists!', 'text-domain')]);
+                wp_send_json(['success' => false, 'message' => esc_html__('Organization Users is Already Exist', 'text-domain')]);
             }
 
             // Create a new user
