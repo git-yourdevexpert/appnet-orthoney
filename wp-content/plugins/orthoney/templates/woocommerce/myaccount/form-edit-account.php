@@ -123,7 +123,7 @@ do_action( 'woocommerce_before_edit_account_form' ); ?>
 </div>
 <br>
 <?php 
-echo '<div class="order-process-block 2cols">';
+echo '<div class="order-process-block two_cols">';
 wc_get_template( 'myaccount/my-address.php' );
 echo '</div>';
 ?>
