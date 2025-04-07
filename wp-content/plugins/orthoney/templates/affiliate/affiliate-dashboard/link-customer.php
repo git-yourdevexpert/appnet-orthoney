@@ -24,7 +24,7 @@ $requests = $wpdb->get_results(
 
 ?>
 <div class="affiliate-dashboard order-process-block">
-    <h3>Link to Customers</h3>
+    <h3>Linked Customers</h3>
     <!-- Search and filter options -->
     <div class="filter-container">
         <input type="text" id="customer-email-search" required placeholder="Enter Customer Email" data-error-message="Please enter a Email.">
