@@ -5210,6 +5210,12 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   transform: rotate(180deg);
 }
 
+.order-process-block.2cols > div{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 70px;
+}
+
 /* responsive */
 
 @media (min-width: 993px) {
@@ -5296,6 +5302,11 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 
   .dashboard-block .two-col-grid {
     grid-template-columns: repeat(1, 1fr);
+  }
+
+  .order-process-block.2cols > div{
+    grid-template-columns: auto;
+    gap: 40px;
   }
 
 }
