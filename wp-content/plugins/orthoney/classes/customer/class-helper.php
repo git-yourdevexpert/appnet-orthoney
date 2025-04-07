@@ -872,6 +872,71 @@ class OAM_Helper{
         
         return $html;
     }
+   
+    public static function organizations_dashboard_widget($title = "", $limit = 3, $link = '') {
+        $manage_affiliates_content = OAM_Helper::manage_affiliates_content();
+        $result = json_decode($manage_affiliates_content, true);
+    
+        if (empty($result) || !isset($result['success']) || !$result['success']) {
+            return '<div class="recipient-lists-block custom-table"><p>No Organization found!</p></div>';
+        }
+    
+        $affiliates = $result['data']['user_info'];
+        $blocked_affiliates = $result['data']['affiliates'];
+    
+        ob_start(); ?>
+        <div class="recipient-lists-block custom-table">
+            <div class="row-block">
+                <h4><?php echo esc_html($title); ?></h4>
+                <div class="see-all">
+                    <?php if (!empty($link)) : ?>
+                        <a class="w-btn us-btn-style_1" href="<?php echo esc_url($link); ?>">See all</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Token</th>
+                        <th>Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($affiliates)) :
+                        foreach ($affiliates as $key => $affiliate) :
+                            $is_blocked = $blocked_affiliates[$key]['status'];
+                            $token = $blocked_affiliates[$key]['token'];
+                            $current_url = home_url(add_query_arg([], $_SERVER['REQUEST_URI']));
+                            ?>
+                            <tr>
+                                <td><div class="thead-data">Token</div><?php echo esc_html($affiliate['token']); ?></td>
+                                <td><div class="thead-data">Name</div><?php echo esc_html($affiliate['display_name']); ?></td>
+                                <td><div class="thead-data">Action</div>
+                                    <?php if ($is_blocked != 0) : ?>
+                                        <button class="affiliate-block-btn w-btn action-link" 
+                                            data-affiliate="<?php echo esc_attr($affiliate['ID']); ?>"
+                                            data-blocked="<?php echo ($is_blocked == 1) ? '1' : '0'; ?>">
+                                            <?php echo ($is_blocked == 1) ? 'Block' : 'Unblock'; ?>
+                                        </button>
+                                    <?php else : ?>
+                                        <a href="<?php echo esc_url($current_url . '?action=organization-link&token=' . $token); ?>" 
+                                           class="w-btn us-btn-style_1">Link to Organization</a>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach;
+                    else : ?>
+                        <tr><td colspan="3" class="no-available-msg">No Organization found!</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php
+    
+        return ob_get_clean();
+    }
+    
 
     public static function incomplete_orders_dashboard_widget($title = "", $limit = 3, $link = '') {
         global $wpdb;

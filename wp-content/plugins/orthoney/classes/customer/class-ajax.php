@@ -2240,7 +2240,7 @@ class OAM_Ajax{
                 $table_content .= "<tr>
                 <td><div class='thead-data'>Sr No</div>" . esc_html($data->id) . "</td>
                 <td><div class='thead-data'>Name</div>" . esc_html($data->name) . "</td>
-                <td><div class='thead-data'>Process By</div>" . esc_html($display_name) . "</td>
+                <td><div class='thead-data'>Ordered By</div>" . esc_html($display_name) . "</td>
                 <td><div class='thead-data'>Date</div>". esc_html($created_date). "</td>
                 <td><div class='thead-data'>Action</div> <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>".($failed == 1 ? 'View Recipients' : 'Resume Order' )."</a> ".($failed != 1 ? $download_button : '' )." </td>
                 </tr>";

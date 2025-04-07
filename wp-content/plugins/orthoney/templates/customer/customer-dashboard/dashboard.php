@@ -15,7 +15,7 @@ if ($redirect_back_user_id) {
 
 ?>
 <div class="order-block-wrap">
-        <div class="order-process-dashboard heading-open-sans">
+        <div class="order-process-dashboard">
             <div class="dashboard-block">
                 <h3 class="block-title">Welcome to the Customer Dashboard</h3>
                 <div class="block-row">
@@ -33,24 +33,26 @@ if ($redirect_back_user_id) {
                 <div class="two-col-grid">
                     <div class="cl-left">
                         <?php 
-                        echo OAM_Helper::incomplete_orders_dashboard_widget('Incomplete orders', 3, esc_url(OAM_Helper::$customer_dashboard_link.'/incomplete-order/'));
+                        echo OAM_Helper::incomplete_orders_dashboard_widget('Incomplete orders', 3, esc_url(OAM_Helper::$customer_dashboard_link.'incomplete-order/'));
                         ?>
                     </div>
                     <div class="cl-right">
                     <?php 
-                        echo OAM_Helper::group_dashboard_widget('Recipient List', 3, esc_url(OAM_Helper::$customer_dashboard_link.'/groups/'));
+                        echo OAM_Helper::failed_recipients_dashboard_widget('Failed Recipients', 3, esc_url(OAM_Helper::$customer_dashboard_link.'failed-recipients/'));
                         ?>
+                    
                     </div>
                 </div>
                 <div class="two-col-grid">
                     <div class="cl-left">
-                        <?php 
-                        echo OAM_Helper::failed_recipients_dashboard_widget('Failed Recipients', 3, esc_url(OAM_Helper::$customer_dashboard_link.'/failed-recipients/'));
+                    <?php 
+                        echo OAM_Helper::group_dashboard_widget('Recipient List', 3, esc_url(OAM_Helper::$customer_dashboard_link.'groups/'));
                         ?>
+                    
                     </div>
                     <div class="cl-right">
-                    <?php 
-                        // echo OAM_Helper::groups_dashboard_widget('Group List', 3, esc_url(OAM_Helper::$customer_dashboard_link.'/groups/'));
+                        <?php 
+                            echo OAM_Helper::organizations_dashboard_widget('Associated Organizations', 3, esc_url(OAM_Helper::$customer_dashboard_link.'organizations/'));
                         ?>
                     </div>
                 </div>

@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
 
 ?>
 <div class="order-block-wrap">
-    <div class="order-process-dashboard heading-open-sans">
+    <div class="order-process-dashboard">
         <div class="dashboard-block">
         <div class="heading-title"><h3 class="block-title">Order list</h3></div>
             <?php

@@ -1061,11 +1061,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const viewSuccessRecipientsAlreadyOrder = document.querySelector(".viewSuccessRecipientsAlreadyOrder");
     const removeRecipientsAlreadyOrder = document.querySelector(".removeRecipientsAlreadyOrder");
     if(count != 0){
-        viewSuccessRecipientsAlreadyOrder.style.display = 'inline-block';
-        removeRecipientsAlreadyOrder.style.display = 'inline-block';
+        if(viewSuccessRecipientsAlreadyOrder){
+            viewSuccessRecipientsAlreadyOrder.style.display = 'inline-block';
+        }
+        if(removeRecipientsAlreadyOrder){
+            removeRecipientsAlreadyOrder.style.display = 'inline-block';
+        }
     }else{
-        viewSuccessRecipientsAlreadyOrder.style.display = 'none';
-        removeRecipientsAlreadyOrder.style.display = 'none';
+        if(viewSuccessRecipientsAlreadyOrder){
+            viewSuccessRecipientsAlreadyOrder.style.display = 'none';
+        }
+        if(removeRecipientsAlreadyOrder){
+            removeRecipientsAlreadyOrder.style.display = 'none';
+        }
     }
 
 });
