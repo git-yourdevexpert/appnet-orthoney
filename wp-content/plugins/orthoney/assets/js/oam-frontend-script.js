@@ -447,8 +447,7 @@ Bulk Deleted Recipient in table Js Start
 document.addEventListener('click', function (event) {
     if (event.target.id === 'bulkMargeRecipient') {
         event.preventDefault();
-        process_group_popup();
-
+       
         const duplicateCSVData = document.querySelector('#duplicateCSVData');
         const groups = duplicateCSVData.querySelectorAll('.group-header');
 
@@ -477,54 +476,72 @@ document.addEventListener('click', function (event) {
 
             ids.push(...remainingIds);
         });
-        console.log(ids);
-
+        
+        
+        Swal.close();
 
         // AJAX request to pass the IDs to the 'bulkdelete' action
         if (ids.length > 0) {
-            fetch(oam_ajax.ajax_url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'bulk_deleted_recipient',
-                    ids: JSON.stringify(ids) // Pass the array of IDs as a JSON string
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Handle the response from the server
-                if (data.success) {
-                       
-                        Swal.fire({
-                            title: data.data.message,
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false,
-                            timerProgressBar: true
-                        });
-                        
-                        setTimeout(function() {
-                            window.location.reload();
-                        }, 1500);
 
-                } else {
-                    Swal.fire({
-                        title: 'Error',
-                        text: data.data.message,
-                        icon: 'error',
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Keep 1 Entry and Delete Other Duplicate Entries',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, I want!',
+                cancelButtonText: 'No, I do not',
+                allowOutsideClick: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(oam_ajax.ajax_url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            action: 'bulk_deleted_recipient',
+                            ids: JSON.stringify(ids) // Pass the array of IDs as a JSON string
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Handle the response from the server
+                        if (data.success) {
+                               
+                                Swal.fire({
+                                    title: data.data.message,
+                                    icon: 'success',
+                                    timer: 2000,
+                                    showConfirmButton: false,
+                                    timerProgressBar: true
+                                });
+                                
+                                setTimeout(function() {
+                                    window.location.reload();
+                                }, 1500);
+        
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.data.message,
+                                icon: 'error',
+                            });
+                           
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Error:', error,
+                            icon: 'error',
+                        });
                     });
-                   
                 }
-            })
-            .catch(error => {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Error:', error,
-                    icon: 'error',
-                });
             });
+
+           
         }
     }
 });
@@ -880,7 +897,7 @@ document.addEventListener('click', function (event) {
     
         } else {
             event.target.setAttribute('data-status', '0');
-            event.target.textContent = "View Already Order";
+            event.target.textContent = "View Already Ordered Recipients";
     
             ["successCSVData"].forEach((id) => {
                 const rows = document.querySelectorAll(`#${id} tr`);

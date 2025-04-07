@@ -177,7 +177,7 @@ class OAM_Helper{
                 $filtered_ids_string = implode(',', $filtered_ids);
                 $AlreadyOrderHtml = '';
                 if($alreadyOrder == 0){
-                 $AlreadyOrderHtml = (!empty($filtered_ids) ? '<button data-recipientname="'.$data->full_name.'" data-tippy="'.$data->full_name.' has already received a jar this year." style="color:red" class="alreadyOrderButton btn-underline">Already Ordered</button>' : '');
+                 $AlreadyOrderHtml = (!empty($filtered_ids) ? '<button data-recipientname="'.$data->full_name.'" data-tippy="Recipient has been verified but has already placed an order this season." style="color:red" class="alreadyOrderButton btn-underline">Already Ordered</button>' : '');
                 }
                 if($data->verified == 0){
                     $reasonsHtml = '<div>No';
@@ -917,7 +917,7 @@ class OAM_Helper{
                 </tr>';
                 }
             }else{
-                $html .= '<tr><td colspan="4">No incomplete orders available.</td></tr>';
+                $html .= '<tr><td colspan="4"  class="no-available-msg">No incomplete orders available.</td></tr>';
             }
                 $html .= '</tbody>
             </table>
@@ -971,7 +971,7 @@ class OAM_Helper{
                 </tr>';
                 }
             }else{
-                $html .= '<tr><td colspan="4">No failed recipients found!.</td></tr>';
+                $html .= '<tr><td colspan="4" class="no-available-msg">No failed recipients found!.</td></tr>';
             }
                 $html .= '</tbody>
             </table>
@@ -1029,7 +1029,7 @@ class OAM_Helper{
                 </tr>';
                 }
             }else{
-                $html .= '<tr><td colspan="4">No group found!.</td></tr>';
+                $html .= '<tr><td colspan="4"  class="no-available-msg" >No group found!.</td></tr>';
             }
                 $html .= '</tbody>
             </table>
