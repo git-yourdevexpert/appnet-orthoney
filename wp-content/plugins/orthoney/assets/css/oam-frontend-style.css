@@ -5225,8 +5225,9 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   width: 100%;
 }
 
-.wc-block-components-form .wc-block-components-checkout-step {
-  display: none
+.wc-block-components-form .wc-block-checkout__order-notes.wc-block-components-checkout-step {
+  display: none;
+
 }
 
 .no-available-msg {
