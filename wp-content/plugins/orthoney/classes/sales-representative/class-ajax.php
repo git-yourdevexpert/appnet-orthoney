@@ -132,8 +132,6 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         wp_send_json(['success' => true, 'url' => esc_url_raw(html_entity_decode($login_url))]);
     }
     
-    
-    
 }
 
 
