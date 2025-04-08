@@ -2443,6 +2443,9 @@ body .order-process-block input:focus {
   overflow: hidden;
 
 }
+body .order-process-block textarea{
+  white-space: pre-wrap;
+}
 
 body .order-process-block input,
 
@@ -5210,7 +5213,7 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   transform: rotate(180deg);
 }
 
-.order-process-block.two_cols > div{
+.order-process-block.two_cols>div {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 70px;
@@ -5237,13 +5240,19 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 .woocommerce-form-row span.required {
   color: #ff4f55;
 }
-.ur-submit-button .ur-front-spinner{
+
+.ur-submit-button .ur-front-spinner {
   display: inline-flex;
   align-items: center;
   margin-bottom: -3px
 }
+
 .woocommerce h1,
-.woocommerce h2, .woocommerce h3, .woocommerce h4, .woocommerce h5, .woocommerce h6 {
+.woocommerce h2,
+.woocommerce h3,
+.woocommerce h4,
+.woocommerce h5,
+.woocommerce h6 {
   font-family: var(--h1-font-family) !important;
 }
 /* responsive */
