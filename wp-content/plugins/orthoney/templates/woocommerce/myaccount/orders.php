@@ -41,7 +41,7 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
 
 ?>
 
-<div class="customer-order-block order-process-block">
+<div class="customer-order-block order-process-block orthoney-datatable-warraper">
     <div class="heading-title"><h3 class="block-title">My Orders</h3></div>
     <table id="customer-orders-table" class="display">
     <thead>
