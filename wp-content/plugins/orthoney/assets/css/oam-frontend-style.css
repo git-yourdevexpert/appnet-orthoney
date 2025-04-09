@@ -2444,7 +2444,7 @@ body .order-process-block input:focus {
 
 }
 body .order-process-block textarea{
-  white-space: pre-wrap;
+  white-space: pre-wrap ;
 }
 
 body .order-process-block input,
@@ -5255,6 +5255,90 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 .woocommerce h6 {
   font-family: var(--h1-font-family) !important;
 }
+.orthoney-datatable-warraper .dataTables_wrapper>div {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.orthoney-datatable-warraper .dataTables_wrapper label span {
+  min-height: auto !important;
+}
+
+.orthoney-datatable-warraper .dataTables_wrapper label {
+  margin-right: 0 !important;
+  text-align: left;
+}
+
+.orthoney-datatable-warraper  .dataTable {
+  width: 100% !important;
+}
+
+.orthoney-datatable-warraper .dataTables_wrapper input:focus,
+.orthoney-datatable-warraper .dataTables_wrapper input,
+.orthoney-datatable-warraper .dataTables_wrapper select {
+  border-radius: 5px;
+  border: 0;
+  min-height: 35px !important;
+  font-size: 13px;
+  height: 35px;
+  background: #fff;
+}
+.orthoney-datatable-warraper table {
+  border-collapse: separate;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: none !important;
+}
+
+.orthoney-datatable-warraper table thead {
+  background-color: #ebeff6;
+}
+.orthoney-datatable-warraper table th{
+  white-space: nowrap;
+}
+.orthoney-datatable-warraper table td{
+  border: 0;
+}
+.orthoney-datatable-warraper table td,
+.orthoney-datatable-warraper table th {
+  font-size: 14px;
+  border-color: #dee2e6 !important;
+  vertical-align: middle;
+  color: #333;
+  text-transform: capitalize;
+  box-shadow: none !important;
+  padding: 0.6rem 1rem !important;
+  
+}
+.orthoney-datatable-warraper .paging_simple_numbers {
+  gap: 5px;
+}
+
+.orthoney-datatable-warraper .paging_simple_numbers .paginate_button {
+  color: #fff !important;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.orthoney-datatable-warraper .paging_simple_numbers .next {
+  background: var(--color-content-primary);
+
+}
+
+.orthoney-datatable-warraper .paging_simple_numbers .next:hover {
+  background: var(--color-content-secondary) !important;
+}
+
+.orthoney-datatable-warraper .paging_simple_numbers .previous {
+  background: #809197;
+}
+
+.orthoney-datatable-warraper .paging_simple_numbers .previous:hover {
+  background: var(--color-content-primary) !important;
+}
 /* responsive */
 
 @media (min-width: 993px) {
@@ -5581,6 +5665,17 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   .dashboard-block .block-row.three-block-col {
     grid-template-columns: repeat(2, 1fr);
   }
+    .orthoney-datatable-warraper .dataTables_wrapper>div {
+      margin-bottom: 0px;
+      width: 100%;
+      gap: 10px;
+    }
+  
+    .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter label,
+    .orthoney-datatable-warraper .dataTables_wrapper .dataTables_length label {
+      width: 100%;
+      margin: 0 !important;
+    }
 
 }
 
