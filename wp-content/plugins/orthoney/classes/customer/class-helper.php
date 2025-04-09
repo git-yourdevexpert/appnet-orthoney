@@ -63,6 +63,63 @@ class OAM_Helper{
     }
 
 	public function __construct() {}
+    
+    // Helper to build row array for a main or sub order
+    public static function build_order_row($order_data, $order_obj, $order_type, $total_quantity, $parent_order = null) {
+        global $wpdb;
+        $user_id = get_current_user_id();
+        $orders_table = $wpdb->prefix . 'wc_orders';
+    
+        $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order_data->date_created_gmt));
+        $billing_name = $order_obj->get_billing_first_name() . ' ' . $order_obj->get_billing_last_name();
+        $shipping_name = $order_obj->get_shipping_first_name() . ' ' . $order_obj->get_shipping_last_name();
+        $referral_id = $order_obj->get_meta('_yith_wcaf_referral', true) ?: 'Orthoney';
+        $order_total = wc_price($order_obj->get_total());
+    
+        // Status HTML
+        $status_html = '';
+        if ($order_type === 'Multi Address' && $order_data->parent_order_id == 0) {
+            $status_counts = $wpdb->get_results($wpdb->prepare(
+                "SELECT status, COUNT(*) as count FROM $orders_table WHERE customer_id = %d AND parent_order_id = %d GROUP BY status",
+                $user_id, $order_data->id
+            ));
+            foreach ($status_counts as $status) {
+                $status_html .= sprintf(
+                    '<span class="%s">(%d) %s</span> ',
+                    esc_attr($status->status),
+                    esc_html($status->count),
+                    esc_html(wc_get_order_status_name($status->status))
+                );
+            }
+        } else {
+            $status_html .= sprintf(
+                '<span class="%s">%s</span> ',
+                esc_attr($order_data->status),
+                esc_html(wc_get_order_status_name($order_data->status))
+            );
+        }
+    
+        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "view-order/" . ($order_data->parent_order_id != 0) ? esc_html($order_data->id) : esc_html($order_data->parent_order_id));
+    
+        return [
+            'jar_no' => ($order_type === 'Multi Address' && $status_html !== '' && $order_data->parent_order_id == 0 ?
+            '<button data-tippy="Show Sub Order" class="far fa-plus show-sub-order" data-status="0" data-orderid="' . $order_data->id . '"></button> ' : '') . esc_html($order_data->id),
+            'order_no' => ($order_data->parent_order_id == 0) ? esc_html($order_data->id) : esc_html($order_data->parent_order_id),
+            'date' => esc_html($created_date),
+            'billing_name' => esc_html($billing_name),
+            'shipping_name' => esc_html($shipping_name),
+            'affiliate_code' => esc_html($referral_id),
+            'total_jar' => esc_html($total_quantity),
+            'total_recipient' => count($order_obj->get_items()),
+            'type' => esc_html($order_type),
+            'status' => !empty($status_html) ? $status_html : 'Recipient Order is Preparing.',
+            'price' => $order_total,
+            'action' =>
+                '<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>' .
+                ($order_data->parent_order_id != 0 ? '<a data-tippy="Download Invoice" href="#" class="far fa-download"></a>' : '') .
+                (empty($status_html) && ( $order_data->parent_order_id == 0) ? '<button>Suborder is created</button>' : '')
+        ];
+    }
 
     public static function manage_affiliates_content($search = '', $filter = '', $return_type = 0) {
         global $wpdb;

@@ -43,24 +43,22 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
 
 <div class="customer-order-block order-process-block">
     <div class="heading-title"><h3 class="block-title">My Orders</h3></div>
-    <table>
-        <thead>
-            <tr>
-                <th>Order No</th>
-                <th>Date</th>
-                <th>Billing Name</th>
-                <th>Affiliate Code</th>
-                <th>Total Honey Jar</th>
-                <th>Total Recipient</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Price</th>
-                <th style="width:200px">Action</th>
-            </tr>
-        </thead>
-        <tbody id="customer-order-data"></tbody>
-    </table>
-    <div class="customer-order-pagination">
-        <div id="customer-order-pagination" class="pagination"></div>
-    </div>
+    <table id="customer-orders-table" class="display">
+    <thead>
+        <tr>
+            <th>Jar No</th>
+            <th>Order No</th>
+            <th>Date</th>
+            <th>Billing Name</th>
+            <th>Recipient Name</th>
+            <th>Affiliate Code</th>
+            <th>Total Honey Jar</th>
+            <th>Total Recipient</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Price</th>
+            <th style="width:200px">Action</th>
+        </tr>
+    </thead>
+</table>
 </div>

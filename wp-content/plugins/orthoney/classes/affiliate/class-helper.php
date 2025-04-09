@@ -236,7 +236,7 @@ class OAM_AFFILIATE_Helper {
        
     public static function affiliate_order_list($details, $limit = 9999999) {
         $html = '';
-        $current_url = $organization_dashboard_link . '/order-list/';
+        $current_url = OAM_Helper::$organization_dashboard_link . '/order-list/';
     
         if (!empty($details['orders'])) {
             $orders = $details['orders'];

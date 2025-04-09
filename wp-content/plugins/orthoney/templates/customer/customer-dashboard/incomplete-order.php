@@ -24,19 +24,15 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
 
 <div class="incomplete-order-block order-process-block">
     <div class="heading-title"><h3 class="block-title">All Incomplete Orders</h3></div>
-    <table>
+    <table id="incomplete-order-table"  data-failed="0" class="display">
         <thead>
             <tr>
                 <th>Sr No</th>
                 <th>Name</th>
                 <th>Ordered By</th>
                 <th>Date</th>
-                <th style="width:300px">Action</th>
+                <th>Action</th>
             </tr>
         </thead>
-        <tbody id="incomplete-order-data"></tbody>
     </table>
-    <div class="incomplete-order-pagination">
-        <div id="incomplete-order-pagination" class="pagination"></div>
-    </div>
 </div>

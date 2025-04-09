@@ -20,7 +20,8 @@ class OAM_Scripts
         
         // Library Scripts & Styles
         $libs = [
-            ['tippy-js', 'libs/tippy/popper.min.js', ['jquery']],
+            ['dataTables-js', 'libs/dataTables/jquery.dataTables.min.js', ['jquery']],
+            ['tippy-js', 'libs/tippy/popper.min.js', ['dataTables-js']],
             ['tippy-core', 'libs/tippy/tippy-bundle.umd.min.js', ['tippy-js']],
             ['sweetalert2', 'libs/sweetalert/sweetalert2.js', ['jquery']],
             ['lity-js', 'libs/lity/lity.min.js', ['jquery'], '2.4.1'],
@@ -28,6 +29,7 @@ class OAM_Scripts
         ];
     
         $styles = [
+            ['dataTables-css', 'libs/dataTables/jquery.dataTables.min.css'],
             ['tippy-css', 'libs/tippy/light.css'],
             ['sweetalert2-css', 'libs/sweetalert/sweetalert2.min.css'],
             ['lity-css', 'libs/lity/lity.min.css', [], '2.4.1'],

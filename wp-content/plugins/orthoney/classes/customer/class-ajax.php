@@ -48,6 +48,7 @@ class OAM_Ajax{
         
 		add_action( 'wp_ajax_deleted_group', array( $this, 'orthoney_deleted_group_handler' ) );
 		add_action( 'wp_ajax_orthoney_customer_order_process_ajax', array( $this, 'orthoney_customer_order_process_ajax_handler' ) );
+		add_action( 'wp_ajax_customer_sub_order_details_ajax', array( $this, 'customer_sub_order_details_ajax_handler' ) );
         
         // TODO
         add_action( 'wp_ajax_orthoney_process_to_checkout_ajax', array( $this, 'orthoney_process_to_checkout_ajax_handler' ) );
@@ -2039,134 +2040,229 @@ class OAM_Ajax{
         wp_die();
     }
 
+    // public function orthoney_customer_order_process_ajax_handler() {
+    //     check_ajax_referer('oam_nonce', 'security');
+    //     global $wpdb;
+    
+    //     $user_id = get_current_user_id();
+    //     $current_page = isset($_POST['page']) ? max(1, intval($_POST['page'])) : 1;
+    //     $items_per_page = 10;
+    //     $offset = ($current_page - 1) * $items_per_page;
+    
+    //     $orders_table = $wpdb->prefix . 'wc_orders';
+    
+    //     $total_items = (int) $wpdb->get_var($wpdb->prepare(
+    //         "SELECT COUNT(*) FROM $orders_table WHERE customer_id = %d AND parent_order_id = 0",
+    //         $user_id
+    //     ));
+    
+    //     $orders = $wpdb->get_results($wpdb->prepare(
+    //         "SELECT * FROM $orders_table WHERE customer_id = %d AND parent_order_id = 0 ORDER BY date_updated_gmt DESC LIMIT %d OFFSET %d",
+    //         $user_id, $items_per_page, $offset
+    //     ));
+    
+    //     $total_pages = (int) ceil($total_items / $items_per_page);
+    //     $table_content = '';
+    
+    //     if ($orders) {
+    //         foreach ($orders as $order_data) {
+    //             $order_id = $order_data->id;
+    //             $main_order = wc_get_order($order_id);
+    //             if (!$main_order) continue;
+    
+    //             $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order_data->date_created_gmt));
+    //             $first_name = $main_order->get_billing_first_name();
+    //             $last_name = $main_order->get_billing_last_name();
+    //             $order_total = wc_price($main_order->get_total());
+    //             $referral_id = $main_order->get_meta('_yith_wcaf_referral', true) ?: 'Orthoney';
+    
+    //             $total_quantity = 0;
+    //             $single_order = 'Multi Address';
+    //             foreach ($main_order->get_items() as $item) {
+    //                 if ($item->get_meta('single_order', true) == 1) {
+    //                     $single_order = 'Single Address';
+    //                 }
+    //                 $total_quantity += $item->get_quantity();
+    //             }
+    
+    //             $status_html = '';
+    //             $status_counts = $wpdb->get_results($wpdb->prepare(
+    //                 "SELECT status, COUNT(*) as count FROM $orders_table WHERE customer_id = %d AND parent_order_id = %d GROUP BY status",
+    //                 $user_id, $order_id
+    //             ));
+    //             foreach ($status_counts as $status) {
+    //                 $status_html .= '<span class="' . esc_attr($status->status) . '">(' . esc_html($status->count) . ') ' . esc_html(wc_get_order_status_name($status->status)) . '</span> ';
+    //             }
+    
+    //             $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "view-order/" . $order_id);
+                
+    
+    //             $main_row = "<tr>
+    //                 <td><div class='thead-data'>Order No</div>" . esc_html($order_id) . "</td>
+    //                 <td><div class='thead-data'>Date</div>" . esc_html($created_date) . "</td>
+    //                 <td><div class='thead-data'>Billing Name</div>" . esc_html($first_name . ' ' . $last_name) . "</td>
+    //                 <td><div class='thead-data'>Affiliate Code</div>" . esc_html($referral_id) . "</td>
+    //                 <td><div class='thead-data'>Total Honey Jar</div>" . esc_html($total_quantity) . "</td>
+    //                 <td><div class='thead-data'>Total Recipient</div>" . count($main_order->get_items()) . "</td>
+    //                 <td><div class='thead-data'>Type</div>" . esc_html($single_order) . "</td>
+    //                 <td class='order-status'><div class='thead-data'>Status</div>" . (!empty($status_html) ? $status_html : 'Recipient Order is Preparing.') . "</td>
+    //                 <td><div class='thead-data'>Price</div>" . $order_total . "</td>
+    //                 <td><div class='thead-data'>Action</div>
+    //                     <a data-tippy='View Order' href='" . esc_url($resume_url) . "' class='far fa-eye'></a>
+    //                     <a data-tippy='Download Invoice' href='#' class='far fa-download'></a>
+    //                     " . (empty($status_html) ? '<button>Suborder is created</button>' : '') . "
+    //                 </td>
+    //             </tr>";
+    
+    //             $table_content .= $main_row;
+                
+    //         }
+    //     }
+    
+    //     $pagination = '';
+    //     if ($total_pages > 1) {
+    //         for ($i = 1; $i <= $total_pages; $i++) {
+    //             $active_class = ($current_page == $i) ? 'active' : '';
+    //             $pagination .= "<a href='javascript:;' class='" . esc_attr($active_class) . "' data-page='" . esc_attr($i) . "'>" . esc_html($i) . "</a> ";
+    //         }
+    //     }
+    
+    //     wp_send_json_success([
+    //         'table_content' => $table_content,
+    //         'pagination' => $pagination,
+    //         'current_page' => $current_page,
+    //         'total_pages' => $total_pages,
+    //     ]);
+    //     wp_die();
+    // }
     public function orthoney_customer_order_process_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
-        
+    
         $user_id = get_current_user_id();
-        $current_page = isset($_POST['page']) ? max(1, intval($_POST['page'])) : 1;
-        $items_per_page = 10;
-        $offset = ($current_page - 1) * $items_per_page;
+        $table_order_type = sanitize_text_field($_POST['table_order_type'] ?? 'main_order');
+        $custom_order_type = sanitize_text_field($_POST['custom_order_type'] ?? 'all');
+        $custom_order_status = sanitize_text_field($_POST['custom_order_status'] ?? 'all');
+        $search = sanitize_text_field($_POST['search']['value'] ?? '');
+        $draw = intval($_POST['draw']);
+        $start = intval($_POST['start']);
+        $length = intval($_POST['length']);
     
-        $wc_orders_table = $wpdb->prefix . 'wc_orders';
+        $orders_table = $wpdb->prefix . 'wc_orders';
+        $filtered_orders = [];
     
-        // Get total items count
-        $total_items = (int) $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$wc_orders_table} WHERE customer_id = %d AND parent_order_id = %d",
-            $user_id, 0
-        ));
-    
-        // Fetch paginated order data
-        $processQuery = $wpdb->prepare(
-            "SELECT * FROM {$wc_orders_table} WHERE customer_id = %d AND parent_order_id = %d ORDER BY date_updated_gmt DESC LIMIT %d OFFSET %d",
-            $user_id, 0, $items_per_page, $offset
+        // Only get a limited number of main orders first (pagination early)
+        $main_order_query = $wpdb->prepare(
+            "SELECT * FROM $orders_table WHERE customer_id = %d AND parent_order_id = 0 ORDER BY date_updated_gmt DESC",
+            $user_id
         );
+        $main_orders_all = $wpdb->get_results($main_order_query);
     
-        $total_pages = (int) ceil($total_items / $items_per_page);
-        $results = $wpdb->get_results($processQuery);
-        
-        $table_content = '';
+        // Pre-process orders to filter before slicing
+        foreach ($main_orders_all as $main_order_data) {
+            $order_id = $main_order_data->id;
+            $main_order_status = $main_order_data->status;
     
-        if (!empty($results)) {
-            foreach ($results as $data) {
-                $main_order = wc_get_order($data->id);
+            // Quick fail if status doesn't match and custom status is set
+            if ($custom_order_status !== 'all' && $custom_order_status !== $main_order_status) {
+                continue;
+            }
     
-                // **Prevent Fatal Error: Skip if order is null**
-                if (!$main_order) {
-                    continue;
+            $main_order = wc_get_order($order_id);
+            if (!$main_order) continue;
+    
+            $order_type = 'Multi Address';
+            $total_quantity = 0;
+            foreach ($main_order->get_items() as $item) {
+                if ($item->get_meta('single_order', true) == 1) {
+                    $order_type = 'Single Address';
+                }
+                $total_quantity += $item->get_quantity();
+            }
+    
+            // Filter by custom order type
+            if (
+                ($custom_order_type === 'single_address' && $order_type !== 'Single Address') ||
+                ($custom_order_type === 'multiple_address' && $order_type !== 'Multi Address')
+            ) {
+                continue;
+            }
+    
+            // Search check
+            $matches_search_main = empty($search) ||
+                stripos((string)$order_id, $search) !== false ||
+                stripos($main_order->get_billing_first_name(), $search) !== false ||
+                stripos($main_order->get_shipping_first_name(), $search) !== false;
+    
+            $row_data = OAM_Helper::build_order_row($main_order_data, $main_order, $order_type, $total_quantity);
+    
+            if ($table_order_type === 'main_order') {
+                if ($matches_search_main) {
+                    $filtered_orders[] = $row_data;
+                }
+            } else {
+                // Single Address: include if matches
+                if ($order_type === 'Single Address' && $matches_search_main) {
+                    $filtered_orders[] = $row_data;
                 }
     
-                // Get order statuses
-                $statuses = $wpdb->get_results(
-                    $wpdb->prepare(
-                        "SELECT status, COUNT(*) as count FROM {$wc_orders_table} WHERE customer_id = %d AND parent_order_id = %d GROUP BY status",
-                        $user_id, $data->id
-                    ),
-                    OBJECT_K
-                );
+                // Sub-orders (only if needed)
+                $sub_sql = "SELECT * FROM $orders_table WHERE customer_id = %d AND parent_order_id = %d";
+                $sub_params = [$user_id, $order_id];
     
-                $status_counts = [];
-                foreach ($statuses as $status => $status_data) {
-                    $status_counts[$status] = $status_data->count;
+                if ($custom_order_status != 'all') {
+                    $sub_sql .= " AND status = %s";
+                    $sub_params[] = $custom_order_status;
                 }
     
-                // Generate status HTML
-                $status_html = '';
-                if ($status_counts) {
-                    
-                    foreach ($status_counts as $key => $value) {
-                        $status_html .= '<span class="'.esc_html($key).'">(' . esc_html($value) . ') ' . esc_html(wc_get_order_status_name($key)) . '</span> ';
-                    }
-                }
-                if($status_html == ''){
-                    $status_html = 'Recipient Order is Preparing.';
-                }
+                $sub_orders = $wpdb->get_results($wpdb->prepare($sub_sql, ...$sub_params));
     
-                // Format date
-                $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->date_created_gmt));
+                foreach ($sub_orders as $sub_data) {
+                    $sub_order = wc_get_order($sub_data->id);
+                    if (!$sub_order) continue;
     
-                // Get order details
-                $first_name = $main_order->get_billing_first_name();
-                $last_name = $main_order->get_billing_last_name();
-                $order_total = wc_price($main_order->get_total());
-                $total_quantity = 0;
+                    $matches_search_sub = empty($search) ||
+                        stripos((string)$sub_order->get_id(), $search) !== false ||
+                        stripos($sub_order->get_billing_first_name(), $search) !== false ||
+                        stripos($sub_order->get_shipping_first_name(), $search) !== false;
     
-                // Calculate total quantity
-                foreach ($main_order->get_items() as $item) {
-                    $single_order_meta = $item->get_meta('single_order', true);
-            
-                    if (!empty($single_order_meta) && $single_order_meta == 1) {
-                        $single_order = 'Single Address';
-                    }else{
-                        if($item->get_meta('_recipient_order_type', true) != ''){
-                            $single_order = 'Multi Address';
+                    if ($matches_search_sub) {
+                        $sub_total_quantity = 0;
+                        foreach ($sub_order->get_items() as $item) {
+                            $sub_total_quantity += $item->get_quantity();
                         }
+    
+                        $filtered_orders[] = OAM_Helper::build_order_row($sub_data, $sub_order, $order_type, $sub_total_quantity, $main_order);
                     }
-                    $total_quantity += $item->get_quantity();
                 }
-    
-                // Order view URL
-                $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "view-order/" . $data->id);
-    
-                // Get affiliate referral ID
-                $referral_id = $main_order->get_meta('_yith_wcaf_referral', true) ?: 'Orthoney';
-    
-                // Table row output
-                $table_content .= "<tr>
-                    <td><div class='thead-data'>Order No</div>" . esc_html($data->id) . "</td>
-                    <td><div class='thead-data'>Date</div>" . esc_html($created_date) . "</td>
-                    <td><div class='thead-data'>Billing Name</div>" . esc_html($first_name . ' ' . $last_name) . "</td>
-                    <td><div class='thead-data'>Affiliate Code</div>" . ($referral_id ? esc_html($referral_id) : 'Orthoney') . "</td>
-                    <td><div class='thead-data'>Total Honey Jar</div>" . esc_html($total_quantity) . "</td>
-                    <td><div class='thead-data'>Total Recipient</div>" . esc_html(count($main_order->get_items())) . "</td>
-                    <td><div class='thead-data'>Type</div>" . $single_order . "</td>
-                    <td class='order-status'><div class='thead-data'>Status</div>" . $status_html . "</td>
-                    <td><div class='thead-data'>Price</div>" . $order_total . "</td>
-                    <td><div class='thead-data'>Action</div>
-                        <a data-tippy='View Order' href='" . esc_url($resume_url) . "' class='far fa-eye'></a>
-                        <a data-tippy='Download Invoice' href='#' class='far fa-download'></a>
-                    </td>
-                </tr>";
             }
         }
     
-        // Pagination HTML
-        $pagination = '';
-        if ($total_pages > 1) {
-            for ($i = 1; $i <= $total_pages; $i++) {
-                $active_class = ($current_page == $i) ? 'active' : '';
-                $pagination .= "<a href='javascript:;' class='" . esc_attr($active_class) . "' data-page='" . esc_attr($i) . "'>" . esc_html($i) . "</a> ";
-            }
-        }
+        // Do pagination AFTER filtering
+        $total_items = count($filtered_orders);
+        $paginated_data = array_slice($filtered_orders, $start, $length);
     
-        // Return JSON response
-        wp_send_json_success([
-            'table_content' => $table_content,
-            'pagination' => $pagination,
-            'current_page' => $current_page,
-            'total_pages' => $total_pages,
+        wp_send_json([
+            'draw' => $draw,
+            'recordsTotal' => $total_items,
+            'recordsFiltered' => $total_items,
+            'data' => $paginated_data,
         ]);
         wp_die();
+    }
+    // TODO
+    
+    
+    
+    
+   
+    
+
+    
+    public function customer_sub_order_details_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+        $orderid = intval($_POST['orderid']);
     }
     
 
@@ -2174,95 +2270,72 @@ class OAM_Ajax{
     public function orthoney_incomplete_order_process_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
+
         $user_id = get_current_user_id();
-        $current_page = isset($_POST['page']) ? max(1, intval($_POST['page'])) : 1;
-        $failed = isset($_POST['failed']) ? $_POST['failed'] : 0;
-        $items_per_page = 10;
-        $offset = ($current_page - 1) * $items_per_page;
-    
+        $failed = isset($_POST['failed']) ? intval($_POST['failed']) : 0;
+
+        $draw = intval($_POST['draw']);
+        $start = intval($_POST['start']);
+        $length = intval($_POST['length']);
+        $search_value = sanitize_text_field($_POST['search']['value']);
+
+        $order_column_index = $_POST['order'][0]['column'];
+        $order_column = $_POST['columns'][$order_column_index]['data'];
+        $order_dir = $_POST['order'][0]['dir'];
+
         $order_process_table = OAM_Helper::$order_process_table;
-        // Get total items and pages
 
-        if($failed == 1){
-            $total_items = (int) $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(*) FROM {$order_process_table} WHERE user_id = %d AND step = %d AND order_id != %d AND order_type = %s",
-                $user_id, 5, 0 ,'multi-recipient-order'
-            ));
-
-             // Fetch process data
-            $processQuery = $wpdb->prepare(
-                "SELECT * FROM {$order_process_table} WHERE user_id = %d AND step = %d AND order_id != %d AND order_type = %s ORDER BY created DESC LIMIT %d OFFSET %d",
-                $user_id, 5 ,0 ,'multi-recipient-order' ,$items_per_page, $offset
-            );
-        }else{
-
-            $total_items = (int) $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(*) FROM {$order_process_table} WHERE user_id = %d AND step != %d",
-                $user_id, 5
-            ));
-          
-            // Fetch process data
-            $processQuery = $wpdb->prepare(
-                "SELECT * FROM {$order_process_table} WHERE user_id = %d AND step != %d ORDER BY created DESC LIMIT %d OFFSET %d",
-                $user_id, 5 ,$items_per_page, $offset
-            );
-        }
-
-        $total_pages = (int) ceil($total_items / $items_per_page);
-        
-        $results = $wpdb->get_results($processQuery);
-        $table_content = '';
-    
-        if (!empty($results)) {
-            foreach ($results as $data) {
-                $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($data->created));
-
-                if($failed != 1){
-                    $resume_url = esc_url(ORDER_PROCESS_LINK."?pid=".$data->id);
-                }else{
-                    $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK."failed-recipients/details/".$data->id);
-                }
-
-                $download_button = '';
-    
-                if (!empty($data->csv_name)) {
-                    $download_url = esc_url(OAM_Helper::$process_recipients_csv_url . $data->csv_name);
-                    $download_button = "<a href='".esc_url($download_url)."' class='w-btn us-btn-style_1 outline-btn round-btn' download data-tippy='Download Recipients File'><i class='far fa-download'></i></a>";
-                }
-    
-                if($data->process_by == 0){
-                    $display_name= "Self";
-                }else{
-                    $user_info = get_userdata($data->process_by);
-                    $display_name = $user_info->display_name;
-                }
-
-                $table_content .= "<tr>
-                <td><div class='thead-data'>Sr No</div>" . esc_html($data->id) . "</td>
-                <td><div class='thead-data'>Name</div>" . esc_html($data->name) . "</td>
-                <td><div class='thead-data'>Ordered By</div>" . esc_html($display_name) . "</td>
-                <td><div class='thead-data'>Date</div>". esc_html($created_date). "</td>
-                <td><div class='thead-data'>Action</div> <a href='".esc_url($resume_url)."' class='w-btn us-btn-style_1 outline-btn sm-btn'>".($failed == 1 ? 'View Recipients' : 'Resume Order' )."</a> ".($failed != 1 ? $download_button : '' )." </td>
-                </tr>";
-            }
+        $where = "WHERE user_id = $user_id";
+        if ($failed == 1) {
+            $where .= " AND step = 5 AND order_id != 0 AND order_type = 'multi-recipient-order'";
         } else {
-            $table_content = '<tr><td colspan="4" class="no-available-msg">No data available</td></tr>';
+            $where .= " AND step != 5";
         }
-    
-        $pagination = '';
-        if ($total_pages > 1) {
-            for ($i = 1; $i <= $total_pages; $i++) {
-                $active_class = ($current_page == $i) ? 'active' : '';
-                $pagination .= "<a href='javascript:;' class='".$active_class."' data-page='".$i."'>".$i."</a> ";
+        if (!empty($search_value)) {
+            $where .= " AND (name LIKE '%$search_value%')";
+        }
+
+        $total_items = (int) $wpdb->get_var("SELECT COUNT(*) FROM $order_process_table $where");
+
+        $items = $wpdb->get_results(
+            "SELECT * FROM $order_process_table $where ORDER BY $order_column $order_dir LIMIT $start, $length"
+        );
+
+        $data = [];
+
+        foreach ($items as $item) {
+            $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($item->created));
+
+            $resume_url = ($failed == 1)
+                ? esc_url(CUSTOMER_DASHBOARD_LINK . "failed-recipients/details/" . $item->id)
+                : esc_url(ORDER_PROCESS_LINK . "?pid=" . $item->id);
+
+            $download_button = '';
+            if (!empty($item->csv_name)) {
+                $download_url = esc_url(OAM_Helper::$process_recipients_csv_url . $item->csv_name);
+                $download_button = "<a href='" . $download_url . "' class='w-btn us-btn-style_1 outline-btn round-btn' download data-tippy='Download Recipients File'><i class='far fa-download'></i></a>";
             }
+
+            $display_name = ($item->process_by == 0) ? 'Self' : get_userdata($item->process_by)->display_name;
+
+            $data[] = [
+                'id' => esc_html($item->id),
+                'name' => esc_html($item->name),
+                'ordered_by' => esc_html($display_name),
+                'date' => esc_html($created_date),
+                'action' => "<a href='$resume_url' class='w-btn us-btn-style_1 outline-btn sm-btn'>" . ($failed == 1 ? 'View Recipients' : 'Resume Order') . "</a> " . ($failed != 1 ? $download_button : '')
+            ];
         }
-        wp_send_json_success([
-            'table_content' => $table_content,
-            'pagination' => $pagination,
-            'current_page' => $current_page,
-            'total_pages' => $total_pages,
+
+        wp_send_json([
+            "draw" => $draw,
+            "recordsTotal" => $total_items,
+            "recordsFiltered" => $total_items,
+            "data" => $data
         ]);
+
         wp_die();
+
     }
 
     //
