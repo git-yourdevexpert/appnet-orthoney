@@ -1449,8 +1449,8 @@ jQuery(document).ready(function ($) {
 //         });
 //     }
 // });
-jQuery(document).ready(function ($) {
 
+jQuery(document).ready(function ($) {
     var table = $('#customer-orders-table').DataTable({
         processing: false,
         serverSide: true,
@@ -1470,10 +1470,7 @@ jQuery(document).ready(function ($) {
             complete: function () {
                 Swal.close();
             },
-            dataSrc: function (json) {
-                return json.data;
-            },
-            error: function (xhr, status, error) {
+            error: function () {
                 Swal.fire({
                     title: 'Error',
                     text: 'An error occurred while loading your orders.',
@@ -1504,7 +1501,6 @@ jQuery(document).ready(function ($) {
             });
         },
         initComplete: function () {
-            // Custom filters
             const customFilter = `
                 <label style="margin-left: 10px;">
                     Ship Type:
@@ -1529,10 +1525,9 @@ jQuery(document).ready(function ($) {
                     </select>
                 </label>
             `;
-
             $('#customer-orders-table_filter').append(customFilter);
+            $('#customer-orders-table_filter').append('<label style="margin-left: 10px;">&nbsp;<div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
 
-            // Radio filters
             const tableType = `
                 <label for="main_order">
                     <input type="radio" id="main_order" name="table_order_type" value="main_order" checked>
@@ -1545,10 +1540,8 @@ jQuery(document).ready(function ($) {
             `;
             $('#customer-orders-table_length').before('<div style="text-align:center; margin-bottom: 10px;">' + tableType + '</div>');
 
-            // Apply initial column toggle
             toggleRecipientColumn();
 
-            // Handle filter changes
             $('#custom-order-type-filter, #custom-order-status-filter').on('change', function () {
                 table.ajax.reload();
             });
@@ -1558,11 +1551,44 @@ jQuery(document).ready(function ($) {
                 table.ajax.reload();
             });
 
-            // Trigger search only if input length >= 3
+            // 🔄 Export data trigger (new AJAX call)
+            $(document).on('click', '.order-export-data', function (e) {
+                e.preventDefault();
+
+                const requestData = {
+                    action: 'orthoney_customer_order_export_ajax',
+                    security: oam_ajax.nonce,
+                    custom_order_type: $('#custom-order-type-filter').val(),
+                    custom_order_status: $('#custom-order-status-filter').val(),
+                    table_order_type: $('input[name="table_order_type"]:checked').val(),
+                    search: {
+                        value: $('#customer-orders-table_filter input').val()
+                    }
+                };
+
+                process_group_popup('Generating CSV...');
+
+                $.post(oam_ajax.ajax_url, requestData, function (response) {
+                    Swal.close();
+                    if (response.success && response.data?.url) {
+                        const a = document.createElement('a');
+                        a.href = response.data.url;
+                        a.download = response.data.filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    } else {
+                        Swal.fire({
+                            title: 'Export Failed',
+                            text: response?.data?.message || 'Something went wrong during export.',
+                            icon: 'error',
+                        });
+                    }
+                });
+            });
+
             setTimeout(function () {
                 const searchBox = $('#customer-orders-table_filter input');
-            
-                // Remove default listener and apply our custom one
                 searchBox.off('input').on('input', function () {
                     const val = this.value.trim();
                     if (val.length >= 3 || val.length === 0) {
@@ -1571,26 +1597,30 @@ jQuery(document).ready(function ($) {
                 });
             }, 100);
 
-            // Toggle column visibility function
             function toggleRecipientColumn() {
                 const selectedType = $('input[name="table_order_type"]:checked').val();
                 const filterWrapper = $('.custom-order-status-filter-wrapper');
-                // const recipientColumnIndex = 6;
+                const recipientCountColumnIndex = 7;
+                const recipientNameColumnIndex = 4;
                 const jarNoColumnIndex = 0;
 
                 if (selectedType === 'sub_order_order') {
                     filterWrapper.show();
                     table.column(jarNoColumnIndex).visible(true);
-                    // table.column(recipientColumnIndex).visible(false);
+                    table.column(recipientNameColumnIndex).visible(true);
+                    table.column(recipientCountColumnIndex).visible(false);
                 } else {
                     filterWrapper.hide();
                     table.column(jarNoColumnIndex).visible(false);
-                    // table.column(recipientColumnIndex).visible(true);
+                    table.column(recipientNameColumnIndex).visible(false);
+                    table.column(recipientCountColumnIndex).visible(true);
                 }
             }
         }
     });
 });
+
+
 
 
 document.addEventListener('click', function (event) {

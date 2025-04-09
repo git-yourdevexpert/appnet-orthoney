@@ -64,6 +64,99 @@ class OAM_Helper{
 
 	public function __construct() {}
     
+
+    public static  function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false) {
+        global $wpdb;
+
+        $orders_table = $wpdb->prefix . 'wc_orders';
+        $filtered_orders = [];
+
+        $main_orders = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM $orders_table WHERE customer_id = %d AND parent_order_id = 0 ORDER BY date_updated_gmt DESC",
+            $user_id
+        ));
+
+        foreach ($main_orders as $main_data) {
+            $order_id = $main_data->id;
+            $main_status = $main_data->status;
+
+            if ($custom_order_status !== 'all' && $custom_order_status !== $main_status) {
+                continue;
+            }
+
+            $main_order = wc_get_order($order_id);
+            if (!$main_order) continue;
+
+            $order_type = 'Multi Address';
+            $total_quantity = 0;
+
+            foreach ($main_order->get_items() as $item) {
+                if ($item->get_meta('single_order', true) == 1) {
+                    $order_type = 'Single Address';
+                }
+                $total_quantity += $item->get_quantity();
+            }
+
+            if (
+                ($custom_order_type === 'single_address' && $order_type !== 'Single Address') ||
+                ($custom_order_type === 'multiple_address' && $order_type !== 'Multi Address')
+            ) {
+                continue;
+            }
+
+            $matches_search_main = empty($search) ||
+                stripos((string)$order_id, $search) !== false ||
+                stripos($main_order->get_billing_first_name(), $search) !== false ||
+                stripos($main_order->get_shipping_first_name(), $search) !== false;
+
+            $row_builder = $is_export ? 'build_export_order_row' : 'build_order_row';
+            $row_data = OAM_Helper::$row_builder($main_data, $main_order, $order_type, $total_quantity);
+
+            if ($table_order_type === 'main_order') {
+                if ($matches_search_main) {
+                    $filtered_orders[] = $row_data;
+                }
+            } else {
+                if ($order_type === 'Single Address' && $matches_search_main) {
+                    $filtered_orders[] = $row_data;
+                }
+
+                // Fetch sub-orders
+                $sub_query = "SELECT * FROM $orders_table WHERE customer_id = %d AND parent_order_id = %d";
+                $params = [$user_id, $order_id];
+
+                if ($custom_order_status !== 'all') {
+                    $sub_query .= " AND status = %s";
+                    $params[] = $custom_order_status;
+                }
+
+                $sub_orders = $wpdb->get_results($wpdb->prepare($sub_query, ...$params));
+
+                foreach ($sub_orders as $sub_data) {
+                    $sub_order = wc_get_order($sub_data->id);
+                    if (!$sub_order) continue;
+
+                    $matches_search_sub = empty($search) ||
+                        stripos((string)$sub_order->get_id(), $search) !== false ||
+                        stripos($sub_order->get_billing_first_name(), $search) !== false ||
+                        stripos($sub_order->get_shipping_first_name(), $search) !== false;
+
+                    if ($matches_search_sub) {
+                        $sub_total_quantity = 0;
+                        foreach ($sub_order->get_items() as $item) {
+                            $sub_total_quantity += $item->get_quantity();
+                        }
+
+                        $filtered_orders[] = OAM_Helper::$row_builder($sub_data, $sub_order, $order_type, $sub_total_quantity, $main_order);
+                    }
+                }
+            }
+        }
+
+        return $filtered_orders;
+    }
+
+
     // Helper to build row array for a main or sub order
     public static function build_order_row($order_data, $order_obj, $order_type, $total_quantity, $parent_order = null) {
         global $wpdb;
@@ -102,8 +195,7 @@ class OAM_Helper{
         $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "view-order/" . ($order_data->parent_order_id != 0) ? esc_html($order_data->id) : esc_html($order_data->parent_order_id));
     
         return [
-            'jar_no' => ($order_type === 'Multi Address' && $status_html !== '' && $order_data->parent_order_id == 0 ?
-            '<button data-tippy="Show Sub Order" class="far fa-plus show-sub-order" data-status="0" data-orderid="' . $order_data->id . '"></button> ' : '') . esc_html($order_data->id),
+            'jar_no' => esc_html($order_data->id),
             'order_no' => ($order_data->parent_order_id == 0) ? esc_html($order_data->id) : esc_html($order_data->parent_order_id),
             'date' => esc_html($created_date),
             'billing_name' => esc_html($billing_name),
@@ -118,6 +210,55 @@ class OAM_Helper{
                 '<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>' .
                 ($order_data->parent_order_id != 0 ? '<a data-tippy="Download Invoice" href="#" class="far fa-download"></a>' : '') .
                 (empty($status_html) && ( $order_data->parent_order_id == 0) ? '<button>Suborder is created</button>' : '')
+        ];
+    }
+    public static function build_export_order_row($order_data, $order_obj, $order_type, $total_quantity, $parent_order = null) {
+        global $wpdb;
+        $user_id = get_current_user_id();
+        $orders_table = $wpdb->prefix . 'wc_orders';
+    
+        $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order_data->date_created_gmt));
+        $billing_name = $order_obj->get_billing_first_name() . ' ' . $order_obj->get_billing_last_name();
+        $shipping_name = $order_obj->get_shipping_first_name() . ' ' . $order_obj->get_shipping_last_name();
+        $referral_id = $order_obj->get_meta('_yith_wcaf_referral', true) ?: 'Orthoney';
+        $order_total = $order_obj->get_total();
+    
+        // Status HTML
+        $status_html = '';
+        if ($order_type === 'Multi Address' && $order_data->parent_order_id == 0) {
+            $status_counts = $wpdb->get_results($wpdb->prepare(
+                "SELECT status, COUNT(*) as count FROM $orders_table WHERE customer_id = %d AND parent_order_id = %d GROUP BY status",
+                $user_id, $order_data->id
+            ));
+            foreach ($status_counts as $status) {
+                $status_html .= sprintf(
+                    '(%d) %s ',
+                    esc_html($status->count),
+                    esc_html(wc_get_order_status_name($status->status))
+                );
+            }
+        } else {
+            $status_html .= sprintf(
+                '%s ',
+                esc_html(wc_get_order_status_name($order_data->status))
+            );
+        }
+    
+        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "view-order/" . ($order_data->parent_order_id != 0) ? esc_html($order_data->id) : esc_html($order_data->parent_order_id));
+    
+        return [
+            'jar_no' => esc_html($order_data->id),
+            'order_no' => ($order_data->parent_order_id == 0) ? esc_html($order_data->id) : esc_html($order_data->parent_order_id),
+            'date' => esc_html($created_date),
+            'billing_name' => esc_html($billing_name),
+            'shipping_name' => esc_html($shipping_name),
+            'affiliate_code' => esc_html($referral_id),
+            'total_jar' => esc_html($total_quantity),
+            'total_recipient' => count($order_obj->get_items()),
+            'type' => esc_html($order_type),
+            'status' => !empty($status_html) ? $status_html : 'Recipient Order is Preparing.',
+            'price' => $order_total,
+            
         ];
     }
 
