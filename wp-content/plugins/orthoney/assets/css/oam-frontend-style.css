@@ -5291,6 +5291,7 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   border-radius: 10px;
   background-color: #fff;
   box-shadow: none !important;
+  margin-bottom: 20px;
 }
 
 .orthoney-datatable-warraper table thead {
@@ -5317,28 +5318,24 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   gap: 5px;
 }
 
-.orthoney-datatable-warraper .paging_simple_numbers .paginate_button {
+.orthoney-datatable-warraper .dataTables_wrapper .paging_simple_numbers .paginate_button {
   color: #fff !important;
   border-radius: 4px;
   cursor: pointer;
-}
-
-.orthoney-datatable-warraper .paging_simple_numbers .next {
   background: var(--color-content-primary);
-
+}
+.orthoney-datatable-warraper .dataTables_wrapper .paging_simple_numbers .paginate_button.disabled{
+  cursor: inherit !important;
+  background: #809197 !important;
+  color: #fff !important;
 }
 
-.orthoney-datatable-warraper .paging_simple_numbers .next:hover {
+.orthoney-datatable-warraper  .dataTables_wrapper .paging_simple_numbers .paginate_button:hover {
   background: var(--color-content-secondary) !important;
 }
 
-.orthoney-datatable-warraper .paging_simple_numbers .previous {
-  background: #809197;
-}
 
-.orthoney-datatable-warraper .paging_simple_numbers .previous:hover {
-  background: var(--color-content-primary) !important;
-}
+
 /* responsive */
 
 @media (min-width: 993px) {
