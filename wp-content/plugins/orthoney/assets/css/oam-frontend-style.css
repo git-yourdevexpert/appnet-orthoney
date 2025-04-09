@@ -5330,7 +5330,7 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   color: #fff !important;
 }
 
-.orthoney-datatable-warraper  .dataTables_wrapper .paging_simple_numbers .paginate_button:hover {
+.orthoney-datatable-warraper  .dataTables_wrapper .paging_simple_numbers .paginate_button:hover:not(.paging_simple_numbers .paginate_button.disabled) {
   background: var(--color-content-secondary) !important;
 }
 
