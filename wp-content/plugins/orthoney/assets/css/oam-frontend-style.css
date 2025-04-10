@@ -673,8 +673,8 @@ body.woocommerce .quantity button:hover:before {
 }
 .quantity input.input-box,
 body.woocommerce .quantity input.input-box {
-  flex: 50px 0 0;
-  width: 50px;
+  /* flex: 50px 0 0; */
+  width: auto;
   min-width: 0;
   display: inline-block;
   text-align: center;
