@@ -20,11 +20,13 @@ class OAM_RECIPIENT_MULTISTEP_FORM
 
     public function recipient_multistep_form_handler($atts) {
         if (!is_user_logged_in()) {
-            return OAM_COMMON_Custom::message_design_block(
-                'If you want to access this page, please',
-                ur_get_login_url(),
-                'Login'
-            );
+            // return OAM_COMMON_Custom::message_design_block(
+            //     'If you want to access this page, please',
+            //     ur_get_login_url(),
+            //     'Login'
+            // );
+            wp_redirect(home_url('/login/'));
+            exit;
         }
 
         ob_start();
