@@ -77,7 +77,7 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                             </td>
                         </tr>
                     <?php } }else{ ?>
-                        <tr><td colspan="3">No Organization found! </td></tr>
+                        <tr><td colspan="3" class="no-available-msg">No Organization found! </td></tr>
                         <?php } ?>
                 </tbody>
             </table>
