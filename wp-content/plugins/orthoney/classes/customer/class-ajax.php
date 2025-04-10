@@ -2029,12 +2029,10 @@ class OAM_Ajax{
                         <?php 
                         }
                         endforeach; 
-                 }else{
+                }else{
                     echo '<tr><td colspan="3" class="no-available-msg">No organization found!</td></tr>';
                 } 
-                if($html == 0){
-                    echo '<tr><td colspan="3" class="no-available-msg">No organization found!</td></tr>';
-                }
+               
                 ?>
             </tbody>
         </table>
