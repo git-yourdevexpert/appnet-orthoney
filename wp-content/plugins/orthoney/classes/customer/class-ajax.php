@@ -927,8 +927,15 @@ class OAM_Ajax{
         $state = !empty($stepData['single_order_state']) ? $stepData['single_order_state'] : '';
         $country = !empty($stepData['single_order_country']) ? $stepData['single_order_country'] : 'US';
         $zipcode = !empty($stepData['single_order_zipcode']) ? $stepData['single_order_zipcode'] : '';
-        $quantity = !empty($stepData['single_address_quantity']) ? $stepData['single_address_quantity'] : '';
+        $quantity = !empty($stepData['single_address_quantity']) ? $stepData['single_address_quantity'] : 1;
         $greeting = !empty($stepData['single_address_greeting']) ? $stepData['single_address_greeting'] : '';
+
+        update_user_meta($user_id, 'shipping_address_1', $delivery_line_1);
+        update_user_meta($user_id, 'shipping_address_2', $delivery_line_2);
+        update_user_meta($user_id, 'shipping_city', $city);
+        update_user_meta($user_id, 'shipping_state', $state);
+        update_user_meta($user_id, 'shipping_country', $country);
+        update_user_meta($user_id, 'shipping_postcode', $zipcode);
 
         if($status == 0){
             $validate_address_result =  OAM_Helper::validate_address($delivery_line_1, $delivery_line_2, $city, $state, $zipcode);
@@ -940,13 +947,6 @@ class OAM_Ajax{
                 }
             }
         }
-
-        update_user_meta($user_id, 'shipping_address_1', $delivery_line_1);
-        update_user_meta($user_id, 'shipping_address_2', $delivery_line_2);
-        update_user_meta($user_id, 'shipping_city', $city);
-        update_user_meta($user_id, 'shipping_state', $state);
-        update_user_meta($user_id, 'shipping_country', $country);
-        update_user_meta($user_id, 'shipping_postcode', $zipcode);
 
         //clear the cart
         if (class_exists('WC_Cart')) {
