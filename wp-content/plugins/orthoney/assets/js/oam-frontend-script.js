@@ -42,7 +42,7 @@ jQuery(document).ready(function($) {
             }
 
             // Ensure "OrtHoney" always appears at the top
-            if (data.text.toLowerCase().includes(params.term.toLowerCase()) || data.id === 'OrtHoney') {
+            if (data.text.toLowerCase().includes(params.term.toLowerCase()) || data.id === 'Orthoney') {
                 return data;
             }
 
