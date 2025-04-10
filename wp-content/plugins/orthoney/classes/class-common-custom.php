@@ -23,6 +23,8 @@ class OAM_COMMON_Custom {
         add_filter('body_class', array($this, 'custom_body_class'));
 
         add_filter('user_registration_reset_password_redirect', array($this, 'reset_password_redirection'), 10, 2);
+        add_filter( 'user_registration_modify_field_validation_response',  array($this, 'custom_user_registration_email_exists_message'), 10, 2 );
+
     }
 
     public static function init() {
@@ -395,6 +397,16 @@ class OAM_COMMON_Custom {
     
     public static function reset_password_redirection ($redirect, $user) {
         return self::redirect_user_based_on_role($user->roles); // Return the correct URL
+    }
+    public static function custom_user_registration_email_exists_message( $message, $form_data ) {
+        if ( isset( $message['individual'] ) && $message['individual'] === true ) {
+            foreach ( $message as $key => $value ) {
+                if ( $key !== 'individual' && $value === 'Email already exists.' ) {
+                    $message[$key] = 'This email is already registered. Please use a different email.';
+                }
+            }
+        }
+        return $message;
     }
  
 }
