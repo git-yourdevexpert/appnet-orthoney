@@ -718,7 +718,7 @@ class OAM_Helper{
                     $selected = 'selected';
                 }
                 if($shortname != 'AA' && $shortname != 'AE' && $shortname != 'AP'){
-                    $states_html .= '<option '.$selected.' value="'.$shortname.'">'.$fullname.'('.$shortname.')</option>';
+                    $states_html .= '<option '.$selected.' value="'.$shortname.'">'.$fullname.' ('.$shortname.')</option>';
                 }else{
                     $states_html .= '<option '.$selected.' value="'.$shortname.'">'.$fullname.'</option>';
                 }
