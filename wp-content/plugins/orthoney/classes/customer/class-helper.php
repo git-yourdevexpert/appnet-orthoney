@@ -192,11 +192,11 @@ class OAM_Helper{
             );
         }
     
-        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "view-order/" . ($order_data->parent_order_id != 0) ? esc_html($order_data->id) : esc_html($order_data->parent_order_id));
+        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "view-order/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id));
     
         return [
             'jar_no' => esc_html($order_data->id),
-            'order_no' => ($order_data->parent_order_id == 0) ? esc_html($order_data->id) : esc_html($order_data->parent_order_id),
+            'order_no' => ($order_data->parent_order_id == 0) ? $order_data->id : $order_data->parent_order_id,
             'date' => esc_html($created_date),
             'billing_name' => esc_html($billing_name),
             'shipping_name' => esc_html($shipping_name),
@@ -208,10 +208,11 @@ class OAM_Helper{
             'price' => $order_total,
             'action' =>
                 '<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>' .
-                ($order_data->parent_order_id != 0 ? '<a data-tippy="Download Invoice" href="#" class="far fa-download"></a>' : '') .
+                ($order_data->parent_order_id == 0 ? '<a data-tippy="Download Invoice" href="#" class="far fa-download"></a>' : '') .
                 (empty($status_html) && ( $order_data->parent_order_id == 0) ? '<button>Suborder is created</button>' : '')
         ];
     }
+
     public static function build_export_order_row($order_data, $order_obj, $order_type, $total_quantity, $parent_order = null) {
         global $wpdb;
         $user_id = get_current_user_id();
@@ -244,7 +245,7 @@ class OAM_Helper{
             );
         }
     
-        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "view-order/" . ($order_data->parent_order_id != 0) ? esc_html($order_data->id) : esc_html($order_data->parent_order_id));
+        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "view-order/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id));
     
         return [
             'jar_no' => esc_html($order_data->id),
