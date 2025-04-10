@@ -6,9 +6,11 @@ Author: ORT Honey
 Requires Plugins: woocommerce
 */
 // Prevent direct access
+
 if (!defined('ABSPATH')) {
     exit;
 }
+
 
 // Ensure WooCommerce is active before loading the plugin
 if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
@@ -82,7 +84,7 @@ require_once OH_PLUGIN_DIR_PATH . 'classes/customer/class-customer.php';
 require_once OH_PLUGIN_DIR_PATH . 'classes/sales-representative/class-sales-representative.php';
 
 // Register activation hook
-register_activation_hook(__FILE__, 'orthoney_create_custom_tables');
+// register_activation_hook(__FILE__, 'orthoney_create_custom_tables');
 
 // Refresh database if requested
 if(isset($_GET['database_refresh']) && ($_GET['database_refresh'] == 'okay' OR $_GET['database_refresh'] == 'new') ){
@@ -115,7 +117,88 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
         return $url;
     }
 }
+/**
+ * Affiliate Verification Start
+ * 
+ */
 
+// add_filter( 'woocommerce_registration_auth_new_customer', '__return_false' );
+
+// add_action('user_register', 'set_default_user_meta_after_register', 10, 1);
+
+// function set_default_user_meta_after_register($user_id) {
+//     $user = get_userdata($user_id);
+    
+//     $length         = 50;
+// 		$token          = '';
+// 		$code_alphabet  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+// 		$code_alphabet .= 'abcdefghijklmnopqrstuvwxyz';
+// 		$code_alphabet .= '0123456789';
+// 		$max            = strlen( $code_alphabet );
+
+// 		for ( $i = 0; $i < $length; $i++ ) {
+// 			$token .= $code_alphabet[ random_int( 0, $max - 1 ) ];
+// 		}
+
+// 	$token .= crypt_the_string( $user_id . '_' . time(), 'e' );
+
+//     // Set default user meta if not exists
+//     if (!metadata_exists('user', $user_id, 'ur_confirm_email_token')) {
+//         // $token = ur_generate_onetime_token($user_id, 'ur_passwordless_login', 32, 60);
+//         update_user_meta($user_id, 'ur_confirm_email_token', $token);
+//         update_user_meta($user_id, 'ur_confirm_email_token'.$user_id, $token);
+//     }
+
+//     if (!metadata_exists('user', $user_id, 'ur_confirm_email')) {
+//         update_user_meta($user_id, 'ur_confirm_email', 0);
+//     }
+
+//     if (!metadata_exists('user', $user_id, 'ur_login_option')) {
+//         update_user_meta($user_id, 'ur_login_option', 'email_confirmation');
+//     }
+
+//     // Get custom login URL
+//     $custom_url = wp_login_url();
+//     $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
+
+//     if (in_array('yith_affiliate', $user_roles) || in_array('affiliate_team_member', $user_roles)) {
+//         $custom_url = defined('ORGANIZATION_LOGIN_LINK') ? ORGANIZATION_LOGIN_LINK : $custom_url;
+//     }
+
+//     // Email setup
+//     $first_name = $user->first_name ? $user->first_name : $user->display_name;
+//     $email = $user->user_email;
+//     $nonce = wp_create_nonce('ur_email_verification_' . $user_id);
+
+//     $url_params = array(
+//         'uid'   => $user->ID,
+//         'ur_token' => get_user_meta($user_id, 'ur_confirm_email_token', true),
+//         'nonce' => $nonce,
+//     );
+//     $verification_link = add_query_arg($url_params, $custom_url);
+
+//     $subject = 'Email Verification Required';
+//     $message = sprintf(
+//         'Hello %s,<br><br>
+//         Thank you for registering. Please click the button below to verify your email:<br><br>
+//         <a href="%s" style="background-color: #4CAF50; border-radius: 5px; color: #ffffff; display: inline-block; font-size: 16px; font-weight: bold; padding: 12px 25px; text-decoration: none; text-transform: uppercase;">Verify Email Address</a><br><br>
+//         If you did not create this account, please ignore this email.',
+//         esc_html($first_name),
+//         esc_url($verification_link)
+//     );
+
+//     $headers = array(
+//         'Content-Type: text/html; charset=UTF-8',
+//         'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
+//     );
+
+//     wp_mail($email, $subject, $message, $headers);
+// }
+
+/**
+ * Affiliate Verification end
+ * 
+ */
 
 
 // /affiliate-dashboard-user-list-menu-item
