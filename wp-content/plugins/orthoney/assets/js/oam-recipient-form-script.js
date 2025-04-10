@@ -237,6 +237,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll("#multiStepForm .next").forEach((button) => {
       button.addEventListener("click", function (event) {
         event.preventDefault();
+        process_group_popup();
         console.log(currentStep);
 
         const uploadTypeOutput = document.querySelector(
@@ -1429,6 +1430,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 window.location.reload();
               }, 1000);
             }
+            Swal.close();
           }
         })
         .catch((error) => console.error("Fetch error:", error));
