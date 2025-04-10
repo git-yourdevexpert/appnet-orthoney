@@ -2978,6 +2978,9 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   border: 1px solid #c3e6cb;
   padding: 10px;
 }
+.wc-block-components-address-form{
+  align-items: flex-start;
+}
 .wc-block-components-address-form .wc-block-components-validation-error {
   margin-bottom: 10px;
   position: static!important;
