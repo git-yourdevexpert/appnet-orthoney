@@ -1429,8 +1429,9 @@ document.addEventListener("DOMContentLoaded", function () {
               setTimeout(function () {
                 window.location.reload();
               }, 1000);
+            }else{
+              Swal.close();
             }
-            Swal.close();
           }
         })
         .catch((error) => console.error("Fetch error:", error));
