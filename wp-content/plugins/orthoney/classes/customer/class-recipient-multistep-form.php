@@ -104,7 +104,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     public static function step_nav($currentStep = 0){ 
         ?>
         <div id="stepNav" class="tab-selections" <?php echo ((self::$atts_process_id != 0) ? 'style="display:none"' : '' ) ?>>
-            <span class="step-nav-item <?php echo ($currentStep == 0  AND self::$atts_process_id == 0) ? 'active' : '' ?>" data-step="0">Step 1: Select Organization</span>
+            <span class="step-nav-item <?php echo ($currentStep == 0  AND self::$atts_process_id == 0) ? 'active' : '' ?>" data-step="0">Step 1: Select an Organization</span>
             <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Delivery Preference</span>
             <span class="step-nav-item <?php echo $currentStep == 2 ? 'active' : '' ?>" data-step="2">Step 3: Upload Recipients</span>
             <span class="step-nav-item <?php echo (($currentStep == 3 OR self::$atts_process_id != 0) ? 'active' : '') ?>" data-step="3">Step 4: Verify Recipients</span>
@@ -124,7 +124,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         <div class="step" id="step1">
             <div class="g-cols wpb_row via_grid laptops-cols_inherit tablets-cols_inherit mobiles-cols_1 valign_top type_default step-one">
                 <div class="organization-step">
-                    <h3 class="block-title">Select Organization</h3>
+                    <h3 class="block-title">Select an Organization</h3>
                     <div class="wpb_column vc_column_container steps-column">
                         <p>Your Organization is the participating organization that you want to benefit from your honey purchase.</p>
                         <div>
