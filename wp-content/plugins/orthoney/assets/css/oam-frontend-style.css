@@ -2991,6 +2991,8 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   min-height: 39px !important;
   line-height: 39px !important;
   height: 39px;
+  border-radius: 0;
+}
 
 .register-form .ur-icon:before {
   position: absolute;
@@ -3011,6 +3013,9 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 }
 .register-form  #profile_oam_heart_field label .optional{
   display: none;
+}
+.user-registration form.register .password-input-group .input-password {
+  padding-right: 40px !important;
 }
 
 /* responsive */
