@@ -2985,6 +2985,22 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   margin-bottom: 10px;
   position: static!important;
 }
+.register-form .ur-icon:before {
+  position: absolute;
+  top: 31px;
+  left: 10px;
+  color: #000;
+  z-index: 1;
+}
+.register-form .form-row  .woocommerce-input-wrapper .select2-selection ,
+.register-form .form-row label {
+  font-family: var(--font-family);
+}
+.register-form .form-row  .woocommerce-input-wrapper .select2-selection,
+.register-form .form-row  .woocommerce-input-wrapper input.input-text:not(.register-form #profile_oam_heart_field .woocommerce-input-wrapper input.input-text)  {
+  padding-left: 40px !important;
+  line-height: 1 !important;
+}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
