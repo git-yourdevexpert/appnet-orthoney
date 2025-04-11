@@ -44,6 +44,7 @@ function orthoney_create_custom_tables() {
             $wpdb->prefix . 'oh_order_process_recipient_activate_log',
             $wpdb->prefix . 'oh_files_upload_activity_log',
             $wpdb->prefix . 'oh_order_process'
+            $wpdb->prefix . 'oh_order_process_recipient'
         ];
         
         // Loop through each table
