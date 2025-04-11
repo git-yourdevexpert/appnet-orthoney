@@ -60,7 +60,7 @@ function initTippy() {
         arrow: true,
         allowHTML: true,
         followCursor: true,
-        trigger: 'mouseenter focus',
+        trigger: 'mouseenter',
     });
 }
 
