@@ -298,9 +298,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         <label>
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'add-manually' ? 'checked' : '' ?> value="add-manually" data-error-message="Please select a delivery preference."> <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/contract.png" alt="" class="address-icon">
                                                 Manually Add Recipient Addresses
-                                            </span></label>
-                                        </div>
+                                            </span>
+                                        </label>
                                     </div>
+                                </div>
                             </div>
                         </div>
                     </div>
