@@ -770,7 +770,8 @@ document.addEventListener('click', function (event) {
 
         const recipientTr = target.closest('tr');
         let address_verified =  0;
-
+        const form = document.querySelector('#recipient-manage-form form');
+        form.reset();
         if(recipientTr){
             const recipientID = recipientTr.getAttribute('data-id');
 
@@ -812,9 +813,9 @@ document.addEventListener('click', function (event) {
                     const zipcode    = data.data.zipcode;
                     const quantity    = data.data.quantity;
                     const greeting    = data.data.greeting;
+                    
                     if (event.target.classList.contains('editRecipient')){
                     
-                        const form = document.querySelector('#recipient-manage-form form');
                         form.querySelector('#recipient_id').value = id;
                         form.querySelector('#full_name').value    = full_name;
                         form.querySelector('#company_name').value = company_name;
@@ -825,6 +826,7 @@ document.addEventListener('click', function (event) {
                         form.querySelector('#zipcode').value      = zipcode;
                         form.querySelector('#quantity').value = quantity > 0 ? quantity : 1;
                         form.querySelector('#greeting').value     = greeting;
+                        form.querySelector('button[type="submit"]').innerHTML = 'Edit Recipient Details';
                     }
                     
                     if (event.target.classList.contains('viewRecipient')) {
@@ -842,9 +844,16 @@ document.addEventListener('click', function (event) {
                     
                         const viewpopup = document.querySelector('#recipient-view-details-popup .recipient-view-details-wrapper');
                         viewpopup.innerHTML = html;
+                        form.querySelector('[type="submit"]').innerHTML = 'Add New Recipient Details';
                     }
                     setTimeout(function() {
                         lity(event.target.getAttribute('data-popup'));
+                        if (event.target.classList.contains('editRecipient')){
+                            form.querySelector('button[type="submit"]').innerHTML = 'Edit Recipient Details';
+                        }else{
+                            form.querySelector('[type="submit"]').innerHTML = 'Add New Recipient Details';
+                        }
+                        jQuery(form).find('#state').val(state).trigger('change');
                         
                     }, 250);
                     Swal.close();
@@ -865,6 +874,7 @@ document.addEventListener('click', function (event) {
                 });
             });
         }else{
+            form.reset();
             lity(event.target.getAttribute('data-popup'));
             Swal.close();
         }

@@ -798,7 +798,7 @@ class OAM_Helper{
 
                 <div class="footer-btn gfield--width-full">
                 <button type='button' class=" w-btn us-btn-style_4" data-lity-close>Cancel</button>
-                    <button type="submit">Submit</button>
+                <button type="submit">Add New Recipient Details</button>
                 </div>
             </form>
         </div>
