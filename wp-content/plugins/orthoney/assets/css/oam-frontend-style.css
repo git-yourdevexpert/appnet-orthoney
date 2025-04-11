@@ -2990,10 +2990,14 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   top: 30px;
   left: 10px;
   color: #000;
+  z-index: 1;
 }
-
-.register-form .form-row  .woocommerce-input-wrapper input {
-  padding-left: 40px;
+.register-form .form-row label {
+  font-family: var(--font-family);
+}
+.register-form .form-row  .woocommerce-input-wrapper .select2-selection,
+.register-form .form-row  .woocommerce-input-wrapper input.input-text  {
+  padding-left: 40px !important;
   line-height: 1 !important;
 }
 /* responsive */
