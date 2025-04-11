@@ -478,7 +478,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         }
                         ?>
                     </div>
-                    <div class="recipient-group-section <?php echo ((self::$atts_process_id != 0) ? 'failed-recipient-show' : '' ) ?>">
+                    <div class="recipient-group-section orthoney-datatable-warraper <?php echo ((self::$atts_process_id != 0) ? 'failed-recipient-show' : '' ) ?>">
                         <?php
                         foreach ($sections as $key => $label) {
                             $countKey = $key . 'Count';
@@ -567,7 +567,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         }
                         echo '</div>';
 
-                        echo '<div class="recipient-group-section">';
+                        echo '<div class="recipient-group-section orthoney-datatable-warraper">';
                         self::render_recipient_block('Unverified Addresses', 'unverified-block', 'unverifiedRecord', $result['data']['unverifiedRecordCount'], $result['data']['totalCount'], $result['data']['unverifiedData']);
                         self::render_recipient_block('Verified Addresses', 'verified-block', 'verifyRecord', $result['data']['verifiedRecordCount'], $result['data']['totalCount'], $result['data']['verifiedData']);
                         echo '</div>';
