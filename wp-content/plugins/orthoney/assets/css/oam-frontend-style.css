@@ -2991,6 +2991,8 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   min-height: 39px !important;
   line-height: 39px !important;
   height: 39px;
+  border-radius: 0;
+}
 
 .register-form .ur-icon:before {
   position: absolute;
