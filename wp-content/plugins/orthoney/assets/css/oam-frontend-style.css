@@ -3017,6 +3017,9 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 .user-registration form.register .password-input-group .input-password {
   padding-right: 40px !important;
 }
+.incomplete-order-block #incomplete-order-table_filter {
+  margin-bottom: 20px;
+}
 
 /* responsive */
 @media (min-width: 993px) {
