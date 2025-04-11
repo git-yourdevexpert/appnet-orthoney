@@ -2985,6 +2985,13 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   margin-bottom: 10px;
   position: static!important;
 }
+.wc-block-components-address-form .wc-block-components-text-input input#billing-phone {
+  order: 2;
+  padding: 0 var(--inputs-padding, .6em) !important;
+  min-height: 39px !important;
+  line-height: 39px !important;
+  height: 39px;
+
 .register-form .ur-icon:before {
   position: absolute;
   top: 31px;
@@ -2992,15 +2999,20 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   color: #000;
   z-index: 1;
 }
+.register-form .form-row  .woocommerce-input-wrapper input,
 .register-form .form-row  .woocommerce-input-wrapper .select2-selection ,
 .register-form .form-row label {
   font-family: var(--font-family);
 }
 .register-form .form-row  .woocommerce-input-wrapper .select2-selection,
-.register-form .form-row  .woocommerce-input-wrapper input.input-text:not(.register-form #profile_oam_heart_field .woocommerce-input-wrapper input.input-text)  {
+.register-form .form-row  .woocommerce-input-wrapper input.input-text{
   padding-left: 40px !important;
   line-height: 1 !important;
 }
+.register-form  #profile_oam_heart_field label .optional{
+  display: none;
+}
+
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
