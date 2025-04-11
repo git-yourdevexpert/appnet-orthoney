@@ -2992,7 +2992,7 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   color: #000;
   z-index: 1;
 }
-.register-form .form-row  .woocommerce-input-wrapper .select2-selection .select2-selection__placeholder,
+.register-form .form-row  .woocommerce-input-wrapper .select2-selection ,
 .register-form .form-row label {
   font-family: var(--font-family);
 }
