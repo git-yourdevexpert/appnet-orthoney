@@ -1,3 +1,45 @@
+
+function VerifyRecipientsDatatable(){
+    ["failCSVData", "successCSVData", "newCSVData"].forEach((id) => {
+      const div = document.getElementById(id);
+      if (div && div.innerHTML.trim() !== "") {
+        const tableEl = div.querySelector("table");
+        if (tableEl && !jQuery(tableEl).hasClass('dataTable')) {
+          const $table = jQuery(tableEl);
+    
+          // Initialize DataTable
+          const dataTable = $table.DataTable({
+            paging: false,
+            info: true,
+            searching: true,
+            responsive: true,
+            deferRender: false,
+            lengthChange: false
+          });
+    
+          // Hide pagination & info if only 1 page
+          dataTable.on('draw', function () {
+            const pageInfo = dataTable.page.info();
+            const wrapper = $table.closest('.dataTables_wrapper');
+            const pagination = wrapper.find('.dataTables_paginate');
+            const infoText = wrapper.find('.dataTables_info');
+    
+            if (pageInfo.pages <= 1) {
+              pagination.hide();
+              infoText.hide();
+            } else {
+              pagination.show();
+              infoText.show();
+            }
+          });
+    
+          // Trigger initial check
+          dataTable.draw();
+        }
+      }
+    });
+  }
+
 function process_group_popup(selectHtml = '') {
     if (selectHtml == '') {
       selectHtml = 'Please wait while we process your request.';
@@ -53,14 +95,19 @@ jQuery(document).ready(function($) {
 });
 
 function initTippy() {
-    tippy('[data-tippy]', {
-        content: (reference) => reference.getAttribute('data-tippy'),
-        theme: 'translucent',
-        animation: 'fade',
-        arrow: true,
-        allowHTML: true,
-        followCursor: true,
-        trigger: 'mouseenter',
+    document.querySelectorAll('[data-tippy]').forEach((el) => {
+        if (el._tippy) {
+            el._tippy.destroy(); // Destroy existing tooltip instance
+        }
+        tippy(el, {
+            content: el.getAttribute('data-tippy'),
+            theme: 'translucent',
+            animation: 'fade',
+            arrow: true,
+            allowHTML: true,
+            followCursor: true,
+            trigger: 'mouseenter',
+        });
     });
 }
 
@@ -888,10 +935,10 @@ document.addEventListener('click', function (event) {
         if (status == '0') {
             event.target.setAttribute('data-status', '1');
             event.target.textContent = "View All Recipients";
-            event.target.setAttribute('data-status', 'Back to view all the verified recipients.');
+            event.target.setAttribute('data-tippy', 'Back to view all the verified recipients.');
     
             ["successCSVData"].forEach((id) => {
-                document.querySelectorAll(`#${id} tr`).forEach((row) => {
+                document.querySelectorAll(`#${id} tbody tr`).forEach((row) => {
                     let alreadyOrder = row.getAttribute("data-alreadyorder");
                     if (alreadyOrder) {
                         row.classList.remove("hide");
@@ -905,11 +952,13 @@ document.addEventListener('click', function (event) {
                     el.style.display = "none";
                 }
             });
+
+            VerifyRecipientsDatatable();
     
         } else {
             event.target.setAttribute('data-status', '0');
             event.target.textContent = "View Already Ordered Recipients";
-            event.target.setAttribute('data-status', 'View all recipients who have already placed an order this season.');
+            event.target.setAttribute('data-tippy', 'View all recipients who have already placed an order this season.');
             ["successCSVData"].forEach((id) => {
                 const rows = document.querySelectorAll(`#${id} tr`);
                 rows.forEach((row, index) => {
@@ -930,6 +979,9 @@ document.addEventListener('click', function (event) {
                 }
             });
         }
+        setTimeout(() => {
+            initTippy();
+        }, 250);
     }
     
 

@@ -1670,45 +1670,8 @@ function addRecipientManuallyPopup(reload) {
     
     
 
-
-    ["failCSVData", "successCSVData", "newCSVData"].forEach((id) => {
-      const div = document.getElementById(id);
-      if (div && div.innerHTML.trim() !== "") {
-        const tableEl = div.querySelector("table");
-        if (tableEl && !jQuery(tableEl).hasClass('dataTable')) {
-          const $table = jQuery(tableEl);
+    VerifyRecipientsDatatable();
     
-          // Initialize DataTable
-          const dataTable = $table.DataTable({
-            paging: false,
-            info: true,
-            searching: true,
-            responsive: true,
-            deferRender: false,
-            lengthChange: false
-          });
-    
-          // Hide pagination & info if only 1 page
-          dataTable.on('draw', function () {
-            const pageInfo = dataTable.page.info();
-            const wrapper = $table.closest('.dataTables_wrapper');
-            const pagination = wrapper.find('.dataTables_paginate');
-            const infoText = wrapper.find('.dataTables_info');
-    
-            if (pageInfo.pages <= 1) {
-              pagination.hide();
-              infoText.hide();
-            } else {
-              pagination.show();
-              infoText.show();
-            }
-          });
-    
-          // Trigger initial check
-          dataTable.draw();
-        }
-      }
-    });
     
     
     
