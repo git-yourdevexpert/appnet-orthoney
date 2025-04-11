@@ -2985,6 +2985,17 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   margin-bottom: 10px;
   position: static!important;
 }
+.register-form .ur-icon:before {
+  position: absolute;
+  top: 30px;
+  left: 10px;
+  color: #000;
+}
+
+.register-form .form-row  .woocommerce-input-wrapper input {
+  padding-left: 40px;
+  line-height: 1 !important;
+}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
