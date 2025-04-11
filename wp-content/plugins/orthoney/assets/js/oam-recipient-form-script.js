@@ -234,10 +234,12 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
 
-    document.querySelectorAll("#multiStepForm .next").forEach((button) => {
-      button.addEventListener("click", function (event) {
+      document.querySelectorAll("#multiStepForm .next").forEach((button) => {
+        button.addEventListener("click", function (event) {
+        const address_block_error_message= document.querySelector('.address-block .error-message');
+        address_block_error_message.style.display = 'none';
         event.preventDefault();
-        process_group_popup();
+        
         console.log(currentStep);
 
         const uploadTypeOutput = document.querySelector(
@@ -254,8 +256,12 @@ document.addEventListener("DOMContentLoaded", function () {
             if (validateCurrentStep() && currentStep === 1) {
               if (deliveryPreference.value !== "single_address") {
                 console.log("2");
-                currentStep +=
-                  uploadTypeOutput.value === "add-manually" || uploadTypeOutput.value === "select-group" ? 2 : 1;
+                if (!uploadTypeOutput || uploadTypeOutput.value === '') {
+                  
+                  return;
+                }
+                process_group_popup();
+                currentStep += uploadTypeOutput.value === "add-manually" || uploadTypeOutput.value === "select-group" ? 2 : 1;
                 // currentStep = Math.min(currentStep, steps.length - 1);
                 console.log("currentStep", currentStep);
                 if (uploadTypeOutput.value === "add-manually") {
@@ -307,11 +313,17 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           } else {
             console.log("4");
-            if (currentStep !== 1) {
-              currentStep++;
-              showStep(currentStep);
-              processDataSaveAjax(pid?.value || "0", currentStep);
-            }
+            if (!deliveryPreference || deliveryPreference.value === '') {
+              Swal.close();
+              address_block_error_message.style.display = 'block';
+            }else{
+              if (currentStep !== 1) {
+                process_group_popup();
+                currentStep++;
+                showStep(currentStep);
+                processDataSaveAjax(pid?.value || "0", currentStep);
+              }
+          }
           }
         } else {
           console.log("5");
@@ -331,6 +343,47 @@ document.addEventListener("DOMContentLoaded", function () {
           showStep(currentStep);
           processDataSaveAjax(pid?.value || "0", currentStep);
         }
+      });
+    });
+
+
+    document.querySelectorAll('input[name="delivery_preference"]').forEach(radio => {
+      radio.addEventListener("click", function () {
+        const address_block_error_message= document.querySelector('.address-block .error-message');
+        const singleAddress= document.querySelector('.address-inner .single-address-order');
+        const multipleAddress= document.querySelector('.address-inner .multiple-address-order');
+        if (!singleAddress || !multipleAddress) return;
+        
+        address_block_error_message.style.display = 'none';
+        const step = this.closest(".step");
+        const nextButton = step?.querySelector("button.next");
+        const singleInput = singleAddress.querySelector('input[name="single_address_quantity"]');
+        const textarea = singleAddress.querySelector('input[name="single_address_greeting"]');
+        const multipleInput = multipleAddress.querySelector('input[name="multiple_address_output"]');
+    
+        const toggleField = (field, required) => {
+          if (!field) return;
+          field.style.border = "";
+          field.toggleAttribute("required", required);
+          const errorMessage = field.nextElementSibling;
+          if (errorMessage?.classList.contains("error-message")) {
+            errorMessage.innerHTML = "";
+          }
+        };
+    
+        const isSingle = this.value === "single_address";
+        singleAddress.style.display = isSingle ? "grid" : "none";
+        multipleAddress.style.display = isSingle ? "none" : "grid";
+    
+        if (isSingle) {
+          nextButton?.setAttribute("value", "single_address");
+        } else {
+          nextButton?.removeAttribute("value");
+        }
+    
+        toggleField(singleInput, isSingle);
+        toggleField(textarea, isSingle);
+        toggleField(multipleInput, !isSingle);
       });
     });
 
@@ -965,60 +1018,8 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
-    document
-      .querySelectorAll('input[name="delivery_preference"]')
-      .forEach(function (radio) {
-        radio.addEventListener("click", function () {
-          
-          if (!singleAddress || !multipleAddress) return;
-          const singleInput = singleAddress.querySelector(
-            'input[name="single_address_quantity"]'
-          );
-          const multipleInput = multipleAddress.querySelector(
-            'select[name="groups"]'
-          );
-          if (this.value === "single_address") {
-            this.closest(".step")
-              .querySelector("button.next")
-              .setAttribute("value", "single_address");
-            singleAddress.style.display = "block";
-            multipleAddress.style.display = "none";
-            if (multipleInput) {
-              multipleInput.style.border = "";
-              const errorMessage = multipleInput.nextElementSibling;
-              if (
-                errorMessage &&
-                errorMessage.classList.contains("error-message")
-              ) {
-                errorMessage.innerHTML = "";
-              }
-              multipleInput.removeAttribute("required");
-            }
-            if (singleInput) singleInput.setAttribute("required", "required");
-          }
-          if (this.value === "multiple_address") {
-            this.closest(".step")
-              .querySelector("button.next")
-              .removeAttribute("value");
-            singleAddress.style.display = "none";
-            multipleAddress.style.display = "block";
-            if (singleInput) {
-              singleInput.style.border = "";
-              const errorMessage = singleInput.nextElementSibling;
-              if (
-                errorMessage &&
-                errorMessage.classList.contains("error-message")
-              ) {
-                errorMessage.innerHTML = "";
-              }
-              singleInput.removeAttribute("required");
-            }
-            if (multipleInput)
-              multipleInput.setAttribute("required", "required");
-          }
-        });
-      });
-
+ 
+    
     document.addEventListener("click", function (event) {
       if (event.target.classList.contains("submit_csv_file")) {
         event.preventDefault();

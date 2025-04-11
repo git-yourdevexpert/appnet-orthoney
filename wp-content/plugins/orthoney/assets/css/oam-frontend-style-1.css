@@ -65,3 +65,13 @@
       transform: rotate(360deg);
     }
   } */
+
+  .multiple-address-order #multiple-address-output{ 
+    order:1;
+  }
+  .multiple-address-order .multiple-address-grid{ 
+    order:2;
+  }
+  .multiple-address-order .error-message{ 
+    order:3;
+  }
