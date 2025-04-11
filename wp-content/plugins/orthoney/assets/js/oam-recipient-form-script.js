@@ -293,6 +293,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
               } else {
                 console.log("3");
+                process_group_popup();
                 currentStep = Math.max(currentStep, steps.length - 1);
               }
               if (
@@ -301,8 +302,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 uploadTypeOutput.value !== "select-group" &&
                 (uploadTypeOutput.value !== "add-manually" || deliveryPreference.value !== "single_address")
               ) {
+                process_group_popup();
                 console.log("33");
-                
                 if (uploadTypeOutput.value === "upload-csv") {
                   showStep(currentStep);
                 }else{
@@ -314,7 +315,7 @@ document.addEventListener("DOMContentLoaded", function () {
           } else {
             console.log("4");
             if (!deliveryPreference || deliveryPreference.value === '') {
-              Swal.close();
+              
               address_block_error_message.style.display = 'block';
             }else{
               if (currentStep !== 1) {
@@ -340,6 +341,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           
           }
+          process_group_popup();
           showStep(currentStep);
           processDataSaveAjax(pid?.value || "0", currentStep);
         }
@@ -395,7 +397,11 @@ document.addEventListener("DOMContentLoaded", function () {
           const groups_wrapper = document.querySelector(
             ".multiple-address-order .groups-wrapper"
           );
+          const multiple_address_output = document.querySelector(
+            ".multiple-address-order #multiple-address-output"
+          );
           const groups_select = groups_wrapper.querySelector("select");
+          multiple_address_output.value = this.value;
           if (this.value == "select-group") {
             groups_wrapper.style.display = "block";
             groups_select.setAttribute("required", "required");
