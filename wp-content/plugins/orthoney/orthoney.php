@@ -11,6 +11,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+require_once 'libs/dompdf/autoload.inc.php';
 
 // Ensure WooCommerce is active before loading the plugin
 if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
@@ -117,6 +118,8 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
         return $url;
     }
 }
+
+
 /**
  * Affiliate Verification Start
  * 

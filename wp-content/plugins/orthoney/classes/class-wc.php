@@ -5,6 +5,9 @@ if (!defined('ABSPATH')) {
     exit;
 }
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+
 
 class OAM_WC_Customizer {
     /**
@@ -42,8 +45,168 @@ class OAM_WC_Customizer {
         // WC thank you page template changes hooks
         add_filter( 'woocommerce_thankyou_order_received_text', array($this, 'custom_thankyou_order_received_text'), 10, 2 );
         add_action('woocommerce_thankyou', array($this, 'add_labels_to_order_overview'), 20);
+        add_filter('woocommerce_email_attachments', array($this, 'attach_pdf_order_email'), 10, 3);
 
     }
+
+    public function attach_pdf_order_email($attachments, $email_id, $order) {
+        if ($email_id === 'customer_processing_order') { // Target "Processing Order" email
+            $upload_dir = wp_upload_dir();
+            
+            $pdf_path = $upload_dir['basedir'] . '/order-' . $order->get_id() . '.pdf';
+                
+            // Generate PDF of the order email
+            if (method_exists($this, 'generate_pdf_from_order_email')) {
+                $this->generate_pdf_from_order_email($order, $pdf_path);
+            } else {
+                error_log('Method generate_pdf_from_order_email does not exist.');
+            }
+    
+            // Attach PDF
+            if (file_exists($pdf_path)) {
+                $attachments[] = $pdf_path;
+            }
+        }
+    
+        return $attachments;
+    }
+    
+    public function generate_pdf_from_order_email($order, $pdf_path) {
+        if (!class_exists('Dompdf\Dompdf')) {
+            require_once plugin_dir_path(__DIR__) . 'vendor/autoload.php';
+        }
+    
+        if (!class_exists('Dompdf\Dompdf')) {
+            error_log('Dompdf not found.');
+            return;
+        }
+    
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+        ob_start();
+
+        
+        global $wpdb;
+        $total_honey_jars = 0;
+        $taxable_donation = get_field('ort_taxable_donation', 'option');
+        $order_id = intval($order->get_order_number());
+        $order_process_table = OAM_Helper::$order_process_table;
+        $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
+        
+        // Fetch order data
+        $result = $wpdb->get_row($wpdb->prepare(
+            "SELECT data FROM {$order_process_table} WHERE order_id = %d",
+            $order_id
+        ));
+        $json_data = $result->data;
+        $decoded_data = json_decode($json_data, true);
+        $affiliate = !empty($decoded_data['affiliate_select']) ? $decoded_data['affiliate_select'] : 'Orthoney';
+        
+        // Fetch the token
+        $token = $wpdb->get_var($wpdb->prepare(
+            "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d",
+            $affiliate
+        ));
+
+        $plugin_path = plugin_dir_path(__DIR__); // Get plugin root directory
+        $file_path = $plugin_path . 'templates/woocommerce/emails/email-styles.php';
+        $css = file_get_contents($file_path);
+
+        foreach ($order->get_items() as $item_id => $item) { 
+            $total_honey_jars += $item->get_quantity();
+        }
+
+        echo '<html>';
+            echo '<head>
+                <style>
+                    body { font-family: Arial, sans-serif; background-color: #f7f7f7; color: #515151; margin: 0; padding: 0; }
+                    .email-container { width: 600px; background: #ffffff; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+                    h1 { color: #333; text-align: center; }
+                    .order-summary { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    .order-summary th, .order-summary td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+                    .order-summary th { background: #eee; }
+                    .footer { text-align: center; font-size: 12px; color: #777; margin-top: 20px; }
+                </style>
+            </head>';
+            echo '<body>';
+                echo '<div class="pdf-heading" style="background-color: #491571; text-align:left; color: #ffffff;">';
+                    echo '<h1>Thank you for your order</h1>';
+                echo '</div>';
+                echo '<div class="email-container">';
+                    echo '<p>Thank you for your gift of $'.$order->get_total().' to '.$order->get_billing_company().'. Your Honey From The Heart gift benefits '.$order->get_billing_company().', a non-profit organization, and ORT America, a 501(c)(3) organization. For federal income tax purposes, your charitable deduction is limited to the purchase price of the honey less its fair market value. For purposes of determining the value of goods provided, you should use $'.$taxable_donation.' per jar so your charitable contribution is '.'$'.number_format(($order->get_subtotal()) - ($total_honey_jars * $taxable_donation), 2).'.</p>';
+                    echo '<p>Your order has been received and is now being processed. Your order details are shown below for your reference:</p>';
+                    echo '<h2 style="color:#491571;">Order #'.$order->get_order_number().'</h2>';
+                    // Ensure the order items table has a fixed width
+                    echo '<table class="order-summary" style="width:100%; border-collapse:collapse; border: 1px solid black;">';
+                        echo '<thead>
+                                <tr>
+                                    <th style="width:50%; border: 1px solid black; color:black;">Recipient</th>
+                                    <th style="width:25%; border: 1px solid black; color:black;">Quantity</th>
+                                    <th style="width:25%; border: 1px solid black; color:black;">Price</th>
+                                </tr>
+                            </thead>';
+                        echo '<tbody>';
+                        echo '<tr>
+                                <td style="border:1px solid black; padding: 10px;">
+                                    <strong>' . $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() . '</strong><br>
+                                    ' . $order->get_billing_address_1() . ' ' . $order->get_billing_address_2() . '<br>
+                                    ' . $order->get_billing_city() . ', ' . $order->get_billing_state() . ', ' . $order->get_billing_country() . '<br>
+                                    ' . $order->get_billing_postcode() . '
+                                </td>
+                                <td style="border:1px solid black; text-align:center; padding: 10px;">' . $total_honey_jars . '</td>
+                                <td style="border:1px solid black; padding: 10px;">' . wc_price($order->get_subtotal()) . '</td>
+                            </tr>';
+                        
+                        echo '</tbody>';
+                    echo '</table>';
+                    echo '<table class="order-summary" style="width:100%; border-collapse:collapse; border: 1px solid black;">';
+                        echo '<tbody>';
+                            if ( @$totals = $order->get_order_item_totals() ) {
+                                $totals['shipping']['value'] = "$".number_format((int) preg_replace('/\D/', '', @$totals['shipping']['value']), 2);
+                                $i = 0;
+                                foreach ( $totals as $total ) {
+                                    $i++;
+                                    ?><tr>
+                                        <th scope="row" colspan="2" style="text-align:left; border: 1px solid #eee; <?php if ( $i == 1 ) echo 'border-top-width: 4px;'; ?>"><?php echo $total['label']; ?></th>
+                                        <td style="text-align:left; border: 1px solid #eee; <?php if ( $i == 1 ) echo 'border-top-width: 4px;'; ?>"><?php if($i==2) { ?>$<?php echo number_format(WC()->cart->shipping_total, 2);}else { echo $total['value']; } ?></td>
+                                    </tr><?php
+                                }
+                            }
+                        
+                        echo '</tbody>';
+                    echo '</table>';
+                    echo '<p>Distributor Code: ' . (($token != '') ? $token : $affiliate) . '</p>';
+                    echo '<h3 style="color:#491571;">Billing Address</h3>';
+
+                    echo '<p>' . $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() . '
+                    <br>' . $order->get_billing_address_1() . ' ' . $order->get_billing_address_2() . '
+                    <br>' . $order->get_billing_city() . ' ' . $order->get_billing_state() . ', '. $order->get_billing_country() . $order->get_billing_postcode() .'
+                    <br>' . $order->get_billing_phone() . '
+                    <br><a href="mailto:' . $order->get_billing_email() . '">' . $order->get_billing_email() . '</a></p>';
+                echo '</div>';
+            echo '</body>';
+        echo '</html>';
+        
+        $html = ob_get_clean();
+    
+        if (empty($html)) {
+            error_log('Empty PDF content.');
+            return;
+        }
+    
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+    
+        try {
+            $dompdf->render();
+            file_put_contents($pdf_path, $dompdf->output());
+            error_log('PDF generated successfully: ' . $pdf_path);
+        } catch (Exception $e) {
+            error_log('Dompdf Error: ' . $e->getMessage());
+        }
+    }   
 
     /**
      * Disable Email for Sub Order 
