@@ -130,16 +130,16 @@ class OAM_WC_CRON_Suborder {
         $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
         $group_recipient_table = OAM_Helper::$group_recipient_table;
 
-        if (!$order_id) {
-            OAM_COMMON_Custom::sub_order_error_log("Invalid Order ID in process_sub_order_creation");
-            return;
-        }
+        // if (!$order_id) {
+        //     OAM_COMMON_Custom::sub_order_error_log("Invalid Order ID in process_sub_order_creation");
+        //     return;
+        // }
 
         $main_order = wc_get_order($order_id);
-        if (!$main_order) {
-            OAM_COMMON_Custom::sub_order_error_log("Main order not found for Order ID: $order_id");
-            return;
-        }
+        // if (!$main_order) {
+        //     OAM_COMMON_Custom::sub_order_error_log("Main order not found for Order ID: $order_id");
+        //     return;
+        // }
 
         $customer_id = $main_order->get_customer_id();
         $billing_data = [

@@ -110,14 +110,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (multiStepForm) {
 
-    document.querySelectorAll("table tbody").forEach((table) => {
-      const rows = table.querySelectorAll("tr");
-      rows.forEach((row, index) => {
-        if (index >= 10) {
-          row.classList.add("hide");
-        }
-      });
-    });
+    // document.querySelectorAll("table tbody").forEach((table) => {
+    //   const rows = table.querySelectorAll("tr");
+    //   rows.forEach((row, index) => {
+    //     if (index >= 10) {
+    //       row.classList.add("hide");
+    //     }
+    //   });
+    // });
 
     document.querySelectorAll("button.view-all-recipients").forEach((button) => {
         button.addEventListener("click", function (event) {
@@ -1575,5 +1575,171 @@ function addRecipientManuallyPopup(reload) {
         }, 1500);
       }
     }
+    
+    // duplicateCSVData
+    // jQuery(document).ready(function ($) {
+    //   const tableEl = $('#duplicateCSVData table');
+    
+    //   // Remove any rows with .group-header to avoid column mismatch errors
+    //   tableEl.find('tbody tr.group-header').remove();
+    
+    //   // Initialize DataTable
+    //   tableEl.DataTable({
+    //     paging: true,
+    //     info: true,
+    //     searching: true,
+    //     responsive: true,
+    //     deferRender: false,
+    //     lengthChange: false,
+    //     // Optional: Improve visuals or behavior
+    //     columnDefs: [
+    //       { targets: '_all', className: 'dt-center' }
+    //     ]
+    //   });
+    // });
+    jQuery(document).ready(function ($) {
+      const tableEl = $('#duplicateCSVData table');
+      const tbody = tableEl.find('tbody');
+    
+      // Save group header rows and remove from DOM before DataTable init
+      const groupHeaderRows = tbody.find('tr.group-header').detach();
+    
+      // Initialize DataTable
+      const dataTable = tableEl.DataTable({
+        paging: false,
+        info: true,
+        searching: true,
+        responsive: true,
+        deferRender: false,
+        lengthChange: false
+      });
+    
+      // Reinsert group-header rows and manage pagination on every redraw
+      dataTable.on('draw', function () {
+        // Remove previous group-header rows
+        tbody.find('tr.group-header').remove();
+    
+        // Track which groups were added
+        const visibleRows = dataTable.rows({ search: 'applied' }).nodes();
+        const addedGroups = {};
+    
+        // Reinsert headers for visible groups
+        $(visibleRows).each(function () {
+          const groupId = $(this).data('group');
+          if (groupId && !addedGroups[groupId]) {
+            const headerRow = groupHeaderRows.filter(`[data-group="${groupId}"]`);
+            if (headerRow.length) {
+              $(this).before(headerRow.clone());
+              addedGroups[groupId] = true;
+            }
+          }
+        });
+    
+        // Hide pagination if only one page
+        const pageInfo = dataTable.page.info();
+        const wrapper = $(tableEl).closest('.dataTables_wrapper');
+        const pagination = wrapper.find('.dataTables_paginate');
+        const infoText = wrapper.find('.dataTables_info');
+    
+        if (pageInfo.pages <= 1) {
+          pagination.hide();
+          infoText.hide();
+        } else {
+          pagination.show();
+          infoText.show();
+        }
+      });
+    
+      // Trigger initial draw to reinsert group-headers
+      dataTable.draw();
+    });
+    
+    
+    
+
+
+    ["failCSVData", "successCSVData", "newCSVData"].forEach((id) => {
+      const div = document.getElementById(id);
+      if (div && div.innerHTML.trim() !== "") {
+        const tableEl = div.querySelector("table");
+        if (tableEl && !jQuery(tableEl).hasClass('dataTable')) {
+          const $table = jQuery(tableEl);
+    
+          // Initialize DataTable
+          const dataTable = $table.DataTable({
+            paging: false,
+            info: true,
+            searching: true,
+            responsive: true,
+            deferRender: false,
+            lengthChange: false
+          });
+    
+          // Hide pagination & info if only 1 page
+          dataTable.on('draw', function () {
+            const pageInfo = dataTable.page.info();
+            const wrapper = $table.closest('.dataTables_wrapper');
+            const pagination = wrapper.find('.dataTables_paginate');
+            const infoText = wrapper.find('.dataTables_info');
+    
+            if (pageInfo.pages <= 1) {
+              pagination.hide();
+              infoText.hide();
+            } else {
+              pagination.show();
+              infoText.show();
+            }
+          });
+    
+          // Trigger initial check
+          dataTable.draw();
+        }
+      }
+    });
+    
+    
+    
+  }
+  if (step_nav.getAttribute("data-step") == 4) {
+    jQuery(document).ready(function ($) {
+    ["verifyRecord", "unverifiedRecord"].forEach((id) => {
+      const div = document.getElementById(id);
+      if (div && div.innerHTML.trim() !== "") {
+        const tableEl = div.querySelector("table");
+        if (tableEl && !jQuery(tableEl).hasClass('dataTable')) {
+          const $table = jQuery(tableEl);
+    
+          // Initialize DataTable
+          const dataTable = $table.DataTable({
+            paging: false,
+            info: true,
+            searching: true,
+            responsive: true,
+            deferRender: false,
+            lengthChange: false
+          });
+    
+          // Hide pagination & info if only 1 page
+          dataTable.on('draw', function () {
+            const pageInfo = dataTable.page.info();
+            const wrapper = $table.closest('.dataTables_wrapper');
+            const pagination = wrapper.find('.dataTables_paginate');
+            const infoText = wrapper.find('.dataTables_info');
+    
+            if (pageInfo.pages <= 1) {
+              pagination.hide();
+              infoText.hide();
+            } else {
+              pagination.show();
+              infoText.show();
+            }
+          });
+    
+          // Trigger initial check
+          dataTable.draw();
+        }
+      }
+    });
+    });
   }
 }

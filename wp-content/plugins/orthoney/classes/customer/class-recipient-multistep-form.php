@@ -441,8 +441,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             </div>
                             <?php if ($result['data']['totalCount'] != 0) : ?>
                                 <p class="num-count">Number of Recipients: <span><?php echo $result['data']['totalCount']; ?></span></p>
-                                <?php endif; ?>
-                            </div>
+                            <?php endif; ?>
+                            
+                        </div>
+                        <div>
                             <div>
                                 <button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button><br>
                                 <!-- <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove recipient for the already placed order">Remove recipient</button> -->
@@ -485,7 +487,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             if (!empty($result['data'][$countKey])) {
                                 $viewAllBtn = '';
                                 if ($key != 'duplicate' && $result['data'][$countKey] > 10) {
-                                    $viewAllBtn = '<button class="view-all-recipients btn-underline" data-status="0">View All Recipients</button>';
+                                    // $viewAllBtn = '<button class="view-all-recipients btn-underline" data-status="0">View All Recipients</button>';
                                 }
                                 echo '<div id="' . $key . 'CSVData" class="table-data">' . $result['data'][$dataKey] . $viewAllBtn . '</div>';
                             }
@@ -540,7 +542,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         
         echo '<div class="step" id="step5">';
         if (!empty($data->delivery_preference)) {
-            if($currentStep == 4 OR $data->delivery_preference == 'single_address' OR $data->delivery_preference == 'multiple_address'){
+            if($currentStep == 4 && ($data->delivery_preference == 'single_address' OR $data->delivery_preference == 'multiple_address')){
                 if ($data->delivery_preference == 'single_address') {
                     self::single_address_form($currentStep);
                 }
@@ -591,7 +593,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
 
     private static function render_recipient_block($title, $block_id, $record_id, $recordCount, $totalCount, $data){
         if ($recordCount > 0) {
-            $viewAllBtn = $recordCount > 10 ? '<button class="view-all-recipients btn-underline" data-status="0">View All Recipients</button>' : '';
+            $viewAllBtn = '';            
+            // $viewAllBtn = $recordCount > 10 ? '<button class="view-all-recipients btn-underline" data-status="0">View All Recipients</button>' : '';
             echo '<div class="' . $block_id . '" id="' . $block_id . '" data-count="'.$recordCount.'">';
             echo '<div class="block-row">';
             echo '<div class="block-inner"><h3 class="title">' . $title . '</h3>';

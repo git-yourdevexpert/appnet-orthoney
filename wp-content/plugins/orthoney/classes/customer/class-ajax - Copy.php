@@ -1402,8 +1402,15 @@ class OAM_Ajax{
         $state = !empty($stepData['single_order_state']) ? $stepData['single_order_state'] : '';
         $country = !empty($stepData['single_order_country']) ? $stepData['single_order_country'] : 'US';
         $zipcode = !empty($stepData['single_order_zipcode']) ? $stepData['single_order_zipcode'] : '';
-        $quantity = !empty($stepData['single_address_quantity']) ? $stepData['single_address_quantity'] : '';
+        $quantity = !empty($stepData['single_address_quantity']) ? $stepData['single_address_quantity'] : 1;
         $greeting = !empty($stepData['single_address_greeting']) ? $stepData['single_address_greeting'] : '';
+
+        update_user_meta($user_id, 'shipping_address_1', $delivery_line_1);
+        update_user_meta($user_id, 'shipping_address_2', $delivery_line_2);
+        update_user_meta($user_id, 'shipping_city', $city);
+        update_user_meta($user_id, 'shipping_state', $state);
+        update_user_meta($user_id, 'shipping_country', $country);
+        update_user_meta($user_id, 'shipping_postcode', $zipcode);
 
         if($status == 0){
             $validate_address_result =  OAM_Helper::validate_address($delivery_line_1, $delivery_line_2, $city, $state, $zipcode);
@@ -1415,13 +1422,6 @@ class OAM_Ajax{
                 }
             }
         }
-
-        update_user_meta($user_id, 'shipping_address_1', $delivery_line_1);
-        update_user_meta($user_id, 'shipping_address_2', $delivery_line_2);
-        update_user_meta($user_id, 'shipping_city', $city);
-        update_user_meta($user_id, 'shipping_state', $state);
-        update_user_meta($user_id, 'shipping_country', $country);
-        update_user_meta($user_id, 'shipping_postcode', $zipcode);
 
         //clear the cart
         if (class_exists('WC_Cart')) {
@@ -1769,7 +1769,7 @@ class OAM_Ajax{
                     $duplicateHtml .= '<div class="heading-title"><div><h5 class="table-title">Duplicate Recipient</h5> </div>'.$bulkMargeButtonHtml.'</div>';
                     
                     foreach ($duplicateGroups as $groupIndex => $group) {
-                        $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="99'.($groupIndex + 1).'"><td colspan="12"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
+                        $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="99'.($groupIndex + 1).'"><td colspan="6"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
                         $duplicateHtml .= OAM_Helper::get_table_recipient_content($group , $customGreeting, 0 , '99'.$groupIndex + 1);
                         
                     }
@@ -2507,9 +2507,6 @@ class OAM_Ajax{
                  }else{
                     echo '<tr><td colspan="3" class="no-available-msg">No organization found!</td></tr>';
                 } 
-                if($html == 0){
-                    echo '<tr><td colspan="3" class="no-available-msg">No organization found!</td></tr>';
-                }
                 ?>
             </tbody>
         </table>

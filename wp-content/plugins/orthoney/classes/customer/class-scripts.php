@@ -45,6 +45,7 @@ class OAM_Scripts
         }
     
         // Plugin-Specific Styles
+        wp_enqueue_style('user-registration-general', WP_PLUGIN_URL.'/user-registration-pro/assets/css/user-registration.css');
         wp_enqueue_style('oam-frontend-style', $plugin_url . 'css/oam-frontend-style.css', [], time());
         wp_enqueue_style('oam-frontend-style-1', $plugin_url . 'css/oam-frontend-style-1.css', [], time());
     

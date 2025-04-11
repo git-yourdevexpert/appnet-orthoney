@@ -22,7 +22,7 @@ class OAM_COMMON_Custom {
         add_shortcode('customer_login_button', array($this, 'custom_login_button_shortcode'));
         add_filter('body_class', array($this, 'custom_body_class'));
 
-        add_filter('user_registration_reset_password_redirect', array($this, 'reset_password_redirection'), 10, 2);
+        add_filter( 'user_registration_reset_password_redirect', array($this, 'reset_password_redirection'), 10, 2);
         add_filter( 'user_registration_modify_field_validation_response',  array($this, 'custom_user_registration_email_exists_message'), 10, 2 );
 
     }

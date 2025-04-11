@@ -639,27 +639,26 @@ class OAM_Ajax{
     public function orthoney_insert_temp_recipient_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
-
-        
+    
         $recipient_table = OAM_Helper::$order_process_recipient_table;
         $order_process = OAM_Helper::$order_process_table;
         $recipient_dir = OAM_Helper::$process_recipients_csv_dir;
-        
+    
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/plugin.php';
-        
-        $chunk_size = 2;
+    
+        $chunk_size = 10;
         $current_chunk = isset($_POST['current_chunk']) ? intval($_POST['current_chunk']) : 0;
         $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) : 0;
         $process_id = isset($_POST['pid']) ? intval($_POST['pid']) : '';
         $process_name = (isset($_POST['csv_name']) && !empty($_POST['csv_name'])) ? sanitize_text_field($_POST['csv_name']) : 'Recipient List ' . $process_id;
-        
+    
         $check_process_status = OAM_COMMON_Custom::check_process_exist($process_name, $process_id);
-        
+    
         if ($check_process_status) {
             wp_send_json_error(['message' => 'The recipient list name already exists. Please enter a different name.']);
         }
-        // Retrieve existing CSV/XLSX file path if process exists
+    
         $csv_name_query = $wpdb->get_var($wpdb->prepare("SELECT csv_name FROM {$order_process} WHERE id = %d LIMIT 1", $process_id));
         $file_path = $csv_name_query ? $recipient_dir . '/' . $csv_name_query : '';
     
@@ -669,44 +668,39 @@ class OAM_Ajax{
             }
             $wpdb->delete($recipient_table, ['pid' => $process_id], ['%d']);
         }
-        
-        // File upload processing for the first chunk
+    
+        // File upload handling (first chunk only)
         if ($current_chunk == 0 && isset($_FILES['csv_file']) && $_FILES['csv_file']['error'] === UPLOAD_ERR_OK) {
             if (!file_exists($recipient_dir)) {
                 wp_mkdir_p($recipient_dir);
             }
-
-             // Upload to /upload_csv/ first
-             $result = OAM_Helper::validate_and_upload_csv($_FILES['csv_file'], $current_chunk, $process_id, 'order_process');
-            
-             
-             if (!$result['success']) {
-                 wp_send_json_error(['message' => $result['message']]);
-                 wp_die();
-             }
-          
-            
+    
+            $result = OAM_Helper::validate_and_upload_csv($_FILES['csv_file'], $current_chunk, $process_id, 'order_process');
+    
+            if (!$result['success']) {
+                wp_send_json_error(['message' => $result['message']]);
+                wp_die();
+            }
+    
             $file_ext = pathinfo($_FILES['csv_file']['name'], PATHINFO_EXTENSION);
             $unique_file_name = 'recipient_' . $process_id . '.' . $file_ext;
             $recipient_file_path = trailingslashit($recipient_dir) . $unique_file_name;
     
-            // Check if the file exists, and delete it before saving the new one
             if (file_exists($recipient_file_path)) {
                 unlink($recipient_file_path);
             }
-
+    
             if (!copy($result['file_path'], $recipient_file_path)) {
                 wp_send_json_error(['message' => 'Failed to move uploaded file.']);
                 wp_die();
             }
     
-            // Update database with the new file path
             $wpdb->update(
                 $order_process,
                 ['csv_name' => $unique_file_name, 'user_id' => get_current_user_id(), 'name' => $process_name],
                 ['id' => $process_id]
             );
-            
+    
             $file_path = $recipient_file_path;
         }
     
@@ -716,86 +710,87 @@ class OAM_Ajax{
         }
     
         $file_ext = pathinfo($file_path, PATHINFO_EXTENSION);
-        
+        $header = [];
+        $rows = [];
+        $handle = null;
+    
         if ($file_ext === 'csv') {
             $handle = fopen($file_path, 'r');
+            if (!$handle) {
+                wp_send_json_error(['message' => 'Unable to open CSV file.']);
+                wp_die();
+            }
+    
             $header = fgetcsv($handle);
-            fclose($handle);
+            $start_line = $current_chunk * $chunk_size;
+            for ($i = 0; $i < $start_line; $i++) {
+                fgetcsv($handle); // skip previous lines
+            }
         } elseif ($file_ext === 'xlsx') {
-            require_once OH_PLUGIN_DIR_PATH. 'libs/SimpleXLSX/SimpleXLSX.php';
-        
+            require_once OH_PLUGIN_DIR_PATH . 'libs/SimpleXLSX/SimpleXLSX.php';
             $xlsx = SimpleXLSX::parse($file_path);
             if (!$xlsx) {
                 wp_send_json_error(['message' => 'Invalid XLSX file: ' . SimpleXLSX::parseError()]);
                 wp_die();
             }
-            $header = $xlsx->rows()[0];
+            $rows = $xlsx->rows();
+            $header = $rows[0];
         } elseif ($file_ext === 'xls') {
-            require_once OH_PLUGIN_DIR_PATH. 'libs/SimpleXLS/SimpleXLS.php';
-        
+            require_once OH_PLUGIN_DIR_PATH . 'libs/SimpleXLS/SimpleXLS.php';
             $xls = SimpleXLS::parse($file_path);
             if (!$xls) {
                 wp_send_json_error(['message' => 'Invalid XLS file: ' . SimpleXLS::parseError()]);
                 wp_die();
             }
-            $header = $xls->rows()[0];
+            $rows = $xls->rows();
+            $header = $rows[0];
         } else {
             wp_send_json_error(['message' => 'Unsupported file type. Only CSV, XLSX, and XLS are allowed.']);
             wp_die();
         }
-        
     
         $required_columns = OH_REQUIRED_COLUMNS;
-        
         $required_columns_lower = array_map('strtolower', $required_columns);
         $header_lower = array_map('strtolower', $header);
-        
-        $missing_columns = array_diff($required_columns_lower, $header_lower);
     
+        $missing_columns = array_diff($required_columns_lower, $header_lower);
         if (!empty($missing_columns)) {
             wp_send_json_error(['message' => 'Missing required columns: ' . implode(', ', $missing_columns)]);
             wp_die();
         }
-        
-        $total_rows = 0;
+    
+        // Count total rows
         if ($file_ext === 'csv') {
             $lines = file($file_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             $total_rows = $lines ? count($lines) - 1 : 0;
         } elseif ($file_ext === 'xlsx') {
-            $xlsx = SimpleXLSX::parse($file_path);
-            $total_rows = count($xlsx->rows()) - 1;
+            $total_rows = count($rows) - 1;
         } elseif ($file_ext === 'xls') {
-            $xls = SimpleXLS::parse($file_path); 
-            $total_rows = count($xls->rows()) - 1;
-        } 
+            $total_rows = count($rows) - 1;
+        }
     
         $wpdb->query('START TRANSACTION');
         try {
             $processed_rows = 0;
             $error_rows = [];
-            $rows = [];
-            
-            if($file_ext === 'csv'){
-                $rows = [];
-            } elseif ($file_ext === 'xlsx') {
-                $rows = $xlsx->rows();
-            } elseif ($file_ext === 'xls') {
-                $rows = $xls->rows();
-            }
-
-            
+    
             for ($i = 0; $i < $chunk_size; $i++) {
-                $row = ($file_ext === 'csv') ? fgetcsv($handle) : ($rows[$current_chunk * $chunk_size + $i + 1] ?? false);
+                if ($file_ext === 'csv') {
+                    $row = fgetcsv($handle);
+                } else {
+                    $row = $rows[$current_chunk * $chunk_size + $i + 1] ?? false;
+                }
+    
                 if ($row === false) break;
-                
+    
                 if (count($row) !== count($header_lower)) {
                     $error_rows[] = $current_chunk * $chunk_size + $processed_rows;
                     continue;
                 }
-                
+    
                 $data = array_combine($header_lower, $row);
                 $failure_reasons = [];
-                
+    
                 $required_fields = [
                     'full name' => 'Full name',
                     'Mailing Address' => 'Mailing Address',
@@ -803,18 +798,15 @@ class OAM_Ajax{
                     'state' => 'State',
                     'zipcode' => 'Zipcode',
                     'quantity' => 'quantity',
-                    
                 ];
-                
+    
                 foreach ($required_fields as $key => $field) {
-                    
                     if ($key !== 'quantity' && empty($data[strtolower($key)])) {
                         $failure_reasons[] = "Missing {$field}";
                     } elseif ($key === 'quantity' && (!is_numeric($data[strtolower($key)]) || $data[strtolower($key)] <= 0)) {
-                        
+                        $failure_reasons[] = "Invalid Quantity";
                     }
                 }
-
     
                 $insert_data = [
                     'user_id'          => get_current_user_id(),
@@ -833,41 +825,43 @@ class OAM_Ajax{
                     'new'              => 0,
                     'reasons'          => empty($failure_reasons) ? null : json_encode($failure_reasons),
                 ];
+    
                 $wpdb->insert($recipient_table, $insert_data);
                 $processed_rows++;
             }
     
             $wpdb->query('COMMIT');
-            
-            $order_process_table = OAM_Helper::$order_process_table;
-            
-            $currentStep++;
-
-            $data = [
-                'step'    => sanitize_text_field($currentStep),
-            ];
-        
-            $result = $wpdb->update(
-                $order_process_table,
-                $data,
+    
+            if ($file_ext === 'csv' && isset($handle) && is_resource($handle)) {
+                fclose($handle);
+            }
+    
+            $wpdb->update(
+                $order_process,
+                ['step' => sanitize_text_field(++$currentStep)],
                 ['id' => $process_id]
             );
-
+    
             wp_send_json_success([
-                'message' => "Chunk processed successfully", 
-                'processed_rows' => $processed_rows, 
-                'error_rows' => $error_rows, 
-                'next_chunk' => $current_chunk + 1, 
-                'total_rows' => $total_rows, 
-                'progress' => min(100, round((($current_chunk + 1) * $chunk_size) / $total_rows * 100)), 
-                'finished' => (($current_chunk + 1) * $chunk_size) >= $total_rows, 'pid' => $process_id
+                'message' => "Chunk processed successfully",
+                'processed_rows' => $processed_rows,
+                'error_rows' => $error_rows,
+                'next_chunk' => $current_chunk + 1,
+                'total_rows' => $total_rows,
+                'progress' => min(100, round((($current_chunk + 1) * $chunk_size) / $total_rows * 100)),
+                'finished' => (($current_chunk + 1) * $chunk_size) >= $total_rows,
+                'pid' => $process_id
             ]);
-
+    
         } catch (Exception $e) {
             $wpdb->query('ROLLBACK');
+            if ($file_ext === 'csv' && isset($handle) && is_resource($handle)) {
+                fclose($handle);
+            }
             wp_send_json_error(['message' => $e->getMessage()]);
         }
     }
+    
     
     /**
 	 * An AJAX handler function that saves and verifies the address for a single-address order before redirecting to the checkout page.
@@ -1294,7 +1288,7 @@ class OAM_Ajax{
                     $duplicateHtml .= '<div class="heading-title"><div><h5 class="table-title">Duplicate Recipient</h5> </div>'.$bulkMargeButtonHtml.'</div>';
                     
                     foreach ($duplicateGroups as $groupIndex => $group) {
-                        $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="99'.($groupIndex + 1).'"><td colspan="12"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
+                        $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="99'.($groupIndex + 1).'"><td colspan="6"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
                         $duplicateHtml .= OAM_Helper::get_table_recipient_content($group , $customGreeting, 0 , '99'.$groupIndex + 1);
                         
                     }
