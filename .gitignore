@@ -2,7 +2,6 @@
 
 **/.history/*/**
 **/node_modules/**/*
-**/vendor/**/*
 /bower_components/**/*
 **/assets/img/raw/**/*
 /buildtheme/**/*
