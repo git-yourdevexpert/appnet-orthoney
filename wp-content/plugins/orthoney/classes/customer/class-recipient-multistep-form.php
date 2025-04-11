@@ -223,6 +223,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         data-error-message="Please select a delivery preference.">
                                     <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/destination.png" alt="" class="address-icon">Ship to Multiple Addresses</span>
                                 </label>
+                                <span class="error-message" style="display:none">Please choose your shipped type.</span>
                             </div>
                             <div class="address-inner">
                                 <div class="single-address-order greeting-box"
@@ -250,9 +251,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         <div class="w-separator size_medium"></div>
                                     </div>
                                 </div>
-                                <div class="multiple-address-order" style="<?php echo $delivery_preference == 'multiple_address' ? '' : 'display:none' ?>">
+                                <div class="multiple-address-order" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> style="<?php echo $delivery_preference == 'multiple_address' ? '' : 'display:none' ?>" >
                                     <input type="hidden" id="multiple-address-output" name="multiple_address_output"
-                                        value="<?php echo $multiple_address_output ?>">
+                                        value="<?php echo $multiple_address_output ?>" data-error-message="Please choose an option to upload the recipient list.">
+                                        <span class="error-message"></span>
                                         <div class="multiple-address-grid">
                                         <?php 
                                     $user = self::$current_user_id;
@@ -260,7 +262,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     if(!empty($getGroupList)){
                                     ?>
                                         <label>
-                                            <input type="radio" name="upload_type_output" <?php echo $upload_type_output == 'select-group' ? 'checked' : '' ?> value="select-group" data-error-message="Please select a delivery preference.">
+                                            <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'select-group' ? 'checked' : '' ?> value="select-group" data-error-message="Please select a delivery preference.">
                                             <span>
                                                 <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/book.png" alt="" class="address-icon">
                                                 Choose from Existing Recipient List
@@ -287,18 +289,18 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     </div>
                                     <?php } ?>
                                         <label>
-                                            <input type="radio" name="upload_type_output" <?php echo $upload_type_output == 'upload-csv' ? 'checked' : '' ?> value="upload-csv" data-error-message="Please select a delivery preference.">
+                                            <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?>  <?php echo $upload_type_output == 'upload-csv' ? 'checked' : '' ?> value="upload-csv" data-error-message="Please select a delivery preference.">
                                             <span>
                                                 <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/file.png" alt="" class="address-icon">
                                                 Upload New Recipient List
                                             </span>
                                         </label>
                                         <label>
-                                            <input type="radio" name="upload_type_output" <?php echo $upload_type_output == 'add-manually' ? 'checked' : '' ?> value="add-manually" data-error-message="Please select a delivery preference."> <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/contract.png" alt="" class="address-icon">
+                                            <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'add-manually' ? 'checked' : '' ?> value="add-manually" data-error-message="Please select a delivery preference."> <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/contract.png" alt="" class="address-icon">
                                                 Manually Add Recipient Addresses
                                             </span></label>
+                                        </div>
                                     </div>
-                                </div>
                             </div>
                         </div>
                     </div>
