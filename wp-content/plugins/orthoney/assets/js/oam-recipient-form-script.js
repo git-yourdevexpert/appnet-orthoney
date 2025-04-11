@@ -390,27 +390,33 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     document
-      .querySelectorAll('#multiStepForm input[name="upload_type_output"]')
-      .forEach((input) => {
-        input.addEventListener("click", function (event) {
-          // event.preventDefault();
-          const groups_wrapper = document.querySelector(
-            ".multiple-address-order .groups-wrapper"
-          );
-          const multiple_address_output = document.querySelector(
-            ".multiple-address-order #multiple-address-output"
-          );
+    .querySelectorAll('#multiStepForm input[name="upload_type_output"]')
+    .forEach((input) => {
+      input.addEventListener("click", function (event) {
+        // event.preventDefault();
+        const groups_wrapper = document.querySelector(
+          ".multiple-address-order .groups-wrapper"
+        );
+        const multiple_address_output = document.querySelector(
+          ".multiple-address-order #multiple-address-output"
+        );
+        if(groups_wrapper){
           const groups_select = groups_wrapper.querySelector("select");
-          multiple_address_output.value = this.value;
-          if (this.value == "select-group") {
-            groups_wrapper.style.display = "block";
+        }
+        multiple_address_output.value = this.value;
+        if (this.value == "select-group") {
+          groups_wrapper.style.display = "block";
+          if(groups_wrapper){
             groups_select.setAttribute("required", "required");
-          } else {
-            groups_wrapper.style.display = "none";
+          }
+        } else {
+          groups_wrapper.style.display = "none";
+          if(groups_wrapper){
             groups_select.removeAttribute("required");
           }
-        });
+        }
       });
+    });
 
       document
       .querySelectorAll("#checkout_proceed_with_addresses_button")
