@@ -3020,6 +3020,10 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 .incomplete-order-block #incomplete-order-table_filter {
   margin-bottom: 20px;
 }
+#viewAllRecipientsPopupCheckout .popup-show .table-wrapper{
+  max-height: 550px !important;
+  overflow-y: auto;
+}
 
 /* responsive */
 @media (min-width: 993px) {
