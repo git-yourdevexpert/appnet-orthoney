@@ -68,24 +68,15 @@ class OAM_Ajax{
 	 * @return JSON 
      * 
 	 */ 
-    public function add_items_to_cart($data, $product_id) {
-        global $wpdb;
-    
-        $order_process_table = OAM_Helper::$order_process_table;
-        if (!function_exists('WC')) {
-            die('WooCommerce is not loaded.');
-        }
-    
-        if (!class_exists('WC_Cart') || WC()->cart === null) {
+    public function add_items_to_cart($data, $product_id, $custom_price, $affiliate_id) {
+        if (!function_exists('WC') || !class_exists('WC_Cart') || WC()->cart === null) {
             return;
         }
     
-        WC()->cart->empty_cart();
-    
         foreach ($data as $customer) {
-            $recipient_id    = sanitize_text_field($customer['recipient_id']);
-            $process_id    = sanitize_text_field($customer['process_id']);
-            $order_type    = sanitize_text_field('multi-recipient-order');
+            $recipient_id = sanitize_text_field($customer['recipient_id']);
+            $process_id   = sanitize_text_field($customer['process_id']);
+            $order_type   = 'multi-recipient-order';
             $full_name    = sanitize_text_field($customer['full_name']);
             $company_name = sanitize_text_field($customer['company_name']);
             $address_1    = sanitize_text_field($customer['address_1']);
@@ -93,34 +84,14 @@ class OAM_Ajax{
             $city         = sanitize_text_field($customer['city']);
             $state        = sanitize_text_field($customer['state']);
             $zipcode      = sanitize_text_field($customer['zipcode']);
-            $greeting      = sanitize_text_field($customer['greeting']);
+            $greeting     = sanitize_text_field($customer['greeting']);
             $quantity     = (int) $customer['quantity'];
-            
-            $processQuery = $wpdb->prepare("
-                SELECT order_id, data
-                FROM {$order_process_table}
-                WHERE id = %d 
-                ",  $process_id);
-
-            $affiliate_id = 0;
-            $processResult = $wpdb->get_row($processQuery);
-
-            if(!empty($processResult)){
-                $order = wc_get_order( $processResult->order_id);
-                $affiliate_id = json_decode($processResult->data)->affiliate_select;
-            }
-
-            $product_id = OAM_COMMON_Custom::get_product_id();
-            $custom_price = OAM_COMMON_Custom::get_product_custom_price($product_id, $affiliate_id);
+            $unique_key   = uniqid('custom_', true);
     
-            // Unique key to ensure separate cart items
-            $unique_key = uniqid('custom_', true);
-
-            $full_address    = sanitize_text_field($customer['address_1']) . ' ' . sanitize_text_field($customer['address_2']). ' ' . sanitize_text_field($customer['city']). ' ' . sanitize_text_field($customer['state']) . ' ' . sanitize_text_field($customer['zipcode']) ;
+            $full_address = trim("{$address_1} {$address_2} {$city} {$state} {$zipcode}");
     
-            // Add product to cart with custom data
             WC()->cart->add_to_cart($product_id, $quantity, 0, [], [
-                'new_price'    => $custom_price, // Custom price
+                'new_price'    => $custom_price,
                 'process_id'   => $process_id,
                 'order_type'   => $order_type,
                 'recipient_id' => $recipient_id,
@@ -137,6 +108,7 @@ class OAM_Ajax{
             ]);
         }
     }
+    
     
     
     public function orthoney_save_group_recipient_to_order_process_handler() {
@@ -204,35 +176,31 @@ class OAM_Ajax{
     
         $product_id = OAM_COMMON_Custom::get_product_id();
     
-        $status       = isset($_POST['status']) ? $_POST['status'] : 1;
-        $pid          = isset($_POST['pid']) ? intval($_POST['pid']) : 1; 
-        $currentStep  = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
-        $recipientIds = isset($_POST['recipientAddressIds']) ? $_POST['recipientAddressIds'] : [];
-        $stepData     = $_POST ?? [];
-        $user_id      = get_current_user_id(); 
+        $status         = isset($_POST['status']) ? $_POST['status'] : 1;
+        $pid            = isset($_POST['pid']) ? intval($_POST['pid']) : 1;
+        $currentStep    = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
+        $recipientIds   = isset($_POST['recipientAddressIds']) ? $_POST['recipientAddressIds'] : [];
+        $stepData       = $_POST ?? [];
+        $user_id        = get_current_user_id();
+    
         $placeholders = implode(',', array_fill(0, count($recipientIds), '%d'));
-    
         $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
-        $order_process_table           = OAM_Helper::$order_process_table;
+        $order_process_table = OAM_Helper::$order_process_table;
     
-        $recipients = [];
+        $query_base = "
+            SELECT * FROM {$order_process_recipient_table} 
+            WHERE user_id = %d AND pid = %d AND visibility = 1 AND verified = 1
+        ";
+    
         if ($status == 1) {
-            $recipients = $wpdb->get_results(
-                $wpdb->prepare(
-                    "SELECT * FROM {$order_process_recipient_table} 
-                    WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d AND address_verified = %d AND id IN ($placeholders)",
-                    array_merge([$user_id, $pid, 1, 1, 1], $recipientIds)
-                )
-            );
-        } else {
-            $recipients = $wpdb->get_results(
-                $wpdb->prepare(
-                    "SELECT * FROM {$order_process_recipient_table} 
-                    WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d AND id IN ($placeholders)",
-                    array_merge([$user_id, $pid, 1, 1], $recipientIds)
-                )
-            );
+            $query_base .= " AND address_verified = 1";
         }
+    
+        $query_base .= " AND id IN ($placeholders)";
+    
+        $recipients = $wpdb->get_results(
+            $wpdb->prepare($query_base, array_merge([$user_id, $pid], $recipientIds))
+        );
     
         $address_list = [];
     
@@ -240,77 +208,74 @@ class OAM_Ajax{
             foreach ($recipients as $recipient) {
                 $address_list[] = [
                     "recipient_id"   => $recipient->id,
-                    "process_id"     => trim($pid) ?? '',
-                    "full_name"      => trim($recipient->full_name) ?? '',
-                    "company_name"   => trim($recipient->company_name) ?? '',
-                    "address_1"      => trim($recipient->address_1) ?? '',
-                    "address_2"      => trim($recipient->address_2) ?? '',
-                    "city"           => trim($recipient->city) ?? '',
-                    "state"          => trim($recipient->state) ?? '',
-                    "zipcode"        => trim($recipient->zipcode) ?? '',
+                    "process_id"     => $pid,
+                    "full_name"      => trim($recipient->full_name),
+                    "company_name"   => trim($recipient->company_name),
+                    "address_1"      => trim($recipient->address_1),
+                    "address_2"      => trim($recipient->address_2),
+                    "city"           => trim($recipient->city),
+                    "state"          => trim($recipient->state),
+                    "zipcode"        => trim($recipient->zipcode),
                     "quantity"       => $recipient->quantity ?? 1,
-                    "greeting"       => trim($recipient->greeting) ?? '',
+                    "greeting"       => trim($recipient->greeting),
                 ];
             }
     
-            // Add items to the cart in chunks
-            $chunked_addresses = array_chunk($address_list, 10); // Adjust chunk size if needed
-            foreach ($chunked_addresses as $chunk) {
-                self::add_items_to_cart($chunk, $product_id);
+            // Get process data once
+            $processResult = $wpdb->get_row(
+                $wpdb->prepare("SELECT order_id, data FROM {$order_process_table} WHERE user_id = %d AND id = %d", $user_id, $pid)
+            );
+    
+            $affiliate_id = 0;
+            $custom_price = 0;
+            if (!empty($processResult)) {
+                $affiliate_id = json_decode($processResult->data)->affiliate_select ?? 0;
+                $custom_price = OAM_COMMON_Custom::get_product_custom_price($product_id, $affiliate_id);
             }
     
-            // Check if there's already an order created
-            $processQuery = $wpdb->prepare("
-                SELECT order_id
-                FROM {$order_process_table}
-                WHERE user_id = %d 
-                AND id = %d 
-            ", $user_id, $pid);
+            // Empty cart once
+            WC()->cart->empty_cart();
     
-            $processResult = $wpdb->get_row($processQuery);
-            
-            if (!empty($processResult)) {
-                if ($processResult->order_id != 0) {
-                    $order = wc_get_order($processResult->order_id);
-                    if ($order) {
-                        $order_key  = $order->get_order_key();
-                        $order_url  = wc_get_endpoint_url('view-order', $processResult->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order_key;
-                        wp_send_json_success([
-                            'message'      => 'Please wait, the order is in progress.',
-                            'checkout_url' => $order_url
-                        ]);
-                    }
+            // Process in chunks
+            $chunks = array_chunk($address_list, 10);
+            foreach ($chunks as $chunk) {
+                self::add_items_to_cart($chunk, $product_id, $custom_price, $affiliate_id);
+            }
+    
+            // Update process step
+            $updateData = [
+                'data'       => wp_json_encode($stepData),
+                'order_type' => 'multi-recipient-order',
+                'step'       => $currentStep,
+            ];
+    
+            $wpdb->update($order_process_table, $updateData, ['id' => $pid]);
+    
+            // If order already exists, redirect to order view
+            if (!empty($processResult) && $processResult->order_id != 0) {
+                $order = wc_get_order($processResult->order_id);
+                if ($order) {
+                    $order_key = $order->get_order_key();
+                    $order_url = wc_get_endpoint_url('view-order', $processResult->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order_key;
+    
+                    wp_send_json_success([
+                        'message' => 'Please wait, the order is in progress.',
+                        'checkout_url' => $order_url
+                    ]);
                 }
             }
     
-            // Update the process record
-            $updateData = [
-                'data'       => wp_json_encode($stepData),
-                'order_type' => sanitize_text_field('multi-recipient-order'),
-                'step'       => sanitize_text_field($currentStep),
-            ];
-    
-            $wpdb->update(
-                $order_process_table,
-                $updateData,
-                ['id' => $pid]
-            );
-    
-            // Get checkout page URL
-            $checkout_url = wc_get_checkout_url();
-    
             wp_send_json_success([
-                'message'      => 'Please wait, the order is in progress.',
-                'checkout_url' => $checkout_url
+                'message' => 'Please wait, the order is in progress.',
+                'checkout_url' => wc_get_checkout_url()
             ]);
         } else {
-            $checkout_url = wc_get_checkout_url();
             wp_send_json_error([
-                'message'      => 'Failed to process the order. Please try again.',
-                'checkout_url' => $checkout_url
+                'message' => 'Failed to process the order. Please try again.',
+                'checkout_url' => wc_get_checkout_url()
             ]);
         }
-    }
+    }    
     
     
     
