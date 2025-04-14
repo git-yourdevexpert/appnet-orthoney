@@ -542,10 +542,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         $singleAddressCheckoutStatus = $data->singleAddressCheckoutStatus ?? '';
         $checkoutProceedStatus = $data->checkout_proceed_with_multi_addresses_status ?? '';
 
-        
+     
         echo '<div class="step" id="step5">';
         if (!empty($data->delivery_preference)) {
-            if($currentStep == 4 && ($data->delivery_preference == 'single_address' OR $data->delivery_preference == 'multiple_address')){
+            if(($currentStep == 4 OR $currentStep == 5 ) AND ($data->delivery_preference == 'single_address' OR $data->delivery_preference == 'multiple_address')){
                 if ($data->delivery_preference == 'single_address') {
                     self::single_address_form($currentStep);
                 }

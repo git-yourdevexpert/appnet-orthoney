@@ -62,55 +62,220 @@ class OAM_Ajax{
 
     }
 
-    /**
-	 * AJAX handler function that edit process name
-	 *
-	 * @return JSON 
-     * 
-	 */ 
-    public function add_items_to_cart($data, $product_id, $custom_price, $affiliate_id) {
-        if (!function_exists('WC') || !class_exists('WC_Cart') || WC()->cart === null) {
-            return;
-        }
-    
-        foreach ($data as $customer) {
-            $recipient_id = sanitize_text_field($customer['recipient_id']);
-            $process_id   = sanitize_text_field($customer['process_id']);
-            $order_type   = 'multi-recipient-order';
-            $full_name    = sanitize_text_field($customer['full_name']);
-            $company_name = sanitize_text_field($customer['company_name']);
-            $address_1    = sanitize_text_field($customer['address_1']);
-            $address_2    = sanitize_text_field($customer['address_2']);
-            $city         = sanitize_text_field($customer['city']);
-            $state        = sanitize_text_field($customer['state']);
-            $zipcode      = sanitize_text_field($customer['zipcode']);
-            $greeting     = sanitize_text_field($customer['greeting']);
-            $quantity     = (int) $customer['quantity'];
-            $unique_key   = uniqid('custom_', true);
-    
-            $full_address = trim("{$address_1} {$address_2} {$city} {$state} {$zipcode}");
-    
-            WC()->cart->add_to_cart($product_id, $quantity, 0, [], [
-                'new_price'    => $custom_price,
-                'process_id'   => $process_id,
-                'order_type'   => $order_type,
-                'recipient_id' => $recipient_id,
-                'full_name'    => $full_name,
-                'company_name' => $company_name,
-                'address'      => $full_address,
-                'address_1'    => $address_1,
-                'address_2'    => $address_2,
-                'city'         => $city,
-                'state'        => $state,
-                'zipcode'      => $zipcode,
-                'greeting'     => $greeting,
-                'unique_key'   => $unique_key,
+  /**
+ * Handles AJAX request to process order to checkout with chunking support
+ */
+public function orthoney_process_to_checkout_ajax_handler() {
+    check_ajax_referer('oam_nonce', 'security');
+    global $wpdb;
+
+    $product_id     = OAM_COMMON_Custom::get_product_id();
+    $status         = intval($_POST['status'] ?? 1);
+    $pid            = intval($_POST['pid'] ?? 1);
+    $currentStep    = intval($_POST['currentStep'] ?? 1);
+    $recipientIds   = array_map('intval', $_POST['recipientAddressIds'] ?? []); // ✅ FIXED
+    $current_chunk  = intval($_POST['current_chunk'] ?? 0);
+    $stepData       = $_POST ?? [];
+    $user_id        = get_current_user_id();
+    $chunk_size     = 10;
+
+    $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+    $order_process_table           = OAM_Helper::$order_process_table;
+
+    if (empty($recipientIds)) {
+        wp_send_json_error(['message' => 'No recipients selected.']);
+    }
+
+    $placeholders = implode(',', array_fill(0, count($recipientIds), '%d'));
+
+
+    // ✅ KEEPING ORIGINAL STATUS LOGIC
+    if ($status == 1) {
+        $query = $wpdb->prepare(
+            "SELECT id FROM {$order_process_recipient_table}
+             WHERE user_id = %d AND pid = %d AND visibility = 1 AND verified = 1 AND address_verified = 1 AND id IN ($placeholders)",
+            array_merge([$user_id, $pid], $recipientIds)
+        );
+    } else {
+        $query = $wpdb->prepare(
+            "SELECT id FROM {$order_process_recipient_table}
+             WHERE user_id = %d AND pid = %d AND visibility = 1 AND verified = 1 AND id IN ($placeholders)",
+            array_merge([$user_id, $pid], $recipientIds)
+        );
+    }
+
+    $filtered_ids = $wpdb->get_col($query);
+    $total_recipients = count($filtered_ids);
+    $total_chunks     = ceil($total_recipients / $chunk_size);
+    $chunk_recipient_ids = array_slice($filtered_ids, $current_chunk * $chunk_size, $chunk_size);
+
+    if (empty($chunk_recipient_ids)) {
+        wp_send_json_success([
+            'message' => 'No recipients to process in this chunk',
+            'finished' => true,
+            'progress' => 100,
+            'next_chunk' => $current_chunk + 1,
+            'total_chunks' => $total_chunks,
+            'pid' => $pid,
+            'checkout_url' => wc_get_checkout_url()
+        ]);
+    }
+
+    $placeholders = implode(',', array_fill(0, count($chunk_recipient_ids), '%d'));
+
+    $wpdb->query('START TRANSACTION');
+
+    try {
+        $query = "SELECT * FROM {$order_process_recipient_table} WHERE id IN ($placeholders)";
+        $query_args = $chunk_recipient_ids;
+
+        $recipients = $wpdb->get_results($wpdb->prepare($query, $query_args));
+
+        
+        if (empty($recipients)) {
+            $wpdb->query('ROLLBACK');
+            wp_send_json_error([
+                'message' => 'No valid recipients found in this chunk.',
+                'next_chunk' => $current_chunk + 1,
+                'total_chunks' => $total_chunks,
+                'progress' => $this->get_progress($current_chunk + 1, $chunk_size, $total_recipients),
+                'finished' => ($current_chunk + 1) >= $total_chunks,
+                'pid' => $pid
             ]);
         }
+
+        $address_list = array_map(function($r) use ($pid) {
+            return [
+                "recipient_id"   => $r->id,
+                "process_id"     => $pid,
+                "full_name"      => trim($r->full_name),
+                "company_name"   => trim($r->company_name),
+                "address_1"      => trim($r->address_1),
+                "address_2"      => trim($r->address_2),
+                "city"           => trim($r->city),
+                "state"          => trim($r->state),
+                "zipcode"        => trim($r->zipcode),
+                "quantity"       => intval($r->quantity ?: 1),
+                "greeting"       => trim($r->greeting),
+            ];
+        }, $recipients);
+
+        if ($current_chunk == 0) WC()->cart->empty_cart();
+        $this->add_items_to_cart_chunk($address_list, $product_id);
+
+        $is_last_chunk = ($current_chunk + 1) >= $total_chunks;
+
+        if ($is_last_chunk) {
+            $process = $wpdb->get_row($wpdb->prepare("SELECT order_id FROM {$order_process_table} WHERE user_id = %d AND id = %d", $user_id, $pid));
+
+            if (!empty($process) && $process->order_id) {
+                $order = wc_get_order($process->order_id);
+                if ($order) {
+                    $order_url = wc_get_endpoint_url('view-order', $process->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order->get_order_key();
+                    $wpdb->query('COMMIT');
+                    wp_send_json_success([
+                        'message' => 'Order is already in progress.',
+                        'checkout_url' => $order_url,
+                        'progress' => 100,
+                        'finished' => true,
+                        'next_chunk' => $current_chunk + 1,
+                        'pid' => $pid
+                    ]);
+                }
+            }
+
+            $wpdb->update($order_process_table, [
+                'data' => wp_json_encode($stepData),
+                'order_type' => 'multi-recipient-order',
+                'step' => $currentStep + 1,
+            ], ['id' => $pid]);
+
+            $wpdb->query('COMMIT');
+
+            wp_send_json_success([
+                'message' => 'All recipients processed successfully.',
+                'checkout_url' => wc_get_checkout_url(),
+                'progress' => 100,
+                'finished' => true,
+                'next_chunk' => $current_chunk + 1,
+                'pid' => $pid
+            ]);
+        }
+
+        $wpdb->query('COMMIT');
+        wp_send_json_success([
+            'message' => 'Chunk processed successfully.',
+            'progress' => $this->get_progress($current_chunk + 1, $chunk_size, $total_recipients),
+            'finished' => false,
+            'next_chunk' => $current_chunk + 1,
+            'pid' => $pid
+        ]);
+    } catch (Exception $e) {
+        $wpdb->query('ROLLBACK');
+        wp_send_json_error([
+            'message' => 'Error: ' . $e->getMessage(),
+            'next_chunk' => $current_chunk,
+            'progress' => $this->get_progress($current_chunk, $chunk_size, $total_recipients),
+            'finished' => false,
+            'pid' => $pid
+        ]);
     }
-    
-    
-    
+}
+
+
+private function get_progress($chunk, $chunk_size, $total) {
+    return min(100, round(($chunk * $chunk_size) / $total * 100));
+}
+
+/**
+ * Adds a chunk of items to WooCommerce cart
+ * Modified version of add_items_to_cart that doesn't clear the cart
+ * 
+ * @param array $data Array of recipient data
+ * @param int $product_id The product ID to add to cart
+ */
+private function add_items_to_cart_chunk($data, $product_id) {
+    global $wpdb;
+    $order_process_table = OAM_Helper::$order_process_table;
+
+    if (!function_exists('WC') || !class_exists('WC_Cart') || WC()->cart === null) return;
+
+    foreach ($data as $customer) {
+        $affiliate_id = 0;
+
+        $processResult = $wpdb->get_row($wpdb->prepare(
+            "SELECT order_id, data FROM {$order_process_table} WHERE id = %d", 
+            $customer['process_id']
+        ));
+
+        if ($processResult) {
+            $affiliate_id = json_decode($processResult->data)->affiliate_select ?? 0;
+        }
+
+        $custom_price = OAM_COMMON_Custom::get_product_custom_price($product_id, $affiliate_id);
+        $unique_key = uniqid('custom_', true);
+
+        WC()->cart->add_to_cart($product_id, $customer['quantity'], 0, [], [
+            'new_price'    => $custom_price,
+            'process_id'   => $customer['process_id'],
+            'order_type'   => 'multi-recipient-order',
+            'recipient_id' => $customer['recipient_id'],
+            'full_name'    => $customer['full_name'],
+            'company_name' => $customer['company_name'],
+            'address'      => "{$customer['address_1']} {$customer['address_2']} {$customer['city']} {$customer['state']} {$customer['zipcode']}",
+            'address_1'    => $customer['address_1'],
+            'address_2'    => $customer['address_2'],
+            'city'         => $customer['city'],
+            'state'        => $customer['state'],
+            'zipcode'      => $customer['zipcode'],
+            'greeting'     => $customer['greeting'],
+            'unique_key'   => $unique_key,
+        ]);
+    }
+}
+
+
+
     
     public function orthoney_save_group_recipient_to_order_process_handler() {
         check_ajax_referer('oam_nonce', 'security');
@@ -171,8 +336,116 @@ class OAM_Ajax{
     }
     
     
-      
+    // public function orthoney_process_to_checkout_ajax_handler() {
+    //     check_ajax_referer('oam_nonce', 'security');
+    //     global $wpdb;
     
+    //     $product_id = OAM_COMMON_Custom::get_product_id();
+    
+    //     $status      = isset($_POST['status']) ? $_POST['status'] : 1;
+    //     $pid         = isset($_POST['pid']) ? intval($_POST['pid']) : 1; 
+    //     $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
+    //     $recipientIds = isset($_POST['recipientAddressIds']) ? $_POST['recipientAddressIds']  : [];
+    //     $stepData    = $_POST ?? [];
+    //     $user_id     = get_current_user_id(); 
+    //     $placeholders = implode(',', array_fill(0, count($recipientIds), '%d'));
+    
+    //     $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+    //     $order_process_table = OAM_Helper::$order_process_table;
+    
+    //     $recipients = [];
+    //     if($status == 1){
+    //         $recipients = $wpdb->get_results(
+    //             $wpdb->prepare(
+    //                 "SELECT * FROM {$order_process_recipient_table} 
+    //                 WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d AND address_verified = %d AND id IN ($placeholders)",
+    //                 array_merge([$user_id, $pid, 1, 1, 1], $recipientIds)
+    //             )
+    //         );
+    //     }else{
+    //         $recipients = $wpdb->get_results(
+    //             $wpdb->prepare(
+    //                 "SELECT * FROM {$order_process_recipient_table} 
+    //                 WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d AND id IN ($placeholders)",
+    //                 array_merge([$user_id, $pid, 1, 1], $recipientIds)
+    //             )
+    //         );
+    //     }
+    
+    //     $address_list = [];
+    
+    //     if(!empty( $recipients)){
+    //         foreach ($recipients as $recipient) {
+    //             $address_list[] = [
+    //                 "recipient_id"   => $recipient->id,
+    //                 "process_id"     => trim($pid) ?? '',
+    //                 "full_name"      => trim($recipient->full_name) ?? '',
+    //                 "company_name"   => trim($recipient->company_name) ?? '',
+    //                 "address_1"      => trim($recipient->address_1) ?? '',
+    //                 "address_2"      => trim($recipient->address_2) ?? '',
+    //                 "city"           => trim($recipient->city) ?? '',
+    //                 "state"          => trim($recipient->state) ?? '',
+    //                 "zipcode"        => trim($recipient->zipcode) ?? '',
+    //                 "quantity"       => $recipient->quantity ?? 1,
+    //                 "greeting"       => trim($recipient->greeting) ?? '',
+    //             ];
+    //         }
+        
+    //         // Add items to the cart
+    //         self::add_items_to_cart($address_list, $product_id);
+        
+    //         $processQuery = $wpdb->prepare("
+    //         SELECT order_id
+    //         FROM {$order_process_table}
+    //         WHERE user_id = %d 
+    //         AND id = %d 
+    //         ", $user_id, $pid);
+
+    //         $processResult = $wpdb->get_row($processQuery);
+            
+    //         if(!empty($processResult)){
+    //             if($processResult->order_id != 0){
+    //                 $order = wc_get_order( $processResult->order_id);
+    //                 if ($order) {
+    //                     $order_key = $order->get_order_key();
+    //                     $order_url = wc_get_endpoint_url('view-order', $processResult->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order_key;
+    //                     wp_send_json_success([
+    //                         'message' => 'Please wait, the order is in progress.',
+    //                         'checkout_url' => $order_url
+    //                     ]);
+    //                 }
+    //             }
+    //         }
+
+    //         $updateData = [
+    //             'data' => wp_json_encode($stepData),
+    //             'order_type'  => sanitize_text_field('multi-recipient-order'),
+    //             'step' => sanitize_text_field($currentStep),
+    //         ];
+
+    //         $wpdb->update(
+    //             $order_process_table,
+    //             $updateData,
+    //             ['id' => $pid]
+    //         );
+
+    //         // Get checkout page URL
+    //         $checkout_url = wc_get_checkout_url();
+
+    //         wp_send_json_success([
+    //         'message' => 'Please wait, the order is in progress.',
+    //             'checkout_url' => $checkout_url
+    //         ]);
+    //     }else{
+    //         wp_send_json_error([
+    //             'message' => 'Failed to process the order. Please try again.',
+    //             'checkout_url' => $checkout_url
+    //         ]);
+    //     }
+
+    // }
+    
+   
     
     
     /**
@@ -1155,7 +1428,7 @@ class OAM_Ajax{
                     $duplicateHtml .= '<div class="heading-title"><div><h5 class="table-title">Duplicate Recipient</h5> </div>'.$bulkMargeButtonHtml.'</div>';
                     
                     foreach ($duplicateGroups as $groupIndex => $group) {
-                        $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="99'.($groupIndex + 1).'"><td colspan="6"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
+                        $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="99'.($groupIndex + 1).'"><td colspan="12"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
                         $duplicateHtml .= OAM_Helper::get_table_recipient_content($group , $customGreeting, 0 , '99'.$groupIndex + 1);
                         
                     }
