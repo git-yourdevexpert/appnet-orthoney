@@ -204,19 +204,19 @@ class OAM_Ajax{
     
         $product_id = OAM_COMMON_Custom::get_product_id();
     
-        $status      = isset($_POST['status']) ? $_POST['status'] : 1;
-        $pid         = isset($_POST['pid']) ? intval($_POST['pid']) : 1; 
-        $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
-        $recipientIds = isset($_POST['recipientAddressIds']) ? $_POST['recipientAddressIds']  : [];
-        $stepData    = $_POST ?? [];
-        $user_id     = get_current_user_id(); 
+        $status       = isset($_POST['status']) ? $_POST['status'] : 1;
+        $pid          = isset($_POST['pid']) ? intval($_POST['pid']) : 1; 
+        $currentStep  = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
+        $recipientIds = isset($_POST['recipientAddressIds']) ? $_POST['recipientAddressIds'] : [];
+        $stepData     = $_POST ?? [];
+        $user_id      = get_current_user_id(); 
         $placeholders = implode(',', array_fill(0, count($recipientIds), '%d'));
     
         $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
-        $order_process_table = OAM_Helper::$order_process_table;
+        $order_process_table           = OAM_Helper::$order_process_table;
     
         $recipients = [];
-        if($status == 1){
+        if ($status == 1) {
             $recipients = $wpdb->get_results(
                 $wpdb->prepare(
                     "SELECT * FROM {$order_process_recipient_table} 
@@ -224,7 +224,7 @@ class OAM_Ajax{
                     array_merge([$user_id, $pid, 1, 1, 1], $recipientIds)
                 )
             );
-        }else{
+        } else {
             $recipients = $wpdb->get_results(
                 $wpdb->prepare(
                     "SELECT * FROM {$order_process_recipient_table} 
@@ -236,7 +236,7 @@ class OAM_Ajax{
     
         $address_list = [];
     
-        if(!empty( $recipients)){
+        if (!empty($recipients)) {
             foreach ($recipients as $recipient) {
                 $address_list[] = [
                     "recipient_id"   => $recipient->id,
@@ -252,60 +252,66 @@ class OAM_Ajax{
                     "greeting"       => trim($recipient->greeting) ?? '',
                 ];
             }
-        
-            // Add items to the cart
-            self::add_items_to_cart($address_list, $product_id);
-        
+    
+            // Add items to the cart in chunks
+            $chunked_addresses = array_chunk($address_list, 10); // Adjust chunk size if needed
+            foreach ($chunked_addresses as $chunk) {
+                self::add_items_to_cart($chunk, $product_id);
+            }
+    
+            // Check if there's already an order created
             $processQuery = $wpdb->prepare("
-            SELECT order_id
-            FROM {$order_process_table}
-            WHERE user_id = %d 
-            AND id = %d 
+                SELECT order_id
+                FROM {$order_process_table}
+                WHERE user_id = %d 
+                AND id = %d 
             ", $user_id, $pid);
-
+    
             $processResult = $wpdb->get_row($processQuery);
             
-            if(!empty($processResult)){
-                if($processResult->order_id != 0){
-                    $order = wc_get_order( $processResult->order_id);
+            if (!empty($processResult)) {
+                if ($processResult->order_id != 0) {
+                    $order = wc_get_order($processResult->order_id);
                     if ($order) {
-                        $order_key = $order->get_order_key();
-                        $order_url = wc_get_endpoint_url('view-order', $processResult->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order_key;
+                        $order_key  = $order->get_order_key();
+                        $order_url  = wc_get_endpoint_url('view-order', $processResult->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order_key;
                         wp_send_json_success([
-                            'message' => 'Please wait, the order is in progress.',
+                            'message'      => 'Please wait, the order is in progress.',
                             'checkout_url' => $order_url
                         ]);
                     }
                 }
             }
-
+    
+            // Update the process record
             $updateData = [
-                'data' => wp_json_encode($stepData),
-                'order_type'  => sanitize_text_field('multi-recipient-order'),
-                'step' => sanitize_text_field($currentStep),
+                'data'       => wp_json_encode($stepData),
+                'order_type' => sanitize_text_field('multi-recipient-order'),
+                'step'       => sanitize_text_field($currentStep),
             ];
-
+    
             $wpdb->update(
                 $order_process_table,
                 $updateData,
                 ['id' => $pid]
             );
-
+    
             // Get checkout page URL
             $checkout_url = wc_get_checkout_url();
-
+    
             wp_send_json_success([
-            'message' => 'Please wait, the order is in progress.',
+                'message'      => 'Please wait, the order is in progress.',
                 'checkout_url' => $checkout_url
             ]);
-        }else{
+        } else {
+            $checkout_url = wc_get_checkout_url();
             wp_send_json_error([
-                'message' => 'Failed to process the order. Please try again.',
+                'message'      => 'Failed to process the order. Please try again.',
                 'checkout_url' => $checkout_url
             ]);
         }
-
     }
+    
     
     
     /**
