@@ -108,7 +108,7 @@ class OAM_Ajax{
         $stepData     = $_POST ?? [];
         $currentStep  = intval($_POST['currentStep'] ?? 0);
     
-        $recipientIds = json_decode(stripslashes($_POST['recipientAddressIds'] ?? '[]'), true);
+        $recipientIds = json_decode($_POST['recipientAddressIds'] ?? '[]', true);
     
         if (empty($recipientIds)) {
             wp_send_json_error([
