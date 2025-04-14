@@ -171,6 +171,7 @@ class OAM_Ajax{
     
     
     public function orthoney_process_to_checkout_ajax_handler() {
+        set_time_limit(0);
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
     
