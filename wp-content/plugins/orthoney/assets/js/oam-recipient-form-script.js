@@ -633,53 +633,59 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function process_to_checkout_ajax_part(form, status) {
-      const totalChunks = Math.ceil(allRecipientIds.length / chunkSize);
-  let currentStep = 0;
+      // Ensure async
+      try {
+        const formData = new FormData(form);
+        formData.append("action", "orthoney_process_to_checkout_ajax");
+        formData.append(
+          "currentStep",
+          typeof currentStep !== "undefined" ? currentStep : ""
+        );
+        formData.append("security", oam_ajax.nonce);
+        formData.append("status", status); // Use the passed status
 
-  const status = 1; // Set your status dynamically if needed
+        const response = await fetch(oam_ajax.ajax_url, {
+          method: "POST",
+          body: formData,
+        });
 
-  for (let i = 0; i < totalChunks; i++) {
-    const chunk = allRecipientIds.slice(i * chunkSize, (i + 1) * chunkSize);
-    const formData = new FormData(form);
-    formData.append("action", "orthoney_process_to_checkout_ajax");
-    formData.append("recipientAddressIds", JSON.stringify(chunk));
-    formData.append("currentStep", currentStep);
-    formData.append("security", oam_ajax.nonce);
-    formData.append("status", status);
-    formData.append("pid", form.querySelector('[name="pid"]').value);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
-    try {
-      const response = await fetch(oam_ajax.ajax_url, {
-        method: "POST",
-        body: formData,
-      });
+        const responseData = await response.json();
 
-      const result = await response.json();
+        if (!responseData.success) {
+          Swal.fire(
+            "Error",
+            responseData.message || "An error occurred",
+            "error"
+          );
+          return;
+        }
 
-      if (!result.success) {
-        throw new Error(result.message || "Unknown error during chunk processing.");
-      }
-
-      currentStep++;
-
-      if (i === totalChunks - 1 && result.data?.checkout_url) {
         Swal.fire({
-          title: "Redirecting...",
+          title: "Please wait while we process your order properly.",
           icon: "success",
           timer: 2000,
           showConfirmButton: false,
+          timerProgressBar: true,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          allowEnterKey: false,
         });
 
         setTimeout(() => {
-          window.location.href = result.data.checkout_url;
+          window.location.href = responseData.data.checkout_url;
         }, 1500);
+      } catch (error) {
+        console.error("Fetch error:", error);
+        Swal.fire(
+          "Error",
+          `Request failed: ${error.message || "Unknown error"}`,
+          "error"
+        );
       }
-
-    } catch (error) {
-      Swal.fire("Error", error.message, "error");
-      break;
-    }
-  }
     }
 
     document
