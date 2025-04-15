@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", initTippy);
   
 
 
-  const greetingTextareas = document.querySelectorAll("#multiStepForm textarea, #recipient-manage-form form textarea");
+  const greetingTextareas = document.querySelectorAll("#multiStepForm textarea, #recipient-manage-form form textarea, #recipient-order-manage-popup textarea");
   const maxChars = 250;
   
   if (greetingTextareas.length) {
@@ -194,7 +194,9 @@ document.addEventListener("DOMContentLoaded", initTippy);
           }
       });
   }
-  
+
+
+
 
 document.addEventListener('lity:open', function (event) {
     event.preventDefault();
@@ -206,7 +208,9 @@ document.addEventListener('lity:open', function (event) {
             }
         });
     }
+   
 });
+
 document.addEventListener('lity:close', function(event) {
     event.preventDefault();
     // Get the closed modal's element
@@ -309,6 +313,23 @@ Deleted group Js Start
 
 
 document.addEventListener('click', function (event) {
+    if (event.target.classList.contains('viewAllRecipientsPopupCheckout')) {
+        setTimeout(function () {
+            const $table = jQuery('#viewAllRecipientsPopupCheckout table');
+                $table.DataTable({
+                    paging: true,
+                    info: true,
+                    searching: true,
+                    responsive: true,
+                    deferRender: false,
+                    lengthChange: false,
+                    columnDefs: [
+                        { targets: '_all', className: 'dt-center' }
+                    ]
+                });
+        }, 200);
+    }
+    
     if (event.target.classList.contains('deleteGroupButton')) {
         console.log('sas');
         event.preventDefault();
@@ -1364,153 +1385,201 @@ jQuery(document).ready(function ($) {
     });
 });
 
+/**
+ * Recipient Order Start
+ */
+
+document.addEventListener('DOMContentLoaded', function () {
+    const recipientOrderData = document.querySelector('#recipient-order-data');
+
+    if (recipientOrderData) {
+        setTimeout(() => {
+            jQuery('#recipient-order-data table').DataTable({
+                paging: true,
+                info: true,
+                searching: true,
+                responsive: true,
+                deferRender: false,
+                lengthChange: true,
+                columnDefs: [
+                    {
+                        targets: -1,
+                        orderable: false
+                    }
+                ]
+            });
+        }, 200);
+    }
+});
+
+document.addEventListener('click', function (event) {
+    const target = event.target;
+    const isEdit = target.classList.contains('editRecipientOrder');
+    const isView = target.classList.contains('viewRecipientOrder');
+
+    if (!isEdit && !isView) return;
+
+    event.preventDefault();
+    process_group_popup();
+
+    const recipientTr = target.closest('tr');
+    const form = document.querySelector('#recipient-manage-order-form form');
+    form.reset();
+
+    if (!recipientTr) {
+        lity(target.getAttribute('data-popup'));
+        Swal.close();
+        return;
+    }
+
+    const orderID = recipientTr.getAttribute('data-id');
+
+    fetch(oam_ajax.ajax_url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            action: 'get_recipient_order_base_id',
+            id: orderID,
+        }),
+    })
+        .then((res) => res.json())
+        .then((data) => {
+            if (!data.success) {
+                throw new Error(data.data.message || 'Failed to get recipient.');
+            }
+
+            const d = data.data;
+
+            if (isEdit) {
+                const fields = ['order_id', 'full_name', 'company_name', 'address_1', 'address_2', 'city', 'state', 'zipcode', 'greeting'];
+                fields.forEach(field => {
+                    const input = form.querySelector(`#${field}`);
+                    if (input) input.value = d[field] || '';
+                });
+                form.querySelector('button[type="submit"]').innerHTML = 'Edit Recipient Order Details';
+            }
+
+            if (isView) {
+                const viewpopup = document.querySelector('#recipient-order-edit-popup .recipient-view-details-wrapper');
+                viewpopup.innerHTML = `
+                    <ul>
+                        <li><label>Full Name:</label><span>${d.full_name || ''}</span></li>
+                        <li><label>Company Name:</label><span>${d.company_name || ''}</span></li>
+                        <li><label>Mailing Address:</label><span>${d.address_1 || ''}</span></li>
+                        <li><label>Suite/Apt#:</label><span>${d.address_2 || ''}</span></li>
+                        <li><label>City:</label><span>${d.city || ''}</span></li>
+                        <li><label>State:</label><span>${d.full_state || ''}</span></li>
+                        <li><label>Zipcode:</label><span>${d.zipcode || 0}</span></li>
+                        <li><label>Quantity:</label><span>${d.quantity || 0}</span></li>
+                    </ul>
+                    <div class='recipient-view-greeting-box'>
+                        <label>Greeting:</label><span>${d.greeting || ''}</span>
+                    </div>`;
+            }
+
+            setTimeout(() => {
+                lity(target.getAttribute('data-popup'));
+
+                const submitButton = form.querySelector('button[type="submit"]');
+                if (isEdit) {
+                    submitButton.style.display = 'block';
+                    submitButton.innerHTML = 'Edit Recipient Order Details';
+                } else {
+                    submitButton.style.display = 'none';
+                }
+
+                jQuery(form).find('#state').val(d.state).trigger('change');
+            }, 250);
+
+            Swal.close();
+        })
+        .catch((error) => {
+            Swal.fire({
+                title: 'Error',
+                text: error.message || 'An error occurred while retrieving the recipient.',
+                icon: 'error',
+            });
+        });
+});
+
+const recipientOrderManageForm = document.querySelector("#recipient-manage-order-form form");
+
+function validateRecipientOrderManageForm(form) {
+    let isValid = true;
+    const requiredFields = form.querySelectorAll("input[required], select[required], textarea[required]");
+
+    requiredFields.forEach((field) => {
+        const parentDiv = field.closest('.form-row');
+        const errorMessage = parentDiv?.querySelector(".error-message");
+
+        if (!field.value.trim()) {
+            field.style.border = "1px solid red";
+            if (errorMessage) {
+                errorMessage.textContent = field.getAttribute("data-error-message") || "This field is required.";
+                errorMessage.style.color = "red";
+                errorMessage.style.display = "block";
+            }
+            isValid = false;
+        } else {
+            field.style.border = "";
+            if (errorMessage) {
+                errorMessage.textContent = "";
+                errorMessage.style.display = "none";
+            }
+        }
+    });
+
+    return isValid;
+}
+
+if (recipientOrderManageForm) {
+    recipientOrderManageForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        if (!validateRecipientOrderManageForm(this)) return;
+
+        process_group_popup();
+
+        const formData = new FormData(this);
+        formData.append('action', 'manage_recipient_order_form');
+
+        fetch(oam_ajax.ajax_url, {
+            method: 'POST',
+            body: formData,
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                if (!data.success) {
+                    throw new Error(data.data.message || 'Failed to update recipient details.');
+                }
+
+                Swal.fire({
+                    title: data.data.message,
+                    icon: 'success',
+                    timer: 3500,
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                }).then(() => {
+                    recipientOrderManageForm.reset();
+                    window.location.reload();
+                });
+
+                document.querySelector('[data-lity-close]')?.click();
+            })
+            .catch((error) => {
+                Swal.fire({
+                    title: 'Error',
+                    text: error.message || 'An error occurred while processing the request.',
+                    icon: 'error',
+                });
+            });
+    });
+}
 
 
-// document.addEventListener("DOMContentLoaded", function () {
-//     function fetchOrders(page = 1, $failed = 0) {
-//         process_group_popup();
-//         const params = new URLSearchParams();
-//         params.append("action", "orthoney_incomplete_order_process_ajax");
-//         params.append("page", page);
-//         params.append("failed", $failed);
-//         params.append("security", oam_ajax.nonce);
-
-//         fetch(oam_ajax.ajax_url, {
-//             method: "POST",
-//             headers: {
-//                 "Content-Type": "application/x-www-form-urlencoded"
-//             },
-//             body: params.toString()
-//         })
-//         .then(response => response.json())
-//         .then(data => {
-//             const tableBody = document.getElementById("incomplete-order-data");
-//             const paginationDiv = document.getElementById("incomplete-order-pagination");
-
-//             if (data.success) {
-//                 const responseData = data.data;
-//                 tableBody.innerHTML = responseData.table_content;
-//                 paginationDiv.innerHTML = responseData.pagination;
-//                 initTippy();
-               
-//             } else {
-//                 Swal.fire({
-//                     title: "Error",
-//                     text: data.data?.message || "Something went wrong. Please try again",
-//                     icon: "error",
-//                 });
-//             }
-//             setTimeout(() => {
-//                 Swal.close();
-//             }, 500);
-//         })
-//         .catch(() => {
-//             Swal.fire({
-//                 title: 'Error',
-//                 text: 'An error occurred while updating the Incomplete Order.',
-//                 icon: 'error',
-//             });
-//         });
-//     }
-
-//     const Incomplete_orders = document.querySelector(".incomplete-order-block #incomplete-order-data");
-//     if (Incomplete_orders) {
-
-//         if (Incomplete_orders.hasAttribute('data-failed')) {
-//             fetchOrders(1, 1);
-//         }else{
-//             fetchOrders(1);
-//         }
-        
-//         document.addEventListener('click', function (event) {
-//             if (event.target.matches('#incomplete-order-pagination a')) {
-//                 event.preventDefault();
-//                 const page = event.target.getAttribute('data-page');
-//                 if (page) {
-//                     if (Incomplete_orders.hasAttribute('data-failed')) {
-//                         fetchOrders(page, 1);
-//                     }else{
-//                         fetchOrders(page);
-//                     }
-//                 }
-//             }
-//         });
-//     }
-// });
-
-
-//customer order process code
-// document.addEventListener("DOMContentLoaded", function () {
-//     function fetchOrders(page = 1, $failed = 0) {
-//         process_group_popup();
-//         const params = new URLSearchParams();
-//         params.append("action", "orthoney_customer_order_process_ajax");
-//         params.append("page", page);
-//         params.append("failed", $failed);
-//         params.append("security", oam_ajax.nonce);
-
-//         fetch(oam_ajax.ajax_url, {
-//             method: "POST",
-//             headers: {
-//                 "Content-Type": "application/x-www-form-urlencoded"
-//             },
-//             body: params.toString()
-//         })
-//         .then(response => response.json())
-//         .then(data => {
-//             const tableBody = document.getElementById("customer-order-data");
-//             const paginationDiv = document.getElementById("customer-order-pagination");
-
-//             if (data.success) {
-//                 const responseData = data.data;
-//                 tableBody.innerHTML = responseData.table_content;
-//                 paginationDiv.innerHTML = responseData.pagination;
-//                 initTippy();
-               
-//             } else {
-//                 Swal.fire({
-//                     title: "Error",
-//                     text: data.data?.message || "Something went wrong. Please try again",
-//                     icon: "error",
-//                 });
-//             }
-//             setTimeout(() => {
-//                 Swal.close();
-//             }, 500);
-//         })
-//         .catch(() => {
-//             Swal.fire({
-//                 title: 'Error',
-//                 text: 'An error occurred while updating the customer Order.',
-//                 icon: 'error',
-//             });
-//         });
-//     }
-
-//     const Incomplete_orders = document.querySelector(".customer-order-block #customer-order-data");
-//     if (Incomplete_orders) {
-
-//         if (Incomplete_orders.hasAttribute('data-failed')) {
-//             fetchOrders(1, 1);
-//         }else{
-//             fetchOrders(1);
-//         }
-        
-//         document.addEventListener('click', function (event) {
-//             if (event.target.matches('#customer-order-pagination a')) {
-//                 event.preventDefault();
-//                 const page = event.target.getAttribute('data-page');
-//                 if (page) {
-//                     if (Incomplete_orders.hasAttribute('data-failed')) {
-//                         fetchOrders(page, 1);
-//                     }else{
-//                         fetchOrders(page);
-//                     }
-//                 }
-//             }
-//         });
-//     }
-// });
+/**
+ * Recipient Order End
+ */
 
 jQuery(document).ready(function ($) {
     var table = $('#customer-orders-table').DataTable({
@@ -1651,14 +1720,18 @@ jQuery(document).ready(function ($) {
 
             setTimeout(function () {
                 const searchBox = $('#customer-orders-table_filter input');
+                searchBox.attr('placeholder', 'Search by name');
+            
                 searchBox.off('input').on('input', function () {
                     const val = this.value.trim();
-                    if (val.length >= 3 || val.length === 0) {
+                    const wordCount = val.split(/\s+/).filter(Boolean).length;
+            
+                    if (wordCount >= 3 || val.length === 0) {
                         table.search(val).draw();
                     }
                 });
             }, 100);
-
+            
             function toggleRecipientColumn() {
                 const selectedType = $('input[name="table_order_type"]:checked').val();
                 const filterWrapper = $('.custom-order-status-filter-wrapper');
@@ -1681,8 +1754,6 @@ jQuery(document).ready(function ($) {
         }
     });
 });
-
-
 
 
 document.addEventListener('click', function (event) {

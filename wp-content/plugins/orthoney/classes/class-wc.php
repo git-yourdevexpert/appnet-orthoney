@@ -678,7 +678,7 @@ class OAM_WC_Customizer {
                 $custom_content .= '<div class="item"><a href="#viewAllRecipientsPopupCheckout" class="viewAllRecipientsPopupCheckout btn-underline" data-lity>View All Recipients Details</a></div>';
                 // Popup Content
                 $custom_content .= '<div id="viewAllRecipientsPopupCheckout" class="lity-popup-normal lity-hide">
-                <div class="popup-show order-process-block">
+                <div class="popup-show order-process-block orthoney-datatable-warraper">
                 <h3>All Recipients Details</h3>
                 <div class="table-wrapper">
                 <table>

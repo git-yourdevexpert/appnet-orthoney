@@ -1679,7 +1679,7 @@ function addRecipientManuallyPopup(reload) {
     
     // duplicateCSVData
     // jQuery(document).ready(function ($) {
-    //   const tableEl = $('#duplicateCSVData table');
+    //   const tableEl = $('#viewAllRecipientsPopupCheckout table');
     
     //   // Remove any rows with .group-header to avoid column mismatch errors
     //   tableEl.find('tbody tr.group-header').remove();
@@ -1698,6 +1698,7 @@ function addRecipientManuallyPopup(reload) {
     //     ]
     //   });
     // });
+
     jQuery(document).ready(function ($) {
       const tableEl = $('#duplicateCSVData table');
       const tbody = tableEl.find('tbody');

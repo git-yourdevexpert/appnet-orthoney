@@ -72,8 +72,8 @@ class OAM_Helper{
         $filtered_orders = [];
 
         $main_orders = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM $orders_table WHERE customer_id = %d AND parent_order_id = 0 ORDER BY date_updated_gmt DESC",
-            $user_id
+            "SELECT * FROM $orders_table WHERE customer_id = %d AND parent_order_id = 0 AND status != %s ORDER BY date_updated_gmt DESC",
+            $user_id, 'wc-checkout-draft'
         ));
 
         foreach ($main_orders as $main_data) {
@@ -107,7 +107,9 @@ class OAM_Helper{
             $matches_search_main = empty($search) ||
                 stripos((string)$order_id, $search) !== false ||
                 stripos($main_order->get_billing_first_name(), $search) !== false ||
-                stripos($main_order->get_shipping_first_name(), $search) !== false;
+                stripos($main_order->get_billing_last_name(), $search) !== false ||
+                stripos($main_order->get_shipping_first_name(), $search) !== false||
+                stripos($main_order->get_shipping_last_name(), $search) !== false;
 
             $row_builder = $is_export ? 'build_export_order_row' : 'build_order_row';
             $row_data = OAM_Helper::$row_builder($main_data, $main_order, $order_type, $total_quantity);
@@ -139,7 +141,9 @@ class OAM_Helper{
                     $matches_search_sub = empty($search) ||
                         stripos((string)$sub_order->get_id(), $search) !== false ||
                         stripos($sub_order->get_billing_first_name(), $search) !== false ||
-                        stripos($sub_order->get_shipping_first_name(), $search) !== false;
+                        stripos($sub_order->get_billing_last_name(), $search) !== false ||
+                        stripos($sub_order->get_shipping_first_name(), $search) !== false ||
+                        stripos($sub_order->get_shipping_last_name(), $search) !== false;
 
                     if ($matches_search_sub) {
                         $sub_total_quantity = 0;
@@ -208,7 +212,7 @@ class OAM_Helper{
             'price' => $order_total,
             'action' =>
                 '<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>' .
-                ($order_data->parent_order_id == 0 ? '<a data-tippy="Download Invoice" href="#" class="far fa-download"></a>' : '') .
+                ($order_data->parent_order_id == 0 ? '<a data-tippy="Download Invoice" href="#" class="far fa-download"></a><a data-tippy="Download CSV" href="#" class="far fa-file-csv"></a>' : '') .
                 (empty($status_html) && ( $order_data->parent_order_id == 0) ? '<button>Suborder is created</button>' : '')
         ];
     }
@@ -799,6 +803,72 @@ class OAM_Helper{
                 <div class="footer-btn gfield--width-full">
                 <button type='button' class=" w-btn us-btn-style_4" data-lity-close>Cancel</button>
                 <button type="submit">Add New Recipient Details</button>
+                </div>
+            </form>
+        </div>
+        <?php
+    }
+
+    public static function get_recipient_order_form(){ ?>
+        <div id="recipient-manage-order-form" class="site-form" >
+            <form class="grid-two-col" novalidate>
+            <input type="hidden" id="order_id" name="order_id" value="">
+                <div class="form-row gfield--width-half">
+                    <label for="full_name">Full Name:</label>
+                    <input type="text" id="full_name" name="full_name" required data-error-message="Please enter your full name.">
+                    <span class="error-message"></span>
+                </div>
+
+                <div class="form-row gfield--width-half">
+                    <label for="company_name">Company Name:</label>
+                    <input type="text" id="company_name" name="company_name" required data-error-message="Please enter a company name.">
+                    <span class="error-message"></span>
+                </div>
+
+                <div class="form-row gfield--width-half">
+                    <label for="address_1">Mailing Address:</label>
+                    <input type="text" id="address_1" name="address_1" required data-error-message="Please enter a mailing address.">
+                    <span class="error-message"></span>
+                </div>
+
+                <div class="form-row gfield--width-half">
+                    <label for="address_2">Suite/Apt#:</label>
+                    <input type="text" id="address_2" name="address_2">
+                    <span class="error-message"></span>
+                </div>
+
+                <div class="form-row gfield--width-half">
+                    <label for="city">City:</label>
+                    <input type="text" id="city" name="city" required data-error-message="Please enter a city.">
+                    <span class="error-message"></span>
+                </div>
+
+                <div class="form-row gfield--width-half">
+                    <label for="state">State:</label>
+                    <select id="state" name="state" required data-error-message="Please select a state.">
+                        <option value="" disable>Select state</option>
+                        <?php echo self::get_us_states_list(isset($shipping_address['state']) ? $shipping_address['state'] : ""); ?>
+                    </select>
+                    <span class="error-message"></span>
+                </div>
+
+                <div class="form-row gfield--width-half">
+                    <label for="zipcode">Zipcode:</label>
+                    <input type="text" id="zipcode" name="zipcode" required data-error-message="Please enter a valid zipcode.">
+                    <span class="error-message"></span>
+                </div>
+
+               
+
+                <div class="textarea-div form-row gfield--width-full">
+                    <label for="greeting">Add a Greeting:</label>
+                    <textarea id="greeting" name="greeting"></textarea>
+                    <div class="char-counter"><span>250</span> characters remaining</div>
+                </div>
+
+                <div class="footer-btn gfield--width-full">
+                <button type='button' class=" w-btn us-btn-style_4" data-lity-close>Cancel</button>
+                <button type="submit">Edit Recipient Order Details</button>
                 </div>
             </form>
         </div>

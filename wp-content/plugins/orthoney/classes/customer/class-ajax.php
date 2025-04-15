@@ -26,10 +26,12 @@ class OAM_Ajax{
         add_action( 'wp_ajax_orthoney_single_address_data_save_ajax', array( $this, 'orthoney_single_address_data_save_ajax_handler') );
 		add_action( 'wp_ajax_manage_recipient_form', array( $this, 'orthoney_manage_recipient_form_handler' ) );
 		add_action( 'wp_ajax_download_failed_recipient', array( $this, 'orthoney_download_failed_recipient_handler'));
-
+        
 		add_action( 'wp_ajax_deleted_recipient', array( $this, 'orthoney_deleted_recipient_handler' ) );
 		add_action( 'wp_ajax_bulk_deleted_recipient', array( $this, 'orthoney_bulk_deleted_recipient_handler' ) );
 		add_action( 'wp_ajax_get_recipient_base_id', array( $this, 'orthoney_get_recipient_base_id_handler' ) );
+		add_action( 'wp_ajax_get_recipient_order_base_id', array( $this, 'orthoney_get_recipient_order_base_id_handler' ) );
+		add_action( 'wp_ajax_manage_recipient_order_form', array( $this, 'orthoney_manage_recipient_order_form_handler' ) );
 
 		add_action( 'wp_ajax_reverify_address_recipient', array( $this, 'orthoney_reverify_address_recipient_handler' ) );
 
@@ -1810,6 +1812,119 @@ private function add_items_to_cart_chunk($data, $product_id) {
             wp_send_json_error(['message' => 'Failed to delete recipient or recipient not found.']);
         }
     }
+    // Callback function edit recipient order
+    public function orthoney_manage_recipient_order_form_handler() {
+        $orderID = !empty($_POST['order_id']) ? intval($_POST['order_id']) : 0;
+    
+        if (!$orderID) {
+            wp_send_json_error(['message' => 'Invalid Order ID']);
+        }
+    
+        $order = wc_get_order($orderID);
+    
+        if (!$order) {
+            wp_send_json_error(['message' => 'Order not found']);
+        }
+    
+        // Get posted data
+        $full_name     = sanitize_text_field($_POST['full_name'] ?? '');
+        $company_name  = sanitize_text_field($_POST['company_name'] ?? '');
+        $address_1     = sanitize_text_field($_POST['address_1'] ?? '');
+        $address_2     = sanitize_text_field($_POST['address_2'] ?? '');
+        $city          = sanitize_text_field($_POST['city'] ?? '');
+        $state         = sanitize_text_field($_POST['state'] ?? '');
+        $zipcode       = sanitize_text_field($_POST['zipcode'] ?? '');
+        $greeting      = sanitize_text_field($_POST['greeting'] ?? '');
+    
+        // Split full name into first and last name
+      
+    
+        // Update shipping address
+        $order->set_shipping_first_name($full_name);
+        $order->set_shipping_last_name('');
+        $order->set_shipping_company($company_name);
+        $order->set_shipping_address_1($address_1);
+        $order->set_shipping_address_2($address_2);
+        $order->set_shipping_city($city);
+        $order->set_shipping_state($state);
+        $order->set_shipping_postcode($zipcode);
+    
+        // Save greeting as custom meta on the order
+        foreach ($order->get_items() as $item_id => $item) {
+            $item->update_meta_data('_recipient_company_name', $company_name);
+            $item->update_meta_data('greeting', $greeting);
+            $item->save();
+            break;
+        }
+    
+        // Save the order
+        $order->save();
+    
+        wp_send_json_success(['message' => 'Order updated successfully']);
+    }
+    
+
+    // Callback function for get recipient  order details base in id
+    public function orthoney_get_recipient_order_base_id_handler() {
+        global $wpdb;
+    
+        $orderID = !empty($_POST['id']) ? intval($_POST['id']) : 0;
+    
+        if (empty($orderID)) {
+            $response = ['success' => false, 'message' => 'Invalid order ID.'];
+            wp_send_json_error($response);
+        }
+    
+        $order = wc_get_order($orderID);
+    
+        if (!$order) {
+            $response = ['success' => false, 'message' => 'Order not found.'];
+            wp_send_json_error($response);
+        }
+       
+    
+        $full_name = $order->get_shipping_first_name();
+        $address_1  = $order->get_shipping_address_1();
+        $address_2  = $order->get_shipping_address_2();
+        $city       = $order->get_shipping_city();
+        $state      = $order->get_shipping_state();
+        $postcode   = $order->get_shipping_postcode();
+        $country    = $order->get_shipping_country();
+        $total_quantity = 0;
+
+        $states = WC()->countries->get_states('US'); // Make sure country code is uppercase
+        $full_state_name = isset($states[$state]) ? $states[$state] : $state;
+        $full_state = $full_state_name . " (" . $state . ")";
+
+        // Assuming one item per recipient order
+        $company_name = '';
+        foreach ($order->get_items() as $item) {
+            $company_name = $item->get_meta('_recipient_company_name', true)?? '';
+            $greeting = $item->get_meta('greeting', true) ?? '';
+            $total_quantity += $item->get_quantity();
+            break;
+        }
+    
+    
+        $data = [
+            'success'       => true,
+            'id'            => $orderID,
+            'full_name'     => $full_name,
+            'company_name'  => $company_name,
+            'address_1'     => $address_1,
+            'address_2'     => $address_2,
+            'city'          => $city,
+            'state'         => $state,
+            'full_state'    => $full_state,
+            'zipcode'       => $postcode,
+            'country'       => $country,
+            'greeting'      => $greeting,
+            'quantity'      => $total_quantity,
+        ];
+    
+        wp_send_json_success($data);
+    }
+    
 
     // Callback function for get recipient base in id
     public function orthoney_get_recipient_base_id_handler($recipient = '') {
@@ -1845,6 +1960,7 @@ private function add_items_to_cart_chunk($data, $product_id) {
     }
 
     // Callback function for manually add new recipient and edit recipient
+    
     public function orthoney_manage_recipient_form_handler() {
         $method =  isset($_POST['method']) ? $_POST['method'] : 'process';
         
