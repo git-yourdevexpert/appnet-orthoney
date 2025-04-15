@@ -629,14 +629,17 @@ document.addEventListener("DOMContentLoaded", function () {
     // }
 
     async function process_to_checkout_ajax_part(form, status) {
+      // Only verified = 1 
+      // for all = 0
       let currentChunk = 0;
       let pid = null;
+    
       let totalChunks = 0;
       console.log(status);
       // Show initial processing popup
       Swal.fire({
-          title: "Preparing for checkout...",
-          text: "Please wait while we process your recipients.",
+          title: "Prepare your order.",
+          text: "Please wait while we process your order.",
           showConfirmButton: false,
           allowOutsideClick: false,
           allowEscapeKey: false,
@@ -645,12 +648,18 @@ document.addEventListener("DOMContentLoaded", function () {
       
       setTimeout(() => {
           function processCheckoutChunk() {
-              const formData = new FormData(form);
+            let unverifiedCount = Number(form.querySelector('#unverified-block')?.getAttribute('data-count')) || 0;
+            let verifiedCount = Number(form.querySelector('#verified-block')?.getAttribute('data-count')) || 0;
+
+            let totalCount = status == 1 ? verifiedCount : verifiedCount + unverifiedCount;
+            
+            const formData = new FormData(form);
               formData.append("action", "orthoney_process_to_checkout_ajax");
               formData.append("currentStep", typeof currentStep !== "undefined" ? currentStep : "");
               formData.append("security", oam_ajax.nonce);
               formData.append("status", status);
               formData.append("current_chunk", currentChunk);
+              formData.append("totalCount", totalCount);
               
               if (pid !== null) {
                   formData.append("pid", pid);
@@ -670,7 +679,7 @@ document.addEventListener("DOMContentLoaded", function () {
                               
                               // Update to progress bar popup after first chunk
                               Swal.fire({
-                                  title: "Processing recipients...",
+                                  title: "Prepare your order.",
                                   text: "",
                                   html: `
                                       <p>Please wait while we prepare your order.</p><div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
@@ -693,16 +702,18 @@ document.addEventListener("DOMContentLoaded", function () {
                           if (!response.data.finished) {
                               // Process next chunk
                               currentChunk = response.data.next_chunk;
-                              processCheckoutChunk();
+                              setTimeout(() => {
+                                processCheckoutChunk();
+                              }, 300);
                           } else {
                               // All chunks processed, redirect to checkout
                               Swal.fire({
                                   icon: "success",
-                                  title: "Processing complete!",
-                                  text: "Redirecting to checkout...",
+                                  title: "Order processing complete!",
+                                  text: "Please wait, you are being redirected to the checkout page...",
                                   showConfirmButton: false,
-                                  timer: 2000,
-                                  timerProgressBar: true,
+                                  // timer: 2000,
+                                  // timerProgressBar: true,
                                   allowOutsideClick: false,
                                   allowEscapeKey: false,
                                   allowEnterKey: false
@@ -1222,10 +1233,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     // Show progress bar popup only after a successful start
                     Swal.fire({
-                      title: "Processing...",
+                      title: "Uploading Recipient Data",
                       text: "Please wait, the recipient data upload is in progress.",
                       html: `
-                        <div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
+                        <p>Please wait, the recipient data upload is in progress.</p><div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
                           <div id="progress-bar" style="width: 0%; height: 10px; background-color: #3085d6;"></div>
                         </div>
                         <p id="progress-text">0%</p>
@@ -1614,20 +1625,20 @@ function addRecipientManuallyPopup(reload) {
     'input[name="checkout_proceed_with_multi_addresses_status"]'
   );
 
-  if (processCheckoutStatus && checkout_proceed_with_multi_addresses_status) {
-    if (
-      processCheckoutStatus.value == 5 &&
-      delivery_preference.value == "multiple_address" &&
-      checkout_proceed_with_multi_addresses_status.value == "only_verified"
-    ) {
-      let button = document.querySelector(
-        "#multiStepForm button#checkout_proceed_with_only_verified_addresses"
-      );
-      if (button) {
-        button.click();
-      }
-    }
-  }
+  // if (processCheckoutStatus && checkout_proceed_with_multi_addresses_status) {
+  //   if (
+  //     processCheckoutStatus.value == 5 &&
+  //     delivery_preference.value == "multiple_address" &&
+  //     checkout_proceed_with_multi_addresses_status.value == "only_verified"
+  //   ) {
+  //     let button = document.querySelector(
+  //       "#multiStepForm button#checkout_proceed_with_only_verified_addresses"
+  //     );
+  //     if (button) {
+  //       button.click();
+  //     }
+  //   }
+  // }
 
   if (reload == 1) {
     setTimeout(function () {

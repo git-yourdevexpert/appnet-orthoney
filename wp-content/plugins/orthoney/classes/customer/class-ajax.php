@@ -73,6 +73,7 @@ public function orthoney_process_to_checkout_ajax_handler() {
     $status         = intval($_POST['status'] ?? 1);
     $pid            = intval($_POST['pid'] ?? 1);
     $currentStep    = intval($_POST['currentStep'] ?? 1);
+    $total_recipients    = intval($_POST['totalCount'] ?? 1);
     $recipientIds   = array_map('intval', $_POST['recipientAddressIds'] ?? []); // ✅ FIXED
     $current_chunk  = intval($_POST['current_chunk'] ?? 0);
     $stepData       = $_POST ?? [];
@@ -89,6 +90,7 @@ public function orthoney_process_to_checkout_ajax_handler() {
     $placeholders = implode(',', array_fill(0, count($recipientIds), '%d'));
 
 
+    // print_r($chunk_recipient_ids);
     // ✅ KEEPING ORIGINAL STATUS LOGIC
     if ($status == 1) {
         $query = $wpdb->prepare(
@@ -105,7 +107,7 @@ public function orthoney_process_to_checkout_ajax_handler() {
     }
 
     $filtered_ids = $wpdb->get_col($query);
-    $total_recipients = count($filtered_ids);
+   
     $total_chunks     = ceil($total_recipients / $chunk_size);
     $chunk_recipient_ids = array_slice($filtered_ids, $current_chunk * $chunk_size, $chunk_size);
 
