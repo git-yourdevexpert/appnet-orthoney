@@ -51,6 +51,7 @@ class OAM_Ajax{
 		add_action( 'wp_ajax_deleted_group', array( $this, 'orthoney_deleted_group_handler' ) );
 		add_action( 'wp_ajax_orthoney_customer_order_process_ajax', array( $this, 'orthoney_customer_order_process_ajax_handler' ) );
 		add_action('wp_ajax_orthoney_customer_order_export_ajax',  array( $this,'orthoney_customer_order_export_ajax_handler'));
+		add_action('wp_ajax_orthoney_customer_order_export_by_id_ajax',  array( $this,'orthoney_customer_order_export_by_id_ajax_handler'));
         add_action('wp_ajax_download_generated_csv',  array( $this,'download_generated_csv_handler'));
 
 		add_action( 'wp_ajax_customer_sub_order_details_ajax', array( $this, 'customer_sub_order_details_ajax_handler' ) );
@@ -2321,6 +2322,69 @@ private function add_items_to_cart_chunk($data, $product_id) {
     }
 
     // AJAX: Export orders as CSV
+    public function orthoney_customer_order_export_by_id_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+
+        $order_id = intval($_POST['order_id'] ?? 0);
+        $user_id = get_current_user_id();
+       
+        $filtered_orders = OAM_Helper::get_filtered_orders_by_id($user_id, $order_id);
+
+        $csvData = [
+            ['Jar No', 'Order No', 'Date', 'Billing Name', 'Shipping Name', 'Affiliate Code', 'Total Jar', 'Total Recipient', 'Type', 'Status', 'Price']
+        ];
+
+        foreach ($filtered_orders as $order) {
+            $csvData[] = [
+                $order['jar_no'],
+                $order['order_no'],
+                $order['date'],
+                $order['billing_name'],
+                $order['shipping_name'],
+                $order['affiliate_code'],
+                $order['total_jar'],
+                $order['total_recipient'],
+                $order['type'],
+                $order['status'],
+                $order['price'],
+            ];
+        }
+
+        $filename = 'customer_orders_' . time() . '.csv';
+        $custom_dir = WP_CONTENT_DIR . '/download_recipient_list';
+        $custom_url = content_url('/download_recipient_list');
+
+        if (!file_exists($custom_dir)) {
+            wp_mkdir_p($custom_dir);
+        }
+
+        $file_path = "$custom_dir/$filename";
+        $file_url = add_query_arg(['action' => 'download_generated_csv', 'filename' => $filename], admin_url('admin-ajax.php'));
+
+        $output = fopen($file_path, 'w');
+        if (!$output) {
+            wp_send_json_error(['message' => 'Failed to create CSV file.']);
+            return;
+        }
+
+        foreach ($csvData as $row) {
+            fputcsv($output, $row);
+        }
+
+        fclose($output);
+
+        if (file_exists($file_path)) {
+            wp_send_json_success([
+                'url' => $file_url,
+                'filename' => $filename,
+            ]);
+        } else {
+            wp_send_json_error(['message' => 'File not found after creation.']);
+        }
+
+        wp_die();
+    }
+
     public function orthoney_customer_order_export_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
 

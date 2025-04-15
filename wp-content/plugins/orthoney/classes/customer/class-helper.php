@@ -64,6 +64,64 @@ class OAM_Helper{
 
 	public function __construct() {}
     
+    public static function get_filtered_orders_by_id($user_id, $orderid = 0) {
+        global $wpdb;
+    
+        $orders_table = $wpdb->prefix . 'wc_orders';
+        $filtered_orders = [];
+    
+        $main_orders = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM $orders_table WHERE customer_id = %d AND parent_order_id = 0 AND id = %d AND status != %s ORDER BY date_updated_gmt DESC",
+            $user_id, $orderid, 'wc-checkout-draft'
+        ));
+    
+        foreach ($main_orders as $main_data) {
+            $order_id = $main_data->id;
+            $main_status = $main_data->status;
+    
+            $main_order = wc_get_order($order_id);
+            if (!$main_order) continue;
+    
+            $order_type = 'Multi Address';
+            $total_quantity = 0;
+    
+            foreach ($main_order->get_items() as $item) {
+                if ($item->get_meta('single_order', true) == 1) {
+                    $order_type = 'Single Address';
+                }
+                $total_quantity += $item->get_quantity();
+            }
+    
+            $row_builder = 'build_export_order_row';
+            $row_data = OAM_Helper::$row_builder($main_data, $main_order, $order_type, $total_quantity);
+    
+            if ($order_type === 'Single Address') {
+                $filtered_orders[] = $row_data;
+            }
+    
+            // Sub-orders
+            $sub_orders = $wpdb->get_results($wpdb->prepare(
+                "SELECT * FROM $orders_table WHERE customer_id = %d AND parent_order_id = %d",
+                $user_id, $order_id
+            ));
+    
+            foreach ($sub_orders as $sub_data) {
+                $sub_order = wc_get_order($sub_data->id);
+                if (!$sub_order) continue;
+    
+                $sub_total_quantity = 0;
+                foreach ($sub_order->get_items() as $item) {
+                    $sub_total_quantity += $item->get_quantity();
+                }
+    
+                $filtered_orders[] = OAM_Helper::$row_builder($sub_data, $sub_order, $order_type, $sub_total_quantity, $main_order);
+            }
+        }
+    
+      
+        return $filtered_orders;
+    }
+    
 
     public static  function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false) {
         global $wpdb;
@@ -212,7 +270,7 @@ class OAM_Helper{
             'price' => $order_total,
             'action' =>
                 '<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>' .
-                ($order_data->parent_order_id == 0 ? '<a data-tippy="Download Invoice" href="#" class="far fa-download"></a><a data-tippy="Download CSV" href="#" class="far fa-file-csv"></a>' : '') .
+                ($order_data->parent_order_id == 0 ? '<a data-tippy="Download Invoice" href="#" class="far fa-download"></a><button class="download_csv_by_order_id far fa-file-csv" data-tippy="Download CSV" data-orderid="'.(($order_data->parent_order_id == 0) ? $order_data->id : $order_data->parent_order_id).'"></button>' : '') .
                 (empty($status_html) && ( $order_data->parent_order_id == 0) ? '<button>Suborder is created</button>' : '')
         ];
     }

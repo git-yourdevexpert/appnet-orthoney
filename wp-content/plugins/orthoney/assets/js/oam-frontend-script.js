@@ -1673,11 +1673,13 @@ jQuery(document).ready(function ($) {
 
             toggleRecipientColumn();
 
-            $('#custom-order-type-filter, #custom-order-status-filter').on('change', function () {
+            $('#custom-order-type-filter, #custom-order-status-filter').on('change', function (e) {
+                e.preventDefault();
                 table.ajax.reload();
             });
 
-            $(document).on('click', 'input[name="table_order_type"]', function () {
+            $(document).on('click', 'input[name="table_order_type"]', function (e) {
+                e.preventDefault();
                 toggleRecipientColumn();
                 table.ajax.reload();
             });
@@ -1718,20 +1720,20 @@ jQuery(document).ready(function ($) {
                 });
             });
 
-            setTimeout(function () {
-                const searchBox = $('#customer-orders-table_filter input');
-                searchBox.attr('placeholder', 'Search by name');
+            // setTimeout(function () {
+            //     const searchBox = $('#customer-orders-table_filter input');
+            //     searchBox.attr('placeholder', 'Search by name');
             
-                searchBox.off('input').on('input', function () {
-                    const val = this.value.trim();
-                    const wordCount = val.split(/\s+/).filter(Boolean).length;
+            //     searchBox.off('input').on('input', function () {
+            //         const val = this.value.trim();
+            //         const wordCount = val.split(/\s+/).filter(Boolean).length;
             
-                    if (wordCount >= 3 || val.length === 0) {
-                        table.search(val).draw();
-                    }
-                });
-            }, 100);
-            
+            //         if (wordCount >= 3 || val.length === 0) {
+            //             table.search(val).draw();
+            //         }
+            //     });
+            // }, 100);
+
             function toggleRecipientColumn() {
                 const selectedType = $('input[name="table_order_type"]:checked').val();
                 const filterWrapper = $('.custom-order-status-filter-wrapper');
@@ -1754,6 +1756,54 @@ jQuery(document).ready(function ($) {
         }
     });
 });
+
+jQuery(document).on('click', '.download_csv_by_order_id', function (e) {
+    e.preventDefault();
+
+    const orderid = jQuery(this).data('orderid');
+
+    const requestData = {
+        action: 'orthoney_customer_order_export_by_id_ajax',
+        security: oam_ajax.nonce,
+        order_id: orderid
+    };
+
+    process_group_popup('Generating CSV...');
+
+    jQuery.ajax({
+        url: oam_ajax.ajax_url,
+        type: 'POST',
+        data: requestData,
+        success: function (response) {
+            setTimeout(() => {
+                Swal.close();
+            }, 500);
+            if (response.success && response.data?.url) {
+                const a = document.createElement('a');
+                a.href = response.data.url;
+                a.download = response.data.filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                Swal.fire({
+                    title: 'Export Failed',
+                    text: response?.data?.message || 'Something went wrong during export.',
+                    icon: 'error',
+                });
+            }
+        },
+        error: function () {
+            Swal.close();
+            Swal.fire({
+                title: 'Export Failed',
+                text: 'An AJAX error occurred while exporting the order.',
+                icon: 'error',
+            });
+        }
+    });
+});
+
 
 
 document.addEventListener('click', function (event) {
