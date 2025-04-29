@@ -50,6 +50,25 @@
             "bidirectional_target": []
         },
         {
+            "key": "field_680c7750d6003",
+            "label": "Shipping Date",
+            "name": "shipping_date",
+            "aria-label": "",
+            "type": "date_time_picker",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "100",
+                "class": "",
+                "id": ""
+            },
+            "display_format": "F j",
+            "return_format": "Y-m-d H:i:s",
+            "first_day": 1,
+            "allow_in_bindings": 0
+        },
+        {
             "key": "field_67d959baf233a",
             "label": "Free Shipping Start Date",
             "name": "free_shipping_start_date",
@@ -312,5 +331,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1743575896
+    "modified": 1745904540
 }
