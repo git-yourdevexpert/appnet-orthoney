@@ -14,6 +14,7 @@ if (!defined('ABSPATH')) {
 require_once 'libs/dompdf/autoload.inc.php';
 
 add_filter( 'woocommerce_checkout_fields', 'custom_disable_shipping_fields_validation' );
+add_filter('woocommerce_create_order_draft_enabled', '__return_false');
 
 function custom_disable_shipping_fields_validation( $fields ) {
     if ( isset( $fields['shipping'] ) ) {
