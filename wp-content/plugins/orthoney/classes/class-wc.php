@@ -122,8 +122,8 @@ class OAM_WC_Customizer {
         echo '<!DOCTYPE html><html>';
             echo '<head><meta charset="UTF-8">
                 <style>
-               
-                    body { font-family: DejaVu Sans, sans-serif; background-color: #f7f7f7; color: #515151; margin: 0; padding: 0; }
+               body,html{padding:0; margin:0;}
+                    body { font-family: DejaVu Sans, sans-serif; background-color: #f7f7f7; color: #515151; margin: 0; padding: 0; font-size:12px;}
                     .email-container { width: 600px; background: #ffffff; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
                     h1 { color: #333; text-align: center; }
                     .order-summary { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -133,7 +133,7 @@ class OAM_WC_Customizer {
                 </style>
             </head>';
             echo '<body>';
-                echo '<div class="pdf-heading" style="background-color: #491571; text-align:left; color: #ffffff;">';
+                echo '<div class="pdf-heading" style="background-color: #491571; text-align:left; color: #ffffff;padding:0; margin:0;">';
                     echo '<h1 style="color:white;padding: 36px 48px;">Thank you for your order</h1>';
                 echo '</div>';
                 echo '<div class="email-container">';

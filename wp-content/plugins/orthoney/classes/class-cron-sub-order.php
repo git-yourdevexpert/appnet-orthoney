@@ -253,3 +253,8 @@ class OAM_WC_CRON_Suborder {
 
 }
 new OAM_WC_CRON_Suborder();
+
+
+// add_action('init', function () {
+//     WC()->mailer()->get_emails()['WC_Email_Customer_Processing_Order']->trigger(2459);
+// }, 10, 2);
