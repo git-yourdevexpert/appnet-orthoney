@@ -52,7 +52,7 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
             <th>Date</th>
             <th>Billing Name</th>
             <th>Recipient Name</th>
-            <th>Affiliate Code</th>
+            <th>Organization Code</th>
             <th>Total Honey Jar</th>
             <th>Total Recipient</th>
             <th>Type</th>
@@ -70,7 +70,7 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
             <th>Jar No</th>
             <th>Date</th>
             <th>Recipient Name</th>
-            <th>Affiliate Code</th>
+            <th>Organization Code</th>
             <th>Total Honey Jar</th>
             <th>Status</th>
             <th>Price</th>
