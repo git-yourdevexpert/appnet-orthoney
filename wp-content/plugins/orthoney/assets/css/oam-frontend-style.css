@@ -2292,9 +2292,9 @@ html body.header_hor .l-subheader-cell.at_right>* {
 .admin-bar .select2-container--open .select2-dropdown {
   margin-top: 33px;
 }
-.is-large .wc-block-checkout__billing-fields .wc-block-components-address-form .wc-block-components-address-form__country {
+/* .is-large .wc-block-checkout__billing-fields .wc-block-components-address-form .wc-block-components-address-form__country {
   display: none;
-}
+} */
 body .woocommerce-order .woocommerce-thankyou-order-details {
   display: none;
 }
