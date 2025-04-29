@@ -31,6 +31,70 @@ class OAM_COMMON_Custom {
         // Add any initialization logic here
     }
 
+    public static function get_order_meta($order_id, $meta_key) {
+
+        global $wpdb;
+
+        // Define the query to count orders for the current month
+        $query = $wpdb->prepare(
+            "SELECT meta_value
+             FROM {$wpdb->prefix}wc_orders_meta
+             WHERE meta_key = %s AND order_id = %d",
+            $meta_key,
+            $order_id
+        );
+        
+        // Execute the query and get the result
+        return $wpdb->get_var($query);
+    }
+    
+
+    public static function get_current_month_count() {
+        global $wpdb;
+    
+        // Step 1: Get the count of orders for the current month
+        $query = "SELECT COUNT(id) 
+                  FROM {$wpdb->prefix}wc_orders
+                  WHERE date_created_gmt >= DATE_FORMAT(NOW(), '%Y-%m-01')
+                  AND date_created_gmt <= LAST_DAY(NOW())";
+        
+        $month_count = (int) $wpdb->get_var($query);
+    
+        // Step 2: Format the count with leading zeros (4 digits)
+        $formatted_count = str_pad($month_count, 4, '0', STR_PAD_LEFT);
+    
+        // Step 3: Build the base prefix (like 20250428)
+        $date_prefix = current_time('Ymd'); // Site's timezone, not GMT
+    
+        // Step 4: Combine date + formatted_count
+        $full_value = $date_prefix . $formatted_count;
+    
+        // Step 5: Now check in _wc_orders_meta table
+        $meta_key = '_orthoney_OrderID'; // Correct meta key
+    
+        while (true) {
+            $exists = $wpdb->get_var( $wpdb->prepare(
+                "SELECT meta_value 
+                 FROM {$wpdb->prefix}wc_orders_meta 
+                 WHERE meta_key = %s AND meta_value = %s 
+                 LIMIT 1",
+                $meta_key,
+                $full_value
+            ));
+    
+            if (!$exists) {
+                // Not exist, safe to return
+                return $full_value;
+            }
+    
+            // Else, increment and recheck
+            $month_count++;
+            $formatted_count = str_pad($month_count, 4, '0', STR_PAD_LEFT);
+            $full_value = $date_prefix . $formatted_count;
+        }
+    }
+    
+    
     public static function get_product_custom_price($product_id, $affiliate_id) {
         $product = wc_get_product( $product_id );
         return $price = $product ? $product->get_price() : 15;
@@ -150,6 +214,118 @@ class OAM_COMMON_Custom {
         file_put_contents($log_file, $log_message, FILE_APPEND);
     }
    
+    public static function orthoney_get_order_data($order_id) {
+        global $wpdb;
+        $order = wc_get_order($order_id);
+        if (!$order) return null;
+   
+        $order_data = [];
+   
+        // Basic customer info
+        $order_data['order_id'] = $order_id;
+        $order_data['customer_name'] = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
+        $order_data['email'] = $order->get_billing_email();
+        $order_data['address'] = $order->get_billing_address_1() . ', ' .
+                                 $order->get_billing_city() . ', ' .
+                                 $order->get_billing_state() . ' ' .
+                                 $order->get_billing_postcode();
+   
+        // Optional: get shipping address
+        $order_data['shipping_address'] = $order->get_formatted_shipping_address();
+   
+        $custom_sub_oid = $order->get_meta( '_orthoney_OrderID' ); // replace with actual key
+       // echo $results;
+ 
+        $results = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}oh_recipient_order WHERE order_id = %d",
+                $custom_sub_oid
+            ),
+            ARRAY_A
+        );
+
+    
+        $order_data['suborder'] = $results;
+ 
+        $suborder = [];
+        foreach ($order_data['suborder'] as $suborder_data) {
+         
+            $suborder_product_id = $suborder_data['pid'];
+            $suborder_affiliate_token = $suborder_data['affiliate_token'];
+ 
+            $suborder_full_name = $suborder_data['full_name'];
+            $suborder_data_company_name = $suborder_data['company_name'];
+            $suborder_data_city = $suborder_data['city'];
+            $suborder_data_state = $suborder_data['state'];
+            $suborder_data_zipcode = $suborder_data['zipcode'];
+            $suborder_data_country = $suborder_data['country'];
+            $suborder_data_address_1 = $suborder_data['address_1'];
+            $suborder_data_address_2 = $suborder_data['address_2'];
+            $suborder_data_quantity = $suborder_data['quantity'];
+
+            $userinfo = $wpdb->get_var(
+                $wpdb->prepare(
+                    "
+                    SELECT um.meta_value
+                    FROM {$wpdb->prefix}usermeta um
+                    INNER JOIN {$wpdb->prefix}yith_wcaf_affiliates af ON um.user_id = af.user_id
+                    WHERE um.meta_key = %s
+                    AND af.token = %s
+                    ",
+                    '_userinfo',
+                    $suborder_affiliate_token
+                )
+            );
+
+
+            // Define the table names with the WordPress prefix
+            $affiliate_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+            $usermeta_table = $wpdb->prefix . 'usermeta';
+
+            // Define the query to fetch first name and filter by token 'AAC'
+            $query = "
+                SELECT meta.meta_value as first_name
+                FROM {$affiliate_table} affiliate
+                JOIN {$usermeta_table} meta ON meta.user_id = affiliate.user_id
+                WHERE meta.meta_key = '_yith_wcaf_first_name'
+                AND affiliate.token = %s
+                GROUP BY affiliate.user_id
+            ";
+
+            // Prepare and execute the query with the 'AAC' token
+            $affiliate_org_name = $wpdb->get_var($wpdb->prepare($query, $suborder_affiliate_token));
+            
+         
+
+            
+   
+            $sub[] = [
+               
+                'suborder_affiliate_org_name' => $affiliate_org_name,
+
+                'suborder_product_id' => $suborder_product_id,
+                'suborder_affiliate_token' => $suborder_affiliate_token,
+                'suborder_affiliate_user_info' => $userinfo,
+                'suborder_full_name' => $suborder_full_name,
+                'suborder_data_company_name' => $suborder_data_company_name,
+                'suborder_data_city' => $suborder_data_city,
+                'suborder_data_state' => $suborder_data_state,
+                'suborder_data_zipcode' => $suborder_data_zipcode,
+                'suborder_data_country' => $suborder_data_country,
+                'suborder_data_address_1' => $suborder_data_address_1,
+                'suborder_data_address_2' => $suborder_data_address_2,
+                'suborder_data_quantity' => $suborder_data_quantity,
+                'suborder_data_userinfo' => $userinfo,
+            ];
+        }
+        $order_data['suborderdata'] = $sub;
+   
+        // Totals
+        $order_data['total'] = $order->get_total();
+        $order_data['formatted_total'] = wc_price($order->get_total());
+   
+        return $order_data;
+    }
 
     public static function redirect_logged_in_user_to_dashboard() {
 

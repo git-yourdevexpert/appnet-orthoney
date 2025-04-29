@@ -12,6 +12,7 @@ class OAM_Helper{
 	 * Define tables
 	 **/
     public static $order_process_table;
+    public static $recipient_order_table;
     public static $order_process_recipient_table;
     public static $order_process_recipient_activate_log_table;
     public static $files_activate_log_table;
@@ -38,6 +39,7 @@ class OAM_Helper{
         global $wpdb;
 
         self::$order_process_table = $wpdb->prefix . 'oh_order_process';
+        self::$recipient_order_table = $wpdb->prefix . 'oh_recipient_order';;
         self::$order_process_recipient_table = $wpdb->prefix . 'oh_order_process_recipient';
         self::$order_process_recipient_activate_log_table = $wpdb->prefix . 'oh_order_process_recipient_activate_log';
         self::$files_activate_log_table = $wpdb->prefix . 'oh_files_upload_activity_log';
@@ -63,6 +65,46 @@ class OAM_Helper{
     }
 
 	public function __construct() {}
+    
+    
+    public static function get_recipient_by_pid($pid) {
+        global $wpdb;
+        $process = $wpdb->get_row($wpdb->prepare(
+            "SELECT data FROM " . OAM_Helper::$order_process_table . " WHERE id = %d", 
+            $pid
+        ));
+
+        $setData = json_decode($process->data) ?? [];
+
+        $address_verified = $setData->status;
+        $recipientIds = isset($setData->recipientAddressIds) ? $setData->recipientAddressIds  : [];
+        $placeholders = implode(',', array_fill(0, count($recipientIds), '%d'));
+      
+
+        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+
+        if($address_verified == 1){
+            
+            $recipients = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT * FROM {$order_process_recipient_table} 
+                    WHERE  pid = %d AND visibility = %d AND verified = %d AND address_verified = %d AND id IN ($placeholders)",
+                    array_merge([ $pid, 1, 1, 1], $recipientIds)
+                )
+            );
+        
+        }else{
+            $recipients = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT * FROM {$order_process_recipient_table} 
+                    WHERE  pid = %d AND visibility = %d AND verified = %d AND id IN ($placeholders)",
+                    array_merge([ $pid, 1, 1], $recipientIds)
+                )
+            );
+        }
+
+        return $recipients;
+    }
     
     public static function get_filtered_orders_by_id($user_id, $orderid = 0) {
         global $wpdb;
@@ -123,16 +165,123 @@ class OAM_Helper{
     }
     
 
-    public static  function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false) {
+
+    public static  function get_jars_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length) {
+        global $wpdb;
+        $orders_table = $wpdb->prefix . 'wc_orders'; 
+        $filtered_orders = [];
+        $limit = $length;
+        $offset = $page;
+            // If no cached data, build the query
+            if (current_user_can('administrator')) {
+                $jarsorder = $wpdb->get_results(
+                    $wpdb->prepare(
+                        "
+                        SELECT 
+                            recipient_order_id AS `jar_no`,
+                            order_id AS `order_no`,
+                            created_date AS `date`,
+                            full_name AS `billing_name`,
+                            full_name AS `shipping_name`,
+                            affiliate_token AS `affiliate_code`,
+                            quantity AS `total_jar`,    
+                            order_type AS `type`
+                        FROM {$wpdb->prefix}oh_recipient_order
+                        LIMIT %d OFFSET %d
+                        ",
+                        $limit, 
+                        $offset
+                    ),
+                    ARRAY_A
+                );
+          } else {
+            $jarsorder = $wpdb->get_results(
+                $wpdb->prepare(
+                    "
+                    SELECT 
+                        recipient_order_id AS `jar_no`,
+                        order_id AS `order_no`,
+                        created_date AS `date`,
+                        full_name AS `billing_name`,
+                        full_name AS `shipping_name`,
+                        affiliate_token AS `affiliate_code`,
+                        quantity AS `total_jar`,    
+                        order_type AS `type`
+                    FROM {$wpdb->prefix}oh_recipient_order
+                    WHERE user_id = %d
+                    LIMIT %d OFFSET %d
+                    ",
+                    $user_id, // Assuming $user_id is the variable you are comparing with
+                    $limit, 
+                    $offset
+                ),
+                ARRAY_A
+            );
+          }
+          $jarsorder = array_map(function($order) {
+            $order['status'] = 'n/a';
+            $order['price'] = '$14.00'; // Set price here (change 10.00 to the actual price calculation)
+            $order['action'] = 'n/a'; // Set price here (change 10.00 to the actual price calculation)
+
+            return $order;
+        }, $jarsorder);
+        
+        $filtered_orders = $jarsorder;
+        return $filtered_orders;
+
+    }
+
+        
+    public static  function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length) {
         global $wpdb;
 
         $orders_table = $wpdb->prefix . 'wc_orders';
+    
         $filtered_orders = [];
+    // echo $search;
 
-        $main_orders = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM $orders_table WHERE customer_id = %d AND parent_order_id = 0 AND status != %s ORDER BY date_updated_gmt DESC",
-            $user_id, 'wc-checkout-draft'
-        ));
+        $limit = $length;
+        // $page = isset($page) ? (int)$page : 1;
+         $offset = $page;
+
+        $raw_key = current_user_can('administrator')
+        ? "main_orders_admin_{$limit}_{$offset}"
+        : "main_orders_user_{$user_id}_{$limit}_{$offset}";
+
+    // Hash it to make it shorter and cache-safe
+    $transient_key = 'main_orders_' . md5($raw_key);
+
+    // Try to get cached result
+    $main_orders = get_transient($transient_key);
+    $main_orders = false;
+        if ($main_orders === false) {
+            // If no cached data, build the query
+            if (current_user_can('administrator')) {
+                $sql = $wpdb->prepare(
+                    "SELECT * FROM $orders_table
+                    WHERE status != %s
+                    ORDER BY date_updated_gmt DESC
+                    LIMIT %d OFFSET %d",
+                    'wc-checkout-draft', $limit, $offset
+                );
+            } else {
+                $sql = $wpdb->prepare(
+                    "SELECT * FROM $orders_table
+                    WHERE customer_id = %d
+                    AND status != %s
+                    ORDER BY date_updated_gmt DESC
+                    LIMIT %d OFFSET %d",
+                    $user_id, 'wc-checkout-draft', $limit, $offset
+                );
+            }
+
+            // Run query and cache the results for 5 minutes (300 seconds)
+            $main_orders = $wpdb->get_results($sql);
+            set_transient($transient_key, $main_orders, 300); // 5 minutes
+        }
+    // echo $sql;
+    
+    
 
         foreach ($main_orders as $main_data) {
             $order_id = $main_data->id;
@@ -176,47 +325,12 @@ class OAM_Helper{
                 if ($matches_search_main) {
                     $filtered_orders[] = $row_data;
                 }
-            } else {
-                if ($order_type === 'Single Address' && $matches_search_main) {
-                    $filtered_orders[] = $row_data;
-                }
-
-                // Fetch sub-orders
-                $sub_query = "SELECT * FROM $orders_table WHERE customer_id = %d AND parent_order_id = %d";
-                $params = [$user_id, $order_id];
-
-                if ($custom_order_status !== 'all') {
-                    $sub_query .= " AND status = %s";
-                    $params[] = $custom_order_status;
-                }
-
-                $sub_orders = $wpdb->get_results($wpdb->prepare($sub_query, ...$params));
-
-                foreach ($sub_orders as $sub_data) {
-                    $sub_order = wc_get_order($sub_data->id);
-                    if (!$sub_order) continue;
-
-                    $matches_search_sub = empty($search) ||
-                        stripos((string)$sub_order->get_id(), $search) !== false ||
-                        stripos($sub_order->get_billing_first_name(), $search) !== false ||
-                        stripos($sub_order->get_billing_last_name(), $search) !== false ||
-                        stripos($sub_order->get_shipping_first_name(), $search) !== false ||
-                        stripos($sub_order->get_shipping_last_name(), $search) !== false;
-
-                    if ($matches_search_sub) {
-                        $sub_total_quantity = 0;
-                        foreach ($sub_order->get_items() as $item) {
-                            $sub_total_quantity += $item->get_quantity();
-                        }
-
-                        $filtered_orders[] = OAM_Helper::$row_builder($sub_data, $sub_order, $order_type, $sub_total_quantity, $main_order);
-                    }
-                }
             }
         }
 
         return $filtered_orders;
     }
+
 
 
     // Helper to build row array for a main or sub order
@@ -230,7 +344,23 @@ class OAM_Helper{
         $shipping_name = $order_obj->get_shipping_first_name() . ' ' . $order_obj->get_shipping_last_name();
         $referral_id = $order_obj->get_meta('_yith_wcaf_referral', true) ?: 'Orthoney';
         $order_total = wc_price($order_obj->get_total());
-    
+        $sub_order_id =  OAM_COMMON_Custom::get_order_meta($order_data->id, '_orthoney_OrderID');
+        $jarsorder_count = 1;
+        if($sub_order_id){
+        $jarsorder_count = $wpdb->get_var(
+            $wpdb->prepare(
+                "
+                SELECT COUNT(*)
+                FROM {$wpdb->prefix}oh_recipient_order
+                WHERE order_id = %d
+                ",
+                $sub_order_id
+            )
+        );
+    }
+
+
+        
         // Status HTML
         $status_html = '';
         if ($order_type === 'Multi Address' && $order_data->parent_order_id == 0) {
@@ -264,14 +394,16 @@ class OAM_Helper{
             'shipping_name' => esc_html($shipping_name),
             'affiliate_code' => esc_html($referral_id),
             'total_jar' => esc_html($total_quantity),
-            'total_recipient' => count($order_obj->get_items()),
+            'total_recipient' => $jarsorder_count,
             'type' => esc_html($order_type),
             'status' => !empty($status_html) ? $status_html : 'Recipient Order is Preparing.',
             'price' => $order_total,
-            'action' =>
-                '<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>' .
-                ($order_data->parent_order_id == 0 ? '<a data-tippy="Download Invoice" href="#" class="far fa-download"></a><button class="download_csv_by_order_id far fa-file-csv" data-tippy="Download CSV" data-orderid="'.(($order_data->parent_order_id == 0) ? $order_data->id : $order_data->parent_order_id).'"></button>' : '') .
-                (empty($status_html) && ( $order_data->parent_order_id == 0) ? '<button>Suborder is created</button>' : '')
+            // 'action' =>
+            //     '<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>' .
+            //     ($order_data->parent_order_id == 0 ? '<a data-tippy="Download Invoice" href="#" class="far fa-download"></a><button class="download_csv_by_order_id far fa-file-csv" data-tippy="Download CSV" data-orderid="'.(($order_data->parent_order_id == 0) ? $order_data->id : $order_data->parent_order_id).'"></button>' : '') .
+            //     (empty($status_html) && ( $order_data->parent_order_id == 0) ? '<button>Suborder is created</button>' : '')
+            'action' => ''
+            
         ];
     }
 
@@ -798,19 +930,19 @@ class OAM_Helper{
                 <input type="hidden" id="recipient_id" name="recipient_id" value="">
 
                 <div class="form-row gfield--width-half">
-                    <label for="full_name">Full Name:</label>
+                    <label for="full_name">Full Name: <span class="required">*</span></label>
                     <input type="text" id="full_name" name="full_name" required data-error-message="Please enter your full name.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
                     <label for="company_name">Company Name:</label>
-                    <input type="text" id="company_name" name="company_name" required data-error-message="Please enter a company name.">
+                    <input type="text" id="company_name" name="company_name" data-error-message="Please enter a company name.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="address_1">Mailing Address:</label>
+                    <label for="address_1">Mailing Address: <span class="required">*</span></label>
                     <input type="text" id="address_1" name="address_1" required data-error-message="Please enter a mailing address.">
                     <span class="error-message"></span>
                 </div>
@@ -822,13 +954,13 @@ class OAM_Helper{
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="city">City:</label>
+                    <label for="city">City: <span class="required">*</span></label>
                     <input type="text" id="city" name="city" required data-error-message="Please enter a city.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="state">State:</label>
+                    <label for="state">State: <span class="required">*</span></label>
                     <select id="state" name="state" required data-error-message="Please select a state.">
                         <option value="" disable>Select state</option>
                         <?php echo self::get_us_states_list(isset($shipping_address['state']) ? $shipping_address['state'] : ""); ?>
@@ -837,7 +969,7 @@ class OAM_Helper{
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="zipcode">Zipcode:</label>
+                    <label for="zipcode">Zipcode: <span class="required">*</span></label>
                     <input type="text" id="zipcode" name="zipcode" required data-error-message="Please enter a valid zipcode.">
                     <span class="error-message"></span>
                 </div>
@@ -872,19 +1004,19 @@ class OAM_Helper{
             <form class="grid-two-col" novalidate>
             <input type="hidden" id="order_id" name="order_id" value="">
                 <div class="form-row gfield--width-half">
-                    <label for="full_name">Full Name:</label>
+                    <label for="full_name">Full Name: <span class="required">*</span></label>
                     <input type="text" id="full_name" name="full_name" required data-error-message="Please enter your full name.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
                     <label for="company_name">Company Name:</label>
-                    <input type="text" id="company_name" name="company_name" required data-error-message="Please enter a company name.">
+                    <input type="text" id="company_name" name="company_name" data-error-message="Please enter a company name.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="address_1">Mailing Address:</label>
+                    <label for="address_1">Mailing Address:<span class="required">*</span></label>
                     <input type="text" id="address_1" name="address_1" required data-error-message="Please enter a mailing address.">
                     <span class="error-message"></span>
                 </div>
@@ -896,13 +1028,13 @@ class OAM_Helper{
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="city">City:</label>
+                    <label for="city">City:<span class="required">*</span></label>
                     <input type="text" id="city" name="city" required data-error-message="Please enter a city.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="state">State:</label>
+                    <label for="state">State:<span class="required">*</span></label>
                     <select id="state" name="state" required data-error-message="Please select a state.">
                         <option value="" disable>Select state</option>
                         <?php echo self::get_us_states_list(isset($shipping_address['state']) ? $shipping_address['state'] : ""); ?>
@@ -911,7 +1043,7 @@ class OAM_Helper{
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="zipcode">Zipcode:</label>
+                    <label for="zipcode">Zipcode:<span class="required">*</span></label>
                     <input type="text" id="zipcode" name="zipcode" required data-error-message="Please enter a valid zipcode.">
                     <span class="error-message"></span>
                 </div>

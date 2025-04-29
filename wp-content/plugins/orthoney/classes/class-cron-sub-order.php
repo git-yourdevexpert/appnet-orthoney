@@ -10,60 +10,52 @@ class OAM_WC_CRON_Suborder {
      */
     public function __construct() {        
         add_action('woocommerce_thankyou', array($this, 'schedule_create_sub_order_cron_handler'), 10, 3);
-        add_action('create_sub_order_chunk', array($this, 'process_sub_order_chunk_handler'), 10, 4);
-        // add_action('create_sub_order_chunk', 'process_sub_order_chunk_handler', 10, 4);
+        // add_action('create_recipient_order', array($this, 'create_recipient_order_handler'), 10, 4);
+
     }
 
     public function schedule_create_sub_order_cron_handler($order_id) {
-        if (!$order_id) {
-            return;
-        }
+        if (!$order_id) return;
     
         global $wpdb;
-    
+        
         $order_process_table     = OAM_Helper::$order_process_table;
         $group_table             = OAM_Helper::$group_table;
         $group_recipient_table   = OAM_Helper::$group_recipient_table;
+        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+        $recipient_order_table   = OAM_Helper::$recipient_order_table;
     
         $main_order = wc_get_order($order_id);
-        if (!$main_order) {
-            return;
-        }
+        if (!$main_order) return;
     
+        // Update Order Meta
+        $formatted_count = OAM_COMMON_Custom::get_current_month_count();
+        $main_order->update_meta_data('_orthoney_OrderID', $formatted_count);
         $main_order->update_meta_data('order_process_by', OAM_COMMON_Custom::old_user_id());
         $main_order->save();
     
+        // Identify order type
         $order_items = $main_order->get_items();
-        $order_items_count = count($order_items);
-    
-        $single_order = 0;
-        $process_id   = 0;
-        $recipient_id = 0;
+        $single_order = false;
+        $process_id = 0;
+        $total_quantity = 0;
     
         foreach ($order_items as $item) {
+            $quantity = (int) $item->get_quantity();
             $single_order_meta = $item->get_meta('single_order', true);
+            $process_id = $item->get_meta('process_id', true) ?: 0;
     
             if (!empty($single_order_meta) && $single_order_meta == 1) {
-                $single_order = 1;
-                $process_id   = $item->get_meta('process_id', true) ?: 0;
-            } else {
-                if ($item->get_meta('_recipient_order_type', true) != '') {
-                    $single_order = $item->get_meta('_recipient_order_type', true);
-                }
-                if ($item->get_meta('_recipient_process_id', true) != '') {
-                    $process_id = $item->get_meta('_recipient_process_id', true);
-                }
-                if ($item->get_meta('_recipient_recipient_id', true) != '') {
-                    $recipient_id = $item->get_meta('_recipient_recipient_id', true);
-                }
-                if ($process_id != '') {
-                    break;
-                }
+                $single_order = true;
             }
+    
+            $total_quantity += $quantity;
         }
     
-        $order_type = ($single_order == 1) ? 'single-order' : 'multi-recipient-order';
+        $order_type = $single_order ? 'single-order' : 'multi-recipient-order';
     
+
+        // Update order process table
         if ($process_id) {
             $wpdb->update(
                 $order_process_table,
@@ -72,19 +64,16 @@ class OAM_WC_CRON_Suborder {
             );
         }
     
-        if ($order_type !== 'multi-recipient-order') {
-            return;
-        }
+        if ($order_type !== 'multi-recipient-order') return;
     
+        // Fetch Process Data
         $processData = $wpdb->get_row($wpdb->prepare(
             "SELECT user_id, name FROM {$order_process_table} WHERE id = %d",
             $process_id
         ));
+        if (!$processData) return;
     
-        if (!$processData) {
-            return;
-        }
-    
+        // Ensure Group
         $group_id = $wpdb->get_var($wpdb->prepare(
             "SELECT id FROM {$group_table} WHERE order_id = %d AND pid = %d",
             $order_id, $process_id
@@ -100,141 +89,139 @@ class OAM_WC_CRON_Suborder {
             ]);
             $group_id = $wpdb->insert_id;
         }
+
     
-        if ($group_id) {
-            $groupRecipientCount = (int) $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(id) FROM $group_recipient_table WHERE group_id = %d",
-                $group_id
-            ));
+        // Check Recipient Count
+        $groupRecipientCount = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(id) FROM {$group_recipient_table} WHERE group_id = %d",
+            $group_id
+        ));
     
-            // Only schedule if the recipients haven't been fully processed
-            $item_ids = array_keys($order_items); // Actual WC_Order_Item IDs
-            $chunks = array_chunk($item_ids, 5);
-            $delay = 5;
-
-            foreach ($chunks as $index => $chunk) {
-                $scheduled_time = time() + $delay;
-
-                wp_schedule_single_event(
-                    $scheduled_time,
-                    'create_sub_order_chunk',
-                    [$order_id, $group_id, $process_id, $chunk]
-                );
-
-                OAM_COMMON_Custom::sub_order_error_log("Scheduled chunk $index at " . date('Y-m-d H:i:s', $scheduled_time));
-
-                $delay += 10;
-            }
+        if ($groupRecipientCount === $total_quantity) {
+            return; // No need to proceed if already matched
         }
-    }
+        
     
-    public function process_sub_order_chunk_handler($order_id, $group_id, $process_id, $item_ids) {
-        global $wpdb;
+        // Prepare Data
+        $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
+        $affiliate_token = OAM_COMMON_Custom::get_order_meta($order_id, '_yith_wcaf_referral');
     
-        $order = wc_get_order($order_id);
-        if (!$order) return;
+        $recipients = OAM_Helper::get_recipient_by_pid($process_id);
+        if (empty($recipients)) return;
+
+        
+
+        $targetIds = wp_list_pluck($recipients, 'id');
+        $placeholders = implode(',', array_fill(0, count($targetIds), '%d'));
     
-        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
-        $group_recipient_table = OAM_Helper::$group_recipient_table;
+        // Update order_id in order_process_recipient_table
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$order_process_recipient_table} SET order_id = %d WHERE id IN ($placeholders)",
+            array_merge([$custom_order_id], $targetIds)
+        ));
     
-        $billing_data = [ /* same as before */ ];
+        // Re-fetch updated recipients
+        $recipientResult = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$order_process_recipient_table} WHERE id IN ($placeholders)",
+            $targetIds
+        ));
     
-        foreach ($item_ids as $item_id) {
-            $item = $order->get_item($item_id);
-    
-            if (!$item) continue;
-    
-            $recipient_id = $item->get_meta('_recipient_recipient_id', true);
-            $company_name = $item->get_meta('_recipient_company_name', true);
-            $greeting     = $item->get_meta('greeting', true);
-    
-            $recipient = $wpdb->get_row($wpdb->prepare(
-                "SELECT * FROM {$order_process_recipient_table} WHERE id = %d",
-                $recipient_id
-            ));
-    
-            if ($recipient && $recipient->order_id == 0) {
-                $sub_order = wc_create_order();
-    
-                // Set customer and billing info
-                $customer_id = $order->get_customer_id();
-                if ($customer_id) $sub_order->set_customer_id($customer_id);
-                $sub_order->set_address($billing_data, 'billing');
-                $sub_order->set_billing_email($billing_data['email']);
-    
-                // Add product
-                $product_id = $item->get_product_id();
-                $quantity   = $item->get_quantity();
-                $product    = wc_get_product($product_id);
-    
-                if ($product) {
-                    $order_item = new WC_Order_Item_Product();
-                    $order_item->set_product($product);
-                    $order_item->set_quantity($quantity);
-                    $order_item->set_subtotal(0);
-                    $order_item->set_total(0);
-    
-                    // Meta
-                    $order_item->update_meta_data('_recipient_recipient_id', $recipient_id);
-                    $order_item->update_meta_data('_recipient_company_name', $company_name);
-                    $order_item->update_meta_data('greeting', $greeting);
-    
-                    $sub_order->add_item($order_item);
-                }
-    
-                // Shipping
-                $shipping_data = [
-                    'first_name' => $item->get_meta('full_name', true) ?: $billing_data['first_name'],
-                    'last_name'  => '',
-                    'address_1'  => $item->get_meta('_recipient_address_1', true) ?? '',
-                    'address_2'  => $item->get_meta('_recipient_address_2', true) ?? '',
-                    'city'       => $item->get_meta('_recipient_city', true) ?? '',
-                    'state'      => $item->get_meta('_recipient_state', true) ?? '',
-                    'postcode'   => $item->get_meta('_recipient_zipcode', true) ?? '',
-                    'country'    => 'US',
-                ];
-    
-                $sub_order->set_address($shipping_data, 'shipping');
-                $sub_order->set_shipping_total(0);
-                $sub_order->set_parent_id($order_id);
-                $sub_order->calculate_totals();
-                $sub_order->set_status('processing');
-                $sub_order->save();
-    
-                $wpdb->update(
-                    $order_process_recipient_table,
-                    ['order_id' => $sub_order->get_id()],
-                    ['id' => $recipient_id]
-                );
-    
-                $wpdb->insert($group_recipient_table, [
-                    'user_id'           => $recipient->user_id ?? 0,
-                    'recipient_id'      => $recipient_id,
-                    'group_id'          => $group_id,
-                    'order_id'          => $sub_order->get_id(),
-                    'full_name'         => sanitize_text_field($item->get_meta('full_name', true)),
-                    'company_name'      => sanitize_text_field($recipient->company_name),
-                    'address_1'         => sanitize_text_field($recipient->address_1),
-                    'address_2'         => sanitize_text_field($recipient->address_2),
-                    'city'              => sanitize_text_field($recipient->city),
-                    'state'             => sanitize_text_field($recipient->state),
-                    'zipcode'           => sanitize_text_field($recipient->zipcode),
-                    'quantity'          => sanitize_text_field($recipient->quantity),
-                    'verified'          => sanitize_text_field($recipient->verified),
-                    'address_verified'  => sanitize_text_field($recipient->address_verified),
-                    'visibility'        => 1,
-                    'new'               => 0,
-                    'update_type'       => 0,
-                    'reasons'           => sanitize_text_field($recipient->reasons),
-                    'greeting'          => sanitize_text_field($recipient->greeting),
-                ]);
-    
-                OAM_COMMON_Custom::sub_order_error_log("Chunk handler: Sub-order created for Item ID: $item_id → Sub Order ID: " . $sub_order->get_id());
+        if (empty($recipientResult)) return;
+        
+        // Insert Sub-Orders
+        $recipientCount = 0;
+        foreach ($recipientResult as $recipient) {
+            $recipientCount++;
+            $sub_order_id = $custom_order_id . '-' . $recipientCount;
+            
+            // Prepare data for recipient_order_table
+            $recipient_order_data = [
+                'ID'                 => $recipientCount,
+                'pid'                => $process_id,
+                'created_by'         => OAM_COMMON_Custom::old_user_id(),
+                'order_id'           => $custom_order_id,
+                'recipient_id'       => $recipient->id,
+                'recipient_order_id' => $sub_order_id,
+                'affiliate_token'    => $affiliate_token ?? 'Orthoney',
+                'country'            => 'US',
+                'order_type'         => $order_type,
+                'user_id'            => $recipient->user_id ?? 0,
+                'full_name'          => sanitize_text_field($recipient->full_name),
+                'company_name'       => sanitize_text_field($recipient->company_name),
+                'address_1'          => sanitize_text_field($recipient->address_1),
+                'address_2'          => sanitize_text_field($recipient->address_2),
+                'city'               => sanitize_text_field($recipient->city),
+                'state'              => sanitize_text_field($recipient->state),
+                'zipcode'            => sanitize_text_field($recipient->zipcode),
+                'greeting'           => sanitize_text_field($recipient->greeting),
+                'quantity'           => sanitize_text_field($recipient->quantity),
+                'address_verified'   => sanitize_text_field($recipient->address_verified),
+            ];
+
+            // Insert into recipient_order_table
+            $insert_result = $wpdb->insert($recipient_order_table, $recipient_order_data);
+
+            if ( false === $insert_result ) {
+                OAM_COMMON_Custom::sub_order_error_log( 'Insert into recipient_order_table failed: ' . $wpdb->last_error );
             }else{
-                OAM_COMMON_Custom::sub_order_error_log("Chunk handler: Sub-order exist  Item ID:". $recipient->order_id);
+                $inserted_id = $wpdb->insert_id;
+                OAM_COMMON_Custom::sub_order_error_log( 'Insert into recipient_order_table sucess: ' . $inserted_id );
             }
+
+
+            // Prepare data for group_recipient_table
+            $group_recipient_data = [
+                'recipient_id'      => $recipient->id,
+                'group_id'          => $group_id,
+                'order_id'          => $sub_order_id,
+                'visibility'        => 1,
+                'new'               => 0,
+                'update_type'       => 0,
+                'verified'          => sanitize_text_field($recipient->verified),
+                'reasons'           => sanitize_text_field($recipient->reasons),
+                'user_id'           => $recipient->user_id ?? 0,
+                'full_name'         => sanitize_text_field($recipient->full_name),
+                'company_name'      => sanitize_text_field($recipient->company_name),
+                'address_1'         => sanitize_text_field($recipient->address_1),
+                'address_2'         => sanitize_text_field($recipient->address_2),
+                'city'              => sanitize_text_field($recipient->city),
+                'state'             => sanitize_text_field($recipient->state),
+                'zipcode'           => sanitize_text_field($recipient->zipcode),
+                'quantity'          => sanitize_text_field($recipient->quantity),
+                'address_verified'  => sanitize_text_field($recipient->address_verified),
+                'greeting'          => sanitize_text_field($recipient->greeting),
+            ];
+
+            // Insert into group_recipient_table
+            $insert_result = $wpdb->insert($group_recipient_table, $group_recipient_data);
+
+            if ( false === $insert_result ) {
+                OAM_COMMON_Custom::sub_order_error_log( 'Insert into group_recipient_table failed: ' . $wpdb->last_error );
+            }else{
+                $inserted_id = $wpdb->insert_id;
+                OAM_COMMON_Custom::sub_order_error_log( 'Insert into group_recipient_table sucess: ' . $inserted_id );
+            }
+
+    
+            OAM_COMMON_Custom::sub_order_error_log("Sub-order created for Recipient ID: {$recipient->id} → Sub Order ID: {$sub_order_id}");
         }
     }
+    
+    
+    // public function create_recipient_order_handler($order_id, $group_id, $process_id, $order_type, $quantity) {
+        
+    // }
+    
     
 }
 new OAM_WC_CRON_Suborder();
+
+// add_action('init', 'run_custom_suborder_handler');
+
+// function run_custom_suborder_handler() {
+//     if ( class_exists('OAM_WC_CRON_Suborder') ) {
+//         $suborder = new OAM_WC_CRON_Suborder();
+//         $suborder->create_recipient_order_handler(2453, 20933, 10000, 'multi-recipient-order', 'quantity');
+//     }
+// }
+// http://appnet-orthoney.local/checkout/order-received/2453/?key=wc_order_jrpHvMQF1NweD

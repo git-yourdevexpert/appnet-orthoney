@@ -629,152 +629,49 @@ document.addEventListener("DOMContentLoaded", function () {
     // }
 
     async function process_to_checkout_ajax_part(form, status) {
-      // Only verified = 1 
-      // for all = 0
-      let currentChunk = 0;
-      let pid = null;
+      try {
+        const formData = new FormData(form);
     
-      let totalChunks = 0;
-      console.log(status);
-      // Show initial processing popup
-      Swal.fire({
-          title: "Prepare your order.",
-          text: "Please wait while we process your order.",
+        formData.append("action", "orthoney_process_to_checkout_ajax");
+        formData.append("currentStep", typeof currentStep !== "undefined" ? currentStep : "");
+        formData.append("security", oam_ajax.nonce);
+        formData.append("status", status);
+    
+        const response = await fetch(oam_ajax.ajax_url, {
+          method: "POST",
+          body: formData,
+        });
+    
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+    
+        const responseData = await response.json();
+    
+        if (!responseData.success) {
+          Swal.fire("Error", responseData.message || "An error occurred", "error");
+          return;
+        }
+    
+        Swal.fire({
+          title: "Please wait while we process your order properly.",
+          icon: "success",
+          timer: 2000,
           showConfirmButton: false,
+          timerProgressBar: true,
           allowOutsideClick: false,
           allowEscapeKey: false,
-          allowEnterKey: false
-      });
-      
-      setTimeout(() => {
-          function processCheckoutChunk() {
-            let unverifiedCount = Number(form.querySelector('#unverified-block')?.getAttribute('data-count')) || 0;
-            let verifiedCount = Number(form.querySelector('#verified-block')?.getAttribute('data-count')) || 0;
-
-            let totalCount = status == 1 ? verifiedCount : verifiedCount + unverifiedCount;
-            
-            const formData = new FormData(form);
-              formData.append("action", "orthoney_process_to_checkout_ajax");
-              formData.append("currentStep", typeof currentStep !== "undefined" ? currentStep : "");
-              formData.append("security", oam_ajax.nonce);
-              formData.append("status", status);
-              formData.append("current_chunk", currentChunk);
-              formData.append("totalCount", totalCount);
-              
-              if (pid !== null) {
-                  formData.append("pid", pid);
-              }
-              
-              const xhr = new XMLHttpRequest();
-              xhr.open("POST", oam_ajax.ajax_url, true);
-              
-              xhr.onload = function() {
-                  if (xhr.status === 200) {
-                      const response = JSON.parse(xhr.responseText);
-                      
-                      if (response.success) {
-                          if (currentChunk === 0) {
-                              pid = response.data.pid;
-                              totalChunks = response.data.total_chunks;
-                              
-                              // Update to progress bar popup after first chunk
-                              Swal.fire({
-                                  title: "Prepare your order.",
-                                  text: "",
-                                  html: `
-                                      <p>Please wait while we prepare your order.</p><div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
-                                          <div id="progress-bar" style="width: 0%; height: 10px; background-color: #3085d6;"></div>
-                                      </div>
-                                      <p id="progress-text">0%</p>
-                                  `,
-                                  showConfirmButton: false,
-                                  allowOutsideClick: false,
-                                  allowEscapeKey: false,
-                                  allowEnterKey: false
-                              });
-                          }
-                          
-                          // Update progress
-                          const progress = response.data.progress;
-                          document.getElementById("progress-bar").style.width = progress + "%";
-                          document.getElementById("progress-text").innerText = progress + "%";
-                          
-                          if (!response.data.finished) {
-                              // Process next chunk
-                              currentChunk = response.data.next_chunk;
-                              setTimeout(() => {
-                                processCheckoutChunk();
-                              }, 300);
-                          } else {
-                              // All chunks processed, redirect to checkout
-                              Swal.fire({
-                                  icon: "success",
-                                  title: "Order processing complete!",
-                                  text: "Please wait, you are being redirected to the checkout page...",
-                                  showConfirmButton: false,
-                                  // timer: 2000,
-                                  // timerProgressBar: true,
-                                  allowOutsideClick: false,
-                                  allowEscapeKey: false,
-                                  allowEnterKey: false
-                              });
-                              
-                              setTimeout(() => {
-                                  window.location.href = response.data.checkout_url;
-                              }, 1500);
-                          }
-                      } else {
-                          // Error response
-                          Swal.fire({
-                              icon: "error",
-                              title: "Processing Failed",
-                              text: response.data.message || "An error occurred",
-                              confirmButtonText: "Try Again"
-                          }).then((result) => {
-                              if (result.isConfirmed && !response.data.finished) {
-                                  // Retry current chunk if user confirms
-                                  processCheckoutChunk();
-                              }
-                          });
-                      }
-                  } else {
-                      // HTTP error
-                      Swal.fire({
-                          icon: "error",
-                          title: "Error",
-                          text: "An error occurred while processing the request.",
-                          confirmButtonText: "Try Again"
-                      }).then((result) => {
-                          if (result.isConfirmed) {
-                              // Retry current chunk if user confirms
-                              processCheckoutChunk();
-                          }
-                      });
-                  }
-              };
-              
-              xhr.onerror = function() {
-                  // Network error
-                  Swal.fire({
-                      icon: "error",
-                      title: "Network Error",
-                      text: "A network error occurred during processing.",
-                      confirmButtonText: "Try Again"
-                  }).then((result) => {
-                      if (result.isConfirmed) {
-                          // Retry current chunk if user confirms
-                          processCheckoutChunk();
-                      }
-                  });
-              };
-              
-              xhr.send(formData);
-          }
-          
-          // Start the chunking process
-          processCheckoutChunk();
-      }, 500); // Short delay to ensure popup is shown first
-  }
+          allowEnterKey: false,
+        });
+    
+        setTimeout(() => {
+          window.location.href = responseData.data.checkout_url;
+        }, 1500);
+      } catch (error) {
+        console.error("Fetch error:", error);
+        Swal.fire("Error", `Request failed: ${error.message || "Unknown error"}`, "error");
+      }
+    }
 
     document
       .querySelectorAll(".keep_this_and_delete_others")

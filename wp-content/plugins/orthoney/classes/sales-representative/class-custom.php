@@ -41,34 +41,44 @@ class OAM_SALES_REPRESENTATIVE_Custom {
         }
     }
 
-    /**
+   /**
     * Populate choose customer dropdown with users having only the 'customer' role
     */
     public function populate_choose_customer_acf_handler($field) {
-        if ($field['name'] !== 'choose_customer') {
-            return $field;
-        }
+        $screen = get_current_screen();
+        if ( isset($screen->id) && $screen->id === 'user-edit') {
+            $roles_to_check = ['sales_representative'];
+            if (user_has_role($_GET['user_id'], $roles_to_check)) {
 
-        // Fetch all users with 'customer' role
-        $args = [
-            'role'    => 'customer',
-            'orderby' => 'display_name',
-            'order'   => 'ASC',
-        ];
-        $users = get_users($args);
+            
+                if ($field['name'] !== 'choose_customer') {
+                    return $field;
+                }
 
-        // Filter users with only the 'customer' role
-        $field['choices'] = [];
-        foreach ($users as $user) {
-            $user_roles = $user->roles;
-            if (count($user_roles) === 1 && in_array('customer', $user_roles)) {
-                $field['choices'][$user->ID] = $user->display_name;
+                // Fetch all users with 'customer' role
+                $args = [
+                    'role'    => 'customer',
+                    'orderby' => 'display_name',
+                    'order'   => 'ASC',
+                    
+                ];
+                $users = get_users($args);
+
+                // Filter users with only the 'customer' role
+                $field['choices'] = [];
+                foreach ($users as $user) {
+                    $user_roles = $user->roles;
+                    if (count($user_roles) === 1 && in_array('customer', $user_roles)) {
+                        $field['choices'][$user->ID] = $user->display_name;
+                    }
+                }
+
+                // Check if no customers found
+                if (empty($field['choices'])) {
+                    $field['choices'] = ['' => 'No Customers Found'];
+                }
             }
-        }
 
-        // Check if no customers found
-        if (empty($field['choices'])) {
-            $field['choices'] = ['' => 'No Customers Found'];
         }
 
         return $field;
@@ -79,28 +89,35 @@ class OAM_SALES_REPRESENTATIVE_Custom {
      * Populate choose organization dropdown with organization name, city, state, and code
      */
     public function populate_choose_organization_acf_handler($field) {
-        if ($field['name'] !== 'choose_organization') return $field;
-    
-        $args = [
-            'role'    => 'yith_affiliate',
-            'orderby' => 'display_name',
-            'order'   => 'ASC',
-        ];
-        $users = get_users($args);
-    
-        $field['choices'] = [];
-        foreach ($users as $user) {
-            $organization_name = get_user_meta($user->ID, '_yith_wcaf_name_of_your_organization', true) ?: 'Unknown Organization';
-            $city = get_user_meta($user->ID, '_yith_wcaf_city', true) ?: 'Unknown City';
-            $state = get_user_meta($user->ID, '_yith_wcaf_state', true) ?: 'Unknown State';
-            $code = get_user_meta($user->ID, '_yith_wcaf_zipcode', true) ?: 'N/A';
-    
-            $field['choices'][$user->ID] = "$organization_name ($city, $state, $code)";
+        $screen = get_current_screen();
+        if ( isset($screen->id) && $screen->id === 'user-edit') {
+            $roles_to_check = ['sales_representative'];
+            if (user_has_role($_GET['user_id'], $roles_to_check)) {
+                if ($field['name'] !== 'choose_organization') return $field;
+            
+                $args = [
+                    'role'    => 'yith_affiliate',
+                    'orderby' => 'display_name',
+                    'order'   => 'ASC',
+                    'fields'  => ['ID'],
+                ];
+                $users = get_users($args);
+            
+                $field['choices'] = [];
+                foreach ($users as $user) {
+                    $organization_name = get_user_meta($user->ID, '_yith_wcaf_name_of_your_organization', true) ?: 'Unknown Organization';
+                    $city = get_user_meta($user->ID, '_yith_wcaf_city', true) ?: 'Unknown City';
+                    $state = get_user_meta($user->ID, '_yith_wcaf_state', true) ?: 'Unknown State';
+                    $code = get_user_meta($user->ID, '_yith_wcaf_zipcode', true) ?: 'N/A';
+            
+                    $field['choices'][$user->ID] = "$organization_name ($city, $state, $code)";
+                }
+            
+                return $field;
+            }
         }
-    
         return $field;
     }
-    
 
     
 }

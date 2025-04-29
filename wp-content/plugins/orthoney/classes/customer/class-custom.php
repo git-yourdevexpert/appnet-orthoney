@@ -13,7 +13,7 @@ class OAM_CUSTOM {
         add_filter('woocommerce_account_menu_items', array($this, 'custom_my_account_menu_item_urls'), 99);
         add_filter('woocommerce_locate_template', array($this, 'custom_woocommerce_myaccount_template'), 10, 3);
         add_filter('query_vars', array($this, 'custom_query_vars')); // Register query vars
-        add_action('init', array($this, 'flush_rewrite_rules_if_needed')); // Ensure rewrite rules are flushed when needed
+        // add_action('init', array($this, 'flush_rewrite_rules_if_needed')); // Ensure rewrite rules are flushed when needed
 
         // Ensure rewrite rules are flushed when activating the plugin
         register_activation_hook(__FILE__, array($this, 'flush_rewrite_rules_on_activation'));

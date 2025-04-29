@@ -14,7 +14,7 @@ class OAM_WC_Customizer {
      * Constructor to hook into WooCommerce template loading.
      */
     public function __construct() {        
-        add_action('woocommerce_order_item_meta_end', array($this, 'woocommerce_order_item_meta_end_handler'), 10, 3);
+        
         add_action('woocommerce_before_calculate_totals', array($this, 'woocommerce_before_calculate_totals_handler'));
         add_filter('woocommerce_add_cart_item_data', array($this, 'woocommerce_add_cart_item_data_handler'), 10,3);
         add_filter('woocommerce_get_cart_item_from_session', array($this, 'woocommerce_get_cart_item_from_session_handler'), 10,3);
@@ -22,7 +22,7 @@ class OAM_WC_Customizer {
         add_action('template_redirect', array($this,'handle_custom_order_form_submission'));
         add_action('woocommerce_checkout_create_order_line_item', array($this,'save_affiliate_info_on_order_item'), 10, 4);
 
-        add_filter('woocommerce_order_again_cart_item_data' , array($this,'woocommerce_order_again_cart_item_data_handler'), 10, 3);
+        // add_filter('woocommerce_order_again_cart_item_data' , array($this,'woocommerce_order_again_cart_item_data_handler'), 10, 3);
         add_filter('render_block' , array($this,'checkout_order_summary_render_block_handler'), 10, 2);
         
         // Hide sub order 
@@ -327,6 +327,11 @@ class OAM_WC_Customizer {
                         // Format address
                         $address_parts = array_filter([$address_1, $address_2, $city, $state, $zipcode]);
                         $formatted_address = !empty($address_parts) ? implode(', ', array_map('esc_html', $address_parts)) : '-';
+                        $status = 'completed'; // default fallback status
+
+if ( is_a( $sub_order, 'WC_Order' ) ) {
+    $status = $sub_order->get_status();
+}
                         ?>
                         <tr>
                             <td><a href="<?php echo admin_url() ?>admin.php?page=wc-orders&action=edit&id=<?php echo $groupRecipientCount->order_id; ?>"><?php echo $groupRecipientCount->order_id; ?></a></td>
@@ -334,7 +339,11 @@ class OAM_WC_Customizer {
                             <td><?php echo !empty($company_name) ? esc_html($company_name) : '-'; ?></td>
                             <td><?php echo $formatted_address; ?></td>
                             <td><?php echo esc_html($quantity); ?></td>
-                            <td class="order_status column-order_status"><mark class="order-status status-<?php echo esc_attr(sanitize_title( $sub_order->get_status())); ?> tips"><span><?php echo esc_html( $sub_order->get_status()); ?></span></mark></td>
+                            <td class="order_status column-order_status">
+                            <mark class="order-status status-<?php echo esc_attr( sanitize_title( $status ) ); ?> tips">
+    <span><?php echo esc_html( $status ); ?></span>
+</mark>
+                            </td>
                             <td><a href="<?php echo admin_url() ?>admin.php?page=wc-orders&action=edit&id=<?php echo $groupRecipientCount->order_id; ?>"><span data-tippy="View Order" class="dashicons dashicons-visibility"></span></a></td>
                         </tr>
                     <?php } 
@@ -350,38 +359,7 @@ class OAM_WC_Customizer {
         return $query_args;
     }
 
-    public function woocommerce_order_item_meta_end_handler($item_id, $item, $order) {
-        // Retrieve saved order item meta
-        $full_name    = wc_get_order_item_meta($item_id, 'full_name', true);
-        $company_name = wc_get_order_item_meta($item_id, '_recipient_company_name', true);
-        $address_1    = wc_get_order_item_meta($item_id, '_recipient_address_1', true);
-        $address_2    = wc_get_order_item_meta($item_id, '_recipient_address_2', true);
-        $city         = wc_get_order_item_meta($item_id, '_recipient_city', true);
-        $state        = wc_get_order_item_meta($item_id, '_recipient_state', true);
-        $zipcode      = wc_get_order_item_meta($item_id, '_recipient_zipcode', true);
-        
-        if (!empty($full_name)) {
-            echo '<p><strong>Recipient Name:</strong> ' . esc_html($full_name) . '</p>';
-        }
-        if (!empty($company_name)) {
-            echo '<p><strong>Company:</strong> ' . esc_html($company_name) . '</p>';
-        }
-        if (!empty($address_1)) {
-            echo '<p><strong>Address 1:</strong> ' . esc_html($address_1) . '</p>';
-        }
-        if (!empty($address_2)) {
-            echo '<p><strong>Address 2:</strong> ' . esc_html($address_2) . '</p>';
-        }
-        if (!empty($city)) {
-            echo '<p><strong>City:</strong> ' . esc_html($city) . '</p>';
-        }
-        if (!empty($state)) {
-            echo '<p><strong>State:</strong> ' . esc_html($state) . '</p>';
-        }
-        if (!empty($zipcode)) {
-            echo '<p><strong>Zipcode:</strong> ' . esc_html($zipcode) . '</p>';
-        }
-    }
+    
 
     public function woocommerce_before_calculate_totals_handler($cart) {
         if (is_admin() && !defined('DOING_AJAX')) {
@@ -393,10 +371,6 @@ class OAM_WC_Customizer {
                 $cart_item['data']->set_price(floatval($cart_item['custom_data']['new_price']));
             }
            
-    
-            if (isset($cart_item['new_price'])) {
-                $cart_item['data']->set_price($cart_item['new_price']);
-            }
         }
     }
 
@@ -404,25 +378,16 @@ class OAM_WC_Customizer {
      * Save custom data in cart session
      */
     public function woocommerce_add_cart_item_data_handler($cart_item_data, $product_id, $variation_id) {
-        if (isset($cart_item_data['new_price'])) {
-            $cart_item_data['unique_key'] = uniqid('custom_', true);
-        }
+       
         
         if (isset($cart_item['custom_data']['single_order'])) {
             $cart_item_data['single_order'] = $cart_item['custom_data']['single_order'];
         }
         if (isset($cart_item['custom_data']['process_id'])) {
-            $cart_item_data['process_id'] = floatval($cart_item['custom_data']['process_id']);
+            $cart_item_data['process_id'] = intval($cart_item['custom_data']['process_id']);
         }
-    
-        if (!empty($cart_item['recipient_id'])) {
-            $cart_item_data['recipient_id'] = sanitize_text_field($_POST['recipient_id']);
-        }
-        if (!empty($cart_item['order_type'])) {
-            $cart_item_data['order_type'] = sanitize_text_field($_POST['order_type']);
-        }
-        if (!empty($cart_item['process_id'])) {
-            $cart_item_data['process_id'] = sanitize_text_field($_POST['process_id']);
+        if (isset($cart_item['custom_data']['greeting'])) {
+            $cart_item_data['greeting'] = intval($cart_item['custom_data']['greeting']);
         }
         
         return $cart_item_data;
@@ -438,57 +403,33 @@ class OAM_WC_Customizer {
         if (isset($values['single_order'])) {
             $cart_item['single_order'] = $values['single_order'];
         }
+        if (isset($values['process_id'])) {
+            $cart_item['process_id'] = $values['process_id'];
+        }
+        if (isset($values['greeting'])) {
+            $cart_item['greeting'] = $values['greeting'];
+        }
     
         return $cart_item;
     }
 
     public function woocommerce_get_item_data_handler($item_data, $cart_item) {
-    
-        if (!empty($cart_item['full_name'])) {
+        
+        if (!empty($cart_item['custom_data']['process_id'])) {
             $item_data[] = [
-                'name'  => __('Recipient Name', 'woocommerce'),
-                'value' => sanitize_text_field($cart_item['full_name']),
+                'name'  => __('Process ID', 'woocommerce'),
+                'value' => sanitize_text_field($cart_item['custom_data']['process_id']),
             ];
+        }
+        if (!empty($cart_item['custom_data']['single_order'])) {
+            $value = $cart_item['custom_data']['single_order'] === 0 ? 'Multi Address' : 'Single Address';
+            $item_data[] = [
+                'name'  => __('Order Type', 'woocommerce'),
+                'value' => sanitize_text_field($value),
+            ];
+           
         }
         
-      
-        if (!empty($cart_item['company_name'])) {
-            $item_data[] = [
-                'name'  => __('Company Name', 'woocommerce'),
-                'value' => sanitize_text_field($cart_item['company_name']),
-            ];
-        }
-        if (!empty($cart_item['address_1'])) {
-            $item_data[] = [
-                'name'  => __('Address 1', 'woocommerce'),
-                'value' => sanitize_text_field($cart_item['address_1']),
-            ];
-        }
-        if (!empty($cart_item['address_2'])) {
-            $item_data[] = [
-                'name'  => __('Address 2', 'woocommerce'),
-                'value' => sanitize_text_field($cart_item['address_2']),
-            ];
-        }
-        if (!empty($cart_item['city'])) {
-            $item_data[] = [
-                'name'  => __('City', 'woocommerce'),
-                'value' => sanitize_text_field($cart_item['city']),
-            ];
-        }
-        if (!empty($cart_item['state'])) {
-            $item_data[] = [
-                'name'  => __('State', 'woocommerce'),
-                'value' => sanitize_text_field($cart_item['state']),
-            ];
-        }
-        if (!empty($cart_item['zipcode'])) {
-            $item_data[] = [
-                'name'  => __('Zip Code', 'woocommerce'),
-                'value' => sanitize_text_field($cart_item['zipcode']),
-            ];
-        }
-    
         return $item_data;
     }
 
@@ -553,148 +494,114 @@ class OAM_WC_Customizer {
             $item->add_meta_data('process_id', $values['custom_data']['process_id'], true);
         }
     
-        if (isset($values['full_name'])) {
-            $item->add_meta_data('full_name', $values['full_name'], true);
-        }
-        if (isset($values['order_type'])) {
-            $item->add_meta_data('_recipient_order_type', $values['order_type'], true);
-        }
-        if (isset($values['recipient_id'])) {
-            $item->add_meta_data('_recipient_recipient_id', $values['recipient_id'], true);
-        }
-
-        if (isset($values['_recipient_recipient_id'])) {
-            $item->add_meta_data('_recipient_recipient_id', $values['_recipient_recipient_id'], true);
-        }
-
-        if (isset($values['process_id'])) {
-            $item->add_meta_data('_recipient_process_id', $values['process_id'], true);
-        }
-
-        if (isset($values['greeting'])) {
-            $item->add_meta_data('greeting', $values['greeting'], true);
-        }
-
-        if (isset($values['company_name'])) {
-            $item->add_meta_data('_recipient_company_name', $values['company_name'], true);
-        }
-
-        if (isset($values['_recipient_company_name'])) {
-            $item->add_meta_data('_recipient_company_name', $values['_recipient_company_name'], true);
-        }
-        
-        if (isset($values['address_1'])) {
-            $item->add_meta_data('_recipient_address_1', $values['address_1'], true);
-        }
-        if (isset($values['address_2'])) {
-            $item->add_meta_data('_recipient_address_2', $values['address_2'], true);
-        }
-        if (isset($values['city'])) {
-            $item->add_meta_data('_recipient_city', $values['city'], true);
-        }
-        if (isset($values['state'])) {
-            $item->add_meta_data('_recipient_state', $values['state'], true);
-        }
-        if (isset($values['zipcode'])) {
-            $item->add_meta_data('_recipient_zipcode', $values['zipcode'], true);
-        }
     }
     /**
      * Reordering Functionality Hooks
      */
-    public function woocommerce_order_again_cart_item_data_handler ($cart_item_data, $item, $order) {
+    // public function woocommerce_order_again_cart_item_data_handler ($cart_item_data, $item, $order) {
         
-        if (!empty($item->get_meta_data())) {
-            foreach ($item->get_meta_data() as $meta) {         
-                $cart_item_data[str_replace('_recipient_', '', $meta->key)] = $meta->value;
-            }
-        }
+    //     if (!empty($item->get_meta_data())) {
+    //         foreach ($item->get_meta_data() as $meta) {         
+    //             $cart_item_data[str_replace('_recipient_', '', $meta->key)] = $meta->value;
+    //         }
+    //     }
         
-        return $cart_item_data;
-    }
+    //     return $cart_item_data;
+    // }
 
-    public function checkout_order_summary_render_block_handler ($block_content, $block) {
-        if (!is_checkout()) {
+    public function checkout_order_summary_render_block_handler($block_content, $block) {
+        if (!is_checkout() || !isset($block['blockName']) || $block['blockName'] !== 'woocommerce/checkout-order-summary-cart-items-block') {
             return $block_content;
         }
     
-        // Target the WooCommerce Checkout Order Summary Cart Items Block
-        if (isset($block['blockName']) && $block['blockName'] === 'woocommerce/checkout-order-summary-cart-items-block') {
-            
-            // Ensure WooCommerce session is available
-            if (!WC()->session) {
-                return $block_content;
-            }
+        if (!WC()->session) {
+            return $block_content;
+        }
     
-            $cart = WC()->session->get('cart', []);
-            $status = false;
-            $total_quantity = 0;
-            $table_content = "";
-    
-            foreach ($cart as $cart_item) {
-                // Ensure 'quantity' exists before adding
-                if (isset($cart_item['quantity'])) {
-                    $total_quantity += (int) $cart_item['quantity']; // Cast to integer to avoid unexpected issues
-                }
-    
-                if (isset($cart_item['order_type']) && $cart_item['order_type'] === 'multi-recipient-order') {
-                    $status = true;
-                    $table_content .= '<tr>';
-                    $table_content .= '<td>' . (isset($cart_item['full_name']) ? esc_html($cart_item['full_name']) : '-') . '</td>';
-                    $table_content .= '<td>' . (isset($cart_item['company_name']) ? esc_html($cart_item['company_name']) : '-') . '</td>';
-                    $table_content .= '<td>' . (isset($cart_item['address']) ? esc_html($cart_item['address']) : '-') . '</td>';
-                    $table_content .= '<td>' . (isset($cart_item['quantity']) ? esc_html($cart_item['quantity']) : '0') . '</td>';
-                    $table_content .= '</tr>';
-                }
+        $cart = WC()->session->get('cart', []);
+        $total_quantity = 0;
+        $table_content = '';
+        $status = false;
+        $recipients = [];
 
-               
-                if (!empty($cart_item['custom_data'])) {
-                    if (isset($cart_item['custom_data']['single_order']) && $cart_item['custom_data']['single_order'] == 1) {
-                        $shipping_address = [
-                            'address_1' => WC()->customer->get_shipping_address_1(),
-                            'address_2' => WC()->customer->get_shipping_address_2(),
-                            'city'      => WC()->customer->get_shipping_city(),
-                            'state'     => WC()->customer->get_shipping_state(),
-                            'postcode'  => WC()->customer->get_shipping_postcode(),
-                            'country'   => WC()->customer->get_shipping_country(),
-                        ];
-                        
-                        $shipping_string = implode(', ', array_filter($shipping_address)); // Convert array to a readable string
-                
-                        $custom_content = '<div class="viewAllRecipientsPopupCheckoutContent">
-                            <div class="item"><strong>Total Honey Jars:</strong> ' . $cart_item['quantity'] . '</div>
-                            <div class="item"><strong>Shipping Address:</strong> ' . esc_html($shipping_string) . '</div>
-                        </div>';
-                
-                        return $block_content . $custom_content;
-                    }
-                }                
-                
-            }
+     
+        foreach ($cart as $cart_item) {
+      
+            $quantity = isset($cart_item['quantity']) ? (int) $cart_item['quantity'] : 0;
+            $total_quantity += $quantity;
     
-            if ($status) {
-                $custom_content = '<div class="viewAllRecipientsPopupCheckoutContent"><div class="item"><strong>Total Honey Jars:</strong> ' . esc_html($total_quantity) . '</div>';
-                $custom_content .= '<div class="item"><strong>Total Recipients:</strong> ' . esc_html(count($cart)) . '</div>';
-                $custom_content .= '<div class="item"><a href="#viewAllRecipientsPopupCheckout" class="viewAllRecipientsPopupCheckout btn-underline" data-lity>View All Recipients Details</a></div>';
-                // Popup Content
-                $custom_content .= '<div id="viewAllRecipientsPopupCheckout" class="lity-popup-normal lity-hide">
-                <div class="popup-show order-process-block orthoney-datatable-warraper">
-                <h3>All Recipients Details</h3>
-                <div class="table-wrapper">
-                <table>
-                            <thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th></tr></thead>
-                            <tbody>' . $table_content . '</tbody>
-                        </table>
-                        </div>
-                    </div>
-                </div></div>';
+            $custom_data = $cart_item['custom_data'] ?? [];
+            $is_single_order = $custom_data['single_order'] ?? 0;
+            $pid = $custom_data['process_id'] ?? 0;
+    
+            if ($is_single_order == 0) {
+                $status = true;
+             
+                $recipients = OAM_Helper::get_recipient_by_pid($pid);
+    
+                foreach ($recipients as $recipient) {
+                    $address = implode(' ', array_filter([
+                        $recipient->address_1,
+                        $recipient->address_2,
+                        $recipient->city,
+                        $recipient->state,
+                        $recipient->zipcode
+                    ]));
+    
+                    $table_content .= sprintf(
+                        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+                        esc_html($recipient->full_name ?? '-'),
+                        esc_html($recipient->company_name ?? '-'),
+                        esc_html($address),
+                        esc_html($recipient->quantity ?? '0')
+                    );
+                }
+            } elseif ($is_single_order === 1) {
+                $shipping_address = [
+                    WC()->customer->get_shipping_address_1(),
+                    WC()->customer->get_shipping_address_2(),
+                    WC()->customer->get_shipping_city(),
+                    WC()->customer->get_shipping_state(),
+                    WC()->customer->get_shipping_postcode(),
+                    WC()->customer->get_shipping_country(),
+                ];
+    
+                $shipping_string = implode(', ', array_filter($shipping_address));
+    
+                $custom_content = '<div class="viewAllRecipientsPopupCheckoutContent">
+                    <div class="item"><strong>Total Honey Jars:</strong> ' . esc_html($quantity) . '</div>
+                    <div class="item"><strong>Shipping Address:</strong> ' . esc_html($shipping_string) . '</div>
+                </div>';
     
                 return $block_content . $custom_content;
             }
         }
     
+        if ($status) {
+            $custom_content = '<div class="viewAllRecipientsPopupCheckoutContent">
+                <div class="item"><strong>Total Honey Jars:</strong> ' . esc_html($total_quantity) . '</div>
+                <div class="item"><strong>Total Recipients:</strong> ' . esc_html(count($recipients)) . '</div>
+                <div class="item"><a href="#viewAllRecipientsPopupCheckout" class="viewAllRecipientsPopupCheckout btn-underline" data-lity>View All Recipients Details</a></div>
+    
+                <div id="viewAllRecipientsPopupCheckout" class="lity-popup-normal lity-hide">
+                    <div class="popup-show order-process-block orthoney-datatable-warraper">
+                        <h3>All Recipients Details</h3>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th></tr></thead>
+                                <tbody>' . $table_content . '</tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+    
+            return $block_content . $custom_content;
+        }
+    
         return $block_content;
     }
+    
 
     /* 
     * WC thank you page template changes hooks
@@ -753,8 +660,6 @@ class OAM_WC_Customizer {
 }
 
 new OAM_WC_Customizer();
-
-
 
 
 // add_action('woocommerce_thankyou', 'process_order_suborders', 10, 1);

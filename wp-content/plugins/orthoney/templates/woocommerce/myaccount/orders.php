@@ -46,6 +46,7 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
     <table id="customer-orders-table" class="display">
     <thead>
         <tr>
+            <th>Select</th>
             <th>Jar No</th>
             <th>Order No</th>
             <th>Date</th>
@@ -61,4 +62,21 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
         </tr>
     </thead>
 </table>
+
+<table id="customer-jar-orders-table" class="display" style="display:none" >
+    <thead>
+        <tr>
+            <!-- <th>Select</th> -->
+            <th>Jar No</th>
+            <th>Date</th>
+            <th>Recipient Name</th>
+            <th>Affiliate Code</th>
+            <th>Total Honey Jar</th>
+            <th>Status</th>
+            <th>Price</th>
+            <th style="width:200px">Action</th>
+        </tr>
+    </thead>
+</table>
+
 </div>

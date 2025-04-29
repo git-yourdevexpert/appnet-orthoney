@@ -251,7 +251,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         <div class="w-separator size_medium"></div>
                                     </div>
                                 </div>
-                                <div class="multiple-address-order" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> style="<?php echo $delivery_preference == 'multiple_address' ? '' : 'display:none' ?>" >
+                                <div class="multiple-address-order" style="<?php echo $delivery_preference == 'multiple_address' ? '' : 'display:none' ?>" >
                                     <input type="hidden" id="multiple-address-output" name="multiple_address_output"
                                         value="<?php echo $multiple_address_output ?>" data-error-message="Please choose an option to upload the recipient list.">
                                         <span class="error-message"></span>

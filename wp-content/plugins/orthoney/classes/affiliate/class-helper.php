@@ -23,15 +23,15 @@ class OAM_AFFILIATE_Helper {
 
 
     public static function getRandomChars($string, $length = 3) {
-        $string = str_replace(' ', '', $string); // Remove spaces
+        $string = str_replace(' ', '', $string); 
         $stringArray = str_split($string);
     
         if (strlen($string) < $length) {
-            return strtoupper($string); // Return as is if it's too short
+            return strtoupper($string); 
         }
     
-        shuffle($stringArray); // Shuffle characters randomly
-        return strtoupper(implode('', array_slice($stringArray, 0, $length))); // Take first 3 shuffled chars
+        shuffle($stringArray); 
+        return strtoupper(implode('', array_slice($stringArray, 0, $length))); 
     }
     
     public static function affiliate_status_check($user_id) {
@@ -40,31 +40,16 @@ class OAM_AFFILIATE_Helper {
 
         $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
 
-
-
-
-
         // Get affiliate data from the database
 
         $affiliate = $wpdb->get_row(
-
             $wpdb->prepare("SELECT * FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d", $user_id)
-
         );
-
-
-
         // If no record found, user is not an affiliate
 
         if (!$affiliate) {
-
             return json_encode(['success' => false, 'message'=> 'You are not registered as an affiliate.']);
-
         }
-
-
-
-
 
         if (isset($affiliate->banned) && $affiliate->banned == 1) {
 

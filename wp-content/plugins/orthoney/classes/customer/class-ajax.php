@@ -4,6 +4,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Shuchkin\SimpleXLSX;
 use Shuchkin\SimpleXLS;
 
@@ -50,6 +52,10 @@ class OAM_Ajax{
         
 		add_action( 'wp_ajax_deleted_group', array( $this, 'orthoney_deleted_group_handler' ) );
 		add_action( 'wp_ajax_orthoney_customer_order_process_ajax', array( $this, 'orthoney_customer_order_process_ajax_handler' ) );
+        add_action('wp_ajax_remove_pdf_data',  array( $this,'remove_pdf_data_handler'));
+        
+        add_action('wp_ajax_orthoney_customer_order_export_pdf_ajax',  array( $this,'orthoney_customer_order_export_ajax_pdf_handler'));
+
 		add_action('wp_ajax_orthoney_customer_order_export_ajax',  array( $this,'orthoney_customer_order_export_ajax_handler'));
 		add_action('wp_ajax_orthoney_customer_order_export_by_id_ajax',  array( $this,'orthoney_customer_order_export_by_id_ajax_handler'));
         add_action('wp_ajax_download_generated_csv',  array( $this,'download_generated_csv_handler'));
@@ -68,217 +74,107 @@ class OAM_Ajax{
   /**
  * Handles AJAX request to process order to checkout with chunking support
  */
-public function orthoney_process_to_checkout_ajax_handler() {
-    check_ajax_referer('oam_nonce', 'security');
-    global $wpdb;
+    public function orthoney_process_to_checkout_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+        $order_process_table           = OAM_Helper::$order_process_table;
 
-    $product_id     = OAM_COMMON_Custom::get_product_id();
-    $status         = intval($_POST['status'] ?? 1);
-    $pid            = intval($_POST['pid'] ?? 1);
-    $currentStep    = intval($_POST['currentStep'] ?? 1);
-    $total_recipients    = intval($_POST['totalCount'] ?? 1);
-    $recipientIds   = array_map('intval', $_POST['recipientAddressIds'] ?? []); // ✅ FIXED
-    $current_chunk  = intval($_POST['current_chunk'] ?? 0);
-    $stepData       = $_POST ?? [];
-    $user_id        = get_current_user_id();
-    $chunk_size     = 10;
+        $product_id        = OAM_COMMON_Custom::get_product_id();
+        $status            = (int) ($_POST['status'] ?? 1);
+        $pid               = (int) ($_POST['pid'] ?? 1);
+        $recipientIds      = array_map('intval', $_POST['recipientAddressIds'] ?? []);
+        $user_id           = get_current_user_id();
 
-    $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
-    $order_process_table           = OAM_Helper::$order_process_table;
+        $stepData    = $_POST ?? [];
+        $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
 
-    if (empty($recipientIds)) {
-        wp_send_json_error(['message' => 'No recipients selected.']);
-    }
-
-    $placeholders = implode(',', array_fill(0, count($recipientIds), '%d'));
-
-
-    // print_r($chunk_recipient_ids);
-    // ✅ KEEPING ORIGINAL STATUS LOGIC
-    if ($status == 1) {
-        $query = $wpdb->prepare(
-            "SELECT id FROM {$order_process_recipient_table}
-             WHERE user_id = %d AND pid = %d AND visibility = 1 AND verified = 1 AND address_verified = 1 AND id IN ($placeholders)",
-            array_merge([$user_id, $pid], $recipientIds)
+        $result = $wpdb->update(
+            $order_process_table,
+            [
+                'data' => wp_json_encode($stepData),
+                'step' => sanitize_text_field($currentStep),
+            ],
+            ['id' => $pid]
         );
-    } else {
-        $query = $wpdb->prepare(
-            "SELECT id FROM {$order_process_recipient_table}
-             WHERE user_id = %d AND pid = %d AND visibility = 1 AND verified = 1 AND id IN ($placeholders)",
-            array_merge([$user_id, $pid], $recipientIds)
-        );
-    }
 
-    $filtered_ids = $wpdb->get_col($query);
-   
-    $total_chunks     = ceil($total_recipients / $chunk_size);
-    $chunk_recipient_ids = array_slice($filtered_ids, $current_chunk * $chunk_size, $chunk_size);
-
-    if (empty($chunk_recipient_ids)) {
-        wp_send_json_success([
-            'message' => 'No recipients to process in this chunk',
-            'finished' => true,
-            'progress' => 100,
-            'next_chunk' => $current_chunk + 1,
-            'total_chunks' => $total_chunks,
-            'pid' => $pid,
-            'checkout_url' => wc_get_checkout_url()
-        ]);
-    }
-
-    $placeholders = implode(',', array_fill(0, count($chunk_recipient_ids), '%d'));
-
-    $wpdb->query('START TRANSACTION');
-
-    try {
-        $query = "SELECT * FROM {$order_process_recipient_table} WHERE id IN ($placeholders)";
-        $query_args = $chunk_recipient_ids;
-
-        $recipients = $wpdb->get_results($wpdb->prepare($query, $query_args));
-
-        
-        if (empty($recipients)) {
-            $wpdb->query('ROLLBACK');
-            wp_send_json_error([
-                'message' => 'No valid recipients found in this chunk.',
-                'next_chunk' => $current_chunk + 1,
-                'total_chunks' => $total_chunks,
-                'progress' => $this->get_progress($current_chunk + 1, $chunk_size, $total_recipients),
-                'finished' => ($current_chunk + 1) >= $total_chunks,
-                'pid' => $pid
-            ]);
+        if (empty($recipientIds)) {
+            wp_send_json_error(['message' => 'No recipients selected.']);
         }
 
-        $address_list = array_map(function($r) use ($pid) {
-            return [
-                "recipient_id"   => $r->id,
-                "process_id"     => $pid,
-                "full_name"      => trim($r->full_name),
-                "company_name"   => trim($r->company_name),
-                "address_1"      => trim($r->address_1),
-                "address_2"      => trim($r->address_2),
-                "city"           => trim($r->city),
-                "state"          => trim($r->state),
-                "zipcode"        => trim($r->zipcode),
-                "quantity"       => intval($r->quantity ?: 1),
-                "greeting"       => trim($r->greeting),
-            ];
-        }, $recipients);
+        $placeholders      = implode(',', array_fill(0, count($recipientIds), '%d'));
+        $table             = OAM_Helper::$order_process_recipient_table;
 
-        if ($current_chunk == 0) WC()->cart->empty_cart();
-        $this->add_items_to_cart_chunk($address_list, $product_id);
+        $base_conditions   = "user_id = %d AND pid = %d AND visibility = 1 AND verified = 1";
+        $status_condition  = $status == 1 ? "AND address_verified = 1" : "";
+        $query             = $wpdb->prepare(
+            "SELECT SUM(quantity) as total_quantity FROM {$table}
+            WHERE {$base_conditions} {$status_condition} AND id IN ($placeholders)",
+            array_merge([$user_id, $pid], $recipientIds)
+        );
 
-        $is_last_chunk = ($current_chunk + 1) >= $total_chunks;
+        $total_quantity = (int) $wpdb->get_var($query);
 
-        if ($is_last_chunk) {
-            $process = $wpdb->get_row($wpdb->prepare("SELECT order_id FROM {$order_process_table} WHERE user_id = %d AND id = %d", $user_id, $pid));
-
-            if (!empty($process) && $process->order_id) {
-                $order = wc_get_order($process->order_id);
-                if ($order) {
-                    $order_url = wc_get_endpoint_url('view-order', $process->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order->get_order_key();
-                    $wpdb->query('COMMIT');
-                    wp_send_json_success([
-                        'message' => 'Order is already in progress.',
-                        'checkout_url' => $order_url,
-                        'progress' => 100,
-                        'finished' => true,
-                        'next_chunk' => $current_chunk + 1,
-                        'pid' => $pid
-                    ]);
-                }
-            }
-
-            $wpdb->update($order_process_table, [
-                'data' => wp_json_encode($stepData),
-                'order_type' => 'multi-recipient-order',
-                'step' => $currentStep + 1,
-            ], ['id' => $pid]);
-
-            $wpdb->query('COMMIT');
+        if ($total_quantity > 0) {
+            $this->add_items_to_cart_chunk($total_quantity, $pid, $product_id);
+            $checkout_url = wc_get_checkout_url();
 
             wp_send_json_success([
-                'message' => 'All recipients processed successfully.',
-                'checkout_url' => wc_get_checkout_url(),
-                'progress' => 100,
-                'finished' => true,
-                'next_chunk' => $current_chunk + 1,
-                'pid' => $pid
+            'message' => 'Please wait, the order is in progress.',
+                'checkout_url' => $checkout_url
             ]);
+        } else {
+            wp_send_json_error(['message' => 'No valid quantity found.']);
+        }
+    }
+
+    /**
+     * Adds a chunk of items to WooCommerce cart
+     * Modified version of add_items_to_cart that doesn't clear the cart
+     * 
+     * @param array $data Array of recipient data
+     * @param int $product_id The product ID to add to cart
+     */
+    private function add_items_to_cart_chunk($total_quantity, $pid, $product_id) {
+        global $wpdb;
+
+        if (!function_exists('WC') || !class_exists('WC_Cart') || WC()->cart === null) {
+            return;
         }
 
-        $wpdb->query('COMMIT');
-        wp_send_json_success([
-            'message' => 'Chunk processed successfully.',
-            'progress' => $this->get_progress($current_chunk + 1, $chunk_size, $total_recipients),
-            'finished' => false,
-            'next_chunk' => $current_chunk + 1,
-            'pid' => $pid
-        ]);
-    } catch (Exception $e) {
-        $wpdb->query('ROLLBACK');
-        wp_send_json_error([
-            'message' => 'Error: ' . $e->getMessage(),
-            'next_chunk' => $current_chunk,
-            'progress' => $this->get_progress($current_chunk, $chunk_size, $total_recipients),
-            'finished' => false,
-            'pid' => $pid
-        ]);
-    }
-}
-
-
-private function get_progress($chunk, $chunk_size, $total) {
-    return min(100, round(($chunk * $chunk_size) / $total * 100));
-}
-
-/**
- * Adds a chunk of items to WooCommerce cart
- * Modified version of add_items_to_cart that doesn't clear the cart
- * 
- * @param array $data Array of recipient data
- * @param int $product_id The product ID to add to cart
- */
-private function add_items_to_cart_chunk($data, $product_id) {
-    global $wpdb;
-    $order_process_table = OAM_Helper::$order_process_table;
-
-    if (!function_exists('WC') || !class_exists('WC_Cart') || WC()->cart === null) return;
-
-    foreach ($data as $customer) {
-        $affiliate_id = 0;
-
-        $processResult = $wpdb->get_row($wpdb->prepare(
-            "SELECT order_id, data FROM {$order_process_table} WHERE id = %d", 
-            $customer['process_id']
+        $process = $wpdb->get_row($wpdb->prepare(
+            "SELECT data FROM " . OAM_Helper::$order_process_table . " WHERE id = %d", 
+            $pid
         ));
 
-        if ($processResult) {
-            $affiliate_id = json_decode($processResult->data)->affiliate_select ?? 0;
+        $affiliate_id = 0;
+        $greeting = 0;
+        if ($process) {
+            $data = json_decode($process->data);
+            $affiliate_id = $data->affiliate_select ?? 0;
+            $greeting = $data->greeting ?? '';
         }
 
-        $custom_price = OAM_COMMON_Custom::get_product_custom_price($product_id, $affiliate_id);
-        $unique_key = uniqid('custom_', true);
+        
 
-        WC()->cart->add_to_cart($product_id, $customer['quantity'], 0, [], [
-            'new_price'    => $custom_price,
-            'process_id'   => $customer['process_id'],
-            'order_type'   => 'multi-recipient-order',
-            'recipient_id' => $customer['recipient_id'],
-            'full_name'    => $customer['full_name'],
-            'company_name' => $customer['company_name'],
-            'address'      => "{$customer['address_1']} {$customer['address_2']} {$customer['city']} {$customer['state']} {$customer['zipcode']}",
-            'address_1'    => $customer['address_1'],
-            'address_2'    => $customer['address_2'],
-            'city'         => $customer['city'],
-            'state'        => $customer['state'],
-            'zipcode'      => $customer['zipcode'],
-            'greeting'     => $customer['greeting'],
-            'unique_key'   => $unique_key,
-        ]);
+        if (class_exists('WC_Cart')) {
+            WC()->cart->empty_cart(); // First, clear the cart
+        
+            $custom_price = OAM_COMMON_Custom::get_product_custom_price($product_id, $affiliate_id);
+
+            $custom_data = array(
+                'custom_data' => array(
+                    'new_price' => $custom_price,
+                    'single_order' => 0,
+                    'process_id' => $pid,
+                    'greeting' => $greeting
+                )
+            );
+            
+            WC()->cart->add_to_cart($product_id, $total_quantity, 0, array(), $custom_data);
+
+        }
+       
     }
-}
-
 
 
     
@@ -339,119 +235,6 @@ private function add_items_to_cart_chunk($data, $product_id) {
     
         wp_send_json_success(['status' => $status]);
     }
-    
-    
-    // public function orthoney_process_to_checkout_ajax_handler() {
-    //     check_ajax_referer('oam_nonce', 'security');
-    //     global $wpdb;
-    
-    //     $product_id = OAM_COMMON_Custom::get_product_id();
-    
-    //     $status      = isset($_POST['status']) ? $_POST['status'] : 1;
-    //     $pid         = isset($_POST['pid']) ? intval($_POST['pid']) : 1; 
-    //     $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
-    //     $recipientIds = isset($_POST['recipientAddressIds']) ? $_POST['recipientAddressIds']  : [];
-    //     $stepData    = $_POST ?? [];
-    //     $user_id     = get_current_user_id(); 
-    //     $placeholders = implode(',', array_fill(0, count($recipientIds), '%d'));
-    
-    //     $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
-    //     $order_process_table = OAM_Helper::$order_process_table;
-    
-    //     $recipients = [];
-    //     if($status == 1){
-    //         $recipients = $wpdb->get_results(
-    //             $wpdb->prepare(
-    //                 "SELECT * FROM {$order_process_recipient_table} 
-    //                 WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d AND address_verified = %d AND id IN ($placeholders)",
-    //                 array_merge([$user_id, $pid, 1, 1, 1], $recipientIds)
-    //             )
-    //         );
-    //     }else{
-    //         $recipients = $wpdb->get_results(
-    //             $wpdb->prepare(
-    //                 "SELECT * FROM {$order_process_recipient_table} 
-    //                 WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d AND id IN ($placeholders)",
-    //                 array_merge([$user_id, $pid, 1, 1], $recipientIds)
-    //             )
-    //         );
-    //     }
-    
-    //     $address_list = [];
-    
-    //     if(!empty( $recipients)){
-    //         foreach ($recipients as $recipient) {
-    //             $address_list[] = [
-    //                 "recipient_id"   => $recipient->id,
-    //                 "process_id"     => trim($pid) ?? '',
-    //                 "full_name"      => trim($recipient->full_name) ?? '',
-    //                 "company_name"   => trim($recipient->company_name) ?? '',
-    //                 "address_1"      => trim($recipient->address_1) ?? '',
-    //                 "address_2"      => trim($recipient->address_2) ?? '',
-    //                 "city"           => trim($recipient->city) ?? '',
-    //                 "state"          => trim($recipient->state) ?? '',
-    //                 "zipcode"        => trim($recipient->zipcode) ?? '',
-    //                 "quantity"       => $recipient->quantity ?? 1,
-    //                 "greeting"       => trim($recipient->greeting) ?? '',
-    //             ];
-    //         }
-        
-    //         // Add items to the cart
-    //         self::add_items_to_cart($address_list, $product_id);
-        
-    //         $processQuery = $wpdb->prepare("
-    //         SELECT order_id
-    //         FROM {$order_process_table}
-    //         WHERE user_id = %d 
-    //         AND id = %d 
-    //         ", $user_id, $pid);
-
-    //         $processResult = $wpdb->get_row($processQuery);
-            
-    //         if(!empty($processResult)){
-    //             if($processResult->order_id != 0){
-    //                 $order = wc_get_order( $processResult->order_id);
-    //                 if ($order) {
-    //                     $order_key = $order->get_order_key();
-    //                     $order_url = wc_get_endpoint_url('view-order', $processResult->order_id, wc_get_page_permalink('myaccount')) . '?key=' . $order_key;
-    //                     wp_send_json_success([
-    //                         'message' => 'Please wait, the order is in progress.',
-    //                         'checkout_url' => $order_url
-    //                     ]);
-    //                 }
-    //             }
-    //         }
-
-    //         $updateData = [
-    //             'data' => wp_json_encode($stepData),
-    //             'order_type'  => sanitize_text_field('multi-recipient-order'),
-    //             'step' => sanitize_text_field($currentStep),
-    //         ];
-
-    //         $wpdb->update(
-    //             $order_process_table,
-    //             $updateData,
-    //             ['id' => $pid]
-    //         );
-
-    //         // Get checkout page URL
-    //         $checkout_url = wc_get_checkout_url();
-
-    //         wp_send_json_success([
-    //         'message' => 'Please wait, the order is in progress.',
-    //             'checkout_url' => $checkout_url
-    //         ]);
-    //     }else{
-    //         wp_send_json_error([
-    //             'message' => 'Failed to process the order. Please try again.',
-    //             'checkout_url' => $checkout_url
-    //         ]);
-    //     }
-
-    // }
-    
-   
-    
     
     /**
 	 * AJAX handler function that remove recipients already order this year handler
@@ -768,8 +551,6 @@ private function add_items_to_cart_chunk($data, $product_id) {
         wp_send_json_success(['message' => 'Process completed successfully.']);
         wp_die();
     }
-
-
     
 
     /**
@@ -1864,7 +1645,6 @@ private function add_items_to_cart_chunk($data, $product_id) {
         wp_send_json_success(['message' => 'Order updated successfully']);
     }
     
-
     // Callback function for get recipient  order details base in id
     public function orthoney_get_recipient_order_base_id_handler() {
         global $wpdb;
@@ -1925,7 +1705,6 @@ private function add_items_to_cart_chunk($data, $product_id) {
     
         wp_send_json_success($data);
     }
-    
 
     // Callback function for get recipient base in id
     public function orthoney_get_recipient_base_id_handler($recipient = '') {
@@ -2087,16 +1866,17 @@ private function add_items_to_cart_chunk($data, $product_id) {
                 if ($validation_result) {
                     $verified_status = $validation_result['success'] ? 1 : 0;
                     $data['address_verified'] = $verified_status;
-                    $result = $wpdb->update(
-                        $table,
-                        $data,
-                        ['id' => $recipient_id]
-                    );
+                   
                     
                     if ($verified_status == 0) {
                         wp_send_json_error(['message' => 'The address is incorrect. Please enter the correct address.']);
                     }else{
                         // wp_send_json_success(['message' => 'The address is correct.']);
+                        $result = $wpdb->update(
+                            $table,
+                            $data,
+                            ['id' => $recipient_id]
+                        );
                     }
                 }
             }else{
@@ -2183,15 +1963,16 @@ private function add_items_to_cart_chunk($data, $product_id) {
             if ($validation_result) {
                 $verified_status = $validation_result['success'] ? 1 : 0;
         
-                $update_result = $wpdb->update(
-                    $order_process_recipient_table,
-                    ['address_verified' => $verified_status],
-                    ['id' => $recipient->id]
-                );
+                
         
                 if ($update_result == 0) {
                     wp_send_json_error(['message' => 'The address is incorrect. Please enter the correct address.']);
                 }else{
+                    $update_result = $wpdb->update(
+                        $order_process_recipient_table,
+                        ['address_verified' => $verified_status],
+                        ['id' => $recipient->id]
+                    );
                     wp_send_json_success(['message' => 'The address is correct.']);
                 }
             }
@@ -2296,10 +2077,10 @@ private function add_items_to_cart_chunk($data, $product_id) {
 
     
     // Shared helper method to avoid repeating logic
-    
     // AJAX: Load orders for display
     public function orthoney_customer_order_process_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
 
         $user_id = get_current_user_id();
         $table_order_type = sanitize_text_field($_POST['table_order_type'] ?? 'main_order');
@@ -2310,17 +2091,369 @@ private function add_items_to_cart_chunk($data, $product_id) {
         $start = intval($_POST['start']);
         $length = intval($_POST['length']);
 
-        $filtered_orders = OAM_Helper::get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search);
+        $orders_table = $wpdb->prefix . 'wc_orders';
+
+        $jar_table = $wpdb->prefix . 'oh_recipient_order';
+
+
+
+        if ($table_order_type === 'main_order') {
+        $filtered_orders = OAM_Helper::get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, false,  $start, $length);
+        if ( current_user_can('administrator') ) {
+            // Admin sees all orders
+            $sql = "SELECT COUNT(id) FROM {$orders_table}";
+            $total_orders = $wpdb->get_var($sql);
+        } else {
+            // Non-admin sees only their orders
+            $sql = $wpdb->prepare(
+                "SELECT COUNT(id) FROM {$orders_table} WHERE customer_id = %d",
+                $user_id
+            );
+            $total_orders = $wpdb->get_var($sql);
+        }
+
+        }else if($table_order_type === 'sub_order_order'){
+         $filtered_orders = OAM_Helper::get_jars_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, false,  $start, $length);
+         if ( current_user_can('administrator') ) {
+            // Admin sees all orders
+            $sql = "SELECT COUNT(id) FROM {$jar_table}";
+            $total_orders = $wpdb->get_var($sql);
+        } else {
+            // Non-admin sees only their orders
+            $sql = $wpdb->prepare(
+                "SELECT COUNT(id) FROM {$jar_table} WHERE user_id = %d",
+                $user_id
+            );
+            $total_orders = $wpdb->get_var($sql);
+        }
+
+        }
 
         wp_send_json([
             'draw' => $draw,
-            'recordsTotal' => count($filtered_orders),
-            'recordsFiltered' => count($filtered_orders),
-            'data' => array_slice($filtered_orders, $start, $length),
+            'recordsTotal' => $total_orders,
+            'recordsFiltered' =>$total_orders,
+            'data' => $filtered_orders,
         ]);
         wp_die();
     }
 
+    public function remove_pdf_data_handler() {
+        $file_url = isset($_REQUEST['file_url']) ? esc_url_raw($_REQUEST['file_url']) : '';
+        $upload_dir = wp_upload_dir();
+        $file_path = str_replace($upload_dir['baseurl'], $upload_dir['basedir'], $file_url);
+    
+        if (file_exists($file_path)) {
+            unlink($file_path);
+            wp_send_json_success('PDF removed successfully');
+        } else {
+            wp_send_json_error('PDF not found');
+        }
+
+    }
+    // AJAX: Order Export PDF generate 
+    public function orthoney_customer_order_export_ajax_pdf_handler() {
+
+        $shipDate = get_field('shipping_date', 'options');
+
+        $order_id_array = $_REQUEST['selectedValues'];
+        $custom_order_pdf_type = $_REQUEST['custom_order_pdf_type'];
+        $current_user = wp_get_current_user();
+        $current_user_email = $current_user->user_email;
+    
+        // Load Dompdf
+        if (!class_exists('\Dompdf\Dompdf')) {
+            require_once plugin_dir_path(__FILE__) . 'libs/dompdf/vendor/autoload.php';
+        }
+    
+        $html = '
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>2025 Honey Reorder Form</title>
+            <style>
+                body {
+                    font-family: DejaVu Sans, sans-serif;
+                    font-size: 12px;
+                    line-height: 1.6;
+                }
+                h2 {
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+                .section {
+                    margin-bottom: 20px;
+                }
+                .label {
+                    font-weight: bold;
+                }
+                .order-summary, .addresses {
+                    border: 1px solid #000;
+                    padding: 10px;
+                }
+                .address-block {
+                    margin-bottom: 10px;
+                }
+                .payment-section {
+                    border: 1px dashed #000;
+                    padding: 10px;
+                }
+                    .page-break {
+                    page-break-before: always;
+                    }
+            </style>
+        </head>
+        <body>';
+    
+
+
+          
+
+        foreach ($order_id_array as $order_id) {
+            $order = wc_get_order($order_id);
+            if (!$order) continue;
+    
+            $orderdata = OAM_COMMON_Custom::orthoney_get_order_data($order_id);
+            $name = esc_html($orderdata['customer_name']);
+            $email = esc_html($orderdata['email']);
+            $address = esc_html($orderdata['address']);
+            $userinfo = esc_html($orderdata['suborder_affiliate_user_info']);
+
+
+            $distAddressParts = [];
+            $shopAddressParts = [];
+            $distNameParts = [];
+            
+            $userinfo = maybe_unserialize($userinfo);
+            
+            if (is_array($userinfo)) {
+
+                if(!empty($userinfo['FirstName'])){
+                    $distNameParts[] = $userinfo['FirstName'];
+                    $distNameParts[] = $userinfo['LastName'];
+                }else{
+                    $distNameParts[] = $userinfo['Distributor']['Primary']['FirstName'];
+                    $distNameParts[] = $userinfo['Distributor']['Primary']['LastName'];
+                }
+
+                if ( ! empty( $userinfo['Address'] ) ) {
+                    $distAddressParts[] = $userinfo['Address'];
+                    $distAddressParts[] = $userinfo['Address2'] ?? '';
+                    $cityStateZip = trim(
+                        rtrim( $userinfo['City'] ?? '', ',' ) . ', ' . 
+                        ( $userinfo['State'] ?? '' ) . ' ' . 
+                        ( $userinfo['Zip'] ?? '' )
+                    );
+                    $distAddressParts[] = $cityStateZip;
+                } elseif ( ! empty( $primaryContact ) ) {
+                    $distAddressParts[] = $primaryContact['Address'] ?? '';
+                    $distAddressParts[] = $primaryContact['Address2'] ?? '';
+                    $cityStateZip = trim(
+                        rtrim( $primaryContact['City'] ?? '', ',' ) . ', ' . 
+                        ( $primaryContact['State'] ?? '' ) . ' ' . 
+                        ( $primaryContact['Zip'] ?? '' )
+                    );
+                    $distAddressParts[] = $cityStateZip;
+                }
+            }
+
+            $shop_address = get_option( 'woocommerce_store_address' );
+            $shop_address_2 = get_option( 'woocommerce_store_address_2' );
+            $shop_city = get_option( 'woocommerce_store_city' );
+            $shop_postcode = get_option( 'woocommerce_store_postcode' );
+            $shop_country = get_option( 'woocommerce_default_country' );
+
+            $country_parts = explode( ':', $shop_country );
+            $country = $country_parts[0] ?? '';
+            $state = $country_parts[1] ?? '';
+
+            if ( ! empty( $shop_address ) ) {
+                $shopAddressParts[] = $shop_address;
+            }
+            if ( ! empty( $shop_address_2 ) ) {
+                $shopAddressParts[] = $shop_address_2;
+            }
+            $cityStateZip = trim( "{$shop_city} {$state} {$shop_postcode}" );
+            if ( ! empty( $cityStateZip ) ) {
+                $shopAddressParts[] = $cityStateZip;
+            }
+            if ( ! empty( $country ) ) {
+                $shopAddressParts[] = $country;
+            }
+            
+
+            // Final full address
+           
+            if(!empty($distAddressParts)){
+                $distAddress = implode(' ', $distAddressParts);
+
+            }else{
+                $distAddress = implode(' ', $shopAddressParts);
+            }
+            if(!empty($distAddressParts)){
+                $distName = implode(' ', $distNameParts);
+            }else{
+                $distName = 'Orthoney';
+            }
+            $affiliate_org_name = 'Orthoney';
+            if (!empty($orderdata['suborderdata'])) {
+                $affiliate_org_name = $orderdata['suborderdata'][0]['suborder_affiliate_org_name'];
+            }
+
+            $affiliate_org_name = 'Orthoney';
+            if (!empty($orderdata['suborderdata'])) {
+                $suborder_affiliate_token = $orderdata['suborderdata'][0]['suborder_affiliate_token'];
+            }
+        
+            
+
+    
+            $html .= '
+            <h2>'.date('Y').' Honey Reorder Form</h2>
+            <div class="section">
+                <div><span class="label">Name:</span> ' . $name . '</div>
+                <div><span class="label">Address:</span> ' . $address . '</div>
+                <div><span class="label">Email:</span> ' . $email . '</div>
+            </div>
+            <div class="section">
+                <p>Dear ' . $name . ',</p>';
+
+
+                $refersite = site_url().'?ref='.$suborder_affiliate_token;
+    
+            // PDF content types
+            if ($custom_order_pdf_type == "5p") {
+                $pdftypepdfcontent = "
+                    <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
+                    <p>For your ordering convenience, the details of your last order are listed below. To order, simply update this form with any additions, deletions or corrections, fill out the payment section and mail it to $distName $distAddress.</p>
+                    <p>Mail orders must be received by $shipDate. Your order will be shipped to arrive in time for Rosh Hashanah.</p>";
+            } elseif ($custom_order_pdf_type == "4p") {
+                $pdftypepdfcontent = "
+                    <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
+                    <p>Shipping is FREE for orders submitted online through $shipDate. After $shipDate, \$8.00 per jar is automatically added for shipping.</p>
+                    <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='.$refersite.'>$refersite</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $order_id . " when prompted.</p>";
+            } elseif ($custom_order_pdf_type == "2p") {
+                $pdftypepdfcontent = "
+                    <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
+                    <p>Shipping is FREE for orders submitted online through $shipDate. After $shipDate, \$8.00 per jar is automatically added for shipping.</p>
+                    <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='.$refersite.'>$refersite</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $order_id . " when prompted.</p>
+                    <p>If you are unable to order online, update this form with any additions, deletions or corrections, fill out the payment section and mail it to {$distName} {$distAddress}. Mail orders must be received by $shipDate or shipping charges will be added and charged to you.</p>";
+            } else {
+                $pdftypepdfcontent = "
+                    <p>Thank you for supporting $affiliate_org_name in the past by ordering honey.</p>
+                    <p>To order, simply update this form with any additions, deletions or corrections, fill out the payment section and mail it to $distName $distAddress.</p>
+                    <p>Mail orders must be received by $shipDate. Your order will be shipped to arrive in time for Rosh Hashanah.</p>";
+            }
+    
+            $html .= $pdftypepdfcontent;
+    
+            // Order summary and payment
+            $html .= '
+            </div>
+            <div class="section order-summary">
+                <p><strong>Order Summary:</strong></p>
+                <p># jars ordered ______ x $14 per jar = Order total $ ______</p>
+            </div>
+            <div class="section payment-section">
+                <p><strong>Payment:</strong></p>
+                <p>[ ] Credit card (circle one): MC Visa Amex Discover</p>
+                <p>Name on card _____________________________________</p>
+                <p>Credit card # _____________________________________ Exp Date ___/___</p>
+                <p>Billing zip code __________ Contact phone number ______________________</p>
+            </div>';
+            
+           
+            // Suborders
+            if (!empty($orderdata['suborderdata'])) {
+                $html .= '<div class="section addresses"><p><strong>Jar\'s Orders:</strong></p>';
+    
+                foreach ($orderdata['suborderdata'] as $suborderdata) {
+
+                    $title = $suborderdata['suborder_full_name'];
+                    //if (!$title) continue;
+                    
+    
+                    $quantity = $suborderdata['suborder_data_quantity'];
+                    $address_parts = [
+                        $suborderdata['suborder_data_address_2'],
+                        $suborderdata['suborder_data_address_1'],
+                        $suborderdata['suborder_data_company_name'],
+                        $suborderdata['suborder_data_city'],
+                        $suborderdata['suborder_data_state'],
+                        $suborderdata['suborder_data_zipcode'],
+                        $suborderdata['suborder_data_country']
+                    ];
+                    $full_address = implode(' ', array_filter($address_parts));
+    
+                    $html .= '
+                    <div class="address-block">
+                        <p><strong>' . $title . '</strong> &times; ' . $quantity . ' jar(s)<br>' . $full_address . '</p>
+                    </div>';
+                }
+    
+              //  $html .= '</div><div class="page-break"></div>';
+               
+              
+                
+            }
+
+            
+            $html .= '</div>';
+            $html .= '<p>Code : '.$suborder_affiliate_token.'</p>';
+             $html .= '<div style="page-break-after: always;"></div>';
+        }
+        // echo '<pre>';
+        // print_r($orderdata);
+
+    
+        $html .= '</body></html>';
+        
+        // echo '<pre>';
+        // print_r($orderdata);
+
+
+        // Generate PDF
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+    
+        $timestamp = date('Y-m-d_h.ia');
+        $upload_dir = wp_upload_dir();
+        $pdf_filename = $custom_order_pdf_type . '_' . $timestamp . '.pdf';
+        $pdf_path = $upload_dir['path'] . '/' . $pdf_filename;
+    
+        file_put_contents($pdf_path, $dompdf->output());
+    
+        $pdf_url = $upload_dir['url'] . '/' . $pdf_filename;
+    
+        // Email or return PDF link
+        if ($custom_order_pdf_type == "2e" || $custom_order_pdf_type == "4e") {
+            $to = $current_user_email;
+            $subject = 'Your Honey Order Summary';
+            $message = 'Please find your honey reorder form attached.';
+            $headers = ['Content-Type: text/html; charset=UTF-8'];
+            $attachments = [$pdf_path];
+    
+            $mail_sent = wp_mail($to, $subject, $message, $headers, $attachments);
+    
+            wp_send_json_success([
+                'message' => $mail_sent ? 'mail has been sent.' : 'mail not sent.',
+                'status' => 'success',
+                'request' => 'mail',
+                'url' => $pdf_url,
+            ]);
+        } else {
+            wp_send_json_success([
+                'url' => $pdf_url,
+                'filename' => $pdf_filename,
+                'status' => 'success',
+                'request' => 'download',
+            ]);
+        }
+    }
+    
     // AJAX: Export orders as CSV
     public function orthoney_customer_order_export_by_id_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
@@ -2487,8 +2620,6 @@ private function add_items_to_cart_chunk($data, $product_id) {
 
         exit;
     }
-        
-
     
     public function customer_sub_order_details_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
@@ -2496,8 +2627,6 @@ private function add_items_to_cart_chunk($data, $product_id) {
         $orderid = intval($_POST['orderid']);
     }
     
-
-
     public function orthoney_incomplete_order_process_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;

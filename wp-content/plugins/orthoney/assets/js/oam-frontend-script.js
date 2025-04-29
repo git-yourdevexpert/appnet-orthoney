@@ -313,22 +313,22 @@ Deleted group Js Start
 
 
 document.addEventListener('click', function (event) {
-    if (event.target.classList.contains('viewAllRecipientsPopupCheckout')) {
-        setTimeout(function () {
-            const $table = jQuery('#viewAllRecipientsPopupCheckout table');
-                $table.DataTable({
-                    paging: true,
-                    info: true,
-                    searching: true,
-                    responsive: true,
-                    deferRender: false,
-                    lengthChange: false,
-                    columnDefs: [
-                        { targets: '_all', className: 'dt-center' }
-                    ]
-                });
-        }, 200);
-    }
+    // if (event.target.classList.contains('viewAllRecipientsPopupCheckout')) {
+    //     setTimeout(function () {
+    //         const $table = jQuery('#viewAllRecipientsPopupCheckout table');
+    //             $table.DataTable({
+    //                 paging: true,
+    //                 info: true,
+    //                 searching: true,
+    //                 responsive: true,
+    //                 deferRender: false,
+    //                 lengthChange: false,
+    //                 columnDefs: [
+    //                     { targets: '_all', className: 'dt-center' }
+    //                 ]
+    //             });
+    //     }, 200);
+    // }
     
     if (event.target.classList.contains('deleteGroupButton')) {
         console.log('sas');
@@ -1577,14 +1577,314 @@ if (recipientOrderManageForm) {
 }
 
 
+jQuery(document).on('click', 'input[name="table_order_type"]', function (e) {
+    e.preventDefault();
+    var otype = jQuery(this).val();
+    if(otype == "main_order"){
+        
+        jQuery("#customer-orders-table_wrapper").show();
+        jQuery("#customer-jar-orders-table_wrapper").hide();
+        jQuery("#customer-jar-orders-table").hide();
+
+        // customer-orders-table_filter
+        // customer-orders-table_info
+    }else if(otype == "sub_order_order"){
+        
+        
+        jQuery("#customer-orders-table_wrapper").hide();
+        jQuery("#customer-jar-orders-table_wrapper").show();
+        jQuery("#customer-jar-orders-table").show();
+
+       
+    }
+
+});
+
+
+/**
+ * Recipient Jar order start 
+ */
+ 
+jQuery(document).ready(function ($) {
+    var table = $('#customer-jar-orders-table').DataTable({
+        processing: false,
+        serverSide: true,
+        select: {
+            style: 'multi' // or 'single'
+          },
+        ajax: {
+            url: oam_ajax.ajax_url,
+            type: 'POST',
+            data: function (d) {
+                d.action = 'orthoney_customer_order_process_ajax';
+                d.security = oam_ajax.nonce;
+                d.custom_order_type = $('#custom-order-type-filter').val();
+                d.custom_order_status = $('#custom-order-status-filter').val();
+                d.table_order_type = 'sub_order_order';
+            },
+            beforeSend: function () {
+                process_group_popup('Please wait while we process your request.');
+            },
+            complete: function () {
+                Swal.close();
+            },
+            error: function () {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while loading your orders.',
+                    icon: 'error',
+                });
+            },
+        },
+        columns: [
+            // {
+            //     title: '<input type="checkbox" class="selectall-checkbox">',
+            //     data: null,
+            //     orderable: false,
+            //     searchable: false,
+            //     className: 'checkbox-col',
+            //     render: function (data, type, row) {
+            //         return `<input type="checkbox" class="row-checkbox" value="${row.order_no}" data-order-id="${row.order_no}">`;
+            //     }
+            // },
+            { data: 'jar_no' },
+            { data: 'date' },
+            { data: 'billing_name', orderable: false, searchable: false },
+            { data: 'affiliate_code', orderable: false, searchable: false },
+            { data: 'total_jar', orderable: false, searchable: false },
+            { data: 'status', orderable: false, searchable: false },
+            { data: 'price', orderable: false, searchable: false },
+            { data: 'action', orderable: false, searchable: false }
+        ],
+        drawCallback: function () {
+            initTippy();
+            $('#customer-jar-orders-table tbody tr.sub-order-row').remove();
+            $('#customer-jar-orders-table tbody tr').each(function () {
+                const $subOrderRow = $('<div class="sub-order-list"></div>');
+                $(this).after($subOrderRow);
+            });
+        },
+        initComplete: function () {
+            jQuery("#customer-jar-orders-table_wrapper").hide();
+            jQuery("#customer-jar-orders-table_length").hide();
+
+            
+            // const customFilter = `
+            //     <label style="margin-left: 10px;">
+            //         Ship Type:
+            //         <select id="custom-order-type-filter" class="custom-select form-control">
+            //             <option value="all">All Ship Types</option>
+            //             <option value="single_address">Single Address</option>
+            //             <option value="multiple_address">Multiple Addresses</option>
+            //         </select>
+            //     </label>
+            //        <label style="margin-left: 10px;">
+            //         PDF Export Type:
+            //         <select id="custom-pdf-export-type" class="custom-pdf-export-type form-control">
+            //             <option value="all">PDF Types</option>
+            //             <option value="2p">2P: Online & paper orders (print version)</option>
+            //             <option value="2e">2E: Online & paper orders (email version)</option>
+            //             <option value="4p">4P: Online & paper orders (print version)</option>
+            //             <option value="4e">4E: Online & paper orders (email version)</option>
+            //             <option value="5p">5p</option>
+            //         </select>
+            //     </label>
+            //     <label style="margin-left: 10px;" class="custom-order-status-filter-wrapper">
+            //         Order Status:
+            //         <select id="custom-order-status-filter" class="custom-select form-control">
+            //             <option value="all">All Status</option>
+            //             <option value="wc-pending">Pending payment</option>
+            //             <option value="wc-processing">Processing</option>
+            //             <option value="wc-on-hold">On hold</option>
+            //             <option value="wc-completed">Completed</option>
+            //             <option value="wc-cancelled">Cancelled</option>
+            //             <option value="wc-refunded">Refunded</option>
+            //             <option value="wc-failed">Failed</option>
+            //             <option value="wc-checkout-draft">Draft</option>
+            //         </select>
+            //     </label>
+            // `;
+            // $('#customer-orders-table_filter').append(customFilter);
+            // $('#customer-orders-table_filter').append('<label style="margin-left: 10px;">&nbsp;<div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
+          //  $('#customer-orders-table_filter').append('<label style="margin-left: 10px;">&nbsp;<div><button class="order-pdf-export w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Pdf</button></div></label>');
+ 
+            const tableType = `
+                <label for="main_order">
+                    <input type="radio" id="main_order" name="table_order_type" value="main_order" >
+                    <span>Main Order</span>
+                </label>
+                <label for="sub_order_order" style="margin-left: 15px;">
+                    <input type="radio" id="sub_order_order" name="table_order_type" value="sub_order_order" checked>
+                    <span>Jar Order</span>
+                </label>
+            `;
+            $('#customer-jar-orders-table_length').before('<div style="text-align:center; margin-bottom: 10px;">' + tableType + '</div>');
+ 
+           // toggleRecipientColumn();
+ 
+            // $('#custom-order-type-filter, #custom-order-status-filter').on('change', function (e) {
+            //     e.preventDefault();
+            //     table.ajax.reload();
+            // });
+ 
+            $(document).on('click', 'input[name="table_order_type"]', function (e) {
+                e.preventDefault();
+                //toggleRecipientColumn();
+              //  table.ajax.reload();
+            });
+ 
+ 
+            jQuery('.selectall-checkbox').on('change', function() {
+                jQuery('.row-checkbox').prop('checked', this.checked);
+              });
+ 
+ 
+            // 🔄 Export data trigger (new AJAX call)
+            // $(document).on('click', '.order-export-data', function (e) {
+            //     e.preventDefault();
+ 
+            //     const requestData = {
+            //         action: 'orthoney_customer_order_export_ajax',
+            //         security: oam_ajax.nonce,
+            //         custom_order_type: $('#custom-order-type-filter').val(),
+            //         custom_order_status: $('#custom-order-status-filter').val(),
+            //         table_order_type: $('input[name="table_order_type"]:checked').val(),
+            //         search: {
+            //             value: $('#customer-jar-orders-table_filter input').val()
+            //         }
+            //     };
+ 
+            //     process_group_popup('Generating CSV...');
+ 
+            //     $.post(oam_ajax.ajax_url, requestData, function (response) {
+            //         Swal.close();
+            //         if (response.success && response.data?.url) {
+            //             const a = document.createElement('a');
+            //             a.href = response.data.url;
+            //             a.download = response.data.filename;
+            //             document.body.appendChild(a);
+            //             a.click();
+            //             document.body.removeChild(a);
+            //         } else {
+            //             Swal.fire({
+            //                 title: 'Export Failed',
+            //                 text: response?.data?.message || 'Something went wrong during export.',
+            //                 icon: 'error',
+            //             });
+            //         }
+            //     });
+            // });
+ 
+ 
+            // $(document).on('click', '.order-pdf-export', function (e) {
+            //     e.preventDefault();
+ 
+ 
+            //     let selectedValues = [];
+ 
+            //     $('.row-checkbox:checked').each(function () {
+            //         selectedValues.push($(this).val());
+            //     });
+ 
+            //     if (selectedValues.length === 0) {
+            //         Swal.fire({
+            //             title: 'No Order Selected',
+            //             text: 'Please check at least one order before proceeding.',
+            //             icon: 'warning',
+            //         });
+            //         return; // Stop further execution
+            //     }
+ 
+            //   //  console.log(selectedValues);
+ 
+            //     const requestData = {
+            //         action: 'orthoney_customer_order_export_pdf_ajax',
+            //         security: oam_ajax.nonce,
+            //         custom_order_type: $('#custom-order-type-filter').val(),
+            //         custom_order_status: $('#custom-order-status-filter').val(),
+            //         custom_order_pdf_type: $('#custom-pdf-export-type').val(),
+            //         table_order_type: $('input[name="table_order_type"]:checked').val(),
+            //         selectedValues:selectedValues,
+            //         search: {
+            //             value: $('#customer-orders-table_filter input').val()
+            //         }
+            //     };
+ 
+            //     process_group_popup('Generating PDF...');
+ 
+            //     $.post(oam_ajax.ajax_url, requestData, function (response) {
+            //         Swal.close();
+            //         if (response.success && response.data?.url && response.data.request == "download") {
+            //             const a = document.createElement('a');
+            //             a.href = response.data.url;
+            //             a.download = response.data.filename;
+            //             document.body.appendChild(a);
+            //             a.click();
+            //             document.body.removeChild(a);
+ 
+            //             setTimeout(() => {
+            //                 $.post(oam_ajax.ajax_url, {
+            //                     action: 'remove_pdf_data',
+            //                     file_url: response.data.url
+            //                 });
+            //             }, 20000); // 5000ms = 5 seconds
+               
+ 
+            //         } else if(response.data?.request) {
+            //             Swal.fire({
+            //                 title: 'PDF file has been sent on email',
+            //                 text: response?.data?.message || 'Something went wrong during export.',
+            //                 icon: 'success',
+            //             });
+            //             setTimeout(() => {
+            //                 $.post(oam_ajax.ajax_url, {
+            //                     action: 'remove_pdf_data',
+            //                     file_url: response.data.url
+            //                 });
+            //             }, 20000); // 5000ms = 5 seconds
+                       
+            //         } else {
+            //             Swal.fire({
+            //                 title: 'Export Failed',
+            //                 text: response?.data?.message || 'Something went wrong during export.',
+            //                 icon: 'error',
+            //             });
+            //         }
+            //     });
+            // });
+ 
+ 
+            // setTimeout(function () {
+            //     const searchBox = $('#customer-orders-table_filter input');
+            //     searchBox.attr('placeholder', 'Search by name');
+           
+            //     searchBox.off('input').on('input', function () {
+            //         const val = this.value.trim();
+            //         const wordCount = val.split(/\s+/).filter(Boolean).length;
+           
+            //         if (wordCount >= 3 || val.length === 0) {
+            //             table.search(val).draw();
+            //         }
+            //     });
+            // }, 100);
+ 
+          
+        }
+    });
+});
+
+
 /**
  * Recipient Order End
  */
-
+ 
 jQuery(document).ready(function ($) {
     var table = $('#customer-orders-table').DataTable({
         processing: false,
         serverSide: true,
+        select: {
+            style: 'multi' // or 'single'
+          },
         ajax: {
             url: oam_ajax.ajax_url,
             type: 'POST',
@@ -1610,7 +1910,18 @@ jQuery(document).ready(function ($) {
             },
         },
         columns: [
+            {
+                title: '<input type="checkbox" class="selectall-checkbox">',
+                data: null,
+                orderable: false,
+                searchable: false,
+                className: 'checkbox-col',
+                render: function (data, type, row) {
+                    return `<input type="checkbox" class="row-checkbox" value="${row.order_no}" data-order-id="${row.order_no}">`;
+                }
+            },
             { data: 'jar_no' },
+           
             { data: 'order_no' },
             { data: 'date' },
             { data: 'billing_name', orderable: false, searchable: false },
@@ -1632,6 +1943,10 @@ jQuery(document).ready(function ($) {
             });
         },
         initComplete: function () {
+            jQuery("#customer-orders-table_length").hide();
+
+            
+
             const customFilter = `
                 <label style="margin-left: 10px;">
                     Ship Type:
@@ -1639,6 +1954,17 @@ jQuery(document).ready(function ($) {
                         <option value="all">All Ship Types</option>
                         <option value="single_address">Single Address</option>
                         <option value="multiple_address">Multiple Addresses</option>
+                    </select>
+                </label>
+                   <label style="margin-left: 10px;">
+                    PDF Export Type:
+                    <select id="custom-pdf-export-type" class="custom-pdf-export-type form-control">
+                        <option value="all">PDF Types</option>
+                        <option value="2p">2P: Online & paper orders (print version)</option>
+                        <option value="2e">2E: Online & paper orders (email version)</option>
+                        <option value="4p">4P: Online & paper orders (print version)</option>
+                        <option value="4e">4E: Online & paper orders (email version)</option>
+                        <option value="5p">5p</option>
                     </select>
                 </label>
                 <label style="margin-left: 10px;" class="custom-order-status-filter-wrapper">
@@ -1657,8 +1983,9 @@ jQuery(document).ready(function ($) {
                 </label>
             `;
             $('#customer-orders-table_filter').append(customFilter);
-            $('#customer-orders-table_filter').append('<label style="margin-left: 10px;">&nbsp;<div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
-
+            // $('#customer-orders-table_filter').append('<label style="margin-left: 10px;">&nbsp;<div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
+            $('#customer-orders-table_filter').append('<label style="margin-left: 10px;">&nbsp;<div><button class="order-pdf-export w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Pdf</button></div></label>');
+ 
             const tableType = `
                 <label for="main_order">
                     <input type="radio" id="main_order" name="table_order_type" value="main_order" checked>
@@ -1670,24 +1997,30 @@ jQuery(document).ready(function ($) {
                 </label>
             `;
             $('#customer-orders-table_length').before('<div style="text-align:center; margin-bottom: 10px;">' + tableType + '</div>');
-
+ 
             toggleRecipientColumn();
-
+ 
             $('#custom-order-type-filter, #custom-order-status-filter').on('change', function (e) {
                 e.preventDefault();
                 table.ajax.reload();
             });
-
+ 
             $(document).on('click', 'input[name="table_order_type"]', function (e) {
                 e.preventDefault();
                 toggleRecipientColumn();
-                table.ajax.reload();
+              //  table.ajax.reload();
             });
-
+ 
+ 
+            jQuery('.selectall-checkbox').on('change', function() {
+                jQuery('.row-checkbox').prop('checked', this.checked);
+              });
+ 
+ 
             // 🔄 Export data trigger (new AJAX call)
             $(document).on('click', '.order-export-data', function (e) {
                 e.preventDefault();
-
+ 
                 const requestData = {
                     action: 'orthoney_customer_order_export_ajax',
                     security: oam_ajax.nonce,
@@ -1698,9 +2031,9 @@ jQuery(document).ready(function ($) {
                         value: $('#customer-orders-table_filter input').val()
                     }
                 };
-
+ 
                 process_group_popup('Generating CSV...');
-
+ 
                 $.post(oam_ajax.ajax_url, requestData, function (response) {
                     Swal.close();
                     if (response.success && response.data?.url) {
@@ -1719,27 +2052,125 @@ jQuery(document).ready(function ($) {
                     }
                 });
             });
-
+ 
+ 
+            $(document).on('click', '.order-pdf-export', function (e) {
+                e.preventDefault();
+ 
+ 
+                let selectedValues = [];
+ 
+                $('.row-checkbox:checked').each(function () {
+                    selectedValues.push($(this).val());
+                });
+ 
+                if (selectedValues.length === 0) {
+                    Swal.fire({
+                        title: 'No Order Selected',
+                        text: 'Please check at least one order before proceeding.',
+                        icon: 'warning',
+                    });
+                    return; // Stop further execution
+                }
+ 
+              //  console.log(selectedValues);
+ 
+                const requestData = {
+                    action: 'orthoney_customer_order_export_pdf_ajax',
+                    security: oam_ajax.nonce,
+                    custom_order_type: $('#custom-order-type-filter').val(),
+                    custom_order_status: $('#custom-order-status-filter').val(),
+                    custom_order_pdf_type: $('#custom-pdf-export-type').val(),
+                    table_order_type: $('input[name="table_order_type"]:checked').val(),
+                    selectedValues:selectedValues,
+                    search: {
+                        value: $('#customer-orders-table_filter input').val()
+                    }
+                };
+ 
+                process_group_popup('Generating PDF...');
+ 
+                $.post(oam_ajax.ajax_url, requestData, function (response) {
+                    Swal.close();
+                    if (response.success && response.data?.url && response.data.request == "download") {
+                        const a = document.createElement('a');
+                        a.href = response.data.url;
+                        a.download = response.data.filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+ 
+                        setTimeout(() => {
+                            $.post(oam_ajax.ajax_url, {
+                                action: 'remove_pdf_data',
+                                file_url: response.data.url
+                            });
+                        }, 20000); // 5000ms = 5 seconds
+               
+ 
+                    } else if(response.data?.request) {
+                        Swal.fire({
+                            title: 'PDF file has been sent on email',
+                            text: response?.data?.message || 'Something went wrong during export.',
+                            icon: 'success',
+                        });
+                        setTimeout(() => {
+                            $.post(oam_ajax.ajax_url, {
+                                action: 'remove_pdf_data',
+                                file_url: response.data.url
+                            });
+                        }, 20000); // 5000ms = 5 seconds
+                       
+                    } else {
+                        Swal.fire({
+                            title: 'Export Failed',
+                            text: response?.data?.message || 'Something went wrong during export.',
+                            icon: 'error',
+                        });
+                    }
+                });
+            });
+ 
+ 
             // setTimeout(function () {
             //     const searchBox = $('#customer-orders-table_filter input');
             //     searchBox.attr('placeholder', 'Search by name');
-            
+           
             //     searchBox.off('input').on('input', function () {
             //         const val = this.value.trim();
             //         const wordCount = val.split(/\s+/).filter(Boolean).length;
-            
+           
             //         if (wordCount >= 3 || val.length === 0) {
             //             table.search(val).draw();
             //         }
             //     });
             // }, 100);
-
+ 
+            // function toggleRecipientColumn() {
+            //     const selectedType = $('input[name="table_order_type"]:checked').val();
+            //     const filterWrapper = $('.custom-order-status-filter-wrapper');
+            //     const recipientCountColumnIndex = 7;
+            //     const recipientNameColumnIndex = 4;
+            //     const jarNoColumnIndex = 0;
+ 
+            //     if (selectedType === 'sub_order_order') {
+            //         filterWrapper.show();
+            //         table.column(jarNoColumnIndex).visible(true);
+            //         table.column(recipientNameColumnIndex).visible(true);
+            //         table.column(recipientCountColumnIndex).visible(false);
+            //     } else {
+            //         filterWrapper.hide();
+            //         table.column(jarNoColumnIndex).visible(false);
+            //         table.column(recipientNameColumnIndex).visible(false);
+            //         table.column(recipientCountColumnIndex).visible(true);
+            //     }
+            // }
             function toggleRecipientColumn() {
                 const selectedType = $('input[name="table_order_type"]:checked').val();
                 const filterWrapper = $('.custom-order-status-filter-wrapper');
-                const recipientCountColumnIndex = 7;
-                const recipientNameColumnIndex = 4;
-                const jarNoColumnIndex = 0;
+                const recipientCountColumnIndex = 8;
+                const recipientNameColumnIndex = 5;
+                const jarNoColumnIndex = 1;
 
                 if (selectedType === 'sub_order_order') {
                     filterWrapper.show();
@@ -1748,6 +2179,7 @@ jQuery(document).ready(function ($) {
                     table.column(recipientCountColumnIndex).visible(false);
                 } else {
                     filterWrapper.hide();
+                  
                     table.column(jarNoColumnIndex).visible(false);
                     table.column(recipientNameColumnIndex).visible(false);
                     table.column(recipientCountColumnIndex).visible(true);
@@ -1756,7 +2188,10 @@ jQuery(document).ready(function ($) {
         }
     });
 });
-
+ 
+ 
+ 
+ 
 jQuery(document).on('click', '.download_csv_by_order_id', function (e) {
     e.preventDefault();
 
