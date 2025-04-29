@@ -13,6 +13,18 @@ if (!defined('ABSPATH')) {
 
 require_once 'libs/dompdf/autoload.inc.php';
 
+add_filter( 'woocommerce_checkout_fields', 'custom_disable_shipping_fields_validation' );
+
+function custom_disable_shipping_fields_validation( $fields ) {
+    if ( isset( $fields['shipping'] ) ) {
+        foreach ( $fields['shipping'] as $key => $field ) {
+            $fields['shipping'][$key]['required'] = false;
+        }
+    }
+    return $fields;
+}
+
+
 // Ensure WooCommerce is active before loading the plugin
 if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
     add_action( 'admin_notices', function() {
