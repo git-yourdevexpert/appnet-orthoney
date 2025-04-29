@@ -6,13 +6,13 @@ if (!defined('ABSPATH')) {
 
 class OAM_WC_CRON_Suborder {
     public function __construct() {
-        // 1. Hook into Thank You to schedule the sub-order creation
+        // Hook into Thank You to schedule the sub-order creation
         add_action('woocommerce_thankyou', array($this, 'queue_sub_order_creation'), 10, 1);
-        // 2. Hook for async processing via WP Cron
+        // Hook for async processing via WP Cron
         add_action('oam_create_sub_orders_async', array($this, 'schedule_create_sub_order_cron_handler'));
-
+        // Disable Processing mail temporarily
         add_filter('woocommerce_email_enabled_customer_processing_order', array($this,'oam_disable_processing_email_temporarily'), 10, 2);
-
+        // Order status is change then init CRON job.
         add_action('woocommerce_order_status_changed', array($this,'oam_maybe_schedule_sub_order_on_status_change'), 10, 4);
     }
 
