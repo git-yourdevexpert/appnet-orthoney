@@ -51,7 +51,7 @@ class OAM_Scripts
     
         // Plugin-Specific Scripts
         $scripts = [
-            ['oam-frontend-script', 'js/oam-frontend-script.js', ['sweetalert2', 'lity-js']],
+            ['oam-frontend-script', 'js/oam-frontend-script.js', ['dataTables-js','sweetalert2', 'lity-js']],
             ['oam-recipient-form-script', 'js/oam-recipient-form-script.js', ['oam-frontend-script']],
             ['oam-dev-frontend-script', 'js/oam-dev-frontend-script.js', ['oam-frontend-script']]
         ];

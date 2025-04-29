@@ -110,6 +110,7 @@ class OAM_WC_Customizer {
             $affiliate
         ));
 
+        $sub_order_id =  OAM_COMMON_Custom::get_order_meta($order->get_order_number(), '_orthoney_OrderID');
         $plugin_path = plugin_dir_path(__DIR__); // Get plugin root directory
         $file_path = $plugin_path . 'templates/woocommerce/emails/email-styles.php';
         $css = file_get_contents($file_path);
@@ -118,10 +119,11 @@ class OAM_WC_Customizer {
             $total_honey_jars += $item->get_quantity();
         }
 
-        echo '<html>';
-            echo '<head>
+        echo '<!DOCTYPE html><html>';
+            echo '<head><meta charset="UTF-8">
                 <style>
-                    body { font-family: Arial, sans-serif; background-color: #f7f7f7; color: #515151; margin: 0; padding: 0; }
+               
+                    body { font-family: DejaVu Sans, sans-serif; background-color: #f7f7f7; color: #515151; margin: 0; padding: 0; }
                     .email-container { width: 600px; background: #ffffff; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
                     h1 { color: #333; text-align: center; }
                     .order-summary { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -132,12 +134,12 @@ class OAM_WC_Customizer {
             </head>';
             echo '<body>';
                 echo '<div class="pdf-heading" style="background-color: #491571; text-align:left; color: #ffffff;">';
-                    echo '<h1>Thank you for your order</h1>';
+                    echo '<h1 style="color:white;padding: 36px 48px;">Thank you for your order</h1>';
                 echo '</div>';
                 echo '<div class="email-container">';
                     echo '<p>Thank you for your gift of $'.$order->get_total().' to '.$order->get_billing_company().'. Your Honey From The Heart gift benefits '.$order->get_billing_company().', a non-profit organization, and ORT America, a 501(c)(3) organization. For federal income tax purposes, your charitable deduction is limited to the purchase price of the honey less its fair market value. For purposes of determining the value of goods provided, you should use $'.$taxable_donation.' per jar so your charitable contribution is '.'$'.number_format(($order->get_subtotal()) - ($total_honey_jars * $taxable_donation), 2).'.</p>';
                     echo '<p>Your order has been received and is now being processed. Your order details are shown below for your reference:</p>';
-                    echo '<h2 style="color:#491571;">Order #'.$order->get_order_number().'</h2>';
+                    echo '<h2 style="color:#491571;">Order #'.$sub_order_id.'</h2>';
                     // Ensure the order items table has a fixed width
                     echo '<table class="order-summary" style="width:100%; border-collapse:collapse; border: 1px solid black;">';
                         echo '<thead>

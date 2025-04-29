@@ -199,9 +199,11 @@ class OAM_COMMON_Custom {
     
         return $classes;
     }
-    public static function sub_order_error_log($message) {
-        $log_file = WP_CONTENT_DIR . '/logs/sub-order-error.log';
-        
+    public static function sub_order_error_log($message, $order_id = null) {
+        // Fallback to generic file if order_id not provided
+        $log_filename = $order_id ? "sub_order_{$order_id}.log" : "sub-order-error.log";
+        $log_file = WP_CONTENT_DIR . '/logs/' . $log_filename;
+    
         // Ensure log directory exists
         if (!file_exists(dirname($log_file))) {
             mkdir(dirname($log_file), 0755, true);
