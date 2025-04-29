@@ -226,6 +226,7 @@ document.addEventListener('lity:close', function(event) {
 });
 
 
+
 /*
 Create new group Js Start
  */
@@ -310,25 +311,31 @@ Create new group Js END
 /*
 Deleted group Js Start
  */
-
-
 document.addEventListener('click', function (event) {
-    // if (event.target.classList.contains('viewAllRecipientsPopupCheckout')) {
-    //     setTimeout(function () {
-    //         const $table = jQuery('#viewAllRecipientsPopupCheckout table');
-    //             $table.DataTable({
-    //                 paging: true,
-    //                 info: true,
-    //                 searching: true,
-    //                 responsive: true,
-    //                 deferRender: false,
-    //                 lengthChange: false,
-    //                 columnDefs: [
-    //                     { targets: '_all', className: 'dt-center' }
-    //                 ]
-    //             });
-    //     }, 200);
-    // }
+    if (event.target.classList.contains('viewAllRecipientsPopupCheckout')) {
+        if (event.target.classList.contains('viewAllRecipientsPopupCheckout')) {
+            setTimeout(function () {
+                const $dataTables_wrapper = jQuery('#viewAllRecipientsPopupCheckout .dataTables_wrapper');
+                if($dataTables_wrapper.length == 0){
+
+                
+                const $table = jQuery('#viewAllRecipientsPopupCheckout table');
+                    $table.DataTable({
+                        paging: true,
+                        info: true,
+                        searching: true,
+                        responsive: true,
+                        deferRender: false,
+                        lengthChange: false,
+                        columnDefs: [
+                            { targets: '_all', }
+                        ]
+                    });
+                }
+            }, 200);
+        }
+    }
+    
     
     if (event.target.classList.contains('deleteGroupButton')) {
         console.log('sas');
