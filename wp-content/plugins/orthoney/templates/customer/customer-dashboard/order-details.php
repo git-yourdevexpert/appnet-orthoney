@@ -1,66 +1,62 @@
 <?php
+/**
+ * Display detailed recipient order information.
+ */
+
 defined('ABSPATH') || exit;
 
 $order_id = get_query_var('order-details');
-
 $order = wc_get_order($order_id);
+if (!$order) return;
 
 $order_items = $order->get_items();
+$quantity = array_sum(wp_list_pluck($order_items, 'quantity'));
 
-$quantity = 0;
 foreach ($order_items as $item) {
     $quantity = (int) $item->get_quantity();
-    echo $single_order_meta = $item->get_meta('single_order', true);
-    echo $process_id = $item->get_meta('process_id', true);
-    echo $greeting = $item->get_meta('greeting', true);
+    // echo $item->get_meta('single_order', true);
+    // echo $item->get_meta('process_id', true);
+    // echo $item->get_meta('greeting', true);
 }
+
 $user_id = get_current_user_id();
 $notes = $order->get_customer_order_notes();
 
+// Get order process user
 global $wpdb;
-$wc_orders_table      = $wpdb->prefix . 'wc_orders';
-
 $wc_orders_meta_table = $wpdb->prefix . 'wc_orders_meta';
-$recipient_order_table = $wpdb->prefix . 'oh_recipient_order';
-
-$sub_order_id =  OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
-
-$recipientResult = $wpdb->get_results($wpdb->prepare(
-    "SELECT * FROM {$recipient_order_table} WHERE order_id = %d",
-    $sub_order_id 
+$order_process_user_id = $wpdb->get_var($wpdb->prepare(
+    "SELECT meta_value FROM {$wc_orders_meta_table} WHERE order_id = %d AND meta_key = %s",
+    $order->get_id(), 'order_process_by'
 ));
 
-
-$order_id = $order->get_id();
-$order_process_user_id = $wpdb->get_var(
-    $wpdb->prepare("SELECT meta_value FROM {$wc_orders_meta_table} WHERE order_id = %d AND meta_key = %s", $order_id, 'order_process_by')
-);
-
 $order_process_by = '';
-if (!empty($order_process_user_id)) {
-    $user_info = get_userdata($order_process_user_id);
-    if ($user_info) {
-        $order_process_by = ' and Process by <mark class="order-status">' . esc_html($user_info->display_name) . '</mark>';
-    }
+if ($order_process_user_id && ($user_info = get_userdata($order_process_user_id))) {
+    $order_process_by = ' and Process by <mark class="order-status">' . esc_html($user_info->display_name) . '</mark>';
 }
 
+// Get recipient data
+$sub_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
+$recipient_order_table = $wpdb->prefix . 'oh_recipient_order';
+$recipientResult = $wpdb->get_results($wpdb->prepare(
+    "SELECT * FROM {$recipient_order_table} WHERE order_id = %d",
+    $sub_order_id
+));
+
+// Determine organization
 $organization = 'Orthoney';
-if($recipientResult[0]->affiliate_token == '' AND $recipientResult[0]->affiliate_token == 'Orthoney'){
-    
-    
-}else{
+if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affiliate_token !== 'Orthoney') {
     $token = $recipientResult[0]->affiliate_token;
     $meta_key = '_yith_wcaf_name_of_your_organization';
-    
-    $organization = $wpdb->get_var( $wpdb->prepare(
+
+    $organization = $wpdb->get_var($wpdb->prepare(
         "SELECT um.meta_value
          FROM {$wpdb->usermeta} um
          JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON um.user_id = aff.user_id
          WHERE aff.token = %s AND um.meta_key = %s",
-         $token, $meta_key
+        $token, $meta_key
     ));
 }
-
 
 ?>
 
@@ -75,73 +71,57 @@ if($recipientResult[0]->affiliate_token == '' AND $recipientResult[0]->affiliate
 <div class="order-process-block customer-order-details-section">
     <div class="customer-order-details-nav heading-title">
         <div>
-            <h3>#<?php echo esc_html($sub_order_id ); ?> Recipient Order</h3>
+            <h3>#<?php echo esc_html($sub_order_id); ?> Recipient Order </h3>
             <p>
                 <?php
                 printf(
                     esc_html__('Order #%1$s was placed on %2$s%3$s.', 'woocommerce'),
-                    '<mark class="order-number">' . esc_html($sub_order_id ) . '</mark>',
+                    '<mark class="order-number">' . esc_html($sub_order_id) . '</mark>',
                     '<mark class="order-date">' . esc_html(wc_format_datetime($order->get_date_created())) . '</mark>',
                     $order_process_by
                 );
-               
                 ?>
             </p>
             <p>
                 <?php
+                if($organization != 'Orthoney'):
                 printf(
                     esc_html__('The organization %1$s has the code %2$s%3$s.', 'woocommerce'),
                     '<mark class="order-number">' . esc_html($organization) . '</mark>',
-                    '<mark class="order-number">' . esc_html($recipientResult[0]->affiliate_token ) . '</mark>',
+                    '<mark class="order-number">' . esc_html($recipientResult[0]->affiliate_token ?? '') . '</mark>',
                     $order_process_by
                 );
-               
+                
+            endif;
                 ?>
             </p>
         </div>
         <div>
-        <section class="woocommerce-customer-details">
-            <h2 class="woocommerce-column__title">Billing address</h2>
-            <?php 
-
-            $state_code = $order->get_billing_state(); // e.g. "CA"
-            $states = WC()->countries->get_states('US');
-
-            $full_state_name = isset($states[ $state_code ]) ? $states[ $state_code ] : $state_code;
-            $full_state = $full_state_name . " (" . $state_code . ")";
-        
-            echo "Name: ".$order->get_billing_first_name()." ".$order->get_billing_last_name()."<br>";
-            echo "Email: ".$order->get_billing_email()."<br>";
-            echo "Address: ".$order->get_billing_address_1()." ".$order->get_billing_address_2()."<br>";
-            echo "City: ".$order->get_billing_city()."<br>";
-            echo "State: ".$full_state."<br>";
-            echo "Zip Code: ". $order->get_billing_postcode()."<br>";
-            echo "Total Jars in Order: ". $quantity."<br>";
-            echo "Total Price: ". wc_price($order->get_total()) ."<br>";
-            echo "Shipping: ". wc_price($order->get_shipping_total()) ."<br>";
-
-            // echo $order->get_billing_phone()."<br>";
-            // do_action('woocommerce_view_order', $order_id); 
-        
-        ?>
-        </section>
-    </div>
+            <section class="woocommerce-customer-details">
+                <h2 class="woocommerce-column__title">Billing address</h2>
+                <?php 
+                $state_code = $order->get_billing_state();
+                $states = WC()->countries->get_states('US');
+                $full_state = ($states[$state_code] ?? $state_code) . " ($state_code)";
+                ?>
+                <strong>Name: </strong><?php echo esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()); ?><br>
+                <strong>Email: </strong><?php echo esc_html($order->get_billing_email()); ?><br>
+                <strong>Address: </strong><?php echo esc_html(trim($order->get_billing_address_1() . ' ' . $order->get_billing_address_2())); ?><br>
+                <strong>City: </strong><?php echo esc_html($order->get_billing_city()); ?><br>
+                <strong>State: </strong><?php echo esc_html($full_state); ?><br>
+                <strong>Zip Code: </strong><?php echo esc_html($order->get_billing_postcode()); ?><br>
+                <strong>Total Jars in Order: </strong><?php echo esc_html($quantity); ?><br>
+                <strong>Total Price: </strong><?php echo wc_price($order->get_total()); ?><br>
+                <strong>Shipping: </strong><?php echo wc_price($order->get_shipping_total()); ?><br>
+                <strong>Delivered Type: </strong><?php echo (!empty($recipientResult) ? "Ship to Multi Address" : "Ship to Single Address") ?>
+            </section>
+        </div>
     </div>
 
     <div id="recipient-order-data" class="table-data orthoney-datatable-warraper">
-        <?php 
- if (empty($recipientResult)) :
-    ?>
-  
-    <?php
-    return;
- endif;
-        ?>
         <div class="download-csv heading-title">
             <div></div>
-            <div>
-                <!-- <button data-tippy="Cancel All Recipient Orders" class="btn-underline">Cancel All Recipient Orders</button> -->
-            </div>
+            <div></div>
         </div>
 
         <table>
@@ -157,45 +137,49 @@ if($recipientResult[0]->affiliate_token == '' AND $recipientResult[0]->affiliate
                 </tr>
             </thead>
             <tbody>
-                <?php 
-                if (!empty($recipientResult)) :
-                    foreach ($recipientResult as $sub_order) :
-                    
-                        $recipient_order_id    = $sub_order->recipient_order_id;
-                        $first_name    = $sub_order->full_name;
-                        $address_parts = array_filter([
-                            $sub_order->address_1,
-                            $sub_order->address_2,
-                            $sub_order->city,
-                            $sub_order->state,
-                            $sub_order->zipcode
-                        ]);
+                <?php
+                $recipients = !empty($recipientResult) ? $recipientResult : [(object) [
+                    'recipient_order_id' => $sub_order_id,
+                    'full_name' => $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name(),
+                    'company_name' => '',
+                    'address_1' => $order->get_shipping_address_1(),
+                    'address_2' => $order->get_shipping_address_2(),
+                    'city' => $order->get_shipping_city(),
+                    'state' => $order->get_shipping_state(),
+                    'zipcode' => $order->get_shipping_postcode(),
+                    'quantity' => $quantity
+                ]];
 
-                        $company_name = $sub_order->company_name;
-                        $total_qty = $sub_order->quantity
-                        
-                        ?>
-                        <tr data-id="<?php echo esc_attr($recipient_order_id); ?>" data-verify="0" data-group="0">
-                            <td data-label="Order ID">
-                                <div class="thead-data">Order ID</div>
-                                <input type="hidden" name="recipientIds[]" value="<?php echo esc_attr($recipient_order_id); ?>">
-                                <?php echo esc_html($recipient_order_id); ?>
-                            </td>
-                            <td data-label="Full Name"><div class="thead-data">Full Name</div><?php echo esc_html($first_name); ?></td>
-                            <td data-label="Company Name"><div class="thead-data">Company Name</div><?php echo esc_html($company_name); ?></td>
-                            <td data-label="Address"><div class="thead-data">Address</div><?php echo esc_html(implode(', ', $address_parts)); ?></td>
-                            <td data-label="Quantity"><div class="thead-data">Quantity</div><?php echo esc_html($total_qty); ?></td>
-                            <td data-label="Status"></td>
-                            <td data-label="Action">
-                                <div class="thead-data">Action</div>
-                                <button class="far fa-eye viewRecipientOrder" data-order="<?php echo esc_attr($recipient_order_id); ?>" data-tippy="View Details" data-popup="#recipient-order-edit-popup"></button>
-                                <button class="far fa-edit editRecipientOrder" data-order="<?php echo esc_attr($recipient_order_id); ?>" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>
-                                <button class="deleteRecipient far fa-times" data-order="<?php echo esc_attr($recipient_order_id); ?>" data-tippy="Cancel Recipient Order" data-recipientname="<?php echo esc_attr($first_name); ?>"></button>
-                            </td>
-                        </tr>
-                    <?php 
-                    endforeach;
-                    endif; ?>
+                foreach ($recipients as $sub_order) {
+                    $address = implode(', ', array_filter([
+                        $sub_order->address_1,
+                        $sub_order->address_2,
+                        $sub_order->city,
+                        $sub_order->state,
+                        $sub_order->zipcode
+                    ]));
+                    ?>
+                    <tr data-id="<?php echo esc_attr($sub_order->recipient_order_id); ?>">
+                        <td><?php echo esc_html($sub_order->recipient_order_id); ?></td>
+                        <td><?php echo esc_html($sub_order->full_name); ?></td>
+                        <td><?php echo esc_html($sub_order->company_name); ?></td>
+                        <td><?php echo esc_html($address); ?></td>
+                        <td><?php echo esc_html($sub_order->quantity); ?></td>
+                        <td></td>
+                        <td>
+                            <?php 
+                            if(!empty($recipientResult)){
+                                ?>
+                                <button class="far fa-eye viewRecipientOrder" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-popup="#recipient-order-edit-popup"></button>
+                                <button class="far fa-edit editRecipientOrder" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-popup="#recipient-order-manage-popup"></button>
+                                <?php
+                            }
+                            ?>
+                            
+                            <button class="deleteRecipient far fa-times" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-recipientname="<?php echo esc_attr($sub_order->full_name); ?>"></button>
+                        </td>
+                    </tr>
+                <?php } ?>
             </tbody>
         </table>
 
