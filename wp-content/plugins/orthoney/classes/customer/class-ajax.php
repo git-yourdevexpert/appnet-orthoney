@@ -90,7 +90,7 @@ class OAM_Ajax{
             'search'  => '*' . esc_attr($customer) . '*',
             'orderby' => 'display_name',
             'order'   => 'ASC',
-            'number'  => 20, // Limit results
+            'number'  => -1, // Limit results
             'fields'  => ['ID', 'display_name', 'user_email'],
         ];
     
