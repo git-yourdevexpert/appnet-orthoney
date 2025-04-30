@@ -1901,6 +1901,8 @@ jQuery(document).ready(function ($) {
                 d.custom_order_type = $('#custom-order-type-filter').val();
                 d.custom_order_status = $('#custom-order-status-filter').val();
                 d.table_order_type = $('input[name="table_order_type"]:checked').val();
+                d.selected_customer_id = $('#select-customer').val(); // 
+                d.selected_order_status = $('#order_status').val(); // 
             },
             beforeSend: function () {
                 process_group_popup('Please wait while we process your request.');
@@ -1928,7 +1930,6 @@ jQuery(document).ready(function ($) {
                 }
             },
             { data: 'jar_no' },
-           
             { data: 'order_no' },
             { data: 'date' },
             { data: 'billing_name', orderable: false, searchable: false },
@@ -1955,6 +1956,19 @@ jQuery(document).ready(function ($) {
             
 
             const customFilter = `
+              <label style="margin-left: 10px;">
+             affiliate :
+                 <select id="select-affiliate" class="form-control" style="width: 250px;"><option value="">Select affiliate </option></select>
+             </label>
+             <label style="margin-left: 10px;">
+             customer:
+                 <select id="select-customer" class="form-control" style="width: 250px;"><option value="">Select customer</option></select>
+             </label>
+               <label style="margin-left: 10px;">
+               Order status:
+                <select id="order_status" name="order_status" class="" tabindex="-1" aria-hidden="true">
+								<option value="wc-pending">Pending payment</option><option value="wc-processing" selected="selected">Processing</option><option value="wc-on-hold">On hold</option><option value="wc-completed">Completed</option><option value="wc-cancelled">Cancelled</option><option value="wc-refunded">Refunded</option><option value="wc-failed">Failed</option><option value="wc-checkout-draft">Draft</option></select>
+             </label>
                 <label style="margin-left: 10px;">
                     Ship Type:
                     <select id="custom-order-type-filter" class="custom-select form-control">
@@ -2018,6 +2032,56 @@ jQuery(document).ready(function ($) {
               //  table.ajax.reload();
             });
  
+
+            $('#select-customer').select2({
+                placeholder: 'Start typing customer name...',
+                allowClear: true,
+                ajax: {
+                    url: oam_ajax.ajax_url,
+                    type: 'POST',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            action: 'orthoney_get_customers_autocomplete',
+                            customer: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.map(function (item) {
+                                return { id: item.id, text: item.label };
+                            })
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            $('#select-affiliate').select2({
+                placeholder: 'Select affiliate...',
+                allowClear: true,
+                ajax: {
+                    url: oam_ajax.ajax_url,
+                    type: 'POST',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function () {
+                        return {
+                            action: 'orthoney_get_used_affiliate_codes',
+                            security: oam_ajax.nonce // if using nonce
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    }
+                }
+            });
+            
+            
+            
  
             jQuery('.selectall-checkbox').on('change', function() {
                 jQuery('.row-checkbox').prop('checked', this.checked);
@@ -2192,6 +2256,10 @@ jQuery(document).ready(function ($) {
                     table.column(recipientCountColumnIndex).visible(true);
                 }
             }
+
+            jQuery(document).on('change', '#select-customer, #order_status', function (e) {
+                table.ajax.reload();
+             });
         }
     });
 });

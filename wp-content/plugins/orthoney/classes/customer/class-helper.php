@@ -232,10 +232,12 @@ class OAM_Helper{
     }
 
         
-    public static  function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length) {
+    public static  function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
         global $wpdb;
 
         $orders_table = $wpdb->prefix . 'wc_orders';
+        $order_meta_table = $wpdb->prefix . 'wc_orders_meta';
+
     
         $filtered_orders = [];
     // echo $search;
@@ -252,49 +254,99 @@ class OAM_Helper{
     $transient_key = 'main_orders_' . md5($raw_key);
 
     // Try to get cached result
-    $main_orders = get_transient($transient_key);
+    //$main_orders = get_transient($transient_key);
     $main_orders = false;
         if ($main_orders === false) {
+
             // If no cached data, build the query
             if (current_user_can('administrator')) {
+                $where_conditions = [];
+                $where_values = [];
+
+                // Multiple address: orders that HAVE the meta key
+                if ($_REQUEST['custom_order_type'] === "multiple_address") {
+                    $where_conditions[] = "EXISTS (
+                        SELECT 1 FROM $order_meta_table AS meta
+                        WHERE meta.order_id = orders.id
+                        AND meta.meta_key = %s
+                    )";
+                    $where_values[] = '_orthoney_OrderID';
+                }
+
+                // Single address: orders that DO NOT HAVE the meta key
+                if ($_REQUEST['custom_order_type'] === "single_address") {
+                    $where_conditions[] = "NOT EXISTS (
+                        SELECT 1 FROM $order_meta_table AS meta
+                        WHERE meta.order_id = orders.id
+                        AND meta.meta_key = %s
+                    )";
+                    $where_values[] = '_orthoney_OrderID';
+                }
+
+                // Order status condition
+                if (!empty($_REQUEST['selected_order_status'])) {
+                    $where_conditions[] = "orders.status = %s";
+                    $where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
+                } else {
+                    $where_conditions[] = "orders.status != %s";
+                    $where_values[] = 'wc-checkout-draft';
+                }
+
+                // Customer ID condition
+                if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
+                    $where_conditions[] = "orders.customer_id = %d";
+                    $where_values[] = intval($_REQUEST['selected_customer_id']);
+                }
+
+                $where_conditions[] = "orders.type = %s";
+                $where_values[] = 'shop_order';
+
+                $where_values[] = $limit;
+                $where_values[] = $offset;
+
                 $sql = $wpdb->prepare(
-                    "SELECT * FROM $orders_table
-                    WHERE status != %s
-                    ORDER BY date_updated_gmt DESC
+                    "SELECT DISTINCT orders.* FROM $orders_table AS orders
+                    WHERE " . implode(' AND ', $where_conditions) . "
+                    ORDER BY orders.date_updated_gmt DESC
                     LIMIT %d OFFSET %d",
-                    'wc-checkout-draft', $limit, $offset
+                    ...$where_values
                 );
-            } else {
+            }else{
                 $sql = $wpdb->prepare(
                     "SELECT * FROM $orders_table
-                    WHERE customer_id = %d
-                    AND status != %s
-                    ORDER BY date_updated_gmt DESC
-                    LIMIT %d OFFSET %d",
-                    $user_id, 'wc-checkout-draft', $limit, $offset
+                     WHERE customer_id = %d
+                     AND status != %s
+                     AND type = %s
+                     ORDER BY date_updated_gmt DESC
+                     LIMIT %d OFFSET %d",
+                    $user_id, 'wc-checkout-draft', 'shop_order', $limit, $offset
                 );
             }
+            
+         //   echo  $sql;
 
             // Run query and cache the results for 5 minutes (300 seconds)
             $main_orders = $wpdb->get_results($sql);
             set_transient($transient_key, $main_orders, 300); // 5 minutes
         }
-    // echo $sql;
-    
-    
+        // echo '<pre>';
+        // print_r($wpdb);
 
-        foreach ($main_orders as $main_data) {
+
+
+
+      foreach ($main_orders as $main_data) {
             $order_id = $main_data->id;
             $main_status = $main_data->status;
 
             if ($custom_order_status !== 'all' && $custom_order_status !== $main_status) {
                 continue;
             }
-
             $main_order = wc_get_order($order_id);
             if (!$main_order) continue;
 
             $order_type = 'Multi Address';
+            
             $total_quantity = 0;
 
             foreach ($main_order->get_items() as $item) {
@@ -304,12 +356,12 @@ class OAM_Helper{
                 $total_quantity += $item->get_quantity();
             }
 
-            if (
-                ($custom_order_type === 'single_address' && $order_type !== 'Single Address') ||
-                ($custom_order_type === 'multiple_address' && $order_type !== 'Multi Address')
-            ) {
-                continue;
-            }
+            // if (
+            //     ($custom_order_type === 'single_address' && $order_type !== 'Single Address') ||
+            //     ($custom_order_type === 'multiple_address' && $order_type !== 'Multi Address')
+            // ) {
+            //     continue;
+            // }
 
             $matches_search_main = empty($search) ||
                 stripos((string)$order_id, $search) !== false ||

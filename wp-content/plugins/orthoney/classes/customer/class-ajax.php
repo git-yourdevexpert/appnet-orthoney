@@ -67,13 +67,57 @@ class OAM_Ajax{
         add_action( 'wp_ajax_get_alreadyorder_popup', array( $this, 'get_alreadyorder_popup_handler' ) );
         add_action( 'wp_ajax_remove_recipients_already_order_this_year', array( $this, 'remove_recipients_already_order_this_year_handler' ) );
         add_action( 'wp_ajax_create_group', array( $this, 'orthoney_create_group_handler' ) );
+
+        //db 
+        add_action( 'wp_ajax_orthoney_get_customers_autocomplete', array( $this, 'orthoney_get_customers_autocomplete_handler' ) );
+
+        add_action( 'wp_ajax_orthoney_get_used_affiliate_codes', array( $this, 'orthoney_get_used_affiliate_codes') );
+
+        
+
         // TODO
 
     }
 
+
+
+  
+
   /**
  * Handles AJAX request to process order to checkout with chunking support
  */
+
+ public function orthoney_get_used_affiliate_codes() {
+    global $wpdb;
+
+    $commission_table = $wpdb->prefix . 'yith_wcaf_commissions';
+
+    // Get unique affiliate user IDs from commissions
+    $affiliate_ids = $wpdb->get_col("
+        SELECT DISTINCT affiliate_id
+        FROM $commission_table
+        WHERE affiliate_id > 0
+    ");
+
+
+    $results = [];
+
+    foreach ($affiliate_ids as $affiliate_id) {
+        $affiliate_code = get_user_meta($affiliate_id, 'yith_wcaf_affiliate_code', true);
+        $affiliate_name = get_the_author_meta('display_name', $affiliate_id);
+
+        if (!empty($affiliate_code)) {
+            $results[] = [
+                'id'   => $affiliate_code,
+                'text' => $affiliate_name . ' (' . $affiliate_code . ')'
+            ];
+        }
+    }
+
+    wp_send_json($results);
+
+}
+
     public function orthoney_process_to_checkout_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
@@ -2075,7 +2119,7 @@ class OAM_Ajax{
         wp_die();
     }
 
-    
+    //code update by db
     // Shared helper method to avoid repeating logic
     // AJAX: Load orders for display
     public function orthoney_customer_order_process_ajax_handler() {
@@ -2086,6 +2130,9 @@ class OAM_Ajax{
         $table_order_type = sanitize_text_field($_POST['table_order_type'] ?? 'main_order');
         $custom_order_type = sanitize_text_field($_POST['custom_order_type'] ?? 'all');
         $custom_order_status = sanitize_text_field($_POST['custom_order_status'] ?? 'all');
+
+        $selected_customer_id = sanitize_text_field($_POST['selected_customer_id'] ?? '');
+
         $search = sanitize_text_field($_POST['search']['value'] ?? '');
         $draw = intval($_POST['draw']);
         $start = intval($_POST['start']);
@@ -2094,23 +2141,76 @@ class OAM_Ajax{
         $orders_table = $wpdb->prefix . 'wc_orders';
 
         $jar_table = $wpdb->prefix . 'oh_recipient_order';
-
+        $order_meta_table = $wpdb->prefix . 'wc_orders_meta';
 
 
         if ($table_order_type === 'main_order') {
-        $filtered_orders = OAM_Helper::get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, false,  $start, $length);
-        if ( current_user_can('administrator') ) {
-            // Admin sees all orders
-            $sql = "SELECT COUNT(id) FROM {$orders_table}";
-            $total_orders = $wpdb->get_var($sql);
-        } else {
-            // Non-admin sees only their orders
-            $sql = $wpdb->prepare(
-                "SELECT COUNT(id) FROM {$orders_table} WHERE customer_id = %d",
-                $user_id
-            );
-            $total_orders = $wpdb->get_var($sql);
-        }
+
+        $filtered_orders = OAM_Helper::get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, false,  $start, $length, $selected_customer_id);
+
+            if ( current_user_can('administrator') ) {
+
+                $count_where_conditions = ''; // Start with an empty WHERE clause
+                $count_where_values = [];
+                
+                // Admin sees all orders
+                if ($_REQUEST['custom_order_type'] === "multiple_address") {
+                    $count_where_conditions .= "EXISTS (
+                        SELECT 1 FROM $order_meta_table AS meta
+                        WHERE meta.order_id = orders.id
+                          AND meta.meta_key = %s
+                    )";
+                    $count_where_values[] = '_orthoney_OrderID';
+                } elseif ($_REQUEST['custom_order_type'] === "single_address") {
+                    $count_where_conditions .= "NOT EXISTS (
+                        SELECT 1 FROM $order_meta_table AS meta
+                        WHERE meta.order_id = orders.id
+                          AND meta.meta_key = %s
+                    )";
+                    $count_where_values[] = '_orthoney_OrderID';
+                }
+                
+                // Order status condition
+                if (!empty($_REQUEST['selected_order_status'])) {
+                    $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status = %s";
+                    $count_where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
+                } else {
+                    $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status != %s";
+                    $count_where_values[] = 'wc-checkout-draft'; // Default exclusion if no status is selected
+                }
+                
+                // Order type condition
+                $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "type = %s";
+                $count_where_values[] = 'shop_order';
+                
+                // Customer ID condition
+                if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
+                    $count_where_conditions .= " AND customer_id = %d";
+                    $count_where_values[] = intval($_REQUEST['selected_customer_id']);
+                }
+                
+                $count_sql = $wpdb->prepare(
+                    "SELECT COUNT(id) FROM {$orders_table} AS orders
+                     WHERE $count_where_conditions",
+                    ...$count_where_values
+                );
+                
+                $total_orders = $wpdb->get_var($count_sql);
+               // echo $count_sql;
+                
+                $total_orders = $wpdb->get_var($count_sql);
+
+            } else {
+                // Non-admin sees only their orders
+                $sql = $wpdb->prepare(
+                    "SELECT COUNT(id) FROM {$orders_table}
+                     WHERE customer_id = %d
+                     AND type = %s",
+                    $user_id, 'shop_order'
+                );
+                $total_orders = $wpdb->get_var($sql);
+                
+            }
 
         }else if($table_order_type === 'sub_order_order'){
          $filtered_orders = OAM_Helper::get_jars_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, false,  $start, $length);
