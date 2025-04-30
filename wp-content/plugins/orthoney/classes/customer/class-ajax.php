@@ -1723,7 +1723,7 @@ class OAM_Ajax{
     public function orthoney_get_recipient_order_base_id_handler() {
         global $wpdb;
 
-        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+        $recipient_order_table = $wpdb->prefix . 'oh_recipient_order';
 
         $orderID = !empty($_POST['id']) ? intval($_POST['id']) : 0;
 
@@ -1733,7 +1733,7 @@ class OAM_Ajax{
         }
 
         $recipientOrderDetails = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$order_process_recipient_table} WHERE recipient_order_id = %d",
+            "SELECT * FROM {$recipient_order_table} WHERE recipient_order_id = %d",
             $orderID 
         ));
     
