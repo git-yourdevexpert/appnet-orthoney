@@ -165,93 +165,98 @@ class OAM_Helper{
     }
     
 
-
-    public static  function get_jars_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length) {
+    public static function get_jars_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length) {
         global $wpdb;
         $orders_table = $wpdb->prefix . 'wc_orders'; 
         $filtered_orders = [];
+    
+        // Pagination calculation
+        $offset = $page * $length;
         $limit = $length;
-        $offset = $page;
-            // If no cached data, build the query
-            if (current_user_can('administrator')) {
-                $jarsorder = $wpdb->get_results(
-                    $wpdb->prepare(
-                        "SELECT 
-                            ro.recipient_order_id AS `jar_no`,
-                            ro.order_id AS `order_no`,
-                            ro.created_date AS `date`,
-                            ro.full_name AS `billing_name`,
-                            ro.full_name AS `shipping_name`,
-                            ro.affiliate_token AS `affiliate_code`,
-                            ro.quantity AS `total_jar`,    
-                            ro.order_type AS `type`,
-                            om.order_id AS `wc_order_id`
-                        FROM {$wpdb->prefix}oh_recipient_order ro
-                        INNER JOIN {$wpdb->prefix}wc_orders_meta om ON om.meta_value = ro.order_id AND om.meta_key = '_orthoney_OrderID'
-                        LIMIT %d OFFSET %d
-                        ",
-                        $limit, 
-                        $offset
-                    ),
-                    ARRAY_A
-                );
-                
-                
-          } else {
-            $jarsorder = $wpdb->get_results(
-                $wpdb->prepare(
-                    "SELECT 
-                        ro.recipient_order_id AS `jar_no`,
-                        ro.order_id AS `order_no`,
-                        ro.created_date AS `date`,
-                        ro.full_name AS `billing_name`,
-                        ro.full_name AS `shipping_name`,
-                        ro.affiliate_token AS `affiliate_code`,
-                        ro.quantity AS `total_jar`,    
-                        ro.order_type AS `type`,
-                        ro.om.order_id AS `wc_order_id`
-                    FROM {$wpdb->prefix}oh_recipient_order ro
-                    INNER JOIN {$wpdb->prefix}wc_orders_meta om ON om.meta_value = ro.order_id AND om.meta_key = '_orthoney_OrderID'
-                    WHERE user_id = %d
-                    LIMIT %d OFFSET %d
-                    ",
-                    $user_id, // Assuming $user_id is the variable you are comparing with
-                    $limit, 
-                    $offset
-                ),
-                ARRAY_A
+    
+        // Get orders
+        if (current_user_can('administrator')) {
+            $sql = $wpdb->prepare(
+                "
+                SELECT 
+                    recipient_order_id AS jar_no,
+                    order_id AS order_no,
+                    created_date AS date,
+                    full_name AS billing_name,
+                    full_name AS shipping_name,
+                    affiliate_token AS affiliate_code,
+                    quantity AS total_jar,
+                    order_type AS type
+                FROM {$wpdb->prefix}oh_recipient_order
+                LIMIT %d OFFSET %d
+                ",
+                $limit, $offset
             );
-          }
-         
-          $jarsorder = array_map(function($order) {
+        } else {
+            $sql = $wpdb->prepare(
+                "
+                SELECT 
+                    recipient_order_id AS jar_no,
+                    order_id AS order_no,
+                    created_date AS date,
+                    full_name AS billing_name,
+                    full_name AS shipping_name,
+                    affiliate_token AS affiliate_code,
+                    quantity AS total_jar,
+                    order_type AS type
+                FROM {$wpdb->prefix}oh_recipient_order
+                WHERE user_id = %d
+                LIMIT %d OFFSET %d
+                ",
+                $user_id, $limit, $offset
+            );
+        }
+    
+        $jarsorder = $wpdb->get_results($sql, ARRAY_A);
+    
+        // Process each order
+        $filtered_orders = array_map(function($order) use ($wpdb) {
             $order['status'] = '';
-            //  $order['price'] = '$14.00'; // Set price here (change 10.00 to the actual price calculation)
-
-            $recipient_order_id = esc_attr($order['jar_no']);
             $order['date'] = date_i18n(
                 OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format,
-                strtotime($order['date']) // 'date' is the key from your SQL result
-        );
-
+                strtotime($order['date'])
+            );
+    
             $recipient_order_id = esc_attr($order['jar_no']);
+            $order_no = esc_attr($order['order_no']);
             $recipient_name = esc_attr($order['billing_name']);
-            $wc_order_id = esc_attr($order['wc_order_id']);
-        
-            $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($wc_order_id ). "?recipient-order=".($recipient_order_id));
-
-            $order['action'] = '
-             <a class="far fa-eye" href="'.$resume_url.'"></a>
-        <button class="far fa-edit editRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>
-        <button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>
-        ';// Set price here (change 10.00 to the actual price calculation)
-
+    
+            $wc_order_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT order_id
+                 FROM {$wpdb->prefix}wc_orders_meta
+                 WHERE meta_key = %s AND meta_value = %s",
+                '_orthoney_OrderID',
+                $order_no
+            ));
+    
+            $resume_url = '';
+            if ($wc_order_id && ($wc_order = wc_get_order($wc_order_id))) {
+                $order_date = $wc_order->get_date_created();
+                $editable = OAM_COMMON_Custom::check_order_editable($order_date);
+    
+                $resume_url = '<a class="far fa-eye" href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id}?recipient-order={$recipient_order_id}") . '"></a>';
+                $editLink = '';
+                if ($editable) {
+                    $editLink = '<button class="far fa-edit editRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>';
+                }
+            }
+    
+            $order['action'] = $resume_url . $editLink'
+                
+                <button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>
+            ';
+    
             return $order;
         }, $jarsorder);
-        
-        $filtered_orders = $jarsorder;
+    
         return $filtered_orders;
-
     }
+    
 
         
     public static  function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
@@ -1124,7 +1129,11 @@ class OAM_Helper{
                     <input type="text" id="zipcode" name="zipcode" required data-error-message="Please enter a valid zipcode.">
                     <span class="error-message"></span>
                 </div>
-
+                <div class="form-row gfield--width-half">
+                    <label for="quantity">Quantity:<span class="required">* <small>No editable</small></span></label>
+                    <input type="number" id="quantity" name="quantity" readonly>
+                    <span class="error-message"></span>
+                </div>
                
 
                 <div class="textarea-div form-row gfield--width-full">

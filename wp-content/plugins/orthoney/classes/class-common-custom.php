@@ -31,6 +31,28 @@ class OAM_COMMON_Custom {
         // Add any initialization logic here
     }
 
+    public static function check_order_editable($order_date) {
+        $editable = false;
+        if ($order_date instanceof WC_DateTime) {
+            $order_timestamp = $order_date->getTimestamp();
+        
+            $start_date = get_field('free_shipping_start_date', 'option'); 
+            $end_date   = get_field('free_shipping_end_date', 'option');
+        
+            // Validate date strings
+            $start_timestamp = strtotime($start_date);
+            $end_timestamp   = strtotime($end_date);
+        
+            if ($start_timestamp !== false && $end_timestamp !== false) {
+                if ($order_timestamp >= $start_timestamp && $order_timestamp <= $end_timestamp) {
+                    $editable = true;
+                }
+            }
+        }
+        return $editable;
+        
+    }
+
     public static function get_order_meta($order_id, $meta_key) {
 
         global $wpdb;

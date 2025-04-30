@@ -1642,7 +1642,10 @@ jQuery(document).ready(function ($) {
                 process_group_popup('Please wait while we process your request.');
             },
             complete: function () {
-                Swal.close();
+                setTimeout(() => {
+                    
+                    Swal.close();
+                }, 1300);
             },
             error: function () {
                 Swal.fire({
@@ -1928,7 +1931,9 @@ jQuery(document).ready(function ($) {
                 process_group_popup('Please wait while we process your request.');
             },
             complete: function () {
-                Swal.close();
+                setTimeout(() => {
+                    Swal.close();
+                }, 1300);
             },
             error: function () {
                 Swal.fire({
