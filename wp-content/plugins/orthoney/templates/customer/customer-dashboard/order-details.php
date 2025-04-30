@@ -4,6 +4,13 @@ defined('ABSPATH') || exit;
 $order_id = get_query_var('order-details');
 
 $order = wc_get_order($order_id);
+
+$order_items = $order->get_items();
+
+$quantity = 0;
+foreach ($order_items as $item) {
+    $quantity = (int) $item->get_quantity();
+}
 $user_id = get_current_user_id();
 $notes = $order->get_customer_order_notes();
 
@@ -33,6 +40,25 @@ if (!empty($order_process_user_id)) {
         $order_process_by = ' and Process by <mark class="order-status">' . esc_html($user_info->display_name) . '</mark>';
     }
 }
+
+$organization = 'Orthoney';
+if($recipientResult[0]->affiliate_token == '' AND $recipientResult[0]->affiliate_token == 'Orthoney'){
+    
+    
+}else{
+    $token = $recipientResult[0]->affiliate_token;
+    $meta_key = '_yith_wcaf_name_of_your_organization';
+    
+    $organization = $wpdb->get_var( $wpdb->prepare(
+        "SELECT um.meta_value
+         FROM {$wpdb->usermeta} um
+         JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON um.user_id = aff.user_id
+         WHERE aff.token = %s AND um.meta_key = %s",
+         $token, $meta_key
+    ));
+}
+
+
 ?>
 
 <div class='loader multiStepForm'>
@@ -58,15 +84,52 @@ if (!empty($order_process_user_id)) {
                
                 ?>
             </p>
+            <p>
+                <?php
+                printf(
+                    esc_html__('The organization %1$s has the code %2$s%3$s.', 'woocommerce'),
+                    '<mark class="order-number">' . esc_html($organization) . '</mark>',
+                    '<mark class="order-number">' . esc_html($recipientResult[0]->affiliate_token ) . '</mark>',
+                    $order_process_by
+                );
+               
+                ?>
+            </p>
         </div>
-        <div><?php do_action('woocommerce_view_order', $order_id); ?></div>
+        <div>
+        <section class="woocommerce-customer-details">
+            <h2 class="woocommerce-column__title">Billing address</h2>
+            <?php 
+
+$state_code = $order->get_billing_state(); // e.g. "CA"
+$states = WC()->countries->get_states('US');
+
+$full_state_name = isset($states[ $state_code ]) ? $states[ $state_code ] : $state_code;
+$full_state = $full_state_name . " (" . $state_code . ")";
+        
+        echo "Name: ".$order->get_billing_first_name()." ".$order->get_billing_last_name()."<br>";
+        echo "Email: ".$order->get_billing_email()."<br>";
+        echo "Address: ".$order->get_billing_address_1()." ".$order->get_billing_address_2()."<br>";
+        echo "City: ".$order->get_billing_city()."<br>";
+        echo "State: ".$full_state."<br>";
+        echo "Zip Code: ". $order->get_billing_postcode()."<br>";
+        echo "Total Jars in Order: ". $quantity."<br>";
+        echo "Total Price: ". wc_price($order->get_total()) ."<br>";
+        echo "Shipping: ". wc_price($order->get_shipping_total()) ."<br>";
+
+        // echo $order->get_billing_phone()."<br>";
+        // do_action('woocommerce_view_order', $order_id); 
+        
+        ?>
+        </section>
+    </div>
     </div>
 
     <div id="recipient-order-data" class="table-data orthoney-datatable-warraper">
         <div class="download-csv heading-title">
             <div></div>
             <div>
-                <button data-tippy="Cancel All Recipient Orders" class="btn-underline">Cancel All Recipient Orders</button>
+                <!-- <button data-tippy="Cancel All Recipient Orders" class="btn-underline">Cancel All Recipient Orders</button> -->
             </div>
         </div>
 
