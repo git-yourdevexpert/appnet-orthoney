@@ -1725,7 +1725,7 @@ class OAM_Ajax{
 
         $recipient_order_table = $wpdb->prefix . 'oh_recipient_order';
 
-        $orderID = !empty($_POST['id']) ? intval($_POST['id']) : 0;
+        $orderID = !empty($_POST['id']) ? $_POST['id'] : 0;
 
         if (empty($orderID)) {
             $response = ['success' => false, 'message' => 'Invalid order ID.'];
