@@ -783,7 +783,13 @@ if (recipientManageForm) {
         if(customer_dashboard_recipient_list){
             method = 'group';
             group_id = customer_dashboard_recipient_list.getAttribute('data-groupid');
-            
+        }
+
+        const recipient_order_data = document.querySelector("#recipient-order-data");
+
+        if(recipient_order_data){
+            method = 'order';
+            group_id = 0;
         }
 
         const formData = new FormData(this);
@@ -1456,7 +1462,7 @@ document.addEventListener('click', function (event) {
             if (isEdit) {
                 const popuptitle = document.querySelector('#recipient-order-manage-popup .popup-title span');
                 popuptitle.innerHTML = '#' + orderID;
-                const fields = ['order_id', 'full_name', 'company_name', 'address_1', 'address_2', 'city', 'state', 'zipcode', 'greeting'];
+                const fields = ['order_id', 'full_name', 'company_name', 'address_1', 'address_2', 'city', 'state', 'zipcode','quantity' ,'greeting'];
                 fields.forEach(field => {
                     const input = form.querySelector(`#${field}`);
                     if (input) input.value = d[field] || '';
@@ -1566,11 +1572,13 @@ if (recipientOrderManageForm) {
                     icon: 'success',
                     timer: 3500,
                     showConfirmButton: false,
-                    timerProgressBar: true,
-                }).then(() => {
-                    recipientOrderManageForm.reset();
-                    window.location.reload();
+                    timerProgressBar: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
                 });
+                
+                window.location.reload();
 
                 document.querySelector('[data-lity-close]')?.click();
             })

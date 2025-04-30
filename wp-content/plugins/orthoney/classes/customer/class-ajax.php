@@ -1670,54 +1670,59 @@ class OAM_Ajax{
     }
     // Callback function edit recipient order
     public function orthoney_manage_recipient_order_form_handler() {
-        $orderID = !empty($_POST['order_id']) ? intval($_POST['order_id']) : 0;
+        global $wpdb;
     
+        $orderID = isset($_POST['order_id']) ? $_POST['order_id'] : 0;
         if (!$orderID) {
             wp_send_json_error(['message' => 'Invalid Order ID']);
         }
     
-        $order = wc_get_order($orderID);
+        $recipient_order_table = OAM_Helper::$recipient_order_table;
     
-        if (!$order) {
-            wp_send_json_error(['message' => 'Order not found']);
+        $existing_recipient = $wpdb->get_var(
+            $wpdb->prepare("SELECT id FROM $recipient_order_table WHERE recipient_order_id = %s", $orderID)
+        );
+
+        if ($existing_recipient == '') {
+            wp_send_json_error(['message' => 'Something went wrong. Please try again.']);
         }
     
-        // Get posted data
-        $full_name     = sanitize_text_field($_POST['full_name'] ?? '');
-        $company_name  = sanitize_text_field($_POST['company_name'] ?? '');
-        $address_1     = sanitize_text_field($_POST['address_1'] ?? '');
-        $address_2     = sanitize_text_field($_POST['address_2'] ?? '');
-        $city          = sanitize_text_field($_POST['city'] ?? '');
-        $state         = sanitize_text_field($_POST['state'] ?? '');
-        $zipcode       = sanitize_text_field($_POST['zipcode'] ?? '');
-        $greeting      = sanitize_text_field($_POST['greeting'] ?? '');
+        // Sanitize and prepare data
+        $data = [
+            'full_name'        => sanitize_text_field($_POST['full_name'] ?? ''),
+            'company_name'     => sanitize_text_field($_POST['company_name'] ?? ''),
+            'address_1'        => sanitize_textarea_field($_POST['address_1'] ?? ''),
+            'address_2'        => sanitize_textarea_field($_POST['address_2'] ?? ''),
+            'city'             => sanitize_text_field($_POST['city'] ?? ''),
+            'state'            => sanitize_text_field($_POST['state'] ?? ''),
+            'zipcode'          => sanitize_text_field($_POST['zipcode'] ?? ''),
+            'greeting'         => sanitize_textarea_field($_POST['greeting'] ?? ''),
+            'updated_date'     => current_time('mysql'),
+        ];
     
-        // Split full name into first and last name
-      
+        // Validate address
+        $validation_result = json_decode(OAM_Helper::validate_address(
+            $data['address_1'],
+            $data['address_2'],
+            $data['city'],
+            $data['state'],
+            $data['zipcode']
+        ), true);
     
-        // Update shipping address
-        $order->set_shipping_first_name($full_name);
-        $order->set_shipping_last_name('');
-        $order->set_shipping_company($company_name);
-        $order->set_shipping_address_1($address_1);
-        $order->set_shipping_address_2($address_2);
-        $order->set_shipping_city($city);
-        $order->set_shipping_state($state);
-        $order->set_shipping_postcode($zipcode);
-    
-        // Save greeting as custom meta on the order
-        foreach ($order->get_items() as $item_id => $item) {
-            $item->update_meta_data('_recipient_company_name', $company_name);
-            $item->update_meta_data('greeting', $greeting);
-            $item->save();
-            break;
+        if (is_array($validation_result)) {
+            $data['address_verified'] = !empty($validation_result['success']) ? 1 : 0;
         }
     
-        // Save the order
-        $order->save();
+        $result = $wpdb->update($recipient_order_table, $data, ['recipient_order_id' => $orderID]);
     
-        wp_send_json_success(['message' => 'Order updated successfully']);
+        if ($result !== false) {
+            OAM_Helper::order_process_recipient_activate_log($orderID, 'Edit Recipient Order', '', 'edit_order');
+            wp_send_json_success(['message' => 'Order updated successfully']);
+        }
+    
+        wp_send_json_error(['message' => 'Failed to update order']);
     }
+    
     
     // Callback function for get recipient  order details base in id
     public function orthoney_get_recipient_order_base_id_handler() {
@@ -1756,7 +1761,7 @@ class OAM_Ajax{
 
         $data = [
             'success'       => true,
-            'id'            => $orderID,
+            'order_id'      => $orderID,
             'full_name'     => $full_name,
             'company_name'  => $company_name,
             'address_1'     => $address_1,
