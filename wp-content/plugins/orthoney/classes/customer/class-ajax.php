@@ -73,14 +73,44 @@ class OAM_Ajax{
 
         add_action( 'wp_ajax_orthoney_get_used_affiliate_codes', array( $this, 'orthoney_get_used_affiliate_codes') );
 
-        
+
 
         // TODO
 
     }
 
 
-
+ public function orthoney_get_customers_autocomplete_handler() {
+        // Security check
+    
+        $customer = isset($_REQUEST['customer']) ? sanitize_text_field($_REQUEST['customer']) : '';
+    
+        $args = [
+            'role'    => 'customer', // Only WooCommerce customers
+            'search'  => '*' . esc_attr($customer) . '*',
+            'orderby' => 'display_name',
+            'order'   => 'ASC',
+            'number'  => 20, // Limit results
+            'fields'  => ['ID', 'display_name', 'user_email'],
+        ];
+    
+        $user_query = new WP_User_Query($args);
+        $users = $user_query->get_results();
+    
+        $response = [];
+    
+        if (!empty($users)) {
+            foreach ($users as $user) {
+                $label = $user->display_name ? $user->display_name : $user->user_email;
+                $response[] = [
+                    'id'   => $user->ID,
+                    'label'=> $label,
+                ];
+            }
+        }
+    
+        wp_send_json($response);
+    }
   
 
   /**

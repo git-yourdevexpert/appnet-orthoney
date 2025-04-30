@@ -1937,8 +1937,8 @@ jQuery(document).ready(function ($) {
             { data: 'affiliate_code', orderable: false, searchable: false },
             { data: 'total_jar', orderable: false, searchable: false },
             { data: 'total_recipient', orderable: false, searchable: false },
-            { data: 'type', orderable: false, searchable: false },
-            { data: 'status', orderable: false, searchable: false },
+            //{ data: 'type', orderable: false, searchable: false },
+            //{ data: 'status', orderable: false, searchable: false },
             { data: 'price', orderable: false, searchable: false },
             { data: 'action', orderable: false, searchable: false }
         ],
@@ -1956,7 +1956,7 @@ jQuery(document).ready(function ($) {
             
 
             const customFilter = `
-              <label style="margin-left: 10px;">
+              <label style="margin-left: 10px; display:none" >
              affiliate :
                  <select id="select-affiliate" class="form-control" style="width: 250px;"><option value="">Select affiliate </option></select>
              </label>
@@ -1969,7 +1969,7 @@ jQuery(document).ready(function ($) {
                 <select id="order_status" name="order_status" class="" tabindex="-1" aria-hidden="true">
 								<option value="wc-pending">Pending payment</option><option value="wc-processing" selected="selected">Processing</option><option value="wc-on-hold">On hold</option><option value="wc-completed">Completed</option><option value="wc-cancelled">Cancelled</option><option value="wc-refunded">Refunded</option><option value="wc-failed">Failed</option><option value="wc-checkout-draft">Draft</option></select>
              </label>
-                <label style="margin-left: 10px;">
+                <label style="margin-left: 10px; display:none">
                     Ship Type:
                     <select id="custom-order-type-filter" class="custom-select form-control">
                         <option value="all">All Ship Types</option>
