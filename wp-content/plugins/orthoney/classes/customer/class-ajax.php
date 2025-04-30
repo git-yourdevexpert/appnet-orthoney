@@ -1719,27 +1719,28 @@ class OAM_Ajax{
         wp_send_json_success(['message' => 'Order updated successfully']);
     }
     
-   // Callback function for get recipient  order details base in id
+    // Callback function for get recipient  order details base in id
     public function orthoney_get_recipient_order_base_id_handler() {
         global $wpdb;
 
-        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+        $recipient_order_table = $wpdb->prefix . 'oh_recipient_order';
 
-        $orderID = !empty($_POST['id']) ? intval($_POST['id']) : 0;
+        $orderID = !empty($_POST['id']) ? $_POST['id'] : 0;
 
         if (empty($orderID)) {
             $response = ['success' => false, 'message' => 'Invalid order ID.'];
             wp_send_json_error($response);
         }
 
-        $recipientOrderDetails = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$order_process_recipient_table} WHERE order_id = %d",
-            $orderID 
-        ));
-    
+        $recipientOrderDetails = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM {$recipient_order_table} WHERE recipient_order_id = %s",
+                $orderID
+            )
+        );
 
         $full_name      = $recipientOrderDetails->full_name;
-        $company_name   = $sub_order->company_name;
+        $company_name   = $recipientOrderDetails->company_name;
         $address_1      = $recipientOrderDetails->address_1;
         $address_2      = $recipientOrderDetails->address_2;
         $city           = $recipientOrderDetails->city;
@@ -1747,14 +1748,11 @@ class OAM_Ajax{
         $postcode       = $recipientOrderDetails->zipcode;
         $country        = $recipientOrderDetails->country ?? 'US';
         $total_quantity = $recipientOrderDetails->quantity;
-        $greeting       = $recipientOrderDetails->greeting?? '';
-        
+        $greeting       = $recipientOrderDetails->greeting ?? '';
 
         $states = WC()->countries->get_states('US');
         $full_state_name = isset($states[$state]) ? $states[$state] : $state;
         $full_state = $full_state_name . " (" . $state . ")";
-
-        
 
         $data = [
             'success'       => true,
