@@ -655,7 +655,11 @@ if ( is_a( $sub_order, 'WC_Order' ) ) {
     
             </ul>
         </div>
-        <?php $order_details_url = $order->get_view_order_url();
+        <?php 
+
+    $order_details_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($order->get_order_number()));
+
+
         echo '<div class="view-order-btn"><a href="' . esc_url($order_details_url) . '" class="button">View Order Details</a></div>';?>
         <?php
     }
