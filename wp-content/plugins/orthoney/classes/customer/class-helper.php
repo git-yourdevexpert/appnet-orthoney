@@ -284,9 +284,12 @@ class OAM_Helper{
                 }
 
                 // Order status condition
-                if (!empty($_REQUEST['selected_order_status'])) {
+                if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] != "all") {
                     $where_conditions[] = "orders.status = %s";
                     $where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
+                }else if($_REQUEST['selected_order_status'] == "all"){
+                    $where_conditions[] = "";
+                    $where_values[] = "";
                 } else {
                     $where_conditions[] = "orders.status != %s";
                     $where_values[] = 'wc-checkout-draft';
