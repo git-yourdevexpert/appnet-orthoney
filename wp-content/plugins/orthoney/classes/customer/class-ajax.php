@@ -1719,7 +1719,7 @@ class OAM_Ajax{
         wp_send_json_success(['message' => 'Order updated successfully']);
     }
     
-   // Callback function for get recipient  order details base in id
+    // Callback function for get recipient  order details base in id
     public function orthoney_get_recipient_order_base_id_handler() {
         global $wpdb;
 
@@ -1733,7 +1733,7 @@ class OAM_Ajax{
         }
 
         $recipientOrderDetails = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$order_process_recipient_table} WHERE order_id = %d",
+            "SELECT * FROM {$order_process_recipient_table} WHERE recipient_order_id = %d",
             $orderID 
         ));
     
