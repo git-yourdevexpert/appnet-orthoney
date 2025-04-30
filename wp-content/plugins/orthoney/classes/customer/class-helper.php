@@ -222,6 +222,12 @@ class OAM_Helper{
             $order['status'] = '';
           //  $order['price'] = '$14.00'; // Set price here (change 10.00 to the actual price calculation)
 
+          $recipient_order_id = esc_attr($order['jar_no']);
+          $order['date'] = date_i18n(
+            OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format,
+            strtotime($order['date']) // 'date' is the key from your SQL result
+        );
+
             $recipient_order_id = esc_attr($order['jar_no']);
             $recipient_name = esc_attr($order['billing_name']);
         
