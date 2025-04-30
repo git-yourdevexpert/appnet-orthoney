@@ -58,6 +58,11 @@ class OAM_CUSTOM {
                 'top'
             );
 
+            add_rewrite_rule(
+                $slug.'/order-details/([0-9a-z_]+)/?$', 
+                'index.php?pagename='.$slug.'&order-details=$matches[1]', 
+                'top'
+            );
             // Load custom templates for My Account endpoints
             $base_path = OH_PLUGIN_DIR_PATH . "templates/customer/customer-dashboard/";
             foreach ($endpoints as $endpoint) {
