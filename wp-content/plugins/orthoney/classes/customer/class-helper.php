@@ -220,7 +220,7 @@ class OAM_Helper{
           }
           $jarsorder = array_map(function($order) {
             $order['status'] = '';
-            $order['price'] = '$14.00'; // Set price here (change 10.00 to the actual price calculation)
+          //  $order['price'] = '$14.00'; // Set price here (change 10.00 to the actual price calculation)
 
             $recipient_order_id = esc_attr($order['jar_no']);
             $recipient_name = esc_attr($order['billing_name']);
