@@ -453,7 +453,7 @@ class OAM_Helper{
             );
         }
     
-        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "view-order/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id));
+        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id));
     
         return [
             'jar_no' => esc_html($order_data->id),
