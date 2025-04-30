@@ -1967,7 +1967,8 @@ jQuery(document).ready(function ($) {
                <label style="margin-left: 10px;">
                Order status:
                 <select id="order_status" name="order_status" class="" tabindex="-1" aria-hidden="true">
-								<option value="wc-pending">Pending payment</option><option value="wc-processing" selected="selected">Processing</option><option value="wc-on-hold">On hold</option><option value="wc-completed">Completed</option><option value="wc-cancelled">Cancelled</option><option value="wc-refunded">Refunded</option><option value="wc-failed">Failed</option><option value="wc-checkout-draft">Draft</option></select>
+                    <option value="all">All</option><option value="wc-processing">Processing</option>
+				    <option value="wc-pending">Pending payment</option><option value="wc-processing">Processing</option><option value="wc-on-hold">On hold</option><option value="wc-completed">Completed</option><option value="wc-cancelled">Cancelled</option><option value="wc-refunded">Refunded</option><option value="wc-failed">Failed</option><option value="wc-checkout-draft">Draft</option></select>
              </label>
                 <label style="margin-left: 10px; display:none">
                     Ship Type:
