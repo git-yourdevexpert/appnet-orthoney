@@ -1734,7 +1734,7 @@ class OAM_Ajax{
 
         $recipientOrderDetails = $wpdb->get_row(
             $wpdb->prepare(
-                "SELECT * FROM {$recipient_order_table} WHERE recipient_order_id = %d",
+                "SELECT * FROM {$recipient_order_table} WHERE recipient_order_id = %s",
                 $orderID
             )
         );
