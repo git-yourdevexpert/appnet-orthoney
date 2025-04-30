@@ -447,17 +447,17 @@ class OAM_Helper{
             'affiliate_code' => esc_html($referral_id),
             'total_jar' => esc_html($total_quantity),
             'total_recipient' => $jarsorder_count,
-            'type' => esc_html($order_type),
-            'status' => !empty($status_html) ? $status_html : 'Recipient Order is Preparing.',
+            //'type' => esc_html($order_type),
+            //'status' => !empty($status_html) ? $status_html : 'Recipient Order is Preparing.',
             'price' => $order_total,
-            // 'action' =>
+            'action' =>'<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>'
+        ];
+    }
+
+      // 'action' =>
             //     '<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>' .
             //     ($order_data->parent_order_id == 0 ? '<a data-tippy="Download Invoice" href="#" class="far fa-download"></a><button class="download_csv_by_order_id far fa-file-csv" data-tippy="Download CSV" data-orderid="'.(($order_data->parent_order_id == 0) ? $order_data->id : $order_data->parent_order_id).'"></button>' : '') .
             //     (empty($status_html) && ( $order_data->parent_order_id == 0) ? '<button>Suborder is created</button>' : '')
-            'action' => ''
-            
-        ];
-    }
 
     public static function build_export_order_row($order_data, $order_obj, $order_type, $total_quantity, $parent_order = null) {
         global $wpdb;
