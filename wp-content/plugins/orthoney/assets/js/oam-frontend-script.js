@@ -2035,7 +2035,7 @@ jQuery(document).ready(function ($) {
  
 
             $('#select-customer').select2({
-                placeholder: 'Start typing customer name...',
+                placeholder: 'Search',
                 allowClear: true,
                 ajax: {
                     url: oam_ajax.ajax_url,

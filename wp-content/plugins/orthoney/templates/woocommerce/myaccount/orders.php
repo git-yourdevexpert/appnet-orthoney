@@ -80,3 +80,20 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
 </table>
 
 </div>
+
+<div id="recipient-order-manage-popup" class="lity-popup-normal lity-hide">
+            <div class="popup-show order-process-block orthoney-datatable-warraper">
+                <h3 class="popup-title"><span></span> Order Details</h3>
+                <?php echo OAM_Helper::get_recipient_order_form(); ?>
+            </div>
+        </div>
+
+        <div id="recipient-order-edit-popup" class="lity-popup-normal lity-hide">
+            <div class="popup-show order-process-block orthoney-datatable-warraper">
+                <h3 class="popup-title"><span></span> Order Details</h3>
+                <div class="recipient-view-details-wrapper"></div>
+                <div class="footer-btn gfield--width-full">
+                    <button type="button" class="w-btn us-btn-style_4" data-lity-close>Cancel</button>
+                </div>
+            </div>
+        </div>
