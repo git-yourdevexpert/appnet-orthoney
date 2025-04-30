@@ -7,7 +7,25 @@ defined('ABSPATH') || exit;
 
 $order_id = get_query_var('order-details');
 $order = wc_get_order($order_id);
+
 if (!$order) return;
+$order_date = $order->get_date_created();
+$editable = false;
+
+if ($order_date) {
+    $order_timestamp = $order_date->getTimestamp(); 
+    $start_date = get_field('free_shipping_start_date', 'option'); 
+    $end_date   = get_field('free_shipping_end_date', 'option');
+    // Convert start and end dates to timestamps
+    $start_timestamp = strtotime($start_date);
+    $end_timestamp   = strtotime($end_date);
+
+    if ($start_timestamp && $end_timestamp) {
+        if ($order_timestamp >= $start_timestamp && $order_timestamp <= $end_timestamp) {
+            $editable = true;
+        } 
+    }
+}
 
 $order_items = $order->get_items();
 $quantity = array_sum(wp_list_pluck($order_items, 'quantity'));
@@ -171,8 +189,13 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
                             if(!empty($recipientResult)){
                                 ?>
                                 <button class="far fa-eye viewRecipientOrder" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-popup="#recipient-order-edit-popup"></button>
+
+                                <?php 
+                                if($editable === true){
+                                ?>
                                 <button class="far fa-edit editRecipientOrder" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-popup="#recipient-order-manage-popup"></button>
                                 <?php
+                                }
                             }
                             ?>
                             
