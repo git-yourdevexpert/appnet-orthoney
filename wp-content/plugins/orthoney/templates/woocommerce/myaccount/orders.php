@@ -55,8 +55,8 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
             <th>Organization Code</th>
             <th>Total Honey Jar</th>
             <th>Total Recipient</th>
-            <th>Type</th>
-            <th>Status</th>
+            <!-- <th>Type</th>
+            <th>Status</th> -->
             <th>Price</th>
             <th style="width:200px">Action</th>
         </tr>
