@@ -176,17 +176,18 @@ class OAM_Helper{
             if (current_user_can('administrator')) {
                 $jarsorder = $wpdb->get_results(
                     $wpdb->prepare(
-                        "
-                        SELECT 
-                            recipient_order_id AS `jar_no`,
-                            order_id AS `order_no`,
-                            created_date AS `date`,
-                            full_name AS `billing_name`,
-                            full_name AS `shipping_name`,
-                            affiliate_token AS `affiliate_code`,
-                            quantity AS `total_jar`,    
-                            order_type AS `type`
-                        FROM {$wpdb->prefix}oh_recipient_order
+                        "SELECT 
+                            ro.recipient_order_id AS `jar_no`,
+                            ro.order_id AS `order_no`,
+                            ro.created_date AS `date`,
+                            ro.full_name AS `billing_name`,
+                            ro.full_name AS `shipping_name`,
+                            ro.affiliate_token AS `affiliate_code`,
+                            ro.quantity AS `total_jar`,    
+                            ro.order_type AS `type`,
+                            om.order_id AS `wc_order_id`
+                        FROM {$wpdb->prefix}oh_recipient_order ro
+                        INNER JOIN {$wpdb->prefix}wc_orders_meta om ON om.meta_value = ro.order_id AND om.meta_key = '_orthoney_OrderID'
                         LIMIT %d OFFSET %d
                         ",
                         $limit, 
@@ -194,20 +195,23 @@ class OAM_Helper{
                     ),
                     ARRAY_A
                 );
+                
+                
           } else {
             $jarsorder = $wpdb->get_results(
                 $wpdb->prepare(
-                    "
-                    SELECT 
-                        recipient_order_id AS `jar_no`,
-                        order_id AS `order_no`,
-                        created_date AS `date`,
-                        full_name AS `billing_name`,
-                        full_name AS `shipping_name`,
-                        affiliate_token AS `affiliate_code`,
-                        quantity AS `total_jar`,    
-                        order_type AS `type`
-                    FROM {$wpdb->prefix}oh_recipient_order
+                    "SELECT 
+                        ro.recipient_order_id AS `jar_no`,
+                        ro.order_id AS `order_no`,
+                        ro.created_date AS `date`,
+                        ro.full_name AS `billing_name`,
+                        ro.full_name AS `shipping_name`,
+                        ro.affiliate_token AS `affiliate_code`,
+                        ro.quantity AS `total_jar`,    
+                        ro.order_type AS `type`,
+                        ro.om.order_id AS `wc_order_id`
+                    FROM {$wpdb->prefix}oh_recipient_order ro
+                    INNER JOIN {$wpdb->prefix}wc_orders_meta om ON om.meta_value = ro.order_id AND om.meta_key = '_orthoney_OrderID'
                     WHERE user_id = %d
                     LIMIT %d OFFSET %d
                     ",
@@ -218,21 +222,25 @@ class OAM_Helper{
                 ARRAY_A
             );
           }
+         
           $jarsorder = array_map(function($order) {
             $order['status'] = '';
-          //  $order['price'] = '$14.00'; // Set price here (change 10.00 to the actual price calculation)
+            //  $order['price'] = '$14.00'; // Set price here (change 10.00 to the actual price calculation)
 
-          $recipient_order_id = esc_attr($order['jar_no']);
-          $order['date'] = date_i18n(
-            OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format,
-            strtotime($order['date']) // 'date' is the key from your SQL result
+            $recipient_order_id = esc_attr($order['jar_no']);
+            $order['date'] = date_i18n(
+                OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format,
+                strtotime($order['date']) // 'date' is the key from your SQL result
         );
 
             $recipient_order_id = esc_attr($order['jar_no']);
             $recipient_name = esc_attr($order['billing_name']);
+            $wc_order_id = esc_attr($order['wc_order_id']);
         
+            $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($wc_order_id ). "?recipient-order=".($recipient_order_id));
+
             $order['action'] = '
-             <button class="far fa-eye viewRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="View Details" data-popup="#recipient-order-edit-popup"></button>
+             <a class="far fa-eye" href="'.$resume_url.'"></a>
         <button class="far fa-edit editRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>
         <button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>
         ';// Set price here (change 10.00 to the actual price calculation)
@@ -508,7 +516,7 @@ class OAM_Helper{
             );
         }
     
-        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "view-order/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id));
+        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id));
     
         return [
             'jar_no' => esc_html($order_data->id),

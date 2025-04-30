@@ -1887,6 +1887,17 @@ jQuery(document).ready(function ($) {
  */
  
 jQuery(document).ready(function ($) {
+
+    const recipientOrderID = getURLParam('recipient-order');
+    if (recipientOrderID) {
+        const recipientOrderElement = $('.viewRecipientOrder[data-order="' + recipientOrderID + '"]');
+        if (recipientOrderElement.length) {
+            const loader = document.querySelector(".multiStepForm.loader");
+            loader.style.display = "none";
+            recipientOrderElement.trigger('click');
+        }
+    }
+
     var table = $('#customer-orders-table').DataTable({
         processing: false,
         serverSide: true,
@@ -1903,7 +1914,7 @@ jQuery(document).ready(function ($) {
                 d.custom_order_status = $('#custom-order-status-filter').val();
                 d.table_order_type = $('input[name="table_order_type"]:checked').val();
                 d.selected_customer_id = $('#select-customer').val(); // 
-                d.selected_order_status = $('#order_status').val(); // 
+                // d.selected_order_status = $('#order_status').val(); // 
             },
             beforeSend: function () {
                 process_group_popup('Please wait while we process your request.');

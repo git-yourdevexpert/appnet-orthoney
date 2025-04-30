@@ -2569,7 +2569,7 @@ class OAM_Ajax{
                     $status_html .= '<span class="' . esc_attr($status->status) . '">(' . esc_html($status->count) . ') ' . esc_html(wc_get_order_status_name($status->status)) . '</span> ';
                 }
     
-                $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "view-order/" . $order_id);
+                $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/" . $order_id);
                 $sub_order_rows = '';
     
                 $sub_orders = $wpdb->get_results($wpdb->prepare(
