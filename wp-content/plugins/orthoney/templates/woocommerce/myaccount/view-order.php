@@ -24,11 +24,19 @@ $notes = $order->get_customer_order_notes();
 
 global $wpdb;
 $wc_orders_table      = $wpdb->prefix . 'wc_orders';
-$wc_orders_meta_table = $wpdb->prefix . 'wc_orders_meta';
 
-$sub_orders = $wpdb->get_results(
-    $wpdb->prepare("SELECT id FROM {$wc_orders_table} WHERE parent_order_id = %d AND customer_id", $order->get_order_number(), $user_id)
-);
+$wc_orders_meta_table = $wpdb->prefix . 'wc_orders_meta';
+$recipient_order_table = $wpdb->prefix . 'oh_recipient_order';
+
+
+
+$sub_order_id =  OAM_COMMON_Custom::get_order_meta($order->get_order_number(), '_orthoney_OrderID');
+
+$recipientResult = $wpdb->get_results($wpdb->prepare(
+    "SELECT * FROM {$recipient_order_table} WHERE order_id = %d",
+    $sub_order_id 
+));
+
 
 $order_id = $order->get_id();
 $order_process_user_id = $wpdb->get_var(
@@ -55,12 +63,18 @@ if (!empty($order_process_user_id)) {
 <div class="order-process-block customer-order-details-section">
     <div class="customer-order-details-nav heading-title">
         <div>
-            <h3>#<?php echo esc_html($order->get_order_number()); ?> Recipient Order</h3>
+            <h3>#<?php echo esc_html($sub_order_id ); ?> Recipient Order</h3>
             <p>
                 <?php
                 printf(
                     esc_html__('Order #%1$s was placed on %2$s%3$s.', 'woocommerce'),
-                    '<mark class="order-number">' . esc_html($order->get_order_number()) . '</mark>',
+                    '<mark class="order-number">' . esc_html($sub_order_id ) . '</mark>',
+                    '<mark class="order-date">' . esc_html(wc_format_datetime($order->get_date_created())) . '</mark>',
+                    $order_process_by
+                );
+                printf(
+                    esc_html__('Order #%1$s was placed on %2$s%3$s.', 'woocommerce'),
+                    '<mark class="order-number">' . esc_html($sub_order_id ) . '</mark>',
                     '<mark class="order-date">' . esc_html(wc_format_datetime($order->get_date_created())) . '</mark>',
                     $order_process_by
                 );
@@ -81,79 +95,69 @@ if (!empty($order_process_user_id)) {
         <table>
             <thead>
                 <tr>
-                    <th>Order ID</th>
-                    <th>Full Name</th>
+                    <th>Jar No</th>
+                    <th>Recipient Name</th>
                     <th>Company Name</th>
                     <th>Address</th>
-                    <th>Jar</th>
+                    <th>Total Honey Jar</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                <?php if (!empty($sub_orders)) : ?>
-                    <?php foreach ($sub_orders as $sub_order) :
-                        $sub_order_id = $sub_order->id;
-                        $sub_order_obj = wc_get_order($sub_order_id);
-                        if (!$sub_order_obj) continue;
-
-                        $first_name    = $sub_order_obj->get_shipping_first_name();
+                <?php 
+                if (!empty($recipientResult)) :
+                    foreach ($recipientResult as $sub_order) :
+                    
+                        $recipient_order_id    = $sub_order->recipient_order_id;
+                        $first_name    = $sub_order->full_name;
                         $address_parts = array_filter([
-                            $sub_order_obj->get_shipping_address_1(),
-                            $sub_order_obj->get_shipping_address_2(),
-                            $sub_order_obj->get_shipping_city(),
-                            $sub_order_obj->get_shipping_state(),
-                            $sub_order_obj->get_shipping_postcode()
+                            $sub_order->address_1,
+                            $sub_order->address_2,
+                            $sub_order->city,
+                            $sub_order->state,
+                            $sub_order->zipcode
                         ]);
 
-                        $company_name = '-';
-                        $total_qty = 0;
-                        foreach ($sub_order_obj->get_items() as $item) {
-                            $company_name = $item->get_meta('_recipient_company_name', true) ?: '-';
-                            $total_qty += $item->get_quantity();
-                        }
-
-                        $status = $sub_order_obj->get_status();
-                        $status_label = 'wc-' . $status;
+                        $company_name = $sub_order->company_name;
+                        $total_qty = $sub_order->quantity
+                        
                         ?>
-                        <tr data-id="<?php echo esc_attr($sub_order_id); ?>" data-verify="0" data-group="0">
+                        <tr data-id="<?php echo esc_attr($recipient_order_id); ?>" data-verify="0" data-group="0">
                             <td data-label="Order ID">
                                 <div class="thead-data">Order ID</div>
-                                <input type="hidden" name="recipientIds[]" value="<?php echo esc_attr($sub_order_id); ?>">
-                                <?php echo esc_html($sub_order_id); ?>
+                                <input type="hidden" name="recipientIds[]" value="<?php echo esc_attr($recipient_order_id); ?>">
+                                <?php echo esc_html($recipient_order_id); ?>
                             </td>
                             <td data-label="Full Name"><div class="thead-data">Full Name</div><?php echo esc_html($first_name); ?></td>
                             <td data-label="Company Name"><div class="thead-data">Company Name</div><?php echo esc_html($company_name); ?></td>
                             <td data-label="Address"><div class="thead-data">Address</div><?php echo esc_html(implode(', ', $address_parts)); ?></td>
                             <td data-label="Quantity"><div class="thead-data">Quantity</div><?php echo esc_html($total_qty); ?></td>
-                            <td data-label="Status">
-                                <div class="thead-data">Status</div>
-                                <span class="<?php echo esc_attr($status_label); ?>"></span>
-                                <?php echo esc_html(wc_get_order_status_name($status)); ?>
-                            </td>
+                            <td data-label="Status"></td>
                             <td data-label="Action">
                                 <div class="thead-data">Action</div>
-                                <button class="far fa-eye viewRecipientOrder" data-tippy="View Details" data-popup="#recipient-order-edit-popup"></button>
-                                <button class="far fa-edit editRecipientOrder" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>
-                                <button class="deleteRecipient far fa-times" data-tippy="Cancel Recipient Order" data-recipientname="<?php echo esc_attr($first_name); ?>"></button>
+                                <button class="far fa-eye viewRecipientOrder" data-order="<?php echo esc_attr($recipient_order_id); ?>" data-tippy="View Details" data-popup="#recipient-order-edit-popup"></button>
+                                <button class="far fa-edit editRecipientOrder" data-order="<?php echo esc_attr($recipient_order_id); ?>" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>
+                                <button class="deleteRecipient far fa-times" data-order="<?php echo esc_attr($recipient_order_id); ?>" data-tippy="Cancel Recipient Order" data-recipientname="<?php echo esc_attr($first_name); ?>"></button>
                             </td>
                         </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                    <?php 
+                    endforeach;
+                    endif; ?>
             </tbody>
         </table>
 
         <!-- Popups -->
         <div id="recipient-order-manage-popup" class="lity-popup-normal lity-hide">
             <div class="popup-show order-process-block orthoney-datatable-warraper">
-                <h3>Recipients Order Details</h3>
+                <h3 class="popup-title"><span></span> Order Details</h3>
                 <?php echo OAM_Helper::get_recipient_order_form(); ?>
             </div>
         </div>
 
         <div id="recipient-order-edit-popup" class="lity-popup-normal lity-hide">
             <div class="popup-show order-process-block orthoney-datatable-warraper">
-                <h3>Recipients Order Details</h3>
+                <h3 class="popup-title"><span></span> Order Details</h3>
                 <div class="recipient-view-details-wrapper"></div>
                 <div class="footer-btn gfield--width-full">
                     <button type="button" class="w-btn us-btn-style_4" data-lity-close>Cancel</button>

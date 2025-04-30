@@ -1719,48 +1719,43 @@ class OAM_Ajax{
         wp_send_json_success(['message' => 'Order updated successfully']);
     }
     
-    // Callback function for get recipient  order details base in id
+   // Callback function for get recipient  order details base in id
     public function orthoney_get_recipient_order_base_id_handler() {
         global $wpdb;
-    
+
+        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+
         $orderID = !empty($_POST['id']) ? intval($_POST['id']) : 0;
-    
+
         if (empty($orderID)) {
             $response = ['success' => false, 'message' => 'Invalid order ID.'];
             wp_send_json_error($response);
         }
-    
-        $order = wc_get_order($orderID);
-    
-        if (!$order) {
-            $response = ['success' => false, 'message' => 'Order not found.'];
-            wp_send_json_error($response);
-        }
-       
-    
-        $full_name = $order->get_shipping_first_name();
-        $address_1  = $order->get_shipping_address_1();
-        $address_2  = $order->get_shipping_address_2();
-        $city       = $order->get_shipping_city();
-        $state      = $order->get_shipping_state();
-        $postcode   = $order->get_shipping_postcode();
-        $country    = $order->get_shipping_country();
-        $total_quantity = 0;
 
-        $states = WC()->countries->get_states('US'); // Make sure country code is uppercase
+        $recipientOrderDetails = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$order_process_recipient_table} WHERE order_id = %d",
+            $orderID 
+        ));
+    
+
+        $full_name      = $recipientOrderDetails->full_name;
+        $company_name   = $sub_order->company_name;
+        $address_1      = $recipientOrderDetails->address_1;
+        $address_2      = $recipientOrderDetails->address_2;
+        $city           = $recipientOrderDetails->city;
+        $state          = $recipientOrderDetails->state;
+        $postcode       = $recipientOrderDetails->zipcode;
+        $country        = $recipientOrderDetails->country ?? 'US';
+        $total_quantity = $recipientOrderDetails->quantity;
+        $greeting       = $recipientOrderDetails->greeting?? '';
+        
+
+        $states = WC()->countries->get_states('US');
         $full_state_name = isset($states[$state]) ? $states[$state] : $state;
         $full_state = $full_state_name . " (" . $state . ")";
 
-        // Assuming one item per recipient order
-        $company_name = '';
-        foreach ($order->get_items() as $item) {
-            $company_name = $item->get_meta('_recipient_company_name', true)?? '';
-            $greeting = $item->get_meta('greeting', true) ?? '';
-            $total_quantity += $item->get_quantity();
-            break;
-        }
-    
-    
+        
+
         $data = [
             'success'       => true,
             'id'            => $orderID,
@@ -1776,7 +1771,7 @@ class OAM_Ajax{
             'greeting'      => $greeting,
             'quantity'      => $total_quantity,
         ];
-    
+
         wp_send_json_success($data);
     }
 

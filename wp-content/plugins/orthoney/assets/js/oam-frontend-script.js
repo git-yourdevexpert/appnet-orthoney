@@ -168,8 +168,6 @@ document.addEventListener("DOMContentLoaded", initTippy);
     });
   })();
   
-
-
   const greetingTextareas = document.querySelectorAll("#multiStepForm textarea, #recipient-manage-form form textarea, #recipient-order-manage-popup textarea");
   const maxChars = 250;
   
@@ -179,22 +177,27 @@ document.addEventListener("DOMContentLoaded", initTippy);
           if (textareaDiv) {
               const charCounter = textareaDiv.querySelector(".char-counter span");
               if (charCounter) { // Ensure charCounter exists
-                  textarea.addEventListener("input", () => {
+                  const updateCharCount = () => {
                       let currentLength = textarea.value.length;
                       let remainingChars = maxChars - currentLength;
   
                       if (remainingChars < 0) {
-                          textarea.value = textarea.value.substring(0, maxChars); // Prevent exceeding max limit
+                          textarea.value = textarea.value.substring(0, maxChars); // Trim excess
                           remainingChars = 0;
                       }
   
                       charCounter.textContent = `${remainingChars}`;
-                  });
+                  };
+  
+                  // Initialize on page load
+                  updateCharCount();
+  
+                  // Update on input
+                  textarea.addEventListener("input", updateCharCount);
               }
           }
       });
   }
-
 
 
 
@@ -1429,17 +1432,10 @@ document.addEventListener('click', function (event) {
     event.preventDefault();
     process_group_popup();
 
-    const recipientTr = target.closest('tr');
     const form = document.querySelector('#recipient-manage-order-form form');
     form.reset();
 
-    if (!recipientTr) {
-        lity(target.getAttribute('data-popup'));
-        Swal.close();
-        return;
-    }
-
-    const orderID = recipientTr.getAttribute('data-id');
+    const orderID = target.getAttribute('data-order');
 
     fetch(oam_ajax.ajax_url, {
         method: 'POST',
@@ -1458,16 +1454,22 @@ document.addEventListener('click', function (event) {
             const d = data.data;
 
             if (isEdit) {
+                const popuptitle = document.querySelector('#recipient-order-manage-popup .popup-title span');
+                popuptitle.innerHTML = '#' + orderID;
                 const fields = ['order_id', 'full_name', 'company_name', 'address_1', 'address_2', 'city', 'state', 'zipcode', 'greeting'];
                 fields.forEach(field => {
                     const input = form.querySelector(`#${field}`);
                     if (input) input.value = d[field] || '';
                 });
                 form.querySelector('button[type="submit"]').innerHTML = 'Edit Recipient Order Details';
+                document.querySelector('.textarea-div .char-counter span').innerHTML = 250 - d.greeting.length;
+                
             }
 
             if (isView) {
                 const viewpopup = document.querySelector('#recipient-order-edit-popup .recipient-view-details-wrapper');
+                const popuptitle = document.querySelector('#recipient-order-edit-popup .popup-title span');
+                popuptitle.innerHTML = '#' + orderID;
                 viewpopup.innerHTML = `
                     <ul>
                         <li><label>Full Name:</label><span>${d.full_name || ''}</span></li>
@@ -1508,7 +1510,6 @@ document.addEventListener('click', function (event) {
             });
         });
 });
-
 const recipientOrderManageForm = document.querySelector("#recipient-manage-order-form form");
 
 function validateRecipientOrderManageForm(form) {
