@@ -1732,14 +1732,15 @@ class OAM_Ajax{
             wp_send_json_error($response);
         }
 
-        $recipientOrderDetails = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$recipient_order_table} WHERE recipient_order_id = %d",
-            $orderID 
-        ));
-    
+        $recipientOrderDetails = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM {$recipient_order_table} WHERE recipient_order_id = %d",
+                $orderID
+            )
+        );
 
         $full_name      = $recipientOrderDetails->full_name;
-        $company_name   = $sub_order->company_name;
+        $company_name   = $recipientOrderDetails->company_name;
         $address_1      = $recipientOrderDetails->address_1;
         $address_2      = $recipientOrderDetails->address_2;
         $city           = $recipientOrderDetails->city;
@@ -1747,14 +1748,11 @@ class OAM_Ajax{
         $postcode       = $recipientOrderDetails->zipcode;
         $country        = $recipientOrderDetails->country ?? 'US';
         $total_quantity = $recipientOrderDetails->quantity;
-        $greeting       = $recipientOrderDetails->greeting?? '';
-        
+        $greeting       = $recipientOrderDetails->greeting ?? '';
 
         $states = WC()->countries->get_states('US');
         $full_state_name = isset($states[$state]) ? $states[$state] : $state;
         $full_state = $full_state_name . " (" . $state . ")";
-
-        
 
         $data = [
             'success'       => true,
