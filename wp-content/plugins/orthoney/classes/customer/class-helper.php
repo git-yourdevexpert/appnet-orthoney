@@ -219,9 +219,17 @@ class OAM_Helper{
             );
           }
           $jarsorder = array_map(function($order) {
-            $order['status'] = 'n/a';
+            $order['status'] = '';
             $order['price'] = '$14.00'; // Set price here (change 10.00 to the actual price calculation)
-            $order['action'] = 'n/a'; // Set price here (change 10.00 to the actual price calculation)
+
+            $recipient_order_id = esc_attr($order['jar_no']);
+            $recipient_name = esc_attr($order['billing_name']);
+        
+            $order['action'] = '
+             <button class="far fa-eye viewRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="View Details" data-popup="#recipient-order-edit-popup"></button>
+        <button class="far fa-edit editRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>
+        <button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>
+        ';// Set price here (change 10.00 to the actual price calculation)
 
             return $order;
         }, $jarsorder);
