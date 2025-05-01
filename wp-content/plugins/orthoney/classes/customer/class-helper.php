@@ -1050,37 +1050,37 @@ class OAM_Helper{
                 <input type="hidden" id="recipient_id" name="recipient_id" value="">
 
                 <div class="form-row gfield--width-half">
-                    <label for="full_name">Full Name: <span class="required">*</span></label>
+                    <label for="full_name">Full Name <span class="required">*</span></label>
                     <input type="text" id="full_name" name="full_name" required data-error-message="Please enter your full name.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="company_name">Company Name:</label>
+                    <label for="company_name">Company Name</label>
                     <input type="text" id="company_name" name="company_name" data-error-message="Please enter a company name.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="address_1">Mailing Address: <span class="required">*</span></label>
+                    <label for="address_1">Mailing Address <span class="required">*</span></label>
                     <input type="text" id="address_1" name="address_1" required data-error-message="Please enter a mailing address.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="address_2">Suite/Apt#:</label>
+                    <label for="address_2">Suite/Apt#</label>
                     <input type="text" id="address_2" name="address_2">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="city">City: <span class="required">*</span></label>
+                    <label for="city">City <span class="required">*</span></label>
                     <input type="text" id="city" name="city" required data-error-message="Please enter a city.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="state">State: <span class="required">*</span></label>
+                    <label for="state">State <span class="required">*</span></label>
                     <select id="state" name="state" required data-error-message="Please select a state.">
                         <option value="" disable>Select state</option>
                         <?php echo self::get_us_states_list(isset($shipping_address['state']) ? $shipping_address['state'] : ""); ?>
@@ -1089,13 +1089,13 @@ class OAM_Helper{
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="zipcode">Zipcode: <span class="required">*</span></label>
+                    <label for="zipcode">Zipcode <span class="required">*</span></label>
                     <input type="text" id="zipcode" name="zipcode" required data-error-message="Please enter a valid zipcode.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="quantity">Quantity:</label>
+                    <label for="quantity">Quantity</label>
                     <div class="quantity">
                         <button class="minus" aria-label="Decrease" type="button">&minus;</button>
                         <input type="number" class="input-box" min="1" value="1" max="10000" required id="quantity" name="quantity" data-error-message="Please enter a valid quantity.">
@@ -1105,7 +1105,7 @@ class OAM_Helper{
                 </div>
 
                 <div class="textarea-div form-row gfield--width-full">
-                    <label for="greeting">Add a Greeting:</label>
+                    <label for="greeting">Add a Greeting</label>
                     <textarea id="greeting" name="greeting"></textarea>
                     <div class="char-counter"><span>250</span> characters remaining</div>
                 </div>
@@ -1124,37 +1124,37 @@ class OAM_Helper{
             <form class="grid-two-col" novalidate>
             <input type="hidden" id="order_id" name="order_id" value="">
                 <div class="form-row gfield--width-half">
-                    <label for="full_name">Full Name: <span class="required">*</span></label>
+                    <label for="full_name">Full Name <span class="required">*</span></label>
                     <input type="text" id="full_name" name="full_name" required data-error-message="Please enter your full name.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="company_name">Company Name:</label>
+                    <label for="company_name">Company Name</label>
                     <input type="text" id="company_name" name="company_name" data-error-message="Please enter a company name.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="address_1">Mailing Address:<span class="required">*</span></label>
+                    <label for="address_1">Mailing Address<span class="required">*</span></label>
                     <input type="text" id="address_1" name="address_1" required data-error-message="Please enter a mailing address.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="address_2">Suite/Apt#:</label>
+                    <label for="address_2">Suite/Apt#</label>
                     <input type="text" id="address_2" name="address_2">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="city">City:<span class="required">*</span></label>
+                    <label for="city">City<span class="required">*</span></label>
                     <input type="text" id="city" name="city" required data-error-message="Please enter a city.">
                     <span class="error-message"></span>
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="state">State:<span class="required">*</span></label>
+                    <label for="state">State<span class="required">*</span></label>
                     <select id="state" name="state" required data-error-message="Please select a state.">
                         <option value="" disable>Select state</option>
                         <?php echo self::get_us_states_list(isset($shipping_address['state']) ? $shipping_address['state'] : ""); ?>
@@ -1163,19 +1163,19 @@ class OAM_Helper{
                 </div>
 
                 <div class="form-row gfield--width-half">
-                    <label for="zipcode">Zipcode:<span class="required">*</span></label>
+                    <label for="zipcode">Zipcode<span class="required">*</span></label>
                     <input type="text" id="zipcode" name="zipcode" required data-error-message="Please enter a valid zipcode.">
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-half">
-                    <label for="quantity">Quantity:<span class="required">* <small>No editable</small></span></label>
+                    <label for="quantity">Quantity<span class="required">* <small>No editable</small></span></label>
                     <input type="number" id="quantity" name="quantity" readonly>
                     <span class="error-message"></span>
                 </div>
                
 
                 <div class="textarea-div form-row gfield--width-full">
-                    <label for="greeting">Add a Greeting:</label>
+                    <label for="greeting">Add a Greeting</label>
                     <textarea id="greeting" name="greeting"></textarea>
                     <div class="char-counter"><span>250</span> characters remaining</div>
                 </div>

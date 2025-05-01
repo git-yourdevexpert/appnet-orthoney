@@ -915,16 +915,16 @@ document.addEventListener('click', function (event) {
                     
                     if (event.target.classList.contains('viewRecipient')) {
                         let html = '<ul>';
-                        html += "<li><label>Full Name:</label><span> " + (full_name ? full_name : '') + "</span></li>";
-                        html += "<li><label>Company Name: </label><span>" + (company_name ? company_name : '') + "</span></li>";
-                        html += "<li><label>Mailing Address: </label><span>" + (address_1 ? address_1 : '') + "</span></li>";
-                        html += "<li><label>Suite/Apt#: </label><span>" + (address_2 ? address_2 : '') + "</span></li>";
-                        html += "<li><label>City: </label><span>" + (city ? city : '') + "</span></li>";
-                        html += "<li><label>State: </label><span>" + (state ? state : '') + "</span></li>";
-                        html += "<li><label>Quantity: </label><span>" + (quantity ? quantity : '') + "</span></li>";
+                        html += "<li><label>Full Name</label><span> " + (full_name ? full_name : '') + "</span></li>";
+                        html += "<li><label>Company Name </label><span>" + (company_name ? company_name : '') + "</span></li>";
+                        html += "<li><label>Mailing Address </label><span>" + (address_1 ? address_1 : '') + "</span></li>";
+                        html += "<li><label>Suite/Apt# </label><span>" + (address_2 ? address_2 : '') + "</span></li>";
+                        html += "<li><label>City </label><span>" + (city ? city : '') + "</span></li>";
+                        html += "<li><label>State </label><span>" + (state ? state : '') + "</span></li>";
+                        html += "<li><label>Quantity </label><span>" + (quantity ? quantity : '') + "</span></li>";
                         
                         html += "</ul>";
-                        html += "<div class='recipient-view-greeting-box'><label>Greeting: </label><span>" + (greeting ? greeting : '') + "</span></div>";
+                        html += "<div class='recipient-view-greeting-box'><label>Greeting </label><span>" + (greeting ? greeting : '') + "</span></div>";
                     
                         const viewpopup = document.querySelector('#recipient-view-details-popup .recipient-view-details-wrapper');
                         viewpopup.innerHTML = html;
@@ -1523,17 +1523,17 @@ document.addEventListener('click', function (event) {
                 popuptitle.innerHTML = '#' + orderID;
                 viewpopup.innerHTML = `
                     <ul>
-                        <li><label>Full Name:</label><span>${d.full_name || ''}</span></li>
-                        <li><label>Company Name:</label><span>${d.company_name || ''}</span></li>
-                        <li><label>Mailing Address:</label><span>${d.address_1 || ''}</span></li>
-                        <li><label>Suite/Apt#:</label><span>${d.address_2 || ''}</span></li>
-                        <li><label>City:</label><span>${d.city || ''}</span></li>
-                        <li><label>State:</label><span>${d.full_state || ''}</span></li>
-                        <li><label>Zipcode:</label><span>${d.zipcode || 0}</span></li>
-                        <li><label>Quantity:</label><span>${d.quantity || 0}</span></li>
+                        <li><label>Full Name</label><span>${d.full_name || ''}</span></li>
+                        <li><label>Company Name</label><span>${d.company_name || ''}</span></li>
+                        <li><label>Mailing Address</label><span>${d.address_1 || ''}</span></li>
+                        <li><label>Suite/Apt#</label><span>${d.address_2 || ''}</span></li>
+                        <li><label>City</label><span>${d.city || ''}</span></li>
+                        <li><label>State</label><span>${d.full_state || ''}</span></li>
+                        <li><label>Zipcode</label><span>${d.zipcode || 0}</span></li>
+                        <li><label>Quantity</label><span>${d.quantity || 0}</span></li>
                     </ul>
                     <div class='recipient-view-greeting-box'>
-                        <label>Greeting:</label><span>${d.greeting || ''}</span>
+                        <label>Greeting</label><span>${d.greeting || ''}</span>
                     </div>`;
             }
 
