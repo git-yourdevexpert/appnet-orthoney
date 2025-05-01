@@ -480,6 +480,21 @@ class OAM_Helper{
     }
 
 
+    $reorderbutton = '';
+
+        $gmt_created = is_object($order_data->date_created_gmt)  ? $order_data->date_created_gmt : new DateTime($order_data->date_created_gmt, new DateTimeZone('GMT')); 
+        
+        $order_year = (int) $gmt_created->format('Y');
+        
+        $current_year = (int) gmdate('Y');
+    
+        if ($order_year < $current_year) {
+            $order = wc_get_order($order_data->id);
+    
+            if ($order && $order->get_user_id() == $user_id) {
+                $reorderbutton = '<button data-tippy="Re Order" data-orderid="'.$order_data->id.'" data-user="' . esc_attr($user_id) . '" class="wcReOrderCustomerDashboard far fa-repeat-alt"></button>';
+            }
+        }
         
         // Status HTML
         $status_html = '';
@@ -518,7 +533,7 @@ class OAM_Helper{
             //'type' => esc_html($order_type),
             //'status' => !empty($status_html) ? $status_html : 'Recipient Order is Preparing.',
             'price' => $order_total,
-            'action' =>'<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>'
+            'action' =>'<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>'. $reorderbutton
         ];
     }
 

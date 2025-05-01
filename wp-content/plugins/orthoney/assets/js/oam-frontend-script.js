@@ -339,6 +339,59 @@ document.addEventListener('click', function (event) {
         }
     }
     
+    if (event.target.classList.contains('wcReOrderCustomerDashboard')) {
+        event.preventDefault();
+        const target = event.target;
+        const userID = target.getAttribute('data-user');
+        const orderid = target.getAttribute('data-orderid');
+
+        // process_group_popup();
+
+        fetch(oam_ajax.ajax_url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'wc_re_order_customer_dashboard',
+                userID: userID,
+                orderid: orderid,
+                security: oam_ajax.nonce
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            process_group_popup();
+            if (data.success) {
+                Swal.fire({
+                    title: data.data.message,
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timerProgressBar: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
+                });
+                setTimeout(function() {
+                    window.location.href = data.data.redirect_url;
+                }, 1500);
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.message,
+                    icon: 'error',
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while deleting the group.',
+                icon: 'error',
+            });
+        });
+
+    }
     
     if (event.target.classList.contains('deleteGroupButton')) {
         console.log('sas');

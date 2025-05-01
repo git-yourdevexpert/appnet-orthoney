@@ -335,9 +335,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const dataToken = selectedOption.getAttribute('data-token');
             
             if (dataToken) {
-              console.log(dataToken);
-              document.cookie = `yith_wcaf_referral_token=${dataToken}; path=/; max-age=${1 * 86400}`;
-              document.cookie = `yith_wcaf_referral_history=${dataToken}; path=/; max-age=${1 * 86400}`;
+              const domain = window.location.hostname; // Get the current domain
+              document.cookie = `yith_wcaf_referral_token=${dataToken}; path=/; domain=${domain}; max-age=${1 * 86400}`;
+              document.cookie = `yith_wcaf_referral_history=${dataToken}; path=/; domain=${domain}; max-age=${1 * 86400}`;
             }
           
           }
