@@ -2191,7 +2191,7 @@ class OAM_Ajax{
                     $count_where_values[] = '_orthoney_OrderID';
                 } elseif ($_REQUEST['custom_order_type'] === "single_address") {
 
-                    $count_where_conditions. = "EXISTS (
+                    $count_where_conditions .= "EXISTS (
                         SELECT 1
                         FROM $order_meta_table AS meta
                         WHERE meta.order_id = orders.id
