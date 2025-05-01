@@ -2115,7 +2115,7 @@ jQuery(document).ready(function ($) {
             const startYear = new Date().getFullYear();
             const endYear = 2018;
              const customYear = ''; // Optional custom year to prioritize
-             const defaultSelected = 2024;
+             const defaultSelected = 2025;
 
             const addedYears = new Set();
         

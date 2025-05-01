@@ -2226,7 +2226,7 @@ class OAM_Ajax{
                     $count_where_values[] = intval($_REQUEST['selected_customer_id']);
                 }
 
-                $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : 2024;
+                $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
                 $count_where_conditions .= " AND YEAR(orders.date_created_gmt) = %d";
                 $count_where_values[] = $year;
                 

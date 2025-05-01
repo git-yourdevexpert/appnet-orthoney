@@ -349,7 +349,7 @@ class OAM_Helper{
                 $where_conditions[] = "orders.type = %s";
                 $where_values[] = 'shop_order';
 
-                $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : 2024;
+                $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
 
                 $where_conditions[] = "YEAR(orders.date_created_gmt) = %d";
                 $where_values[] = $year;
