@@ -2781,20 +2781,41 @@ class OAM_Ajax{
         $params = [$user_id];
     
         if ($failed == 1) {
-            $where .= " AND step = 5 AND order_id != 0 AND order_type = 'multi-recipient-order'";
+            // Get failed recipient pids
+            $failed_rows = $wpdb->get_col(
+                $wpdb->prepare(
+                    "SELECT DISTINCT pid FROM $order_process_recipient_table WHERE verified = %d AND user_id = %d",
+                    0, $user_id
+                )
+            );
+        
+            if (!empty($failed_rows)) {
+                // Sanitize and implode for SQL IN clause
+                $pid_placeholders = implode(',', array_fill(0, count($failed_rows), '%d'));
+                $where .= " AND step = 5 AND order_id != 0 AND order_type = 'multi-recipient-order' AND id IN ($pid_placeholders)";
+                $params = array_merge($params, $failed_rows);
+            } else {
+                // No matching recipients, return empty results
+                $total_items = 0;
+                $items = [];
+                return;
+            }
         } else {
             $where .= " AND step != 5";
         }
-    
+        
+        // Add search filter
         if (!empty($search_value)) {
             $where .= " AND name LIKE %s";
             $params[] = '%' . $wpdb->esc_like($search_value) . '%';
         }
-    
+        
         $where_sql = $wpdb->prepare($where, ...$params);
-    
+        
+        // Total count
         $total_items = (int) $wpdb->get_var("SELECT COUNT(*) FROM $order_process_table $where_sql");
-    
+        
+        // Fetch paginated items
         $items = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM $order_process_table $where_sql ORDER BY $order_column $order_dir LIMIT %d, %d",
             $start, $length
@@ -2814,7 +2835,10 @@ class OAM_Ajax{
                     );
                     
                     // Skip if no unverified recipients
-                    if ($total_recipient == 0) continue;
+                    if ($total_recipient == 0){
+                         continue;
+                         
+                    }
                 }
     
                 $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($item->created));
