@@ -256,13 +256,13 @@ class OAM_Helper{
         return $filtered_orders;
     }
     
-
-        
     public static  function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
         global $wpdb;
 
         $orders_table = $wpdb->prefix . 'wc_orders';
         $order_meta_table = $wpdb->prefix . 'wc_orders_meta';
+
+        $recipient_ordertable = $wpdb->prefix . 'oh_recipient_order';
 
     
         $filtered_orders = [];
@@ -272,41 +272,61 @@ class OAM_Helper{
         // $page = isset($page) ? (int)$page : 1;
          $offset = $page;
 
-        $raw_key = current_user_can('administrator')
-        ? "main_orders_admin_{$limit}_{$offset}"
-        : "main_orders_user_{$user_id}_{$limit}_{$offset}";
 
-    // Hash it to make it shorter and cache-safe
-    $transient_key = 'main_orders_' . md5($raw_key);
-
-    // Try to get cached result
-    //$main_orders = get_transient($transient_key);
-    $main_orders = false;
-        if ($main_orders === false) {
+    
 
             // If no cached data, build the query
             if (current_user_can('administrator')) {
                 $where_conditions = [];
                 $where_values = [];
-
+                $join = "";
                 // Multiple address: orders that HAVE the meta key
                 if ($_REQUEST['custom_order_type'] === "multiple_address") {
-                    $where_conditions[] = "EXISTS (
-                        SELECT 1 FROM $order_meta_table AS meta
-                        WHERE meta.order_id = orders.id
-                        AND meta.meta_key = %s
-                    )";
+                  
+
+                    $join .= "INNER JOIN (
+                        SELECT meta.order_id
+                        FROM $order_meta_table AS meta
+                        INNER JOIN $recipient_ordertable AS ro
+                            ON ro.order_id = meta.meta_value
+                        WHERE meta.meta_key = %s
+                        GROUP BY meta.order_id
+                        HAVING COUNT(ro.id) > 1
+                    ) AS multi_orders ON multi_orders.order_id = orders.id";
                     $where_values[] = '_orthoney_OrderID';
+
+                    
                 }
 
                 // Single address: orders that DO NOT HAVE the meta key
+                // if ($_REQUEST['custom_order_type'] === "single_address") {
+                //     // Join meta table to get the _orthoney_OrderID
+                //     $join .= "
+                //         INNER JOIN $order_meta_table AS meta
+                //             ON meta.order_id = orders.id AND meta.meta_key = %s
+                //         LEFT JOIN $recipient_ordertable AS ro
+                //             ON ro.order_id = meta.meta_value
+                //     ";
+                //     $where_values[] = '_orthoney_OrderID';
+                //     // Keep only rows with NO matching recipient_order
+                //     $where_conditions[] = "ro.id IS NULL";
+                // }
+
                 if ($_REQUEST['custom_order_type'] === "single_address") {
-                    $where_conditions[] = "NOT EXISTS (
-                        SELECT 1 FROM $order_meta_table AS meta
-                        WHERE meta.order_id = orders.id
-                        AND meta.meta_key = %s
-                    )";
+                    // LEFT JOIN to include orders that may not have _orthoney_OrderID at all
+                    $join .= "
+                        LEFT JOIN $order_meta_table AS meta
+                            ON meta.order_id = orders.id AND meta.meta_key = %s
+                        LEFT JOIN $recipient_ordertable AS ro
+                            ON ro.order_id = meta.meta_value
+                    ";
                     $where_values[] = '_orthoney_OrderID';
+                
+                    // Keep only:
+                    // - orders that do not have the meta key (meta.meta_value IS NULL)
+                    // - or have the meta key but no matching row in recipient table (ro.id IS NULL)
+                    $where_conditions[] = "(meta.meta_value IS NULL OR ro.id IS NULL)";
+
                 }
 
                 // Order status condition
@@ -329,18 +349,36 @@ class OAM_Helper{
                 $where_conditions[] = "orders.type = %s";
                 $where_values[] = 'shop_order';
 
+                $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : 2024;
+
+                $where_conditions[] = "YEAR(orders.date_created_gmt) = %d";
+                $where_values[] = $year;
+
+
                 $where_values[] = $limit;
                 $where_values[] = $offset;
 
-                $sql = $wpdb->prepare(
+
+
+                // $sql = $wpdb->prepare(
+                //     "SELECT DISTINCT orders.* FROM $orders_table AS orders
+                //     WHERE " . implode(' AND ', $where_conditions) . "
+                //     ORDER BY orders.date_updated_gmt DESC
+                //     LIMIT %d OFFSET %d",
+                //     ...$where_values
+                // );
+
+                 $sql = $wpdb->prepare(
                     "SELECT DISTINCT orders.* FROM $orders_table AS orders
+                    $join
                     WHERE " . implode(' AND ', $where_conditions) . "
                     ORDER BY orders.date_updated_gmt DESC
                     LIMIT %d OFFSET %d",
                     ...$where_values
                 );
+
             }else{
-                $sql = $wpdb->prepare(
+                 $sql = $wpdb->prepare(
                     "SELECT * FROM $orders_table
                      WHERE customer_id = %d
                      AND status != %s
@@ -350,13 +388,15 @@ class OAM_Helper{
                     $user_id, 'wc-checkout-draft', 'shop_order', $limit, $offset
                 );
             }
-            
-         //   echo  $sql;
+        
+       //     print_r($_REQUEST);
+       //echo  $sql.'sql';
+        //    echo 'tesetsss';
 
             // Run query and cache the results for 5 minutes (300 seconds)
             $main_orders = $wpdb->get_results($sql);
-            set_transient($transient_key, $main_orders, 300); // 5 minutes
-        }
+          //  set_transient($transient_key, $main_orders, 300); // 5 minutes
+     
         // echo '<pre>';
         // print_r($wpdb);
 

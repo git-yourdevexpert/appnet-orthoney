@@ -2190,6 +2190,14 @@ class OAM_Ajax{
                     )";
                     $count_where_values[] = '_orthoney_OrderID';
                 } elseif ($_REQUEST['custom_order_type'] === "single_address") {
+
+                    $count_where_conditions. = "EXISTS (
+                        SELECT 1
+                        FROM $order_meta_table AS meta
+                        WHERE meta.order_id = orders.id
+                        AND meta.meta_key = %s
+                    )";
+
                     $count_where_conditions .= "NOT EXISTS (
                         SELECT 1 FROM $order_meta_table AS meta
                         WHERE meta.order_id = orders.id
@@ -2199,12 +2207,9 @@ class OAM_Ajax{
                 }
                 
                 // Order status condition
-                   // Order status condition
-                   if (!empty($_REQUEST['selected_order_status']) &&  $_REQUEST['selected_order_status'] != "all" ) {
+                if (!empty($_REQUEST['selected_order_status'])) {
                     $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status = %s";
                     $count_where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
-                }else if ($_REQUEST['selected_order_status'] == "all"){
-                    
                 } else {
                     $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status != %s";
                     $count_where_values[] = 'wc-checkout-draft'; // Default exclusion if no status is selected
@@ -2219,6 +2224,12 @@ class OAM_Ajax{
                     $count_where_conditions .= " AND customer_id = %d";
                     $count_where_values[] = intval($_REQUEST['selected_customer_id']);
                 }
+
+                $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : 2024;
+                $count_where_conditions .= " AND YEAR(orders.date_created_gmt) = %d";
+                $count_where_values[] = $year;
+                
+
                 
                 $count_sql = $wpdb->prepare(
                     "SELECT COUNT(id) FROM {$orders_table} AS orders
@@ -2229,8 +2240,6 @@ class OAM_Ajax{
                 $total_orders = $wpdb->get_var($count_sql);
                // echo $count_sql;
                 
-                $total_orders = $wpdb->get_var($count_sql);
-
             } else {
                 // Non-admin sees only their orders
                 $sql = $wpdb->prepare(
