@@ -1051,8 +1051,8 @@ document.addEventListener('click', function (event) {
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, I want',
-            cancelButtonText: 'No, I do not',
+            confirmButtonText: 'Yes, remove them',
+            cancelButtonText: 'No, keep them',
             allowOutsideClick: true,
             reverseButtons: true,
         }).then((result) => {
