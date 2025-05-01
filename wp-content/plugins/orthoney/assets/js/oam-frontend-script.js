@@ -570,7 +570,10 @@ document.addEventListener('click', function (event) {
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Yes, I want!',
                 cancelButtonText: 'No, I do not',
-                allowOutsideClick: true
+                reverseButtons: true,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
             }).then((result) => {
                 if (result.isConfirmed) {
                     fetch(oam_ajax.ajax_url, {
@@ -672,7 +675,10 @@ document.addEventListener('click', function (event) {
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, remove the recipient!',
             cancelButtonText: 'Cancel',
-            allowOutsideClick: true
+            reverseButtons: true,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
         }).then((result) => {
             if (result.isConfirmed) {
                 fetch(oam_ajax.ajax_url, {
@@ -1053,8 +1059,10 @@ document.addEventListener('click', function (event) {
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, remove them',
             cancelButtonText: 'No, keep them',
-            allowOutsideClick: true,
             reverseButtons: true,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
         }).then((result) => {
             if (result.isConfirmed) {
                
@@ -1250,8 +1258,10 @@ document.addEventListener('click', function (event) {
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, I want',
             cancelButtonText: 'Cancel',
-            allowOutsideClick: true,
             reverseButtons: true,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
         }).then((result) => {
             if (result.isConfirmed) {
                
