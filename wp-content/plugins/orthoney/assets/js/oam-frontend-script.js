@@ -1970,7 +1970,9 @@ jQuery(document).ready(function ($) {
                 d.custom_order_status = $('#custom-order-status-filter').val();
                 d.table_order_type = $('input[name="table_order_type"]:checked').val();
                 d.selected_customer_id = $('#select-customer').val(); // 
-                // d.selected_order_status = $('#order_status').val(); // 
+                d.selected_order_status = $('#order_status').val(); // 
+                d.selected_year = $('#select-year').val(); // 
+
             },
             beforeSend: function () {
                 process_group_popup('Please wait while we process your request.');
@@ -2026,6 +2028,12 @@ jQuery(document).ready(function ($) {
             
 
             const customFilter = `
+              <label style="margin-left: 10px;">
+                Select Year:
+                <select id="select-year" class="form-control" style="width: 250px;">
+                    <option value="">Select year</option>
+                </select>
+            </label>
               <label style="margin-left: 10px; display:none" >
              affiliate :
                  <select id="select-affiliate" class="form-control" style="width: 250px;"><option value="">Select affiliate </option></select>
@@ -2103,6 +2111,25 @@ jQuery(document).ready(function ($) {
               //  table.ajax.reload();
             });
  
+            const yearSelect = document.getElementById('select-year');
+            const startYear = new Date().getFullYear();
+            const endYear = 2018;
+             const customYear = ''; // Optional custom year to prioritize
+             const defaultSelected = 2024;
+
+            const addedYears = new Set();
+        
+          // Populate years from current down to end
+            for (let year = startYear; year >= endYear; year--) {
+                if (!addedYears.has(year)) {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    if (year === defaultSelected) option.selected = true;
+                    yearSelect.appendChild(option);
+                    addedYears.add(year);
+                }
+            }
 
             $('#select-customer').select2({
                 placeholder: 'Search',
@@ -2328,9 +2355,10 @@ jQuery(document).ready(function ($) {
                 }
             }
 
-            jQuery(document).on('change', '#select-customer, #order_status', function (e) {
+            jQuery(document).on('change', '#select-customer, #order_status, #select-year', function (e) {
                 table.ajax.reload();
              });
+           
         }
     });
 });
