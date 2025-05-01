@@ -2237,6 +2237,8 @@ class OAM_Ajax{
                      WHERE $count_where_conditions",
                     ...$count_where_values
                 );
+
+                echo $count_sql;
                 
                 $total_orders = $wpdb->get_var($count_sql);
                // echo $count_sql;
