@@ -2199,9 +2199,12 @@ class OAM_Ajax{
                 }
                 
                 // Order status condition
-                if (!empty($_REQUEST['selected_order_status'])) {
+                   // Order status condition
+                   if (!empty($_REQUEST['selected_order_status']) &&  $_REQUEST['selected_order_status'] != "all" ) {
                     $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status = %s";
                     $count_where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
+                }else if ($_REQUEST['selected_order_status'] == "all"){
+                    
                 } else {
                     $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status != %s";
                     $count_where_values[] = 'wc-checkout-draft'; // Default exclusion if no status is selected
