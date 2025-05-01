@@ -2801,16 +2801,18 @@ class OAM_Ajax{
     
         if (!empty($items)) {
             foreach ($items as $item) {
-                $total_recipient = (int) $wpdb->get_var(
-                    $wpdb->prepare(
-                        "SELECT COUNT(id) FROM $order_process_recipient_table WHERE pid = %d AND verified = %d",
-                        $item->id,
-                        0
-                    )
-                );
-    
-                // Skip if no unverified recipients
-                if ($total_recipient == 0) continue;
+                if ($failed == 1) {
+                    $total_recipient = (int) $wpdb->get_var(
+                        $wpdb->prepare(
+                            "SELECT COUNT(id) FROM $order_process_recipient_table WHERE pid = %d AND verified = %d",
+                            $item->id,
+                            0
+                        )
+                    );
+                    
+                    // Skip if no unverified recipients
+                    if ($total_recipient == 0) continue;
+                }
     
                 $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($item->created));
     
