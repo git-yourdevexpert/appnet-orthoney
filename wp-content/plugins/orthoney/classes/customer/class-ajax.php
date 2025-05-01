@@ -2208,17 +2208,19 @@ class OAM_Ajax{
                 }
                 
                 // Order status condition
-                if (!empty($_REQUEST['selected_order_status'])) {
+                if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] != "all") {
                     $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status = %s";
                     $count_where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
+                }elseif($_REQUEST['selected_order_status'] == "all"){
+
                 } else {
                     $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status != %s";
                     $count_where_values[] = 'wc-checkout-draft'; // Default exclusion if no status is selected
                 }
                 
                 // Order type condition
-                $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "type = %s";
-                $count_where_values[] = 'shop_order';
+                // $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "type = %s";
+                // $count_where_values[] = 'shop_order';
                 
                 // Customer ID condition
                 if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
@@ -2238,7 +2240,7 @@ class OAM_Ajax{
                     ...$count_where_values
                 );
 
-                echo $count_sql;
+               // echo $count_sql;
                 
                 $total_orders = $wpdb->get_var($count_sql);
                // echo $count_sql;
