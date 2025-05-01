@@ -1159,7 +1159,9 @@ document.addEventListener("DOMContentLoaded", function () {
                       icon: "success",
                       title: "Upload Complete!",
                       showConfirmButton: false,
-                      timer: 4500,
+                      allowOutsideClick: false,
+                      allowEscapeKey: false,
+                      allowEnterKey: false,
                     });
                     setTimeout(() => {
                       window.location.reload();

@@ -2758,73 +2758,95 @@ class OAM_Ajax{
     public function orthoney_incomplete_order_process_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
-
+    
         $user_id = get_current_user_id();
         $failed = isset($_POST['failed']) ? intval($_POST['failed']) : 0;
-
+    
         $draw = intval($_POST['draw']);
         $start = intval($_POST['start']);
         $length = intval($_POST['length']);
         $search_value = sanitize_text_field($_POST['search']['value']);
-
+    
         $order_column_index = $_POST['order'][0]['column'];
-        $order_column = $_POST['columns'][$order_column_index]['data'];
-        $order_dir = $_POST['order'][0]['dir'];
-
+        $order_column = sanitize_sql_orderby($_POST['columns'][$order_column_index]['data']);
+        $order_dir = in_array(strtoupper($_POST['order'][0]['dir']), ['ASC', 'DESC']) ? $_POST['order'][0]['dir'] : 'ASC';
+    
         $order_process_table = OAM_Helper::$order_process_table;
-
-        $where = "WHERE user_id = $user_id";
+        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+    
+        $where = "WHERE user_id = %d";
+        $params = [$user_id];
+    
         if ($failed == 1) {
             $where .= " AND step = 5 AND order_id != 0 AND order_type = 'multi-recipient-order'";
         } else {
             $where .= " AND step != 5";
         }
+    
         if (!empty($search_value)) {
-            $where .= " AND (name LIKE '%$search_value%')";
+            $where .= " AND name LIKE %s";
+            $params[] = '%' . $wpdb->esc_like($search_value) . '%';
         }
-
-        $total_items = (int) $wpdb->get_var("SELECT COUNT(*) FROM $order_process_table $where");
-
-        $items = $wpdb->get_results(
-            "SELECT * FROM $order_process_table $where ORDER BY $order_column $order_dir LIMIT $start, $length"
-        );
-
+    
+        $where_sql = $wpdb->prepare($where, ...$params);
+    
+        $total_items = (int) $wpdb->get_var("SELECT COUNT(*) FROM $order_process_table $where_sql");
+    
+        $items = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM $order_process_table $where_sql ORDER BY $order_column $order_dir LIMIT %d, %d",
+            $start, $length
+        ));
+    
         $data = [];
-
-        foreach ($items as $item) {
-            $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($item->created));
-
-            $resume_url = ($failed == 1)
-                ? esc_url(CUSTOMER_DASHBOARD_LINK . "failed-recipients/details/" . $item->id)
-                : esc_url(ORDER_PROCESS_LINK . "?pid=" . $item->id);
-
-            $download_button = '';
-            if (!empty($item->csv_name)) {
-                $download_url = esc_url(OAM_Helper::$process_recipients_csv_url . $item->csv_name);
-                $download_button = "<a href='" . $download_url . "' class='w-btn us-btn-style_1 outline-btn round-btn' download data-tippy='Download Recipients File'><i class='far fa-download'></i></a>";
+    
+        if (!empty($items)) {
+            foreach ($items as $item) {
+                $total_recipient = (int) $wpdb->get_var(
+                    $wpdb->prepare(
+                        "SELECT COUNT(id) FROM $order_process_recipient_table WHERE pid = %d AND verified = %d",
+                        $item->id,
+                        0
+                    )
+                );
+    
+                // Skip if no unverified recipients
+                if ($total_recipient == 0) continue;
+    
+                $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($item->created));
+    
+                $resume_url = ($failed == 1)
+                    ? esc_url(CUSTOMER_DASHBOARD_LINK . "failed-recipients/details/" . $item->id)
+                    : esc_url(ORDER_PROCESS_LINK . "?pid=" . $item->id);
+    
+                $download_button = '';
+                if (!empty($item->csv_name)) {
+                    $download_url = esc_url(OAM_Helper::$process_recipients_csv_url . $item->csv_name);
+                    $download_button = "<a href='" . $download_url . "' class='w-btn us-btn-style_1 outline-btn round-btn' download data-tippy='Download Recipients File'><i class='far fa-download'></i></a>";
+                }
+    
+                $display_name = ($item->process_by == 0) ? 'Self' : esc_html(get_userdata($item->process_by)->display_name);
+    
+                $data[] = [
+                    'id' => esc_html($item->id),
+                    'name' => esc_html($item->name),
+                    'ordered_by' => esc_html($display_name),
+                    'date' => esc_html($created_date),
+                    'action' => "<a href='$resume_url' class='w-btn us-btn-style_1 outline-btn sm-btn'>" . ($failed == 1 ? 'View Recipients' : 'Resume Order') . "</a> " . ($failed != 1 ? $download_button : '')
+                ];
             }
-
-            $display_name = ($item->process_by == 0) ? 'Self' : get_userdata($item->process_by)->display_name;
-
-            $data[] = [
-                'id' => esc_html($item->id),
-                'name' => esc_html($item->name),
-                'ordered_by' => esc_html($display_name),
-                'date' => esc_html($created_date),
-                'action' => "<a href='$resume_url' class='w-btn us-btn-style_1 outline-btn sm-btn'>" . ($failed == 1 ? 'View Recipients' : 'Resume Order') . "</a> " . ($failed != 1 ? $download_button : '')
-            ];
         }
-
+    
+        // Always send a valid JSON response
         wp_send_json([
-            "draw" => $draw,
-            "recordsTotal" => $total_items,
-            "recordsFiltered" => $total_items,
-            "data" => $data
+            'draw' => $draw,
+            'recordsTotal' => $total_items,
+            'recordsFiltered' => $total_items,
+            'data' => $data
         ]);
-
+    
         wp_die();
-
     }
+    
 
     //
     public function orthoney_groups_ajax_handler() {
