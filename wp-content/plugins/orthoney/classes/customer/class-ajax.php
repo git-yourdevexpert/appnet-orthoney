@@ -2870,12 +2870,12 @@ class OAM_Ajax{
     
         wp_send_json([
             'draw' => $draw,
-            'recordsTotal' => count($groups) > 10 ? count($groups) + 1 : count($groups) ,
-            'recordsFiltered' => $total_items > 10 ? $total_items + 1 : $total_items,
+            'recordsTotal' => count($groups) > 0 ? count($groups) + 1 : count($groups) ,
+            'recordsFiltered' => $total_items > 0 ? $total_items + 1 : $total_items,
             'data' => $data
         ]);
     }
-    
+
     public function orthoney_incomplete_order_process_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
