@@ -2780,6 +2780,7 @@ class OAM_Ajax{
         $where = "WHERE user_id = %d";
         $params = [$user_id];
     
+        
         if ($failed == 1) {
             // Get failed recipient pids
             $failed_rows = $wpdb->get_col(
@@ -2788,7 +2789,7 @@ class OAM_Ajax{
                     0, $user_id
                 )
             );
-        
+            
             if (!empty($failed_rows)) {
                 // Sanitize and implode for SQL IN clause
                 $pid_placeholders = implode(',', array_fill(0, count($failed_rows), '%d'));
@@ -2825,22 +2826,7 @@ class OAM_Ajax{
     
         if (!empty($items)) {
             foreach ($items as $item) {
-                if ($failed == 1) {
-                    $total_recipient = (int) $wpdb->get_var(
-                        $wpdb->prepare(
-                            "SELECT COUNT(id) FROM $order_process_recipient_table WHERE pid = %d AND verified = %d",
-                            $item->id,
-                            0
-                        )
-                    );
-                    
-                    // Skip if no unverified recipients
-                    if ($total_recipient == 0){
-                         continue;
-                         
-                    }
-                }
-    
+                
                 $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($item->created));
     
                 $resume_url = ($failed == 1)
