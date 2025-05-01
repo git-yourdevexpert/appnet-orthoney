@@ -246,10 +246,9 @@ class OAM_Helper{
                 }
             }
     
-            $order['action'] = $resume_url . $editLink'
-                
-                <button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>
-            ';
+            $order['action'] = $resume_url . $editLink . '
+            <button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>
+        ';
     
             return $order;
         }, $jarsorder);
