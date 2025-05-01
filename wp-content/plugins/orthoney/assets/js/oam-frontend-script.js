@@ -1351,6 +1351,51 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+
+//Group Listing code
+jQuery(document).ready(function ($) {
+    const $table = $('#group-recipient-table');
+
+    const dataTable = $table.DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: oam_ajax.ajax_url,
+            type: 'POST',
+            data: function (d) {
+                d.action = 'orthoney_group_recipient_list_ajax';
+                d.security = oam_ajax.nonce;
+            }
+        },
+        columns: [
+            { data: 'id' },
+            { data: 'name' },
+            { data: 'recipient_count' },
+            { data: 'date' },
+            { data: 'action', orderable: false, searchable: false }
+        ],
+        drawCallback: function () {
+            if (typeof initTippy === "function") {
+                initTippy();
+            }
+        },
+        language: {
+            emptyTable: "No recipient group found"
+        },
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'csvHtml5',
+                text: 'Export CSV',
+                filename: 'group_recipient_list_export',
+                exportOptions: {
+                    columns: ':not(:last-child)'
+                }
+            }
+        ]
+    });
+});
+
 //incomplete order process code
 jQuery(document).ready(function ($) {
     const $table = $('#incomplete-order-table');

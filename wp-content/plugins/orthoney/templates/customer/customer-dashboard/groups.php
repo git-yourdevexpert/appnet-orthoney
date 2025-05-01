@@ -22,28 +22,21 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
 }
 $current_url = home_url( $_SERVER['REQUEST_URI'] );
 
-
-$groups = OAM_Helper::getGroupList($user_id);
 ?>
-<div class="groups-block order-process-block">
-    <h3>All Recipient List</h3>
-    <?php 
-    if(!empty($groups)){
-        ?>
-    <table>
+<div class="groups-block order-process-block orthoney-datatable-warraper">
+    <div class="heading-title">
+        <h3 class="block-title">All Recipient List</h3>
+    </div>
+
+    <table id="group-recipient-table" class="display">
         <thead>
             <tr>
                 <th>Sr No</th>
                 <th>Recipient List Name</th>
                 <th>Number of Recipients</th>
                 <th>Date</th>
-                <th style="width:300px">Action</th>
+                <th>Action</th>
             </tr>
         </thead>
-        <tbody id="groups-data"></tbody>
     </table>
-    <div class="groups-pagination">
-        <div id="groups-pagination"></div>
-    </div>
-    <?php } else{ echo OAM_COMMON_Custom::message_design_block("Group is not found."); return;}?>
 </div>

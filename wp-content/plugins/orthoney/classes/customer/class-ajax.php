@@ -47,6 +47,7 @@ class OAM_Ajax{
         add_action('wp_ajax_search_affiliates', array( $this,'search_affiliates_handler'));
 
         add_action( 'wp_ajax_orthoney_incomplete_order_process_ajax', array( $this, 'orthoney_incomplete_order_process_ajax_handler' ) );
+        add_action('wp_ajax_orthoney_group_recipient_list_ajax', array( $this, 'orthoney_group_recipient_list_ajax_handler'));
         add_action( 'wp_ajax_orthoney_groups_ajax', array( $this, 'orthoney_groups_ajax_handler' ) );
         // Done
         
@@ -2756,6 +2757,114 @@ class OAM_Ajax{
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
         $orderid = intval($_POST['orderid']);
+    }
+    
+    public function orthoney_group_recipient_list_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+    
+        global $wpdb;
+    
+        $draw = intval($_POST['draw']);
+        $start = intval($_POST['start']);
+        $length = intval($_POST['length']);
+        if( $start  == 0){
+            $length = intval($_POST['length']) -1;
+
+        }else{
+            $start = intval($_POST['start']) - 1;
+        }
+        $search_value = sanitize_text_field($_POST['search']['value']);
+    
+        $user_id = get_current_user_id();
+        $group_table = OAM_Helper::$group_table; 
+        $group_recipient_table = OAM_Helper::$group_recipient_table; 
+    
+        // Fetch groups
+        $groups = $wpdb->get_results(
+            $wpdb->prepare("SELECT * FROM $group_table WHERE user_id = %d AND visibility = %d", $user_id, 1)
+        );
+    
+        // Filter by search
+        $filtered = [];
+        if (!empty($search_value)) {
+            foreach ($groups as $group) {
+                if (stripos($group->name, $search_value) !== false) {
+                    $filtered[] = $group;
+                }
+            }
+        } else {
+            $filtered = $groups;
+        }
+    
+        $total_items = count($filtered);
+    
+        // Sort
+        $order_column_index = $_POST['order'][0]['column'];
+        $order_dir = $_POST['order'][0]['dir'];
+        $order_column_key = $_POST['columns'][$order_column_index]['data'];
+    
+        usort($filtered, function ($a, $b) use ($order_column_key, $order_dir) {
+            $valA = $a->{$order_column_key} ?? '';
+            $valB = $b->{$order_column_key} ?? '';
+            return $order_dir === 'asc' ? strnatcasecmp($valA, $valB) : strnatcasecmp($valB, $valA);
+        });
+    
+        $paged_data = array_slice($filtered, $start, $length);
+    
+        $data = [];
+        $final_data = [];
+        $sr = $start + 1;
+    
+        if ($total_items != 0) {
+
+            $recipient_list = $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT COUNT(DISTINCT ID) FROM $group_recipient_table WHERE visibility = %d AND user_id = %d",
+                    1, $user_id
+                )
+            );
+            
+            
+            if($start == 0){
+                $data = [[
+                    'id' => '—',
+                    'name' => esc_html('Unique Recipient List'),
+                    'recipient_count' => $recipient_list,
+                    'date' => esc_html('-'),
+                    'action' => "<a href='".esc_url(OAM_Helper::$customer_dashboard_link.'/groups/details/unique_recipients')."' class='far fa-eye'>"
+                ]];}
+
+            
+            foreach ($paged_data as $group) {
+                // ✅ Corrected COUNT query
+                $recipient_count = (int) $wpdb->get_var(
+                    $wpdb->prepare(
+                        "SELECT COUNT(*) FROM $group_recipient_table WHERE group_id = %d AND visibility = %d",
+                        $group->id, 1
+                    )
+                );
+    
+                $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($group->created));
+                $view_url = esc_url(CUSTOMER_DASHBOARD_LINK . "groups/details/" . $group->id);
+    
+                $data[] = [
+                    'id' => $sr++,
+                    'name' => esc_html($group->name),
+                    'recipient_count' => $recipient_count,
+                    'date' => esc_html($created_date),
+                    'action' => "<a href='$view_url' class='far fa-eye'></a><button data-groupid='".esc_html($group->id)."' data-groupname='".esc_html($group->name)."' data-tippy='Remove Recipients List' class='deleteGroupButton far fa-trash'></button>"
+                ];
+            }
+
+            
+        }
+    
+        wp_send_json([
+            'draw' => $draw,
+            'recordsTotal' => count($groups) > 10 ? count($groups) + 1 : count($groups) ,
+            'recordsFiltered' => $total_items > 10 ? $total_items + 1 : $total_items,
+            'data' => $data
+        ]);
     }
     
     public function orthoney_incomplete_order_process_ajax_handler() {
