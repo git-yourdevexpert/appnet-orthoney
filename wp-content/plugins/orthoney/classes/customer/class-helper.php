@@ -246,7 +246,7 @@ class OAM_Helper{
                 }
             }
     
-            $order['action'] = $resume_url . $editLink.'
+            $order['action'] = $resume_url . $editLink'
                 
                 <button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>
             ';
@@ -311,13 +311,12 @@ class OAM_Helper{
                 }
 
                 // Order status condition
-                if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] != "all") {
+                if ( !empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] != "all" ) {
                     $where_conditions[] = "orders.status = %s";
                     $where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
-                }else if($_REQUEST['selected_order_status'] == "all"){
-                    $where_conditions[] = "";
-                    $where_values[] = "";
-                } else {
+                }else if ($_REQUEST['selected_order_status'] == "all"){
+                    
+                }else {
                     $where_conditions[] = "orders.status != %s";
                     $where_values[] = 'wc-checkout-draft';
                 }

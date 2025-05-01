@@ -1989,7 +1989,7 @@ jQuery(document).ready(function ($) {
              customer:
                  <select id="select-customer" class="form-control" style="width: 250px;"><option value="">Select customer</option></select>
              </label >
-               <label style="margin-left: 10px; display:none">
+               <label style="margin-left: 10px;">
                Order status:
                 <select id="order_status" name="order_status" class="" tabindex="-1" aria-hidden="true">
                     <option value="all">All</option><option value="wc-processing">Processing</option>
