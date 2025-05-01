@@ -2058,7 +2058,7 @@ jQuery(document).ready(function ($) {
                     <option value="all">All</option><option value="wc-processing">Processing</option>
 				    <option value="wc-pending">Pending payment</option><option value="wc-processing">Processing</option><option value="wc-on-hold">On hold</option><option value="wc-completed">Completed</option><option value="wc-cancelled">Cancelled</option><option value="wc-refunded">Refunded</option><option value="wc-failed">Failed</option><option value="wc-checkout-draft">Draft</option></select>
              </label>
-                <label style="margin-left: 10px; display:none">
+                <label style="margin-left: 10px;">
                     Ship Type:
                     <select id="custom-order-type-filter" class="custom-select form-control">
                         <option value="all">All Ship Types</option>
