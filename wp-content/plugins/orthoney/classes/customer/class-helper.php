@@ -1541,15 +1541,47 @@ class OAM_Helper{
         global $wpdb;
         $user_id = get_current_user_id();
         $order_process_table = OAM_Helper::$order_process_table;
+        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
     
+        // Define order column and direction
+        $order_column = 'id'; // or 'created_at', 'updated_at' etc. if it exists in your table
+        $order_dir = 'DESC';
     
-        // Fetch limited orders
-        $query = $wpdb->prepare(
-            "SELECT * FROM {$order_process_table} WHERE user_id = %d AND step = %d AND order_id != %d AND order_type = %s ORDER BY created DESC LIMIT %d",
-            $user_id,5,0, 'multi-recipient-order',$limit
+        // Base WHERE clause
+        $where = "WHERE user_id = %d";
+        $params = [$user_id];
+    
+        // Get failed recipient pids
+        $failed_rows = $wpdb->get_col(
+            $wpdb->prepare(
+                "SELECT DISTINCT pid FROM $order_process_recipient_table WHERE verified = %d AND user_id = %d",
+                0, $user_id
+            )
         );
-        $results = $wpdb->get_results($query);
-
+    
+        if (!empty($failed_rows)) {
+            $pid_placeholders = implode(',', array_fill(0, count($failed_rows), '%d'));
+            $where .= " AND step = 5 AND order_id != 0 AND order_type = 'multi-recipient-order' AND id IN ($pid_placeholders)";
+            $params = array_merge($params, $failed_rows);
+        } else {
+            // No matching recipients
+            echo "<p>No failed recipients found.</p>";
+            return;
+        }
+    
+        // Pagination (start from 0)
+        $params[] = 0;
+        $params[] = (int)$limit;
+    
+        // Final query
+        $query = "
+            SELECT * FROM $order_process_table
+            $where
+            ORDER BY $order_column $order_dir
+            LIMIT %d, %d
+        ";
+    
+        $results = $wpdb->get_results($wpdb->prepare($query, ...$params));
         
         $html = '<div class="recipient-lists-block custom-table">
             <div class="row-block">
