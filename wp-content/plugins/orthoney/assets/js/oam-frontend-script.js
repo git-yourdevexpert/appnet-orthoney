@@ -2222,7 +2222,7 @@ jQuery(document).ready(function ($) {
                   max: 200,
                   values: [ 1, 200 ],
                   slide: function( event, ui ) {
-                    $( "#quantity_range" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
+                    $( "#quantity_range" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
                    // table.draw(); // Redraw DataTable with new filter
                   },change: function( event, ui ) {
                     table.draw(); // ✅ fires once after sliding stops
