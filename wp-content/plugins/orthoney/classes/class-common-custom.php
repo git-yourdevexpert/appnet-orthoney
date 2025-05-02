@@ -25,11 +25,47 @@ class OAM_COMMON_Custom {
         add_filter( 'user_registration_reset_password_redirect', array($this, 'reset_password_redirection'), 10, 2);
         add_filter( 'user_registration_modify_field_validation_response',  array($this, 'custom_user_registration_email_exists_message'), 10, 2 );
 
+        add_filter( 'woocommerce_registration_auth_new_customer', '__return_false' );
+        add_action( 'woocommerce_created_customer', array($this,'custom_redirect_after_registration_based_on_role' ));
+        add_shortcode( 'registration_success_msg', array($this, 'show_success_message_on_login') );
+
+
     }
 
-    public static function init() {
-        // Add any initialization logic here
+    public static function init() {}
+    
+    public function custom_redirect_after_registration_based_on_role( $customer_id ) {
+        if ( is_admin() || wp_doing_ajax() ) return;
+
+        $user = get_user_by( 'ID', $customer_id );
+
+        if ( isset( $_POST['register_affiliate'] ) && !empty( $_POST['register_affiliate'] ) ) {
+            // Redirect to organization login page if the field is present in the POST data
+            $redirect_url = home_url( '/organization-login/' );
+        } else {
+            // Else, redirect to the default login page
+            $redirect_url = home_url( '/login/' );
+        }
+
+        // Add a query parameter to show a success message
+        $redirect_url = add_query_arg( 'registration', 'success', $redirect_url );
+
+        wp_safe_redirect( $redirect_url );
+        exit;
     }
+
+
+    public function show_success_message_on_login() {
+        ob_start();
+        if ( isset( $_GET['registration'] ) && $_GET['registration'] == 'success' ) {
+            ?>
+            <div class="woocommerce-message" role="alert" tabindex="-1">
+            Your account was created successfully. Your login details have been sent to your email address.	</div>
+            <?php
+        }
+        return ob_get_clean();
+    }
+   
 
     public static function check_order_editable($order_date) {
         $editable = false;
