@@ -983,6 +983,7 @@ document.addEventListener('click', function (event) {
                         form.querySelector('#quantity').value = quantity > 0 ? quantity : 1;
                         form.querySelector('#greeting').value     = greeting;
                         form.querySelector('button[type="submit"]').innerHTML = 'Edit Recipient Details';
+                        form.querySelector('.textarea-div .char-counter span').innerHTML = 250 - form.querySelector('#greeting').value.length;
                     }
                     
                     if (event.target.classList.contains('viewRecipient')) {
