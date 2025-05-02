@@ -1614,10 +1614,6 @@ class OAM_Helper{
             $pid_placeholders = implode(',', array_fill(0, count($failed_rows), '%d'));
             $where .= " AND step = 5 AND order_id != 0 AND order_type = 'multi-recipient-order' AND id IN ($pid_placeholders)";
             $params = array_merge($params, $failed_rows);
-        } else {
-            // No matching recipients
-            echo "<p>No failed recipients found.</p>";
-            return;
         }
     
         // Pagination (start from 0)
@@ -1634,11 +1630,12 @@ class OAM_Helper{
     
         $results = $wpdb->get_results($wpdb->prepare($query, ...$params));
         
+       
         $html = '<div class="recipient-lists-block custom-table">
             <div class="row-block">
                 <h4>'.esc_html( $title ).'</h4>
                 <div class="see-all">
-                    '.(($link) ? '<a class="w-btn us-btn-style_1" href="'.$link.'">See all</a> ': '').'
+                    '.(($link && !empty($results)) ? '<a class="w-btn us-btn-style_1" href="'.$link.'">See all</a> ': '').'
                 </div>
             </div>
             <table>
@@ -1672,7 +1669,6 @@ class OAM_Helper{
         
         return $html;
     }
-
     public static function groups_dashboard_widget($title = "", $limit = 3, $link = '') {
         global $wpdb;
         $user_id = get_current_user_id();

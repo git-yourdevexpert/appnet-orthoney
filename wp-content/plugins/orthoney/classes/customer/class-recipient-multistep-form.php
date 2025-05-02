@@ -555,6 +555,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     $result = json_decode($data, true);
 
                     if (!empty($result) && $result['success'] == 1) {
+                        if($result['data']['totalCount'] === 1){
+                            echo "<style>.deleteRecipient {display:none !important}</style>";
+                        }
                         echo '<div class="heading-title"><div>';
                         echo '<div class="group-name">Recipient List Name: <strong>' . $group_name . '</strong>';
                         echo '<button class="editProcessName far fa-edit" data-tippy="Edit Recipient List Name" data-name="' . $group_name . '"></button></div>';
@@ -574,18 +577,19 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         self::render_recipient_block('Unverified Addresses', 'unverified-block', 'unverifiedRecord', $result['data']['unverifiedRecordCount'], $result['data']['totalCount'], $result['data']['unverifiedData']);
                         self::render_recipient_block('Verified Addresses', 'verified-block', 'verifyRecord', $result['data']['verifiedRecordCount'], $result['data']['totalCount'], $result['data']['verifiedData']);
                         echo '</div>';
-
-                        echo '<div class="two-cta-block">';
-                        echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step">Proceed To CheckOut</button>';
-                        echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
-                        echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';
-                        if ($result['data']['unverifiedRecordCount'] > 0) {
-                            echo '<button id="checkout_proceed_with_only_unverified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Continue With Unverified Addresses</button>';
+                        if($result['data']['totalCount'] != 0){
+                            echo '<div class="two-cta-block">';
+                            echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step">Proceed To CheckOut</button>';
+                            echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
+                            echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';
+                            if ($result['data']['unverifiedRecordCount'] > 0) {
+                                echo '<button id="checkout_proceed_with_only_unverified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Continue With Unverified Addresses</button>';
+                            }
+                            if ($result['data']['verifiedRecordCount'] > 0) {
+                                echo '<button id="checkout_proceed_with_only_verified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Proceed With Only Verified Addresses</button>';
+                            }
+                            echo '</div>';
                         }
-                        if ($result['data']['verifiedRecordCount'] > 0) {
-                            echo '<button id="checkout_proceed_with_only_verified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Proceed With Only Verified Addresses</button>';
-                        }
-                        echo '</div>';
                     }
                 }
             }
