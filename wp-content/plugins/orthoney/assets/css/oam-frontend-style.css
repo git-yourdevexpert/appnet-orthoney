@@ -108,6 +108,7 @@
 }
 .order-process-block .step {
   margin-top: 0;
+  display: none;
 }
 .order-block-wrap .animate-bee {
   right: -30px;
