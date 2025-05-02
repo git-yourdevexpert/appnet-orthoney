@@ -1,3 +1,16 @@
+function setCookie(name, value, days) {
+    const domain = window.location.hostname;
+    let cookie = `${name}=${value}; path=/; domain=${domain}; max-age=${days * 86400}`;
+    
+    // Check if the cookie exists, if so update it
+    if (document.cookie.split('; ').find(row => row.startsWith(name))) {
+        // Cookie exists, update it
+        document.cookie = cookie;
+    } else {
+        // Cookie does not exist, set it
+        document.cookie = cookie;
+    }
+}
 
 function VerifyRecipientsDatatable(){
     ["failCSVData", "successCSVData", "newCSVData"].forEach((id) => {

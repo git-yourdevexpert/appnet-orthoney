@@ -335,9 +335,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const dataToken = selectedOption.getAttribute('data-token');
             
             if (dataToken) {
-              const domain = window.location.hostname; // Get the current domain
-              document.cookie = `yith_wcaf_referral_token=${dataToken}; path=/; domain=${domain}; max-age=${1 * 86400}`;
-              document.cookie = `yith_wcaf_referral_history=${dataToken}; path=/; domain=${domain}; max-age=${1 * 86400}`;
+              setCookie('yith_wcaf_referral_token', dataToken, 1);
+              setCookie('yith_wcaf_referral_history', dataToken, 1);
             }
           
           }
