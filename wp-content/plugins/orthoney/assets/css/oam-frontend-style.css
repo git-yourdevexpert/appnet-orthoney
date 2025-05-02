@@ -3092,6 +3092,15 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   transition: all .3s;
   text-transform: capitalize;
 }
+.register-form .register .error-msg {
+  font-size: 14px !important;
+  margin: 5px 0 0 !important;
+  color: #ff030b;
+  font-family: 'Open Sans';
+  display: inline-block;
+  line-height: 19px;
+  letter-spacing: .18px;
+}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
