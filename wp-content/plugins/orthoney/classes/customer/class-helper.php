@@ -311,7 +311,9 @@ class OAM_Helper{
                     // Keep only:
                     // - orders that do not have the meta key (meta.meta_value IS NULL)
                     // - or have the meta key but no matching row in recipient table (ro.id IS NULL)
-                    $where_conditions[] = "(meta.meta_value IS NULL OR ro.id IS NULL)";
+                   // $where_conditions[] = "(meta.meta_value IS NULL OR ro.id IS NULL)";
+                    $where_conditions[] = "((meta.meta_value IS NULL) OR (ro.id IS NULL))";
+
 
                 }
 
@@ -331,22 +333,19 @@ class OAM_Helper{
                     $where_conditions[] = "orders.customer_id = %d";
                     $where_values[] = intval($_REQUEST['selected_customer_id']);
                 }
-
                 if (
                     isset($_REQUEST['selected_min_qty'], $_REQUEST['selected_max_qty']) &&
                     is_numeric($_REQUEST['selected_min_qty']) &&
                     is_numeric($_REQUEST['selected_max_qty'])
                 ) {
-                    $where_conditions[] = "
-                        orders.id IN (
-                            SELECT oi_sub.order_id
-                            FROM {$wpdb->prefix}woocommerce_order_items AS oi_sub
-                            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS oim_sub
-                                ON oim_sub.order_item_id = oi_sub.order_item_id AND oim_sub.meta_key = '_qty'
-                            GROUP BY oi_sub.order_id
-                            HAVING SUM(CAST(oim_sub.meta_value AS UNSIGNED)) BETWEEN %d AND %d
-                        )
-                    ";
+                    $where_conditions[] = "(orders.id IN (
+                        SELECT oi_sub.order_id
+                        FROM {$wpdb->prefix}woocommerce_order_items AS oi_sub
+                        LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS oim_sub
+                            ON oim_sub.order_item_id = oi_sub.order_item_id AND oim_sub.meta_key = '_qty'
+                        GROUP BY oi_sub.order_id
+                        HAVING SUM(CAST(oim_sub.meta_value AS UNSIGNED)) BETWEEN %d AND %d
+                    ))";
                     $where_values[] = intval($_REQUEST['selected_min_qty']);
                     $where_values[] = intval($_REQUEST['selected_max_qty']);
                 }
@@ -366,7 +365,7 @@ class OAM_Helper{
                 $where_values[] = $offset;
 
 
-               echo  $sql = $wpdb->prepare(
+                 $sql = $wpdb->prepare(
                     "SELECT DISTINCT orders.* FROM $orders_table AS orders
                     $join
                     WHERE " . implode(' AND ', $where_conditions) . "
