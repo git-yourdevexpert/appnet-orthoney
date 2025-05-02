@@ -25,6 +25,32 @@ function custom_disable_shipping_fields_validation( $fields ) {
     return $fields;
 }
 
+// add_action( 'init', 'createDB' );
+// function createDB(){
+//     global $wpdb;
+
+// $tables = [
+//     'wc_order_relation_table' => $wpdb->prefix . 'oh_wc_order_relation',
+// ];
+
+// $sql = "CREATE TABLE {$tables['wc_order_relation_table']} (
+//     id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+//             user_id BIGINT(20) UNSIGNED NOT NULL,
+//             wc_order_id BIGINT(20) UNSIGNED NOT NULL,
+//             order_id BIGINT(20) UNSIGNED NOT NULL,
+//             quantity BIGINT(20) UNSIGNED NOT NULL,
+//             order_type VARCHAR(255) NULL,
+//             affiliate_code VARCHAR(255) NULL,
+//             affiliate_user_id BIGINT(20) DEFAULT 0,
+//             created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+//             PRIMARY KEY (id)
+// ) ENGINE=InnoDB DEFAULT CHARSET={$wpdb->charset} COLLATE={$wpdb->collate};";
+
+// require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+// dbDelta($sql);
+// }
+
+
 
 // Ensure WooCommerce is active before loading the plugin
 if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {

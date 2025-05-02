@@ -23,6 +23,7 @@ function orthoney_create_custom_tables() {
 
     // Define table names
     $tables = [
+        'wc_order_relation_table' => $wpdb->prefix . 'oh_wc_order_relation',
         'recipient_table' => $wpdb->prefix . 'oh_group_recipient',
         'group_table' => $wpdb->prefix . 'oh_group',
         'order_process_recipient_table' => $wpdb->prefix . 'oh_order_process_recipient',
@@ -81,6 +82,19 @@ function orthoney_create_custom_tables() {
 
     // SQL queries for table creation
     $sql_queries = [
+        'wc_order_relation_table' => "CREATE TABLE {$tables['wc_order_relation_table']} (
+            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            user_id BIGINT(20) UNSIGNED NOT NULL,
+            wc_order_id BIGINT(20) UNSIGNED NOT NULL,
+            order_id BIGINT(20) UNSIGNED NOT NULL,
+            quantity BIGINT(20) UNSIGNED NOT NULL,
+            order_type VARCHAR(255) NULL,
+            affiliate_code VARCHAR(255) NULL,
+            affiliate_user_id BIGINT(20) DEFAULT 0,
+            created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id)
+        ) ENGINE=InnoDB {$wpdb->get_charset_collate()};",
+
         'recipient_table' => "CREATE TABLE {$tables['recipient_table']} (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
             user_id BIGINT(20) UNSIGNED NOT NULL,
