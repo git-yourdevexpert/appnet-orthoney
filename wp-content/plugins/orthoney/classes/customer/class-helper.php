@@ -255,7 +255,7 @@ class OAM_Helper{
     
         return $filtered_orders;
     }
-    
+
     public static  function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
         global $wpdb;
 
@@ -366,7 +366,7 @@ class OAM_Helper{
                 $where_values[] = $offset;
 
 
-                 $sql = $wpdb->prepare(
+               echo  $sql = $wpdb->prepare(
                     "SELECT DISTINCT orders.* FROM $orders_table AS orders
                     $join
                     WHERE " . implode(' AND ', $where_conditions) . "
