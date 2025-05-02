@@ -2048,6 +2048,9 @@ jQuery(document).ready(function ($) {
                 d.selected_customer_id = $('#select-customer').val(); // 
                 d.selected_order_status = $('#order_status').val(); // 
                 d.selected_year = $('#select-year').val(); // 
+                const qtySlider = $('#slider-range').slider("values");
+                d.selected_min_qty = qtySlider[0];
+                d.selected_max_qty = qtySlider[1];
 
             },
             beforeSend: function () {
@@ -2110,6 +2113,11 @@ jQuery(document).ready(function ($) {
                     <option value="">Select year</option>
                 </select>
             </label>
+             <label style="margin-left: 20px;">
+                <label for="amount">Quantity Range:</label>
+                <input type="text" id="quantity_range" readonly="" style="border:0; color:#f6931f; font-weight:bold;">
+<div id="slider-range"></div>
+
               <label style="margin-left: 10px; display:none" >
              affiliate :
                  <select id="select-affiliate" class="form-control" style="width: 250px;"><option value="">Select affiliate </option></select>
@@ -2206,6 +2214,24 @@ jQuery(document).ready(function ($) {
                     addedYears.add(year);
                 }
             }
+
+            $( function() {
+                $( "#slider-range" ).slider({
+                  range: true,
+                  min: 1,
+                  max: 200,
+                  values: [ 1, 200 ],
+                  slide: function( event, ui ) {
+                    $( "#quantity_range" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
+                   // table.draw(); // Redraw DataTable with new filter
+                  },change: function( event, ui ) {
+                    table.draw(); // ✅ fires once after sliding stops
+                  }
+                  
+                });
+                $( "#quantity_range" ).val( "$" + $( "#slider-range" ).slider( "values", 0 ) +
+                  " - $" + $( "#slider-range" ).slider( "values", 1 ) );
+              } );
 
             $('#select-customer').select2({
                 placeholder: 'Search',

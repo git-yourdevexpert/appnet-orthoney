@@ -25,7 +25,8 @@ class OAM_Scripts
             ['tippy-core', 'libs/tippy/tippy-bundle.umd.min.js', ['tippy-js']],
             ['sweetalert2', 'libs/sweetalert/sweetalert2.js', ['jquery']],
             ['lity-js', 'libs/lity/lity.min.js', ['jquery'], '2.4.1'],
-            ['select2-js', 'libs/select2/select2.min.js', ['jquery'], '2.4.1']
+            ['select2-js', 'libs/select2/select2.min.js', ['jquery'], '2.4.1'],
+            ['jqueryui-js', 'libs/jqueryui/jquery-ui.js', ['jquery'], '1.14.1']
         ];
     
         $styles = [
@@ -33,7 +34,8 @@ class OAM_Scripts
             ['tippy-css', 'libs/tippy/light.css'],
             ['sweetalert2-css', 'libs/sweetalert/sweetalert2.min.css'],
             ['lity-css', 'libs/lity/lity.min.css', [], '2.4.1'],
-            ['select2-css', 'libs/select2/select2.min.css', [], '2.4.1']
+            ['select2-css', 'libs/select2/select2.min.css', [], '2.4.1'],
+            ['jquery-ui-css', 'libs/jqueryui/jquery-ui.css', [], '1.14.1']
         ];
         
         foreach ($libs as $lib) {
