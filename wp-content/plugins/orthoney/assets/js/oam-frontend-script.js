@@ -1118,7 +1118,7 @@ document.addEventListener('click', function (event) {
         
 
         Swal.fire({
-            title: 'Are you sure you want to remove '+ count + ' recipients who have already received a jar this year?',
+            title: 'Are you sure you want to remove '+ count + ' recipients who have already received a jar this year from the list?',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
