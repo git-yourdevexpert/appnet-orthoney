@@ -357,6 +357,7 @@ body .select2-container--default .select2-results__option--highlighted.select2-r
 .greeting-box .bg-card {
   max-width: 468px;
   margin: 0 auto;
+  width: 100%;
 }
 .greeting-box .flex-column {
   margin: 0 0 20px;
@@ -3043,6 +3044,7 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 .orthoney-datatable-warraper .dataTables_wrapper input[type="checkbox"] {
   height: 20px !important;
   min-height: 20px !important;
+  position: relative;
 }
 .orthoney-datatable-warraper .dataTables_wrapper input[type="checkbox"]:before {
   top: 0;
@@ -3071,6 +3073,9 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 .register-form  .register .form-row{
   margin-bottom: 24px !important;
 }
+.register-form  .register .form-row .checkbox {
+  margin-bottom: 0 !important;
+}
 .register-form .register .form-row input {
   color: #383838 !important;
   font-size: 14px;
@@ -3078,7 +3083,7 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 .register-form .register input[name="register"] {
   border: 0;
   padding: 10px 24px;
-  color: #fff;
+  color: #fff !important;
   font-size: 15px;
   font-weight: 400;
   line-height: 24px;
