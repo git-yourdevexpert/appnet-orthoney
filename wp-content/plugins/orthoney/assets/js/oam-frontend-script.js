@@ -2220,8 +2220,8 @@ jQuery(document).ready(function ($) {
                 $( "#slider-range" ).slider({
                   range: true,
                   min: 1,
-                  max: 200,
-                  values: [ 1, 200 ],
+                  max: 1000,
+                  values: [ 1, 1000 ],
                   slide: function( event, ui ) {
                     $( "#quantity_range" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
                    // table.draw(); // Redraw DataTable with new filter
