@@ -298,20 +298,6 @@ class OAM_Helper{
                     
                 }
 
-                // Single address: orders that DO NOT HAVE the meta key
-                // if ($_REQUEST['custom_order_type'] === "single_address") {
-                //     // Join meta table to get the _orthoney_OrderID
-                //     $join .= "
-                //         INNER JOIN $order_meta_table AS meta
-                //             ON meta.order_id = orders.id AND meta.meta_key = %s
-                //         LEFT JOIN $recipient_ordertable AS ro
-                //             ON ro.order_id = meta.meta_value
-                //     ";
-                //     $where_values[] = '_orthoney_OrderID';
-                //     // Keep only rows with NO matching recipient_order
-                //     $where_conditions[] = "ro.id IS NULL";
-                // }
-
                 if ($_REQUEST['custom_order_type'] === "single_address") {
                     // LEFT JOIN to include orders that may not have _orthoney_OrderID at all
                     $join .= "
@@ -336,8 +322,8 @@ class OAM_Helper{
                 }else if ($_REQUEST['selected_order_status'] == "all"){
                     
                 }else {
-                    $where_conditions[] = "orders.status != %s";
-                    $where_values[] = 'wc-checkout-draft';
+                    // $where_conditions[] = "orders.status != %s";
+                    // $where_values[] = 'wc-checkout-draft';
                 }
 
                 // Customer ID condition
@@ -346,10 +332,31 @@ class OAM_Helper{
                     $where_values[] = intval($_REQUEST['selected_customer_id']);
                 }
 
+                if (
+                    isset($_REQUEST['selected_min_qty'], $_REQUEST['selected_max_qty']) &&
+                    is_numeric($_REQUEST['selected_min_qty']) &&
+                    is_numeric($_REQUEST['selected_max_qty'])
+                ) {
+                    $where_conditions[] = "
+                        orders.id IN (
+                            SELECT oi_sub.order_id
+                            FROM {$wpdb->prefix}woocommerce_order_items AS oi_sub
+                            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS oim_sub
+                                ON oim_sub.order_item_id = oi_sub.order_item_id AND oim_sub.meta_key = '_qty'
+                            GROUP BY oi_sub.order_id
+                            HAVING SUM(CAST(oim_sub.meta_value AS UNSIGNED)) BETWEEN %d AND %d
+                        )
+                    ";
+                    $where_values[] = intval($_REQUEST['selected_min_qty']);
+                    $where_values[] = intval($_REQUEST['selected_max_qty']);
+                }
+                
+
+
                 $where_conditions[] = "orders.type = %s";
                 $where_values[] = 'shop_order';
 
-                $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
+                $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) :  date("Y");
 
                 $where_conditions[] = "YEAR(orders.date_created_gmt) = %d";
                 $where_values[] = $year;
@@ -358,15 +365,6 @@ class OAM_Helper{
                 $where_values[] = $limit;
                 $where_values[] = $offset;
 
-
-
-                // $sql = $wpdb->prepare(
-                //     "SELECT DISTINCT orders.* FROM $orders_table AS orders
-                //     WHERE " . implode(' AND ', $where_conditions) . "
-                //     ORDER BY orders.date_updated_gmt DESC
-                //     LIMIT %d OFFSET %d",
-                //     ...$where_values
-                // );
 
                  $sql = $wpdb->prepare(
                     "SELECT DISTINCT orders.* FROM $orders_table AS orders
@@ -450,7 +448,6 @@ class OAM_Helper{
 
         return $filtered_orders;
     }
-
 
 
     // Helper to build row array for a main or sub order

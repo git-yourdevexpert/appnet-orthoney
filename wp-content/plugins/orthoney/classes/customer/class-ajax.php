@@ -2372,8 +2372,9 @@ class OAM_Ajax{
 
         $jar_table = $wpdb->prefix . 'oh_recipient_order';
         $order_meta_table = $wpdb->prefix . 'wc_orders_meta';
+        $recipient_ordertable = $wpdb->prefix . 'oh_recipient_order';
 
-
+         $table_order_type;
         if ($table_order_type === 'main_order') {
 
         $filtered_orders = OAM_Helper::get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, false,  $start, $length, $selected_customer_id);
@@ -2385,27 +2386,50 @@ class OAM_Ajax{
                 
                 // Admin sees all orders
                 if ($_REQUEST['custom_order_type'] === "multiple_address") {
-                    $count_where_conditions .= "EXISTS (
-                        SELECT 1 FROM $order_meta_table AS meta
-                        WHERE meta.order_id = orders.id
-                          AND meta.meta_key = %s
-                    )";
-                    $count_where_values[] = '_orthoney_OrderID';
-                } elseif ($_REQUEST['custom_order_type'] === "single_address") {
-
-                    $count_where_conditions .= "EXISTS (
-                        SELECT 1
+              
+                    $join .= "INNER JOIN (
+                        SELECT meta.order_id
                         FROM $order_meta_table AS meta
-                        WHERE meta.order_id = orders.id
-                        AND meta.meta_key = %s
-                    )";
-
-                    $count_where_conditions .= "NOT EXISTS (
-                        SELECT 1 FROM $order_meta_table AS meta
-                        WHERE meta.order_id = orders.id
-                          AND meta.meta_key = %s
-                    )";
+                        INNER JOIN $recipient_ordertable AS ro
+                            ON ro.order_id = meta.meta_value
+                        WHERE meta.meta_key = %s
+                        GROUP BY meta.order_id
+                        HAVING COUNT(ro.id) > 1
+                    ) AS multi_orders ON multi_orders.order_id = orders.id";
                     $count_where_values[] = '_orthoney_OrderID';
+
+
+                } elseif ($_REQUEST['custom_order_type'] === "single_address") {
+                  
+                    $join .= "
+                    LEFT JOIN $order_meta_table AS meta
+                        ON meta.order_id = orders.id AND meta.meta_key = %s
+                    LEFT JOIN $recipient_ordertable AS ro
+                        ON ro.order_id = meta.meta_value
+                ";
+               // $where_values[] = '_orthoney_OrderID';
+                $count_where_values[] = '_orthoney_OrderID';
+            
+
+                $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "meta.meta_value IS NULL OR ro.id IS NULL";
+
+                }
+                
+                // Order status condition
+                if (!empty($_REQUEST['selected_order_status']) &&  $_REQUEST['selected_order_status'] != "all" ) {
+                    $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status = %s";
+                    $count_where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
+                }else if ($_REQUEST['selected_order_status'] == "all"){
+                    
+                } else {
+                    // $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status != %s";
+                    // $count_where_values[] = 'wc-checkout-draft'; // Default exclusion if no status is selected
+                }
+                
+                // Customer ID condition
+                if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
+                    $count_where_conditions .= " AND customer_id = %d";
+                    $count_where_values[] = intval($_REQUEST['selected_customer_id']);
                 }
 
                 if (
@@ -2427,42 +2451,20 @@ class OAM_Ajax{
                     $count_where_values[] = intval($_REQUEST['selected_max_qty']);
                 }
                 
-                
-                // Order status condition
-                if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] != "all") {
-                    $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status = %s";
-                    $count_where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
-                }elseif($_REQUEST['selected_order_status'] == "all"){
 
-                } else {
-                    // $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status != %s";
-                    // $count_where_values[] = 'wc-checkout-draft'; // Default exclusion if no status is selected
-                }
-                
-                // Order type condition
-                // $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "type = %s";
-                // $count_where_values[] = 'shop_order';
-                
-                // Customer ID condition
-                if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
-                    $count_where_conditions .= " AND customer_id = %d";
-                    $count_where_values[] = intval($_REQUEST['selected_customer_id']);
-                }
 
                 $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
                 $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "YEAR(orders.date_created_gmt) = %d";
 
                 $count_where_values[] = $year;
-                
 
                 
-                $count_sql = $wpdb->prepare(
-                    "SELECT COUNT(id) FROM {$orders_table} AS orders
+                 $count_sql = $wpdb->prepare(
+                    "SELECT COUNT(orders.id) FROM {$orders_table} AS orders $join
                      WHERE $count_where_conditions",
                     ...$count_where_values
                 );
-
-               // echo $count_sql;
+                //echo $count_sql;
                 
                 $total_orders = $wpdb->get_var($count_sql);
                // echo $count_sql;
