@@ -355,7 +355,7 @@ body .select2-container--default .select2-results__option--highlighted.select2-r
   width: 100%;
 }
 .greeting-box .bg-card {
-  max-width: 470px;
+  max-width: 468px;
   margin: 0 auto;
 }
 .greeting-box .flex-column {
@@ -2520,6 +2520,7 @@ body .woocommerce .order-process-block .button {
   margin: 0;
   color: #260340;
 }
+.button-icon-underline,
 .recipient-lists-block table .w-btn {
   background-color: transparent;
   border: none;
@@ -2564,14 +2565,17 @@ body .woocommerce .order-process-block .button {
 .in-active {
   background-color: #dd6161;
 }
+.button-icon-underline,
 .dashboard-block .recipient-lists-block table .w-btn {
   padding: 0;
   color: #333;
   text-align: left;
 }
+.button-icon-underline,
 .dashboard-block .recipient-lists-block table .w-btn:hover {
   color: var(--color-content-primary);
 }
+.button-icon-underline,
 .dashboard-block .recipient-lists-block table .w-btn:before {
   display: none;
 }
@@ -2958,6 +2962,12 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   cursor: pointer;
   background: var(--color-content-primary);
 }
+.orthoney-datatable-warraper .dataTables_wrapper .paging_simple_numbers .paginate_button.current{
+  background-color: #572C7C;
+}
+.orthoney-datatable-warraper .dataTables_wrapper .paging_simple_numbers .paginate_button:hover{
+  color:#fff !important;
+}
 .orthoney-datatable-warraper .dataTables_wrapper .paging_simple_numbers .paginate_button.disabled{
   cursor: inherit !important;
   background: #809197 !important;
@@ -2997,7 +3007,7 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 
 .register-form .ur-icon:before {
   position: absolute;
-  top: 31px;
+  top: 42px;
   left: 10px;
   color: #000;
   z-index: 1;
@@ -3024,8 +3034,59 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 #viewAllRecipientsPopupCheckout .popup-show .table-wrapper{
   max-height: 550px !important;
   overflow-y: auto;
-}
 
+}
+#viewAllRecipientsPopupCheckout .popup-show .table-wrapper .dataTables_wrapper {
+  width: 97%;
+  margin: 0 auto;
+}
+.orthoney-datatable-warraper .dataTables_wrapper input[type="checkbox"] {
+  height: 20px !important;
+  min-height: 20px !important;
+}
+.orthoney-datatable-warraper .dataTables_wrapper input[type="checkbox"]:before {
+  top: 0;
+  position: absolute;
+  left: 0;
+  height: 100%;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  right: 0;
+}
+.order-process-block label[for="multiple_address"] {
+  margin: 0 !important;
+}
+.wp-block-woocommerce-checkout.is-loading{
+  max-width: 1440px;
+  background: transparent !important;
+}
+.register-form .register label {
+  margin-bottom: 12px !important;
+  font-size: 15px !important;
+  color: #222 !important;
+  line-height: 19px;
+}
+.register-form  .register .form-row{
+  margin-bottom: 24px !important;
+}
+.register-form .register .form-row input {
+  color: #383838 !important;
+  font-size: 14px;
+}
+.register-form .register input[name="register"] {
+  border: 0;
+  padding: 10px 24px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: .15px;
+  margin-right: 0;
+  transition: all .3s;
+  text-transform: capitalize;
+}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
@@ -3636,5 +3697,10 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 @media (max-width: 319px) {
   .order-process-block .tab-selections .step-nav-item {
     grid-column: span 12;
+  }
+}
+@media(min-width: 676px){
+  .wp-block-woocommerce-checkout {
+      margin-top: -6px;
   }
 }
