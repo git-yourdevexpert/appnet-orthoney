@@ -2117,7 +2117,7 @@ jQuery(document).ready(function ($) {
                 <label for="amount">Quantity Range:</label>
                 <input type="text" id="quantity_range" readonly="" style="border:0; color:#f6931f; font-weight:bold;">
 <div id="slider-range"></div>
-
+ </label>
               <label style="margin-left: 10px; display:none" >
              affiliate :
                  <select id="select-affiliate" class="form-control" style="width: 250px;"><option value="">Select affiliate </option></select>
