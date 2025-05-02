@@ -2407,6 +2407,26 @@ class OAM_Ajax{
                     )";
                     $count_where_values[] = '_orthoney_OrderID';
                 }
+
+                if (
+                    isset($_REQUEST['selected_min_qty'], $_REQUEST['selected_max_qty']) &&
+                    is_numeric($_REQUEST['selected_min_qty']) &&
+                    is_numeric($_REQUEST['selected_max_qty'])
+                ) {
+                    $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "
+                        orders.id IN (
+                            SELECT oi_sub.order_id
+                            FROM {$wpdb->prefix}woocommerce_order_items AS oi_sub
+                            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS oim_sub
+                                ON oim_sub.order_item_id = oi_sub.order_item_id AND oim_sub.meta_key = '_qty'
+                            GROUP BY oi_sub.order_id
+                            HAVING SUM(CAST(oim_sub.meta_value AS UNSIGNED)) BETWEEN %d AND %d
+                        )
+                    ";
+                    $count_where_values[] = intval($_REQUEST['selected_min_qty']);
+                    $count_where_values[] = intval($_REQUEST['selected_max_qty']);
+                }
+                
                 
                 // Order status condition
                 if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] != "all") {
@@ -2415,8 +2435,8 @@ class OAM_Ajax{
                 }elseif($_REQUEST['selected_order_status'] == "all"){
 
                 } else {
-                    $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status != %s";
-                    $count_where_values[] = 'wc-checkout-draft'; // Default exclusion if no status is selected
+                    // $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "status != %s";
+                    // $count_where_values[] = 'wc-checkout-draft'; // Default exclusion if no status is selected
                 }
                 
                 // Order type condition
@@ -2430,7 +2450,8 @@ class OAM_Ajax{
                 }
 
                 $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
-                $count_where_conditions .= " AND YEAR(orders.date_created_gmt) = %d";
+                $count_where_conditions .= (empty($count_where_conditions) ? '' : ' AND ') . "YEAR(orders.date_created_gmt) = %d";
+
                 $count_where_values[] = $year;
                 
 
