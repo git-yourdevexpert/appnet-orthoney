@@ -261,8 +261,10 @@ class OAM_Helper{
 
         $orders_table = $wpdb->prefix . 'wc_orders';
         $order_meta_table = $wpdb->prefix . 'wc_orders_meta';
-
         $recipient_ordertable = $wpdb->prefix . 'oh_recipient_order';
+
+        $order_relation = $wpdb->prefix . 'oh_wc_order_relation';
+
 
     
         $filtered_orders = [];
@@ -277,101 +279,70 @@ class OAM_Helper{
 
             // If no cached data, build the query
             if (current_user_can('administrator')) {
+                $orders_table = $wpdb->prefix . 'wc_orders';
+                $order_relation = $wpdb->prefix . 'oh_wc_order_relation';
+                
                 $where_conditions = [];
                 $where_values = [];
                 $join = "";
-                // Multiple address: orders that HAVE the meta key
-                if ($_REQUEST['custom_order_type'] === "multiple_address") {
-                  
-
-                    $join .= "INNER JOIN (
-                        SELECT meta.order_id
-                        FROM $order_meta_table AS meta
-                        INNER JOIN $recipient_ordertable AS ro
-                            ON ro.order_id = meta.meta_value
-                        WHERE meta.meta_key = %s
-                        GROUP BY meta.order_id
-                        HAVING COUNT(ro.id) > 1
-                    ) AS multi_orders ON multi_orders.order_id = orders.id";
-                    $where_values[] = '_orthoney_OrderID';
-
-                    
-                }
-
-                if ($_REQUEST['custom_order_type'] === "single_address") {
-                    // LEFT JOIN to include orders that may not have _orthoney_OrderID at all
-                    $join .= "
-                        LEFT JOIN $order_meta_table AS meta
-                            ON meta.order_id = orders.id AND meta.meta_key = %s
-                        LEFT JOIN $recipient_ordertable AS ro
-                            ON ro.order_id = meta.meta_value
-                    ";
-                    $where_values[] = '_orthoney_OrderID';
                 
-                    // Keep only:
-                    // - orders that do not have the meta key (meta.meta_value IS NULL)
-                    // - or have the meta key but no matching row in recipient table (ro.id IS NULL)
-                    $where_conditions[] = "(meta.meta_value IS NULL OR ro.id IS NULL)";
-
+                // Join with the optimized relation table
+                $join .= "INNER JOIN $order_relation AS rel ON rel.wc_order_id = orders.id";
+                
+                // Filter by shipping type
+                if (!empty($_REQUEST['custom_order_type'])) {
+                    if ($_REQUEST['custom_order_type'] === "multiple_address") {
+                        $where_conditions[] = "rel.order_type = %s";
+                        $where_values[] = 'multi_address';
+                    } elseif ($_REQUEST['custom_order_type'] === "single_address") {
+                        $where_conditions[] = "rel.order_type = %s";
+                        $where_values[] = 'single_address';
+                    }
                 }
-
-                // Order status condition
-                if ( !empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] != "all" ) {
+                
+                // Order status
+                if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] !== "all") {
                     $where_conditions[] = "orders.status = %s";
                     $where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
-                }else if ($_REQUEST['selected_order_status'] == "all"){
-                    
-                }else {
-                    // $where_conditions[] = "orders.status != %s";
-                    // $where_values[] = 'wc-checkout-draft';
                 }
-
-                // Customer ID condition
+                
+                // Customer ID
                 if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
                     $where_conditions[] = "orders.customer_id = %d";
                     $where_values[] = intval($_REQUEST['selected_customer_id']);
                 }
-
+                
+                // Quantity range
                 if (
                     isset($_REQUEST['selected_min_qty'], $_REQUEST['selected_max_qty']) &&
                     is_numeric($_REQUEST['selected_min_qty']) &&
                     is_numeric($_REQUEST['selected_max_qty'])
                 ) {
-                    $where_conditions[] = "
-                        orders.id IN (
-                            SELECT oi_sub.order_id
-                            FROM {$wpdb->prefix}woocommerce_order_items AS oi_sub
-                            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS oim_sub
-                                ON oim_sub.order_item_id = oi_sub.order_item_id AND oim_sub.meta_key = '_qty'
-                            GROUP BY oi_sub.order_id
-                            HAVING SUM(CAST(oim_sub.meta_value AS UNSIGNED)) BETWEEN %d AND %d
-                        )
-                    ";
+                    $where_conditions[] = "rel.quantity BETWEEN %d AND %d";
                     $where_values[] = intval($_REQUEST['selected_min_qty']);
                     $where_values[] = intval($_REQUEST['selected_max_qty']);
                 }
                 
-
-
+                // Order type
                 $where_conditions[] = "orders.type = %s";
                 $where_values[] = 'shop_order';
-
-                $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) :  date("Y");
-
+                
+                // Year
+                $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
                 $where_conditions[] = "YEAR(orders.date_created_gmt) = %d";
                 $where_values[] = $year;
-
-
+                
+                // Limit and Offset
                 $where_values[] = $limit;
                 $where_values[] = $offset;
-
-
-                 $sql = $wpdb->prepare(
+                
+                // Final SQL
+                $sql = $wpdb->prepare(
                     "SELECT DISTINCT orders.* FROM $orders_table AS orders
-                    $join
-                    WHERE " . implode(' AND ', $where_conditions) . "
-                    ORDER BY orders.date_updated_gmt DESC
-                    LIMIT %d OFFSET %d",
+                     $join
+                     WHERE " . implode(' AND ', $where_conditions) . "
+                     ORDER BY orders.date_updated_gmt DESC
+                     LIMIT %d OFFSET %d",
                     ...$where_values
                 );
 
