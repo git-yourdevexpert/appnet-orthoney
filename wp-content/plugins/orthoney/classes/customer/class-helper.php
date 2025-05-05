@@ -301,7 +301,7 @@ class OAM_Helper{
                     
                 }
                 
-                
+
                 
                 // Filter by shipping type
                 if (!empty($_REQUEST['custom_order_type'])) {
@@ -414,20 +414,20 @@ class OAM_Helper{
             //     continue;
             // }
 
-            $matches_search_main = empty($search) ||
-                stripos((string)$order_id, $search) !== false ||
-                stripos($main_order->get_billing_first_name(), $search) !== false ||
-                stripos($main_order->get_billing_last_name(), $search) !== false ||
-                stripos($main_order->get_shipping_first_name(), $search) !== false||
-                stripos($main_order->get_shipping_last_name(), $search) !== false;
+            // $matches_search_main = empty($search) ||
+            //     stripos((string)$order_id, $search) !== false ||
+            //     stripos($main_order->get_billing_first_name(), $search) !== false ||
+            //     stripos($main_order->get_billing_last_name(), $search) !== false ||
+            //     stripos($main_order->get_shipping_first_name(), $search) !== false||
+            //     stripos($main_order->get_shipping_last_name(), $search) !== false;
 
             $row_builder = $is_export ? 'build_export_order_row' : 'build_order_row';
             $row_data = OAM_Helper::$row_builder($main_data, $main_order, $order_type, $total_quantity);
 
             if ($table_order_type === 'main_order') {
-                if ($matches_search_main) {
+              
                     $filtered_orders[] = $row_data;
-                }
+             
             }
         }
 
