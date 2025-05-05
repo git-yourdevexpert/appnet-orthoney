@@ -61,6 +61,8 @@ class OAM_WC_CRON_Suborder {
         $group_recipient_table = OAM_Helper::$group_recipient_table;
         $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
         $recipient_order_table = OAM_Helper::$recipient_order_table;
+        $wc_order_relation_table = $wpdb->prefix . 'oh_wc_order_relation';
+        $yith_wcaf_affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
 
         $main_order = wc_get_order($order_id);
         if (!$main_order) return;
@@ -89,6 +91,26 @@ class OAM_WC_CRON_Suborder {
         }
 
         $order_type = $single_order ? 'single-order' : 'multi-recipient-order';
+
+         // Prepare data
+         $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
+         $affiliate_token = OAM_COMMON_Custom::get_order_meta($order_id, '_yith_wcaf_referral');
+
+         $affiliate_id = $wpdb->get_val($wpdb->prepare(
+            "SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE token = %s",
+            $affiliate_token
+        ));
+        
+        $wpdb->insert($wc_order_relation_table, [
+            'user_id'            => $processData->user_id,
+            'pid'                => $process_id,
+            'wc_order_id'        => $order_id,
+            'order_id'           => $custom_order_id,
+            'quantity'           => $total_quantity,
+            'order_type'         => sanitize_text_field(($order_type == 'single-order' ? 'single_address' : 'multi_address')),
+            'affiliate_code'     => sanitize_text_field($affiliate_token),
+            'affiliate_user_id'  => $affiliate_id != '' ? $affiliate_id : 0 ,
+        ]);
 
         // Update order_process_table
         if ($process_id) {
@@ -125,6 +147,10 @@ class OAM_WC_CRON_Suborder {
             $group_id = $wpdb->insert_id;
         }
 
+       
+
+        
+        
         // Check Recipient Count
         $groupRecipientCount = (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(id) FROM {$group_recipient_table} WHERE group_id = %d",
@@ -135,9 +161,7 @@ class OAM_WC_CRON_Suborder {
             return; // Already processed
         }
 
-        // Prepare data
-        $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
-        $affiliate_token = OAM_COMMON_Custom::get_order_meta($order_id, '_yith_wcaf_referral');
+       
 
         $recipients = OAM_Helper::get_recipient_by_pid($process_id);
         if (empty($recipients)) return;
