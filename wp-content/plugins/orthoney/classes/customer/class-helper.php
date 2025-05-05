@@ -276,9 +276,13 @@ class OAM_Helper{
 
 
     
+         $search_term = isset($_REQUEST['search']['value']) ? sanitize_text_field($_REQUEST['search']['value']) : '';
 
             // If no cached data, build the query
             if (current_user_can('administrator')) {
+
+
+
                 $orders_table = $wpdb->prefix . 'wc_orders';
                 $order_relation = $wpdb->prefix . 'oh_wc_order_relation';
                 
