@@ -164,7 +164,6 @@ class OAM_Helper{
         return $filtered_orders;
     }
     
-
     public static function get_jars_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length) {
         global $wpdb;
         $orders_table = $wpdb->prefix . 'wc_orders'; 
@@ -173,7 +172,52 @@ class OAM_Helper{
         // Pagination calculation
         $offset = $page * $length;
         $limit = $length;
-    
+        $min_qty = isset($_REQUEST['selected_min_qty']) && is_numeric($_REQUEST['selected_min_qty']) ? (int) $_REQUEST['selected_min_qty'] : 1;
+        $max_qty = isset($_REQUEST['selected_max_qty']) && is_numeric($_REQUEST['selected_max_qty']) ? (int) $_REQUEST['selected_max_qty'] : 1000;
+
+        $selected_customer_id = isset($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id']) ? (int) $_REQUEST['selected_customer_id'] : '';
+
+        $search_val = isset($_REQUEST['search']['value']) ? trim(sanitize_text_field($_REQUEST['search']['value'])) : '';
+
+        $selected_year = isset($_REQUEST['selected_year']) && is_numeric($_REQUEST['selected_year']) 
+        ? (int) $_REQUEST['selected_year'] 
+        : 2025;
+
+
+        
+        $where_clauses = [];
+        $params = [];
+        
+        // Quantity filter for both admin and non-admin
+        $where_clauses[] = "quantity BETWEEN %d AND %d";
+        $params[] = $min_qty;
+        $params[] = $max_qty;
+
+       // Year filter
+$where_clauses[] = "YEAR(created_date) = %d";
+$params[] = $selected_year;
+        
+            if ($selected_customer_id) {
+                $where_clauses[] = "user_id = %d";
+                $params[] = $selected_customer_id;
+            }
+
+            if (!empty($search_val)) {
+                $where_clauses[] = "(recipient_order_id LIKE %s OR full_name LIKE %s)";
+                $search_param = '%' . $wpdb->esc_like($search_val) . '%';
+                $params[] = $search_param;
+                $params[] = $search_param;
+            }
+            
+        
+            $where_sql = '';
+            if (!empty($where_clauses)) {
+                $where_sql = 'WHERE ' . implode(' AND ', $where_clauses);
+            }        
+        // Add pagination params at the end
+        $params[] = $limit;
+        $params[] = $offset;
+        
         // Get orders
         if (current_user_can('administrator')) {
             $sql = $wpdb->prepare(
@@ -188,10 +232,13 @@ class OAM_Helper{
                     quantity AS total_jar,
                     order_type AS type
                 FROM {$wpdb->prefix}oh_recipient_order
+                $where_sql
                 LIMIT %d OFFSET %d
                 ",
-                $limit, $offset
+                ...$params
             );
+            
+            
         } else {
             $sql = $wpdb->prepare(
                 "
@@ -255,6 +302,7 @@ class OAM_Helper{
     
         return $filtered_orders;
     }
+
 
     public static  function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
         global $wpdb;

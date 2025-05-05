@@ -2463,11 +2463,64 @@ class OAM_Ajax{
             }
 
         }else if($table_order_type === 'sub_order_order'){
+
          $filtered_orders = OAM_Helper::get_jars_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, false,  $start, $length);
          if ( current_user_can('administrator') ) {
-            // Admin sees all orders
-            $sql = "SELECT COUNT(id) FROM {$jar_table}";
+
+            
+            $min_qty = isset($_REQUEST['selected_min_qty']) && is_numeric($_REQUEST['selected_min_qty']) ? (int) $_REQUEST['selected_min_qty'] : 1;
+            $max_qty = isset($_REQUEST['selected_max_qty']) && is_numeric($_REQUEST['selected_max_qty']) ? (int) $_REQUEST['selected_max_qty'] : 1000;
+
+
+            $selected_customer_id = isset($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id']) ? (int) $_REQUEST['selected_customer_id'] : '';
+
+            $search_val = isset($_REQUEST['search']['value']) ? sanitize_text_field($_REQUEST['search']['value']) : '';
+
+            $selected_year = isset($_REQUEST['selected_year']) && is_numeric($_REQUEST['selected_year']) 
+            ? (int) $_REQUEST['selected_year'] 
+            : 2025;
+    
+            
+            
+            $where_clauses = [];
+            $params = [];
+            
+            // Quantity filter
+            $where_clauses[] = "quantity BETWEEN %d AND %d";
+            $params[] = $min_qty;
+            $params[] = $max_qty;
+
+                            // Year filter
+            $where_clauses[] = "YEAR(created_date) = %d";
+            $params[] = $selected_year;
+
+            
+            // Add user restriction for non-admins
+            if ($selected_customer_id) {
+                $where_clauses[] = "user_id = %d";
+                $params[] = $selected_customer_id;
+            }
+            if (!empty($search_val)) {
+                $where_clauses[] = "(order_id LIKE %s OR full_name LIKE %s)";
+                $search_param = '%' . $wpdb->esc_like($search_val) . '%';
+                $params[] = $search_param;
+                $params[] = $search_param;
+            }
+
+            // Build WHERE clause
+            $where_sql = '';
+            if (!empty($where_clauses)) {
+                $where_sql = 'WHERE ' . implode(' AND ', $where_clauses);
+            }
+            
+            // Prepare the final count query
+            $sql = $wpdb->prepare(
+                "SELECT COUNT(id) FROM {$jar_table} $where_sql",
+                ...$params
+            );
+            
             $total_orders = $wpdb->get_var($sql);
+            
         } else {
             // Non-admin sees only their orders
             $sql = $wpdb->prepare(
