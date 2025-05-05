@@ -2374,6 +2374,8 @@ class OAM_Ajax{
         $order_meta_table = $wpdb->prefix . 'wc_orders_meta';
         $recipient_ordertable = $wpdb->prefix . 'oh_recipient_order';
         $order_relation = $wpdb->prefix . 'oh_wc_order_relation';
+        $order_addresses = $wpdb->prefix . 'wc_order_addresses';
+
 
 
          $table_order_type;
@@ -2398,6 +2400,16 @@ class OAM_Ajax{
                     }
                 }
                 
+
+                if (!empty($search)) {
+                    $count_join .= " LEFT JOIN $order_addresses AS addr ON addr.order_id = orders.id AND addr.address_type = 'billing' ";
+                    
+                    // Use CONCAT to match full name (first_name + last_name)
+                    $count_where_conditions[] = "(orders.id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s)";
+                    $count_where_values[] = (int) $search;
+                    $count_where_values[] = '%' . $wpdb->esc_like($search) . '%';
+                }
+
                 // Order status
                 if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] != "all") {
                     $count_where_conditions[] = "orders.status = %s";

@@ -285,9 +285,23 @@ class OAM_Helper{
                 $where_conditions = [];
                 $where_values = [];
                 $join = "";
-                
+                $order_addresses = $wpdb->prefix . 'wc_order_addresses';
+
                 // Join with the optimized relation table
                 $join .= "INNER JOIN $order_relation AS rel ON rel.wc_order_id = orders.id";
+
+
+                
+                if (!empty($search_term)) {
+                    $join .= " LEFT JOIN $order_addresses AS addr ON addr.order_id = orders.id AND addr.address_type = 'billing' ";
+                    
+                    $where_conditions[] = "(orders.id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s)";
+                    $where_values[] = (int) $search_term;
+                    $where_values[] = '%' . $wpdb->esc_like($search_term) . '%';
+                    
+                }
+                
+                
                 
                 // Filter by shipping type
                 if (!empty($_REQUEST['custom_order_type'])) {
