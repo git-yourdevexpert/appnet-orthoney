@@ -2050,8 +2050,8 @@ jQuery(document).ready(function ($) {
                 d.selected_order_status = $('#order_status').val(); // 
                 d.selected_year = $('#select-year').val(); // 
                 const qtySlider = $('#slider-range').slider("values");
-                d.selected_min_qty = qtySlider[0];
-                d.selected_max_qty = qtySlider[1];
+                d.selected_min_qty = qtySlider[0] || 1;
+                d.selected_max_qty = qtySlider[1] || 1000;
 
             },
             beforeSend: function () {
