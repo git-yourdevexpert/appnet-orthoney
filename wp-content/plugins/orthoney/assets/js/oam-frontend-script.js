@@ -2111,7 +2111,6 @@ jQuery(document).ready(function ($) {
               <label style="margin-left: 10px;">
                 Select Year:
                 <select id="select-year" class="form-control" style="width: 250px;">
-                    <option value="">Select year</option>
                 </select>
             </label>
              <label style="margin-left: 20px;">
