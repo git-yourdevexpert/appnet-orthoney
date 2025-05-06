@@ -2060,9 +2060,7 @@ jQuery(document).ready(function ($) {
             // $('#customer-orders-table_filter').append('<label>&nbsp;<div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
             $('#customer-orders-table_filter').append('');
  
-            const tableType = `
-                
-            `;
+            const tableType = ``;
             $('#customer-orders-table_length').before('<div>' + tableType + '</div>');
  
             toggleRecipientColumn();
