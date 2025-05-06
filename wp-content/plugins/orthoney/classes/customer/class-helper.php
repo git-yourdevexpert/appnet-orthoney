@@ -526,6 +526,8 @@ class OAM_Helper{
     // Helper to build row array for a main or sub order
     public static function build_order_row($order_data, $order_obj, $order_type, $total_quantity, $parent_order = null) {
         global $wpdb;
+                $jar_order_id = $order_data->rel_oid;
+
         $user_id = get_current_user_id();
         $orders_table = $wpdb->prefix . 'wc_orders';
     
@@ -599,7 +601,7 @@ class OAM_Helper{
             'shipping_name' => esc_html($shipping_name),
             'affiliate_code' => esc_html($referral_id),
             'total_jar' => esc_html($total_quantity),
-            'total_recipient' => "<a class='filter-jar-order-by-wc-order' href='javascript:;'>".$jarsorder_count."</a>",
+            'total_recipient' => "<a id=".$jar_order_id." onclick='jarfilter_trigger(\"$jar_order_id\")' class='filter-jar-order-by-wc-order' href='javascript:;'>".$jarsorder_count."</a>",
             //'type' => esc_html($order_type),
             //'status' => !empty($status_html) ? $status_html : 'Recipient Order is Preparing.',
             'price' => $order_total,
