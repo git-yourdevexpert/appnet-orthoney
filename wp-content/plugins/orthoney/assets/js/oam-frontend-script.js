@@ -35,7 +35,13 @@ function VerifyRecipientsDatatable(){
             language: {
                 search: "",
                 searchPlaceholder: "Search..." 
-              }
+              },
+              columnDefs: [
+                {
+                  targets: -1,        // -1 means "last column"
+                  orderable: false    // disables sorting
+                }
+              ]
           });
     
           // Hide pagination & info if only 1 page

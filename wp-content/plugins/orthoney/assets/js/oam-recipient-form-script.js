@@ -1629,7 +1629,13 @@ function addRecipientManuallyPopup(reload) {
         language: {
           search: "",
           searchPlaceholder: "Search..." 
-        }
+        },
+        columnDefs: [
+          {
+            targets: -1,        // -1 means "last column"
+            orderable: false    // disables sorting
+          }
+        ]
       });
     
       // Reinsert group-header rows and manage pagination on every redraw
@@ -1705,7 +1711,13 @@ function addRecipientManuallyPopup(reload) {
             language: {
               search: "",
               searchPlaceholder: "Search..." 
-            }
+            },
+            columnDefs: [
+              {
+                targets: -1,        // -1 means "last column"
+                orderable: false    // disables sorting
+              }
+            ]
           });
     
           // Hide pagination & info if only 1 page
