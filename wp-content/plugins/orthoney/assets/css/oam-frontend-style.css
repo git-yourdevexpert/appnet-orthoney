@@ -914,7 +914,7 @@ body.woocommerce .quantity input.input-box:focus {
 .order-process-block input:checked+span,
 .order-process-block input[type="radio"]:checked+span{
   background: #ffffff;
-  color:#333333;
+  color:#333333 !important;
   border-radius: 4px 4px 0 0; 
 }
 .order-process-block .address-icon {
@@ -2970,10 +2970,9 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   font-size: 13px;
   column-gap: 20px;
   text-align: none;
-  margin-top: 20px;
   background: #fff;
   border-radius: 0 0 10px 10px;
-  padding-bottom: 0;
+  padding: 20px 20px 0 20px;
 }
 
 #multiStepForm .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter{
