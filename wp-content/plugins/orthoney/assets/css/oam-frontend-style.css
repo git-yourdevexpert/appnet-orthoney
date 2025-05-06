@@ -1132,6 +1132,8 @@ body.woocommerce .quantity input.input-box:focus {
   border: 1px solid #dee2e6;
   color: #333;
   background-color: #ffffff;
+  width: 100%;
+  max-width: 350px;
 }
 .order-process-block .heading-title .table-title {
   margin: 0;
@@ -2542,6 +2544,14 @@ body .woocommerce .order-process-block .button {
   gap: 20px;
   margin-top: 30px;
 }
+.one-col-grid{
+  margin-top: 30px;
+  background: #fff;
+  padding: 20px;
+  box-shadow: 0 0 15px 0 rgba(154, 161, 171, 0.05);
+  border-radius: 10px;
+}
+
 .two-col-grid .cl-left,
 .two-col-grid .cl-right {
   background: #fff;
@@ -3740,6 +3750,7 @@ flex-direction: column;
     border-left: 0px;
     padding-left: 0;
     position: relative;
+    margin: 0;
   }
   .incomplete-order-block.order-process-block .thead-data:after,
   .incomplete-order-block.custom-table table td .thead-data:after,
