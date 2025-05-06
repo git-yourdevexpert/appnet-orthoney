@@ -1781,6 +1781,7 @@ jQuery(document).ready(function ($) {
                 d.selected_min_qty = qtySlider[0];
                 d.selected_max_qty = qtySlider[1];
                 d.selected_customer_id = $('#jar-select-customer').val();
+                d.search_by_organization = $('.jar-search-by-organization').val();
             },
             beforeSend: function () {
                 process_group_popup('Please wait while we process your request.');
@@ -1822,6 +1823,10 @@ jQuery(document).ready(function ($) {
                         <option value="">Order year</option>
                     </select>
                 </label>
+                <label class="customer-select-filter">
+                      Search By Organization Code:
+                    <input type="text" class="jar-search-by-organization" placeholder="Search By Organization Code" >
+                </label>
                 
                 <label class="customer-select-filter">
                     Customer:
@@ -1841,6 +1846,15 @@ jQuery(document).ready(function ($) {
             $('#customer-jar-orders-table_filter').append('<label><div><button class="order-pdf-export w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Pdf</button></div></label>');
 
             $('#customer-jar-orders-table_length').before('<div></div>');
+
+                $('.jar-search-by-organization').on('input', function (e) {
+                var searchrecipient = $(this).val();
+
+                if (searchrecipient.length > 2) {
+                    table.ajax.reload(); // Reload DataTable via AJAX
+                }    
+             });
+                
 
             $('#jar-select-customer').select2({
                 placeholder: 'Search',
@@ -1912,6 +1926,28 @@ jQuery(document).ready(function ($) {
     });
 });
 
+function jarfilter_trigger(jarOrderId) {
+    // 1. Click the radio input
+    //e.preventDefault();
+
+    var $radio = jQuery('#sub_order_order');
+    if ($radio.length && !$radio.prop('checked')) {
+        $radio.prop('checked', true).trigger('change');
+    }
+
+    // 2. Set value in the DataTables search input
+    var $searchInput = jQuery('#customer-jar-orders-table_filter input[type=search]');
+    if ($searchInput.length) {
+        $searchInput.val(jarOrderId);
+
+        if (jQuery.fn.dataTable.isDataTable('#customer-jar-orders-table')) {
+            jQuery('#customer-jar-orders-table').DataTable().search(jarOrderId).draw();
+        } else {
+            $searchInput.trigger('input');
+        }
+    }
+}
+
 /**
  * Recipient Order End
  */
@@ -1949,6 +1985,8 @@ jQuery(document).ready(function ($) {
                 const qtySlider = $('#slider-range').slider("values");
                 d.selected_min_qty = qtySlider[0] || 1;
                 d.selected_max_qty = qtySlider[1] || 1000;
+                d.search_by_recipient = $('.search-recipient-name').val();
+                d.search_by_organization = $('.search-by-organization').val();
 
             },
             beforeSend: function () {
@@ -2014,6 +2052,14 @@ jQuery(document).ready(function ($) {
              Customer:
                  <select id="select-customer" class="form-control"><option value="">Select customer</option></select>
              </label>
+                  <label class="customer-select-filter">
+             Search Recipient Name:
+             <input type="text" class="search-recipient-name" placeholder="Search Recipient Name" >
+             </label>
+              <label class="customer-select-filter">
+             Search By Organization Code:
+             <input type="text" class="search-by-organization" placeholder="Search By Organization Code" >
+             </label>
                <label>
                Order Status:
                 <select id="order_status" name="order_status" class="" tabindex="-1" aria-hidden="true">
@@ -2075,6 +2121,13 @@ jQuery(document).ready(function ($) {
                 e.preventDefault();
                 table.ajax.reload();
             });
+              $('.search-recipient-name, .search-by-organization').on('input', function (e) {
+                var searchrecipient = $(this).val();
+
+                if (searchrecipient.length > 2) {
+                    table.ajax.reload(); // Reload DataTable via AJAX
+                }    
+             });
  
             $(document).on('click', 'input[name="table_order_type"]', function (e) {
                 // e.preventDefault();
