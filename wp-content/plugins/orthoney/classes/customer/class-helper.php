@@ -962,10 +962,9 @@ class OAM_Helper{
         
         $customGreeting = "";
         $group_name="";
-
         $verifyRecordHtml = '';
         $unverifiedRecordHtml = '';
-
+        $total_quantity = 0;
        
         
         $unverifiedTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Action</th></tr></thead><tbody>';
@@ -1009,7 +1008,7 @@ class OAM_Helper{
         $unverifiedRecipients = [];
         
         foreach ($recipients as $recipient) {
-            
+            $total_quantity = $total_quantity + $recipient->quantity;
             if ($recipient->address_verified == 1) {
                 $verifiedRecipients[] = $recipient;
             } else {
@@ -1041,6 +1040,7 @@ class OAM_Helper{
             'verifiedData'          => $verifyRecordHtml,
             'unverifiedData'        => $unverifiedRecordHtml,
             'totalCount'            => count($unverifiedRecipients) + count($verifiedRecipients),
+            'total_quantity'        => $total_quantity,
             'csvCount'              => count($recipients),
         ];
 

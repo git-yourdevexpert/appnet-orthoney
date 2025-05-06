@@ -461,7 +461,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             <!-- <button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button><br> -->
                             <!-- <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove recipient for the already placed order">Remove recipient</button> -->
 
-                            <?php echo self::badge($result['data']['totalCount'],$result['data']['totalCount']) ?>
+                            <?php echo self::badge($result['data']['total_quantity'],$result['data']['totalCount']) ?>
                         </div>
                     </div>
                     <?php
@@ -582,7 +582,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 </p> -->
                             </div>
                             <div>
-                                <?php echo self::badge($result['data']['totalCount'], $result['data']['totalCount']); ?>
+                                <?php echo self::badge($result['data']['total_quantity'], $result['data']['totalCount']); ?>
                             </div>
                         </div>
                         <?php
@@ -692,11 +692,11 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         ?>
         <div class="badge-group">
             <div class="badge">
-                <i class="fas fa-cart-plus"></i>
+            <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/cart-icon.png" alt="cart icon" class="cart-icon">
                 <span class="badge-number"><?php echo $jar; ?></span>
             </div>
             <div class="badge">
-                <i class="fas fa-cart-plus"></i>
+            <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/jar-icon.png" alt="jar icon" class="jar-icon">
                 <span class="badge-number"><?php echo $recipient ; ?></span>
             </div>
             
