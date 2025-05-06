@@ -87,8 +87,9 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
 </div>
 
 <div class="order-process-block customer-order-details-section">
-    <div class="customer-order-details-nav heading-title">
-        <div>
+
+        <div class="heading-title">
+        
             <h3>#<?php echo esc_html($sub_order_id); ?> Recipient Order </h3>
             <p>
                 <?php
@@ -114,9 +115,9 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
                 ?>
             </p>
         </div>
-        <div>
-            <section class="woocommerce-customer-details">
-                <h2 class="woocommerce-column__title">Billing address</h2>
+        <div class="customer-order-details">
+            <div class="woocommerce-customer-details">
+                <h3 class="woocommerce-column__title">Billing address</h3>
                 <?php 
                 $state_code = $order->get_billing_state();
                 $states = WC()->countries->get_states('US');
@@ -128,14 +129,18 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
                 <strong>City: </strong><?php echo esc_html($order->get_billing_city()); ?><br>
                 <strong>State: </strong><?php echo esc_html($full_state); ?><br>
                 <strong>Zip Code: </strong><?php echo esc_html($order->get_billing_postcode()); ?><br>
-                <strong>Total Jars in Order: </strong><?php echo esc_html($quantity); ?><br>
+            
+            </div>
+            <div class="woocommerce-customer-details">
+            <h3 class="woocommerce-column__title">Jar Order Details</h3>
+            <strong>Total Jars in Order: </strong><?php echo esc_html($quantity); ?><br>
                 <strong>Total Price: </strong><?php echo wc_price($order->get_total()); ?><br>
                 <strong>Shipping: </strong><?php echo wc_price($order->get_shipping_total()); ?><br>
                 <strong>Delivered Type: </strong><?php echo (!empty($recipientResult) ? "Ship to Multi Address" : "Ship to Single Address") ?>
-            </section>
+            </div>
         </div>
-    </div>
-
+    
+    
     <div id="recipient-order-data" class="table-data orthoney-datatable-warraper">
         <div class="download-csv heading-title">
             <div></div>
@@ -223,5 +228,6 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
                 </div>
             </div>
         </div>
+    </div>
     </div>
 </div>

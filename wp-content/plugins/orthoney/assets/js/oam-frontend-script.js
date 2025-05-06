@@ -1715,8 +1715,11 @@ if (recipientOrderManageForm) {
 }
 
 
+jQuery(document).on('click', '.filter-jar-order-by-wc-order', function (e) {
+jQuery('#sub_order_order').click();
+});
 jQuery(document).on('click', 'input[name="table_order_type"]', function (e) {
-    e.preventDefault();
+    // e.preventDefault();
     var otype = jQuery(this).val();
     if(otype == "main_order"){
         
@@ -1748,8 +1751,8 @@ jQuery(document).ready(function ($) {
         processing: false,
         serverSide: true,
         select: {
-            style: 'multi' // or 'single'
-          },
+            style: 'multi'
+        },
         ajax: {
             url: oam_ajax.ajax_url,
             type: 'POST',
@@ -1759,19 +1762,17 @@ jQuery(document).ready(function ($) {
                 d.custom_order_type = $('#custom-order-type-filter').val();
                 d.custom_order_status = $('#custom-order-status-filter').val();
                 d.table_order_type = 'sub_order_order';
-                d.selected_year = $('#jars-select-year').val(); // 
+                d.selected_year = $('#jars-select-year').val();
                 const qtySlider = $('#jar-slider-range').slider("values");
                 d.selected_min_qty = qtySlider[0];
                 d.selected_max_qty = qtySlider[1];
-                d.selected_customer_id = $('#jar-select-customer').val(); // 
-
+                d.selected_customer_id = $('#jar-select-customer').val();
             },
             beforeSend: function () {
                 process_group_popup('Please wait while we process your request.');
             },
             complete: function () {
                 setTimeout(() => {
-                    
                     Swal.close();
                 }, 1300);
             },
@@ -1784,23 +1785,12 @@ jQuery(document).ready(function ($) {
             },
         },
         columns: [
-            // {
-            //     title: '<input type="checkbox" class="selectall-checkbox">',
-            //     data: null,
-            //     orderable: false,
-            //     searchable: false,
-            //     className: 'checkbox-col',
-            //     render: function (data, type, row) {
-            //         return `<input type="checkbox" class="row-checkbox" value="${row.order_no}" data-order-id="${row.order_no}">`;
-            //     }
-            // },
             { data: 'jar_no' },
             { data: 'date' },
             { data: 'billing_name', orderable: false, searchable: false },
             { data: 'affiliate_code', orderable: false, searchable: false },
             { data: 'total_jar', orderable: false, searchable: false },
             { data: 'status', orderable: false, searchable: false },
-           // { data: 'price', orderable: false, searchable: false },
             { data: 'action', orderable: false, searchable: false }
         ],
         drawCallback: function () {
@@ -1812,58 +1802,35 @@ jQuery(document).ready(function ($) {
             });
         },
         initComplete: function () {
-            jQuery("#customer-jar-orders-table_wrapper").hide();
-            jQuery("#customer-jar-orders-table_length").hide();
+            $("#customer-jar-orders-table_wrapper").hide();
+            $("#customer-jar-orders-table_length").hide();
 
-            
             const customFilter = `
-                <label style="margin-left: 10px;">
-Select Year:
-<select id="jars-select-year" class="form-control" style="width: 250px;">
-    <option value="">Select year</option>
-</select>
-</label>
-
-                     <label style="margin-left: 20px;">
-                <label for="amount">Quantity Range:</label>
-                <input type="text" id="jar_quantity_range" readonly="" style="border:0; color:#f6931f; font-weight:bold;">
-<div id="jar-slider-range"></div>
- </label><label style="margin-left: 10px;">
-             customer:
-                 <select id="jar-select-customer" class="form-control" style="width: 250px;"><option value="">Select customer</option></select>
-             </label >
-            `;
-            $('#customer-jar-orders-table_filter').append(customFilter);
-            $('#customer-jar-orders-table_filter').append('<label style="margin-left: 10px;">&nbsp;<div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
-           $('#customer-jar-orders-table_filter').append('<label style="margin-left: 10px;">&nbsp;<div><button class="order-pdf-export w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Pdf</button></div></label>');
- 
-            const tableType = `
-                <label for="main_order">
-                    <input type="radio" id="main_order" name="table_order_type" value="main_order" >
-                    <span>Main Order</span>
-                </label>
-            
-
-                <label for="sub_order_order" style="margin-left: 15px;">
-                    <input type="radio" id="sub_order_order" name="table_order_type" value="sub_order_order" checked>
-                    <span>Jar Order</span>
+                <label class="yearblock">
+                    Order Year:
+                    <select id="jars-select-year" class="form-control">
+                        <option value="">Order year</option>
+                    </select>
                 </label>
                 
+                <label class="customer-select-filter">
+                    Customer:
+                    <select id="jar-select-customer" class="form-control">
+                        <option value="">Select Customer</option>
+                    </select>
+                </label>
+                <label class="rangeblock">
+                    <label for="amount">Quantity Range:</label>
+                    <input type="text" id="jar_quantity_range" readonly style="border:0; color:#f6931f; font-weight:bold;">
+                    <div id="jar-slider-range"></div>
+                </label>
             `;
-            $('#customer-jar-orders-table_length').before('<div style="text-align:center; margin-bottom: 10px;">' + tableType + '</div>');
- 
-           // toggleRecipientColumn();
- 
-            // $('#custom-order-type-filter, #custom-order-status-filter').on('change', function (e) {
-            //     e.preventDefault();
-            //     table.ajax.reload();
-            // });
- 
-            $(document).on('click', 'input[name="table_order_type"]', function (e) {
-                e.preventDefault();
-                //toggleRecipientColumn();
-              //  table.ajax.reload();
-            });
+
+            $('#customer-jar-orders-table_filter').append(customFilter);
+            $('#customer-jar-orders-table_filter').append('<label>&nbsp;<div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
+            $('#customer-jar-orders-table_filter').append('<label>&nbsp;<div><button class="order-pdf-export w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Pdf</button></div></label>');
+
+            $('#customer-jar-orders-table_length').before('<div></div>');
 
             $('#jar-select-customer').select2({
                 placeholder: 'Search',
@@ -1890,59 +1857,47 @@ Select Year:
                 }
             });
 
-
-            jQuery(document).on('change', '#jar-select-customer, #jars-select-year', function (e) {
+            $(document).on('change', '#jar-select-customer, #jars-select-year', function () {
                 table.ajax.reload();
-             });
+            });
 
+            const yearSelect = document.getElementById('jars-select-year');
+            const startYear = new Date().getFullYear();
+            const endYear = 2018;
+            const defaultSelected = 2025;
+            const addedYears = new Set();
 
-             const yearSelect = document.getElementById('jars-select-year');
-const startYear = new Date().getFullYear();
-const endYear = 2018;
- const customYear = ''; // Optional custom year to prioritize
- const defaultSelected = 2025;
+            for (let year = startYear; year >= endYear; year--) {
+                if (!addedYears.has(year)) {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    if (year === defaultSelected) option.selected = true;
+                    yearSelect.appendChild(option);
+                    addedYears.add(year);
+                }
+            }
 
-const addedYears = new Set();
+            $('.selectall-checkbox').on('change', function () {
+                $('.row-checkbox').prop('checked', this.checked);
+            });
 
-// Populate years from current down to end
-for (let year = startYear; year >= endYear; year--) {
-    if (!addedYears.has(year)) {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        if (year === defaultSelected) option.selected = true;
-        yearSelect.appendChild(option);
-        addedYears.add(year);
-    }
-}
+            $("#jar-slider-range").slider({
+                range: true,
+                min: 1,
+                max: 1000,
+                values: [1, 1000],
+                slide: function (event, ui) {
+                    $("#jar_quantity_range").val(ui.values[0] + " - " + ui.values[1]);
+                },
+                change: function (event, ui) {
+                    table.draw();
+                }
+            });
 
-
-             
- 
- 
-            jQuery('.selectall-checkbox').on('change', function() {
-                jQuery('.row-checkbox').prop('checked', this.checked);
-              });
-
-              $( function() {
-                $( "#jar-slider-range" ).slider({
-                  range: true,
-                  min: 1,
-                  max: 1000,
-                  values: [ 1, 1000 ],
-                  slide: function( event, ui ) {
-                    $( "#jar_quantity_range" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
-                   // table.draw(); // Redraw DataTable with new filter
-                  },change: function( event, ui ) {
-                    table.draw(); // ✅ fires once after sliding stops
-                  }
-                  
-                });
-                $( "#jar_quantity_range" ).val( $( "#jar-slider-range" ).slider( "values", 0 ) +
-                  " - " + $( "#jar-slider-range" ).slider( "values", 1 ) );
-              } );
- 
-          
+            $("#jar_quantity_range").val(
+                $("#jar-slider-range").slider("values", 0) + " - " + $("#jar-slider-range").slider("values", 1)
+            );
         }
     });
 });
@@ -2037,53 +1992,37 @@ jQuery(document).ready(function ($) {
         initComplete: function () {
             jQuery("#customer-orders-table_length").hide();
 
-            
-
             const customFilter = `
-              <label style="margin-left: 10px;">
-                Select Year:
-                <select id="select-year" class="form-control" style="width: 250px;">
+              <label class="yearblock">
+                Order Year:
+                <select id="select-year" class="form-control">
                 </select>
             </label>
-             <label style="margin-left: 20px;">
-                <label for="amount">Quantity Range:</label>
-                <input type="text" id="quantity_range" readonly="" style="border:0; color:#f6931f; font-weight:bold;">
-<div id="slider-range"></div>
- </label>
+             
+
               <label style="margin-left: 10px; display:none" >
              affiliate :
-                 <select id="select-affiliate" class="form-control" style="width: 250px;"><option value="">Select affiliate </option></select>
+                 <select id="select-affiliate" class="form-control" ><option value="">Select affiliate </option></select>
              </label>
-             <label style="margin-left: 10px;">
-             customer:
-                 <select id="select-customer" class="form-control" style="width: 250px;"><option value="">Select customer</option></select>
-             </label >
-               <label style="margin-left: 10px;">
-               Order status:
+             <label class="customer-select-filter">
+             Customer:
+                 <select id="select-customer" class="form-control"><option value="">Select customer</option></select>
+             </label>
+               <label>
+               Order Status:
                 <select id="order_status" name="order_status" class="" tabindex="-1" aria-hidden="true">
                     <option value="all">All</option><option value="wc-processing">Processing</option>
 				    <option value="wc-pending">Pending payment</option><option value="wc-processing">Processing</option><option value="wc-on-hold">On hold</option><option value="wc-completed">Completed</option><option value="wc-cancelled">Cancelled</option><option value="wc-refunded">Refunded</option><option value="wc-failed">Failed</option><option value="wc-checkout-draft">Draft</option></select>
              </label>
-                <label style="margin-left: 10px;">
-                    Ship Type:
+                <label>
+                    Shipping Type:
                     <select id="custom-order-type-filter" class="custom-select form-control">
-                        <option value="all">All Ship Types</option>
+                        <option value="all">All Shipping Types</option>
                         <option value="single_address">Single Address</option>
                         <option value="multiple_address">Multiple Addresses</option>
                     </select>
                 </label>
-                   <label style="margin-left: 10px;">
-                    PDF Export Type:
-                    <select id="custom-pdf-export-type" class="custom-pdf-export-type form-control">
-                        <option value="all">PDF Types</option>
-                        <option value="2p">2P: Online & paper orders (print version)</option>
-                        <option value="2e">2E: Online & paper orders (email version)</option>
-                        <option value="4p">4P: Online & paper orders (print version)</option>
-                        <option value="4e">4E: Online & paper orders (email version)</option>
-                        <option value="5p">5p</option>
-                    </select>
-                </label>
-                <label style="margin-left: 10px;" class="custom-order-status-filter-wrapper">
+                <label class="custom-order-status-filter-wrapper">
                     Order Status:
                     <select id="custom-order-status-filter" class="custom-select form-control">
                         <option value="all">All Status</option>
@@ -2097,22 +2036,35 @@ jQuery(document).ready(function ($) {
                         <option value="wc-checkout-draft">Draft</option>
                     </select>
                 </label>
+                <label class="rangeblock">
+                <label for="amount">Quantity Range:</label>
+                <input type="text" id="quantity_range" readonly="" style="border:0; color:#f6931f; font-weight:bold;">
+                <div id="slider-range"></div>
+                </label>
+                <div class="custom-pdf-export-type-wrapper">
+
+                   <label>
+                    PDF Export Type:
+                    <select id="custom-pdf-export-type" class="custom-pdf-export-type form-control">
+                        <option value="all">PDF Types</option>
+                        <option value="2p">2P: Online & paper orders (print version)</option>
+                        <option value="2e">2E: Online & paper orders (email version)</option>
+                        <option value="4p">4P: Online & paper orders (print version)</option>
+                        <option value="4e">4E: Online & paper orders (email version)</option>
+                        <option value="5p">5p</option>
+                    </select>
+                </label>
+                <label>&nbsp;<div><button class="order-pdf-export w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Pdf</button></div></label></div>
+                
             `;
             $('#customer-orders-table_filter').append(customFilter);
-            // $('#customer-orders-table_filter').append('<label style="margin-left: 10px;">&nbsp;<div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
-            $('#customer-orders-table_filter').append('<label style="margin-left: 10px;">&nbsp;<div><button class="order-pdf-export w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Pdf</button></div></label>');
+            // $('#customer-orders-table_filter').append('<label>&nbsp;<div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
+            $('#customer-orders-table_filter').append('');
  
             const tableType = `
-                <label for="main_order">
-                    <input type="radio" id="main_order" name="table_order_type" value="main_order" checked>
-                    <span>Main Order</span>
-                </label>
-                <label for="sub_order_order" style="margin-left: 15px;">
-                    <input type="radio" id="sub_order_order" name="table_order_type" value="sub_order_order">
-                    <span>Jar Order</span>
-                </label>
+                
             `;
-            $('#customer-orders-table_length').before('<div style="text-align:center; margin-bottom: 10px;">' + tableType + '</div>');
+            $('#customer-orders-table_length').before('<div>' + tableType + '</div>');
  
             toggleRecipientColumn();
  
@@ -2122,7 +2074,7 @@ jQuery(document).ready(function ($) {
             });
  
             $(document).on('click', 'input[name="table_order_type"]', function (e) {
-                e.preventDefault();
+                // e.preventDefault();
                 toggleRecipientColumn();
               //  table.ajax.reload();
             });

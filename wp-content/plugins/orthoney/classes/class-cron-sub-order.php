@@ -82,11 +82,15 @@ class OAM_WC_CRON_Suborder {
         foreach ($order_items as $item) {
             $quantity = (int) $item->get_quantity();
             $single_order_meta = $item->get_meta('single_order', true);
-            $process_id = $item->get_meta('process_id', true) ?: 0;
+    
+            if($item->get_meta('process_id', true)  != 0 OR $item->get_meta('process_id', true) != ''){
+                $process_id = $item->get_meta('process_id', true);
+            }
 
             if (!empty($single_order_meta) && $single_order_meta == 1) {
                 $single_order = true;
             }
+
             $total_quantity += $quantity;
         }
 
@@ -95,23 +99,15 @@ class OAM_WC_CRON_Suborder {
          // Prepare data
          $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
          $affiliate_token = OAM_COMMON_Custom::get_order_meta($order_id, '_yith_wcaf_referral');
-
-         $affiliate_id = $wpdb->get_val($wpdb->prepare(
-            "SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE token = %s",
-            $affiliate_token
-        ));
+         $affiliate_id = '';
+        if($affiliate_token != ''){
+            $affiliate_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE token = %s",
+                $affiliate_token
+            ));
+        }
         
-        $wpdb->insert($wc_order_relation_table, [
-            'user_id'            => $processData->user_id,
-            'pid'                => $process_id,
-            'wc_order_id'        => $order_id,
-            'order_id'           => $custom_order_id,
-            'quantity'           => $total_quantity,
-            'order_type'         => sanitize_text_field(($order_type == 'single-order' ? 'single_address' : 'multi_address')),
-            'affiliate_code'     => sanitize_text_field($affiliate_token),
-            'affiliate_user_id'  => $affiliate_id != '' ? $affiliate_id : 0 ,
-        ]);
-
+        
         // Update order_process_table
         if ($process_id) {
             $wpdb->update(
@@ -128,7 +124,31 @@ class OAM_WC_CRON_Suborder {
             "SELECT user_id, name FROM {$order_process_table} WHERE id = %d",
             $process_id
         ));
+
         if (!$processData) return;
+
+        $wpdb->insert(
+            $wc_order_relation_table,
+            [
+                'user_id'            => (int) $processData->user_id,
+                'wc_order_id'        => (int) $order_id,
+                'order_id'           => sanitize_text_field($custom_order_id),
+                'quantity'           => (int) $total_quantity,
+                'order_type'         => sanitize_text_field($order_type === 'single-order' ? 'single_address' : 'multi_address'),
+                'affiliate_code'     => sanitize_text_field($affiliate_token ?: 'Orthoney'),
+                'affiliate_user_id'  => (int) ($affiliate_id !== '' ? $affiliate_id : 0),
+            ],
+            [
+                '%d', // user_id
+                '%d', // wc_order_id
+                '%s', // order_id
+                '%d', // quantity
+                '%s', // order_type
+                '%s', // affiliate_code
+                '%d', // affiliate_user_id
+            ]
+        );
+        
 
         // Ensure Group
         $group_id = $wpdb->get_var($wpdb->prepare(
@@ -146,10 +166,6 @@ class OAM_WC_CRON_Suborder {
             ]);
             $group_id = $wpdb->insert_id;
         }
-
-       
-
-        
         
         // Check Recipient Count
         $groupRecipientCount = (int) $wpdb->get_var($wpdb->prepare(

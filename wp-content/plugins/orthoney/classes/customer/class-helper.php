@@ -170,7 +170,7 @@ class OAM_Helper{
         $filtered_orders = [];
     
         // Pagination calculation
-        $offset = $page * $length;
+        $offset = $page;
         $limit = $length;
         $min_qty = isset($_REQUEST['selected_min_qty']) && is_numeric($_REQUEST['selected_min_qty']) ? (int) $_REQUEST['selected_min_qty'] : 1;
         $max_qty = isset($_REQUEST['selected_max_qty']) && is_numeric($_REQUEST['selected_max_qty']) ? (int) $_REQUEST['selected_max_qty'] : 1000;
@@ -194,8 +194,8 @@ class OAM_Helper{
         $params[] = $max_qty;
 
        // Year filter
-$where_clauses[] = "YEAR(created_date) = %d";
-$params[] = $selected_year;
+        $where_clauses[] = "YEAR(created_date) = %d";
+        $params[] = $selected_year;
         
             if ($selected_customer_id) {
                 $where_clauses[] = "user_id = %d";
@@ -216,7 +216,7 @@ $params[] = $selected_year;
             }        
         // Add pagination params at the end
         $params[] = $limit;
-        $params[] = $offset;
+        $params[] = $page;
         
         // Get orders
         if (current_user_can('administrator')) {
@@ -562,7 +562,7 @@ $params[] = $selected_year;
             'shipping_name' => esc_html($shipping_name),
             'affiliate_code' => esc_html($referral_id),
             'total_jar' => esc_html($total_quantity),
-            'total_recipient' => $jarsorder_count,
+            'total_recipient' => "<a class='filter-jar-order-by-wc-order' href='javascript:;'>".$jarsorder_count."</a>",
             //'type' => esc_html($order_type),
             //'status' => !empty($status_html) ? $status_html : 'Recipient Order is Preparing.',
             'price' => $order_total,

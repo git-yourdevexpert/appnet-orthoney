@@ -37,12 +37,29 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
     echo OAM_COMMON_Custom::message_design_block($message);
     return;
 }
-
+if (in_array('customer', $user_roles)){
+   ?>
+   <style>
+     .customer-select-filter{display:none}
+   </style>
+   <?php 
+}
 
 ?>
 
 <div class="customer-order-block order-process-block orthoney-datatable-warraper">
     <div class="heading-title"><h3 class="block-title">My Orders</h3></div>
+    <div>
+        <label for="main_order">
+                <input type="radio" id="main_order" name="table_order_type" value="main_order" checked>
+                <span>Main Order</span>
+        </label>
+            
+        <label for="sub_order_order">
+            <input type="radio" id="sub_order_order" name="table_order_type" value="sub_order_order">
+            <span>Jar Order</span>
+        </label>
+    </div>
     <table id="customer-orders-table" class="display">
     <thead>
         <tr>

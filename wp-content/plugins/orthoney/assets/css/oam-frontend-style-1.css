@@ -75,3 +75,17 @@
   .multiple-address-order .error-message{ 
     order:3;
   }
+
+  #customer-jar-orders-table_filter button.order-pdf-export,
+  #customer-jar-orders-table_filter button.order-export-data.w-btn.us-btn-style_1 {
+    display: none;
+}
+
+#customer-jar-orders-table .deleteRecipient ,
+#recipient-order-data .deleteRecipient  {
+  display: none;
+}
+#customer-jar-orders-table .editRecipientOrder ,
+#recipient-order-data .editRecipientOrder  {
+  display: none;
+}
