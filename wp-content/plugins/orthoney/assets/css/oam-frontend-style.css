@@ -1659,12 +1659,12 @@ body .user-registration-social-connect-networks .ursc-network-lists {
   text-decoration: underline;
   text-align: left;
   transition: 0.3s;
-  color: #333;
+  color: #00afaa;
   text-underline-offset: 5px;
   padding: 0;
 }
 .btn-underline:hover {
-  color: #00afaa;
+  color: #333;
 }
 .user-registration .register .ur-button-container {
   flex-wrap: wrap;
