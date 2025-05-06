@@ -2987,7 +2987,8 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   margin-right: 20px;
 }
 
-.orthoney-datatable-warraper .dataTables_wrapper #customer-orders-table_filter {
+.orthoney-datatable-warraper .dataTables_wrapper #customer-orders-table_filter,
+.orthoney-datatable-warraper .dataTables_wrapper #customer-orders-table {
   display: flex;
   flex-wrap: wrap;
   margin-bottom: 20px;
