@@ -577,9 +577,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                             data-tippy="Edit Recipient List Name" 
                                             data-name="<?php echo esc_attr($group_name); ?>"></button>
                                 </div>
-                                <p class="num-count">
+                                <!-- <p class="num-count">
                                     Number of Final Recipients: <span><?php echo $result['data']['totalCount']; ?></span>
-                                </p>
+                                </p> -->
                             </div>
                             <div>
                                 <?php echo self::badge($result['data']['totalCount'], $result['data']['totalCount']); ?>
