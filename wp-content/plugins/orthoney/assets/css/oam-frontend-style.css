@@ -2973,7 +2973,11 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 }
 
 #multiStepForm .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter{
-margin-top: 0;
+  margin: 0 20px 0 0;
+  background: #fff;
+  padding: 15px;
+  border-radius: 20px 20px 0 0;
+  width: calc(100% - 23px);
 }
 .orthoney-datatable-warraper #customer-jar-orders-table_filter.dataTables_filter{
    float: none;
