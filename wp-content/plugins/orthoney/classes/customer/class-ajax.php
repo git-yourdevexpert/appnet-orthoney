@@ -1341,6 +1341,8 @@ class OAM_Ajax{
         $exclude_ids = $process_id = $customGreeting = $addressPartsHtml = $successHtml = $newDataHtml = $alreadyOrderHtml  = $failHtml = $duplicateHtml = '';
         $successData = $newData = $failData = $duplicateGroups = $alreadyOrderGroups = [];
         $totalCount = 0;
+        $duplicatePassCount = 0;
+        $duplicateFailCount = 0;
         if($userId != ''){
             $user = $userId;
         }else{
@@ -1425,6 +1427,7 @@ class OAM_Ajax{
                 if (!isset($recordMap[$key])) {
                     $recordMap[$key] = [];
                 }
+                
                 $recordMap[$key][] = $record;
 
 
@@ -1466,6 +1469,7 @@ class OAM_Ajax{
                 if (count($records) > 1) {
                     // This is a group of duplicates
                     $duplicateGroups[] = $records;
+                    
                 } else {
                     // Single record - add to success or fail based on verified status
                     $record = $records[0];
@@ -1500,6 +1504,13 @@ class OAM_Ajax{
                     $duplicateHtml .= '<div class="heading-title"><div><h5 class="table-title">Duplicate Recipient</h5> </div>'.$bulkMargeButtonHtml.'</div>';
                     
                     foreach ($duplicateGroups as $groupIndex => $group) {
+                        foreach($group as $data){
+                            if ($data->verified == 1) {
+                                $duplicatePassCount = $duplicatePassCount + 1;
+                            }else{
+                                $duplicateFailCount = $duplicateFailCount + 1;
+                            }
+                        }
                         $duplicateHtml .= '<tr class="group-header" data-count="'.count($group).'" data-group="99'.($groupIndex + 1).'"><td colspan="12"><strong>'.count($group).'</strong> duplicate records for <strong>'.($group[0]->full_name).'</strong></td></tr>';
                         $duplicateHtml .= OAM_Helper::get_table_recipient_content($group , $customGreeting, 0 , '99'.$groupIndex + 1);
                         
@@ -1584,7 +1595,9 @@ class OAM_Ajax{
                 'failCount'       => count($failData),
                 'alreadyOrderCount'   => count($alreadyOrderGroups),
                 'duplicateCount'  => $totalDuplicates,
-                'groupCount'      => count($duplicateGroups)
+                'groupCount'      => count($duplicateGroups),
+                'duplicatePassCount'    => $duplicatePassCount,
+                'duplicateFailCount'      => $duplicateFailCount
             ];
 
             

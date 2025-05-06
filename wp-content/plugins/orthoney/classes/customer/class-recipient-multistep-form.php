@@ -445,6 +445,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 }
                 $result = json_decode($data, true);
 
+                echo $result['data']['duplicatePassCount'];
+                echo "<br>";
+                echo $result['data']['duplicateFailCount'];
+
                 if(self::$atts_process_id == 0){
                     ?>
                     <div class="heading-title">
@@ -530,7 +534,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 data-successCount="<?php echo $result['data']['successCount']; ?>"
                                 data-newCount="<?php echo $result['data']['newCount']; ?>"
                                 data-failCount="<?php echo $result['data']['failCount']; ?>"
-                                data-duplicateCount="<?php echo $result['data']['duplicateCount']; ?>">
+                                data-duplicateCount="<?php echo $result['data']['duplicateCount']; ?>"
+                                data-duplicatePassCount="<?php echo $result['data']['duplicatePassCount'];?>"
+                                data-duplicateFailCount="<?php echo $result['data']['duplicateFailCount']; ?>">
                                 Next
                             </button>
                         </div>
