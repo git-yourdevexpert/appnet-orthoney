@@ -2040,7 +2040,6 @@ jQuery(document).ready(function ($) {
                 <div class="custom-pdf-export-type-wrapper">
 
                    <label>
-                    PDF Export Type:
                     <select id="custom-pdf-export-type" class="custom-pdf-export-type form-control">
                         <option value="all">PDF Types</option>
                         <option value="2p">2P: Online & paper orders (print version)</option>
