@@ -49,7 +49,7 @@ if (in_array('customer', $user_roles)){
 
 <div class="customer-order-block order-process-block orthoney-datatable-warraper">
     <div class="heading-title"><h3 class="block-title">My Orders</h3></div>
-    <div>
+    <div class="order-filter-tab">
         <label for="main_order">
                 <input type="radio" id="main_order" name="table_order_type" value="main_order" checked>
                 <span>Main Order</span>
