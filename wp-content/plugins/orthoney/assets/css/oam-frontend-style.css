@@ -3247,6 +3247,30 @@ flex-direction: column;
   letter-spacing: .18px;
 }
 .filter-jar-order-by-wc-order{text-decoration: underline;}
+.badge-group{
+display: flex;
+gap:15px;
+}
+.badge-group .badge{
+   color:#333;
+   position: relative;
+   font-size: 23px;
+}
+.badge-group  .badge .badge-number{
+  position: absolute;
+  bottom: 23px;
+  font-size: 12px;
+  width: 25px;
+  height: 25px;
+  border-radius: 100%;
+  background: var(--color-content-secondary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  left: 10px;
+}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
