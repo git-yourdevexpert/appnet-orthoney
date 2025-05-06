@@ -805,6 +805,8 @@ document.addEventListener("DOMContentLoaded", function () {
           const failCount = event.target.getAttribute("data-failcount");
           const alreadyOrderCount = event.target.getAttribute("data-alreadyOrderCount");
           const duplicateCount = event.target.getAttribute("data-duplicatecount");
+          const duplicatePassCount = event.target.getAttribute("data-duplicatePassCount");
+          const duplicateFailCount = event.target.getAttribute("data-duplicateFailCount");
           let html = ``;
 
           if (parseInt(successCount) + parseInt(newCount) == totalCount && failCount == 0) {
@@ -845,9 +847,17 @@ document.addEventListener("DOMContentLoaded", function () {
           if (parseInt(newCount) !== 0) {
             html += `<li><span>New Recipient: </span> ${newCount}</li>`;
           }
-          if (duplicateCount != 0) {
-            html += `<li><span>Duplicate Recipients: </span> ${duplicateCount}</li>`;
-          } 
+          if (duplicateCount !== 0) {
+            if (duplicatePassCount !== 0 && duplicateFailCount !== 0) {
+              html += `<li><span>Duplicate Recipients (Passed): </span> ${duplicatePassCount}</li>`;
+              html += `<li><span>Duplicate Recipients (Failed): </span> ${duplicateFailCount}</li>`;
+            } else if (duplicatePassCount !== 0) {
+              html += `<li><span>Duplicate Recipients: </span> ${duplicatePassCount}</li>`;
+            } else if (duplicateFailCount !== 0) {
+              html += `<li><span>Duplicate Recipients: </span> ${duplicateFailCount}</li>`;
+            }
+          }
+          
           html += `<li class="total-recipients"><span>Total Recipients: </span> ${totalCount}</li>`;
 
           html += `</ul></div>`;
