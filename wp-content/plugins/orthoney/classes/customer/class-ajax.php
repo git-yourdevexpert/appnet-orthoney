@@ -1010,6 +1010,13 @@ class OAM_Ajax{
                     }
                 }
     
+                $quantity = 1;
+                if(!isset($data['quantity'] ) OR $data['quantity'] == 0 OR $data['quantity'] == ''){
+                    $quantity = 1;
+                }else{
+                    $quantity = $data['quantity'];
+                }
+
                 $insert_data = [
                     'user_id'          => get_current_user_id(),
                     'pid'              => $process_id,
@@ -1020,7 +1027,7 @@ class OAM_Ajax{
                     'city'             => sanitize_text_field($data['city']),
                     'state'            => sanitize_text_field($data['state']),
                     'zipcode'          => sanitize_text_field($data['zipcode']),
-                    'quantity'         => max(1, intval($data['quantity'] ?? 1)),
+                    'quantity'         => max(1, intval($quantity ?? 1)),
                     'greeting'         => sanitize_textarea_field($data['greeting']),
                     'verified'         => empty($failure_reasons) ? 1 : 0,
                     'address_verified' => 0,
