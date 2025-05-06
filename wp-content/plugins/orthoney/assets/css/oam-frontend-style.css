@@ -2987,8 +2987,9 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   margin-right: 20px;
 }
 
-.orthoney-datatable-warraper .dataTables_wrapper #customer-orders-table_filter,
-.orthoney-datatable-warraper .dataTables_wrapper #customer-orders-table {
+
+.orthoney-datatable-warraper .dataTables_wrapper #customer-orders-table,
+.orthoney-datatable-warraper .dataTables_wrapper #customer-orders-table_filter {
   display: flex;
   flex-wrap: wrap;
   margin-bottom: 20px;
@@ -2998,9 +2999,9 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   text-align: none;
   background: #fff;
   border-radius: 0 0 10px 10px;
-  padding: 20px 20px 0 20px;
+  padding: 20px 20px 0 20px; 
 }
-
+  
 
 .orthoney-datatable-warraper #customer-jar-orders-table_filter.dataTables_filter{
    float: none;
