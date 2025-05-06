@@ -31,7 +31,11 @@ function VerifyRecipientsDatatable(){
             searching: true,
             responsive: true,
             deferRender: false,
-            lengthChange: false
+            lengthChange: false,
+            language: {
+                search: "",
+                searchPlaceholder: "Search..." 
+              }
           });
     
           // Hide pagination & info if only 1 page
@@ -1827,8 +1831,8 @@ jQuery(document).ready(function ($) {
             `;
 
             $('#customer-jar-orders-table_filter').append(customFilter);
-            $('#customer-jar-orders-table_filter').append('<label>&nbsp;<div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
-            $('#customer-jar-orders-table_filter').append('<label>&nbsp;<div><button class="order-pdf-export w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Pdf</button></div></label>');
+            $('#customer-jar-orders-table_filter').append('<label><div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
+            $('#customer-jar-orders-table_filter').append('<label><div><button class="order-pdf-export w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Pdf</button></div></label>');
 
             $('#customer-jar-orders-table_length').before('<div></div>');
 
@@ -2049,7 +2053,7 @@ jQuery(document).ready(function ($) {
                         <option value="5p">5p</option>
                     </select>
                 </label>
-                <label>&nbsp;<div><button class="order-pdf-export w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Pdf</button></div></label></div>
+                <label><div><button class="order-pdf-export w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Pdf</button></div></label></div>
                 
             `;
             $('#customer-orders-table_filter').append(customFilter);

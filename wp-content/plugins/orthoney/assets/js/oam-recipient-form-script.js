@@ -1625,7 +1625,11 @@ function addRecipientManuallyPopup(reload) {
         searching: true,
         responsive: true,
         deferRender: false,
-        lengthChange: false
+        lengthChange: false,
+        language: {
+          search: "",
+          searchPlaceholder: "Search..." 
+        }
       });
     
       // Reinsert group-header rows and manage pagination on every redraw
@@ -1697,7 +1701,11 @@ function addRecipientManuallyPopup(reload) {
             searching: true,
             responsive: true,
             deferRender: false,
-            lengthChange: false
+            lengthChange: false,
+            language: {
+              search: "",
+              searchPlaceholder: "Search..." 
+            }
           });
     
           // Hide pagination & info if only 1 page
