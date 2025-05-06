@@ -89,7 +89,7 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
 <div class="order-process-block customer-order-details-section">
 
         <div class="heading-title">
-        
+        <div class="order-number">
             <h3>#<?php echo esc_html($sub_order_id); ?> Recipient Order </h3>
             <p>
                 <?php
@@ -114,6 +114,7 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
             endif;
                 ?>
             </p>
+            </div>
         </div>
         <div class="customer-order-details">
             <div class="woocommerce-customer-details">
