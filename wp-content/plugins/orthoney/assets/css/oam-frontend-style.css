@@ -2994,13 +2994,7 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   padding: 20px 20px 0 20px;
 }
 
-#multiStepForm .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter{
-  margin: 0 20px 0 0;
-  background: #fff;
-  padding: 15px;
-  border-radius: 20px 20px 0 0;
-  width: calc(100% - 23px);
-}
+
 .orthoney-datatable-warraper #customer-jar-orders-table_filter.dataTables_filter{
    float: none;
 }
