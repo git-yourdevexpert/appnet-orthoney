@@ -89,38 +89,50 @@ class OAM_Shortcode
     
         $show_see_all = count($total_orders) > $limit;
     
-        ob_start(); ?>
-        <div class="recent-orders">
-            <h3><?php esc_html_e('Recent Orders', OH_DOMAIN); ?></h3>
-            <?php foreach ($orders as $order) :
-                $order_id = $order->get_id();
-                $status = wc_get_order_status_name($order->get_status());
-                $order_date = $order->get_date_created()->date_i18n(get_option('date_format'));
-                $total_price = wc_price($order->get_total());
-                $items = $order->get_items();
-                $first_item = reset($items);
-                $product_name = $first_item ? $first_item->get_name() : esc_html__('N/A', OH_DOMAIN);
-                $quantity = $first_item ? $first_item->get_quantity() : 0;
-            ?>
-                <div class="order-card">
-                    <p><strong><?php esc_html_e('Order ID:', OH_DOMAIN); ?></strong> <?php echo esc_html($order_id); ?></p>
-                    <p><span><strong><?php esc_html_e('Price:', OH_DOMAIN); ?></strong> <?php echo wp_kses_post($total_price); ?></span></p>
-                    <p><strong><?php echo esc_html($product_name); ?></strong></p>
-                    <p><strong><?php esc_html_e('Date:', OH_DOMAIN); ?></strong> <?php echo esc_html($order_date); ?></p>
-                    <p><strong><?php esc_html_e('QTY:', OH_DOMAIN); ?></strong> <?php echo esc_html($quantity); ?></p>
-                    <span class="status <?php echo esc_attr(sanitize_title($status)); ?>"><?php echo esc_html($status); ?></span>
-                    
-                    <a href="<?php echo esc_url($order->get_checkout_order_received_url()); ?>" class="w-btn us-btn-style_1 outline-btn"><?php esc_html_e('Reorder', OH_DOMAIN); ?></a>
-                    <a href="<?php echo esc_url(wc_get_account_endpoint_url('view-order/' . $order_id)); ?>" class="w-btn us-btn-style_1 outline-btn"><?php esc_html_e('Download Invoice', OH_DOMAIN); ?></a>
-                </div>
-            <?php endforeach; ?>
-            <?php if ($show_see_all) : ?>
-                <a href="<?php echo esc_url(wc_get_account_endpoint_url('orders')); ?>" class="w-btn us-btn-style_1 outline-btn"><?php esc_html_e('See All', OH_DOMAIN); ?></a>
-            <?php endif; ?>
-        </div>
+        ob_start(); 
+        
+        $user_id = get_current_user_id();
+        $row_data = OAM_Helper::get_filtered_orders($user_id , 'main_order', 'all', 'all','',false, '', $limit, '');
+
+        ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('Order ID', OH_DOMAIN); ?></th>
+                        <th><?php esc_html_e('Date', OH_DOMAIN); ?></th>
+                        <th><?php esc_html_e('Billing Name', OH_DOMAIN); ?></th>
+                        <th><?php esc_html_e('Organization Code', OH_DOMAIN); ?></th>
+                        <th><?php esc_html_e('QTY', OH_DOMAIN); ?></th>
+                        <th><?php esc_html_e('Price', OH_DOMAIN); ?></th>
+                        <th><?php esc_html_e('Actions', OH_DOMAIN); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($row_data as $order) :
+                        $order_id = $order['order_no'];
+                      
+                        $order_date = $order['date'];
+                        $total_price = $order['price'];
+                        $items = $order['total_recipient'];
+                        
+                        $quantity = $order['total_jar'];
+                    ?>
+                        <tr>
+                            <td><?php echo esc_html($order_id); ?></td>
+                            <td><?php echo esc_html($order_date); ?></td>
+                            <td><?php echo esc_html($order['billing_name']); ?></td>
+                            <td><?php echo esc_html($order['affiliate_code']); ?></td>
+                            <td><?php echo esc_html($quantity); ?></td>
+                            <td><?php echo wp_kses_post($total_price); ?></td>
+                            <td><?php echo $order['action'] ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         <?php
         return ob_get_clean();
     }
+    
    
 
 }

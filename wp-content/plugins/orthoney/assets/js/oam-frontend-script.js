@@ -1796,10 +1796,6 @@ jQuery(document).ready(function ($) {
         drawCallback: function () {
             initTippy();
             $('#customer-jar-orders-table tbody tr.sub-order-row').remove();
-            $('#customer-jar-orders-table tbody tr').each(function () {
-                const $subOrderRow = $('<div class="sub-order-list"></div>');
-                $(this).after($subOrderRow);
-            });
         },
         initComplete: function () {
             $("#customer-jar-orders-table_wrapper").hide();
@@ -1984,10 +1980,6 @@ jQuery(document).ready(function ($) {
         drawCallback: function () {
             initTippy();
             $('#customer-orders-table tbody tr.sub-order-row').remove();
-            $('#customer-orders-table tbody tr').each(function () {
-                const $subOrderRow = $('<div class="sub-order-list"></div>');
-                $(this).after($subOrderRow);
-            });
         },
         initComplete: function () {
             jQuery("#customer-orders-table_length").hide();
@@ -2425,13 +2417,7 @@ document.addEventListener('click', function (event) {
                     target.setAttribute('data-status', 1);
                     const tr = target.closest('tr');
                     let next = tr.nextElementSibling;
-                    while (next && !next.classList.contains('sub-order-list')) {
-                        next = next.nextElementSibling;
-                    }
-
-                    if (next) {
-                        next.style.display = 'table-row'; // or 'block', depending on your markup
-                    }
+                    
                 } else {
                     Swal.fire({
                         title: 'Error',

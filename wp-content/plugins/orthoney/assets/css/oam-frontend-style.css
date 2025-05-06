@@ -24,6 +24,9 @@
 .popup-show h3 {
   font-weight: 600;
 }
+.recipient-view-details-wrapper{
+   margin-bottom: 30px;
+}
 .heading-open-sans h3 {
   font-size: 24px;
   font-weight: 500;
@@ -41,10 +44,20 @@
   text-transform: capitalize;
   display: inline-flex;
   align-items: center;
+  font-size: 13px;
+    line-height: 1.2 !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: var(--color-content-secondary);
+    color: #fff !important;
+    border: 0 !important;
+}
+.order-process-block .w-btn:hover{
+  background: var(--color-content-link) !important;
 }
 .order-process-block .w-btn.outline-btn {
   background: transparent;
-  border: 1px solid #ccc;
+  border: 1px solid #ccc !important;
   color: #333 !important;
 }
 .order-process-block .w-btn.outline-btn.sm-btn {
@@ -884,13 +897,24 @@ body.woocommerce .quantity input.input-box:focus {
   padding: 10px 20px;
   display: flex;
   justify-content: center;
-  min-height: 100px;
   align-items: center;
   border-radius: 8px;
   flex-direction: column;
   gap: 10px;
   height: 100%;
   color: #333;
+}
+
+.order-process-block label:has(input[type="radio"]) span,
+.order-process-block label:has(input[type="radio"]){
+  border-radius: 4px;
+}
+
+.order-process-block input:checked+span,
+.order-process-block input[type="radio"]:checked+span{
+  background: var(--color-content-secondary);
+  color:#ffffff;
+  border-radius: 4px; 
 }
 .order-process-block .address-icon {
   width: 30px;
@@ -1094,6 +1118,20 @@ body.woocommerce .quantity input.input-box:focus {
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+}
+
+.customer-order-details-section h3{margin-bottom: 10px;}
+.order-process-block .customer-order-details{
+  margin-bottom: 18px;
+  display: flex;
+  gap: 20px;
+}
+.order-process-block .customer-order-details .woocommerce-customer-details{
+  border-radius: 18px;
+  padding: 30px;
+  border: 1px solid #dee2e6;
+  color: #333;
+  background-color: #ffffff;
 }
 .order-process-block .heading-title .table-title {
   margin: 0;
@@ -2533,6 +2571,20 @@ body .woocommerce .order-process-block .button {
   align-items: center;
   gap: 5px;
 }
+
+.icon-txt-btn{
+  background-color: transparent;
+  border: none;
+  text-transform: capitalize;
+  text-decoration: underline;
+  font-size: 14px;
+  text-underline-offset: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.icon-txt-btn img,
 .action-link img,
 .list-user-img {
   object-fit: contain;
@@ -2900,11 +2952,23 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 .woocommerce h6 {
   font-family: var(--h1-font-family) !important;
 }
-.orthoney-datatable-warraper .dataTables_wrapper>div {
+.orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter {
   display: flex;
   flex-wrap: wrap;
   margin-bottom: 20px;
   font-size: 13px;
+  column-gap: 20px;
+  text-align: none;
+  margin-top: 20px;
+}
+.orthoney-datatable-warraper #customer-jar-orders-table_filter.dataTables_filter{
+   float: none;
+}
+
+.orthoney-datatable-warraper .dataTables_wrapper label{
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-content-heading);
 }
 .orthoney-datatable-warraper .dataTables_wrapper label span {
   min-height: auto !important;
@@ -2925,6 +2989,77 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   font-size: 13px;
   height: 35px;
   background: #fff;
+  display: block;
+}
+.orthoney-datatable-warraper table#customer-jar-orders-table tbody td:nth-child(2){
+  white-space: nowrap;
+
+}
+
+.orthoney-datatable-warraper .dataTables_wrapper label span.select2-selection{
+  border-radius: 4px;
+  height: 35px;
+  line-height: 35px;
+}
+
+.orthoney-datatable-warraper .dataTables_wrapper label .select2-container--default .select2-selection--single .select2-selection__placeholder{    font-size: 13px;
+  color: #809197;}
+
+  .orthoney-datatable-warraper .dataTables_wrapper label .selection .woocommerce-ordering:after, 
+  .orthoney-datatable-warraper .dataTables_wrapper label  .selection .woocommerce-select:after, .selection .select2-selection:after{
+    position: absolute;
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-right: 3px solid #809197;
+    border-top: 3px solid #809197;
+    transform: rotate(135deg);
+    margin-right: 0;
+    margin-left: 0;
+    font-size: 0;
+    right: 6px;
+    bottom: 0;
+    margin: auto;
+    top:0
+  }
+
+  .orthoney-datatable-warraper .dataTables_wrapper label.customer-select-filter span.select2 {
+    width: 250px;
+       }
+.orthoney-datatable-warraper .dataTables_wrapper label.yearblock{
+max-width: 130px;
+}
+
+
+.orthoney-datatable-warraper .dataTables_wrapper label.rangeblock{
+display: flex;
+flex-direction: column;
+}
+.orthoney-datatable-warraper .dataTables_wrapper label.rangeblock label{
+   order: 1;
+}
+.orthoney-datatable-warraper .dataTables_wrapper label.rangeblock .ui-slider {
+  order: 2;
+  margin:12px 0 0 0;
+}
+
+.orthoney-datatable-warraper .dataTables_wrapper label.rangeblock input{
+  order: 3;
+  background-color: transparent;
+  border: 0;
+  box-shadow: none;
+  text-align: center;
+}
+
+.orthoney-datatable-warraper .dataTables_wrapper .custom-pdf-export-type-wrapper{
+  display: flex;
+      width: 100%;
+      gap: 15px;
+      margin-bottom: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #c8c8c8;
+      margin-top: 20px;
 }
 .orthoney-datatable-warraper table {
   border-collapse: separate;
@@ -3101,6 +3236,7 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   line-height: 19px;
   letter-spacing: .18px;
 }
+.filter-jar-order-by-wc-order{text-decoration: underline;}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,

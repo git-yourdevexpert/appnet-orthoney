@@ -30,6 +30,21 @@ if ($redirect_back_user_id) {
                     ?>
                     
                 </div>
+
+                <div class="one-col-grid">
+                <div class="recipient-lists-block custom-table">
+                        <div class="row-block">
+                            <h4>Recent Orders</h4>
+                            <div class="see-all">
+                                <a class="w-btn us-btn-style_1" href="<?php echo esc_url(OAM_Helper::$customer_dashboard_link.'orders/') ?>">See all</a> 
+                            </div>
+                        </div>
+                        <?php 
+                        echo do_shortcode('[recent_orders limit="5"]');
+                        ?>
+                    </div>
+                    
+                </div>
                 <div class="two-col-grid">
                     <div class="cl-left">
                         <?php 
