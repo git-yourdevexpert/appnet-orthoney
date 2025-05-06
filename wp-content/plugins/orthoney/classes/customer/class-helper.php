@@ -404,7 +404,7 @@ class OAM_Helper{
                 
                 // Final SQL
                 $sql = $wpdb->prepare(
-                    "SELECT DISTINCT orders.* FROM $orders_table AS orders
+                    "SELECT DISTINCT orders.* ,rel.order_id as rel_oid FROM $orders_table AS orders
                      $join
                      WHERE " . implode(' AND ', $where_conditions) . "
                      ORDER BY orders.date_updated_gmt DESC
@@ -491,7 +491,8 @@ class OAM_Helper{
         global $wpdb;
         $user_id = get_current_user_id();
         $orders_table = $wpdb->prefix . 'wc_orders';
-    
+        $jar_order_id = $order_data->rel_oid;
+
         $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order_data->date_created_gmt));
         $billing_name = $order_obj->get_billing_first_name() . ' ' . $order_obj->get_billing_last_name();
         $shipping_name = $order_obj->get_shipping_first_name() . ' ' . $order_obj->get_shipping_last_name();
@@ -562,7 +563,7 @@ class OAM_Helper{
             'shipping_name' => esc_html($shipping_name),
             'affiliate_code' => esc_html($referral_id),
             'total_jar' => esc_html($total_quantity),
-            'total_recipient' => "<a class='filter-jar-order-by-wc-order' href='javascript:;'>".$jarsorder_count."</a>",
+            'total_recipient' => "<a id=".$jar_order_id." onclick='jarfilter_trigger(\"$jar_order_id\")' class='filter-jar-order-by-wc-order' href='javascript:;'>".$jarsorder_count."</a>",
             //'type' => esc_html($order_type),
             //'status' => !empty($status_html) ? $status_html : 'Recipient Order is Preparing.',
             'price' => $order_total,
