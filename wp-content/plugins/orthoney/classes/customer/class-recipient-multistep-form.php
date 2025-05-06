@@ -122,6 +122,11 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         OAM_COMMON_Custom::set_affiliate_cookie($affiliate);
         ?>
         <div class="step" id="step1">
+            <div class="heading-title">
+            <div></div><div>
+                    <?php echo self::badge(0,0) ?>
+                </div>
+            </div>
             <div class="g-cols wpb_row via_grid laptops-cols_inherit tablets-cols_inherit mobiles-cols_1 valign_top type_default step-one">
                 <div class="organization-step">
                     <h3 class="block-title">Select an Organization</h3>
@@ -207,6 +212,11 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         }
         ?>
         <div class="step" id="step2">
+            <div class="heading-title">
+            <div></div><div>
+                    <?php echo self::badge(0,0) ?>
+                </div>
+            </div>
             <div class="wpb_column vc_column_container">
                 <div class="vc_column-inner">
                     <div class="g-cols wpb_row via_grid laptops-cols_inherit tablets-cols_inherit mobiles-cols_1 valign_top type_default">
@@ -443,15 +453,15 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 Recipient List Name: <strong><?php echo $group_name; ?></strong><button class="editProcessName far fa-edit" data-name="<?php echo $group_name; ?>" data-tippy="Edit Recipient List Name"></button>
                             </div>
                             <?php if ($result['data']['totalCount'] != 0) : ?>
-                                <p class="num-count">Number of Recipients: <span><?php echo $result['data']['totalCount']; ?></span></p>
+                                <!-- <p class="num-count">Number of Recipients: <span><?php echo $result['data']['totalCount']; ?></span></p> -->
                             <?php endif; ?>
                             
                         </div>
                         <div>
-                            <div>
-                                <button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button><br>
-                                <!-- <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove recipient for the already placed order">Remove recipient</button> -->
-                            </div>
+                            <!-- <button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button><br> -->
+                            <!-- <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove recipient for the already placed order">Remove recipient</button> -->
+
+                            <?php echo self::badge($result['data']['totalCount'],$result['data']['totalCount']) ?>
                         </div>
                     </div>
                     <?php
@@ -558,12 +568,24 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         if($result['data']['totalCount'] === 1){
                             echo "<style>.deleteRecipient {display:none !important}</style>";
                         }
-                        echo '<div class="heading-title"><div>';
-                        echo '<div class="group-name">Recipient List Name: <strong>' . $group_name . '</strong>';
-                        echo '<button class="editProcessName far fa-edit" data-tippy="Edit Recipient List Name" data-name="' . $group_name . '"></button></div>';
-                        echo '<p class="num-count">Number of Final Recipients: <span>' . $result['data']['totalCount'] . '</span></p>';
-                        echo '</div></div>';
-
+                        ?>
+                        <div class="heading-title">
+                            <div>
+                                <div class="group-name">
+                                    Recipient List Name: <strong><?php echo $group_name; ?></strong>
+                                    <button class="editProcessName far fa-edit" 
+                                            data-tippy="Edit Recipient List Name" 
+                                            data-name="<?php echo esc_attr($group_name); ?>"></button>
+                                </div>
+                                <p class="num-count">
+                                    Number of Final Recipients: <span><?php echo $result['data']['totalCount']; ?></span>
+                                </p>
+                            </div>
+                            <div>
+                                <?php echo self::badge($result['data']['totalCount'], $result['data']['totalCount']); ?>
+                            </div>
+                        </div>
+                        <?php
                         echo '<div class="recipient-group-nav">';
                         if ($result['data']['unverifiedRecordCount'] > 0) {
                             echo '<button class="scroll-section-btn" data-section="unverified-block">Unverified Addresses (' . $result['data']['unverifiedRecordCount'] . ')</button>';
@@ -666,6 +688,21 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         <?php
     }
 
+    public static function badge($jar = 0, $recipient = 0){
+        ?>
+        <div class="badge-group">
+            <div class="badge">
+                <i class="fas fa-cart-plus"></i>
+                <span class="badge-number"><?php echo $jar; ?></span>
+            </div>
+            <div class="badge">
+                <i class="fas fa-cart-plus"></i>
+                <span class="badge-number"><?php echo $recipient ; ?></span>
+            </div>
+            
+        </div>
+        <?php
+    }
     public static function popups(){
         echo OAM_Helper::manage_recipient_popup();
         echo OAM_Helper::view_details_recipient_popup();

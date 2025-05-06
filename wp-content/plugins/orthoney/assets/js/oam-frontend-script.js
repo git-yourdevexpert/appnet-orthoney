@@ -23,6 +23,10 @@ function VerifyRecipientsDatatable(){
           // Initialize DataTable
           const dataTable = $table.DataTable({
             paging: false,
+            scrollY: '500px',
+            paging: false,
+            fixedHeader: true,
+            scrollCollapse: true,
             info: true,
             searching: true,
             responsive: true,

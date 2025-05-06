@@ -1608,6 +1608,10 @@ function addRecipientManuallyPopup(reload) {
       const dataTable = tableEl.DataTable({
         paging: false,
         info: true,
+        scrollY: '500px',
+        paging: false,
+        fixedHeader: true,
+        scrollCollapse: true,
         searching: true,
         responsive: true,
         deferRender: false,
@@ -1676,6 +1680,10 @@ function addRecipientManuallyPopup(reload) {
           const dataTable = $table.DataTable({
             paging: false,
             info: true,
+            scrollY: '500px',
+            paging: false,
+            fixedHeader: true,
+            scrollCollapse: true,
             searching: true,
             responsive: true,
             deferRender: false,
