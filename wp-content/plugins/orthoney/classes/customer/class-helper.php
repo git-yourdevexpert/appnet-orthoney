@@ -526,6 +526,8 @@ class OAM_Helper{
     // Helper to build row array for a main or sub order
     public static function build_order_row($order_data, $order_obj, $order_type, $total_quantity, $parent_order = null) {
         global $wpdb;
+                $jar_order_id = $order_data->rel_oid;
+
         $user_id = get_current_user_id();
         $orders_table = $wpdb->prefix . 'wc_orders';
     
