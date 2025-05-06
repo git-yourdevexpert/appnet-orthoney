@@ -1902,6 +1902,30 @@ jQuery(document).ready(function ($) {
     });
 });
 
+
+function jarfilter_trigger(jarOrderId) {
+    // 1. Click the radio input
+    //e.preventDefault();
+
+    var $radio = jQuery('#sub_order_order');
+    if ($radio.length && !$radio.prop('checked')) {
+        $radio.prop('checked', true).trigger('change');
+    }
+
+    // 2. Set value in the DataTables search input
+    var $searchInput = jQuery('#customer-jar-orders-table_filter input[type=search]');
+    if ($searchInput.length) {
+        $searchInput.val(jarOrderId);
+
+        if (jQuery.fn.dataTable.isDataTable('#customer-jar-orders-table')) {
+            jQuery('#customer-jar-orders-table').DataTable().search(jarOrderId).draw();
+        } else {
+            $searchInput.trigger('input');
+        }
+    }
+}
+
+
 /**
  * Recipient Order End
  */
