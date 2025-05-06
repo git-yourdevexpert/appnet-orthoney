@@ -1065,7 +1065,8 @@ body.woocommerce .quantity input.input-box:focus {
 .custom-table button.far.fa-edit:hover,
 .order-process-block a.far.fa-edit:hover,
 .order-process-block button.far.fa-eye:hover,
-.order-process-block a.far.fa-eye:hover {
+.order-process-block a.far.fa-eye:hover,
+.recipient-lists-block a.far.fa-eye:hover {
   color: #007bff;
 }
 .order-process-block button.far.fa-trash:hover,
