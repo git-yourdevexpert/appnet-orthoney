@@ -1409,15 +1409,18 @@ class OAM_Ajax{
             
             // First pass: Group records by their unique combination
             $recordMap = [];
+
+            $total_quantity = 0;
             
             foreach ($allRecords as $record) {
+
                 // Create unique key for comparison
                 $key = $record->full_name . '|' . 
                         str_replace($record->address_1, ',' , '' ). ' ' . str_replace($record->address_2 , ',' , '') . '|' . 
                        $record->city . '|' . 
                        $record->state . '|' . 
                        $record->zipcode;
-                
+                $total_quantity = $total_quantity + $record->quantity;
                 // Store record in the map
                 if (!isset($recordMap[$key])) {
                     $recordMap[$key] = [];
@@ -1575,6 +1578,7 @@ class OAM_Ajax{
                 'duplicateData'   => $duplicateHtml,
                 'duplicateGroups' => $duplicateGroups,
                 'totalCount'      => $totalCount,
+                'total_quantity'  => $total_quantity,
                 'successCount'    => count($successData),
                 'newCount'        => count($newData),
                 'failCount'       => count($failData),

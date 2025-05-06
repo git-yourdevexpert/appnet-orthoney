@@ -461,7 +461,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             <!-- <button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button><br> -->
                             <!-- <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove recipient for the already placed order">Remove recipient</button> -->
 
-                            <?php echo self::badge($result['data']['totalCount'],$result['data']['totalCount']) ?>
+                            <?php echo self::badge($result['data']['total_quantity'],$result['data']['totalCount']) ?>
                         </div>
                     </div>
                     <?php
@@ -582,7 +582,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 </p> -->
                             </div>
                             <div>
-                                <?php echo self::badge($result['data']['totalCount'], $result['data']['totalCount']); ?>
+                                <?php echo self::badge($result['data']['total_quantity'], $result['data']['totalCount']); ?>
                             </div>
                         </div>
                         <?php
