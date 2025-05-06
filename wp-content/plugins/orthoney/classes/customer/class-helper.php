@@ -183,7 +183,6 @@ class OAM_Helper{
         ? (int) $_REQUEST['selected_year'] 
         : 2025;
 
-
         
         $where_clauses = [];
         $params = [];
@@ -197,6 +196,20 @@ class OAM_Helper{
         $where_clauses[] = "YEAR(created_date) = %d";
         $params[] = $selected_year;
         
+
+        if (!empty($_REQUEST['search_by_organization'])) {
+            $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
+        
+            $where_clauses[] = "(
+                CAST(order_id AS CHAR) = %s
+                OR affiliate_token LIKE %s
+            )";
+        
+            $params[] = $search_by_organization;
+            $params[] = '%' . $wpdb->esc_like($search_by_organization) . '%';
+        }
+
+
             if ($selected_customer_id) {
                 $where_clauses[] = "user_id = %d";
                 $params[] = $selected_customer_id;
@@ -303,14 +316,12 @@ class OAM_Helper{
         return $filtered_orders;
     }
 
-
-    public static  function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
+     public static  function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
         global $wpdb;
 
         $orders_table = $wpdb->prefix . 'wc_orders';
         $order_meta_table = $wpdb->prefix . 'wc_orders_meta';
         $recipient_ordertable = $wpdb->prefix . 'oh_recipient_order';
-
         $order_relation = $wpdb->prefix . 'oh_wc_order_relation';
 
 
@@ -342,7 +353,31 @@ class OAM_Helper{
                 // Join with the optimized relation table
                 $join .= "INNER JOIN $order_relation AS rel ON rel.wc_order_id = orders.id";
 
+                $join .= " LEFT JOIN $recipient_ordertable AS rec ON rec.order_id = orders.id";
 
+
+
+
+                if (!empty($_REQUEST['search_by_organization'])) {
+                    $where_conditions[] = "(
+                        CAST(orders.id AS CHAR) = %s 
+                        OR rel.affiliate_code LIKE %s
+                    )";
+                
+                    $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
+                
+                    $where_values[] = $search_by_organization;
+                    $where_values[] = '%' . $wpdb->esc_like($search_by_organization) . '%';
+                }
+
+                if (!empty($_REQUEST['search_by_recipient'])) {
+                    $search_by_recipient = sanitize_text_field($_REQUEST['search_by_recipient']);
+                
+                    // Compare against full_name column in oh_recipient_order (aliased as rec)
+                    $where_conditions[] = "rec.full_name LIKE %s";
+                    $where_values[] = '%' . $wpdb->esc_like($search_by_recipient) . '%';
+                }
+                
                 
                 if (!empty($search_term)) {
                     $join .= " LEFT JOIN $order_addresses AS addr ON addr.order_id = orders.id AND addr.address_type = 'billing' ";
@@ -404,7 +439,7 @@ class OAM_Helper{
                 
                 // Final SQL
                 $sql = $wpdb->prepare(
-                    "SELECT DISTINCT orders.* FROM $orders_table AS orders
+                    "SELECT DISTINCT orders.*, rel.order_id as rel_oid FROM $orders_table AS orders
                      $join
                      WHERE " . implode(' AND ', $where_conditions) . "
                      ORDER BY orders.date_updated_gmt DESC
@@ -439,6 +474,8 @@ class OAM_Helper{
 
 
       foreach ($main_orders as $main_data) {
+
+
             $order_id = $main_data->id;
             $main_status = $main_data->status;
 

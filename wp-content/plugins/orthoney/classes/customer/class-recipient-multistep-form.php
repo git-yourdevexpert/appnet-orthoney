@@ -445,10 +445,6 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 }
                 $result = json_decode($data, true);
 
-                echo $result['data']['duplicatePassCount'];
-                echo "<br>";
-                echo $result['data']['duplicateFailCount'];
-
                 if(self::$atts_process_id == 0){
                     ?>
                     <div class="heading-title">

@@ -2376,7 +2376,7 @@ class OAM_Ajax{
     //code update by db
     // Shared helper method to avoid repeating logic
     // AJAX: Load orders for display
-    public function orthoney_customer_order_process_ajax_handler() {
+    public function orthoney_customer_order_process_ajax_handler_oldss() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
 
@@ -2517,6 +2517,232 @@ class OAM_Ajax{
                             // Year filter
             $where_clauses[] = "YEAR(created_date) = %d";
             $params[] = $selected_year;
+
+            
+            // Add user restriction for non-admins
+            if ($selected_customer_id) {
+                $where_clauses[] = "user_id = %d";
+                $params[] = $selected_customer_id;
+            }
+            if (!empty($search_val)) {
+                $where_clauses[] = "(order_id LIKE %s OR full_name LIKE %s)";
+                $search_param = '%' . $wpdb->esc_like($search_val) . '%';
+                $params[] = $search_param;
+                $params[] = $search_param;
+            }
+
+            // Build WHERE clause
+            $where_sql = '';
+            if (!empty($where_clauses)) {
+                $where_sql = 'WHERE ' . implode(' AND ', $where_clauses);
+            }
+            
+            // Prepare the final count query
+            $sql = $wpdb->prepare(
+                "SELECT COUNT(id) FROM {$jar_table} $where_sql",
+                ...$params
+            );
+            
+            $total_orders = $wpdb->get_var($sql);
+            
+        } else {
+            // Non-admin sees only their orders
+            $sql = $wpdb->prepare(
+                "SELECT COUNT(id) FROM {$jar_table} WHERE user_id = %d",
+                $user_id
+            );
+            $total_orders = $wpdb->get_var($sql);
+        }
+
+        }
+
+        wp_send_json([
+            'draw' => $draw,
+            'recordsTotal' => $total_orders,
+            'recordsFiltered' =>$total_orders,
+            'data' => $filtered_orders,
+        ]);
+        wp_die();
+    }
+
+    public function orthoney_customer_order_process_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+
+        $user_id = get_current_user_id();
+        $table_order_type = sanitize_text_field($_POST['table_order_type'] ?? 'main_order');
+        $custom_order_type = sanitize_text_field($_POST['custom_order_type'] ?? 'all');
+        $custom_order_status = sanitize_text_field($_POST['custom_order_status'] ?? 'all');
+
+        $selected_customer_id = sanitize_text_field($_POST['selected_customer_id'] ?? '');
+
+        $search = sanitize_text_field($_POST['search']['value'] ?? '');
+        $draw = intval($_POST['draw']);
+        $start = intval($_POST['start']);
+        $length = intval($_POST['length']);
+
+        $orders_table = $wpdb->prefix . 'wc_orders';
+
+        $jar_table = $wpdb->prefix . 'oh_recipient_order';
+        $order_meta_table = $wpdb->prefix . 'wc_orders_meta';
+        $recipient_ordertable = $wpdb->prefix . 'oh_recipient_order';
+        $order_relation = $wpdb->prefix . 'oh_wc_order_relation';
+        $order_addresses = $wpdb->prefix . 'wc_order_addresses';
+
+
+
+         $table_order_type;
+        if ($table_order_type === 'main_order') {
+
+        $filtered_orders = OAM_Helper::get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, false,  $start, $length, $selected_customer_id);
+
+            if ( current_user_can('administrator') ) {
+
+                $count_where_conditions = []; // As array for consistency
+                $count_where_values = [];
+                $count_join = "INNER JOIN $order_relation AS rel ON rel.wc_order_id = orders.id";
+                $count_join .= " LEFT JOIN $recipient_ordertable AS rec ON rec.order_id = orders.id";
+
+                
+                // Order type
+                if (!empty($_REQUEST['custom_order_type'])) {
+                    if ($_REQUEST['custom_order_type'] === "multiple_address") {
+                        $count_where_conditions[] = "rel.order_type = %s";
+                        $count_where_values[] = 'multi_address';
+                    } elseif ($_REQUEST['custom_order_type'] === "single_address") {
+                        $count_where_conditions[] = "rel.order_type = %s";
+                        $count_where_values[] = 'single_address';
+                    }
+                }
+
+                
+                if (!empty($_REQUEST['search_by_organization'])) {
+                    $count_where_conditions[] = "(
+                        CAST(orders.id AS CHAR) = %s 
+                        OR rel.affiliate_code LIKE %s
+                    )";
+                
+                    $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
+                
+                    $count_where_values[] = $search_by_organization;
+                    $count_where_values[] = '%' . $wpdb->esc_like($search_by_organization) . '%';
+                }
+
+                if (!empty($_REQUEST['search_by_recipient'])) {
+                    $search_by_recipient = sanitize_text_field($_REQUEST['search_by_recipient']);
+                    $count_where_conditions[] = "rec.full_name LIKE %s";
+                    $count_where_values[] = '%' . $wpdb->esc_like($search_by_recipient) . '%';
+                }
+
+                
+
+                
+
+                if (!empty($search)) {
+                    $count_join .= " LEFT JOIN $order_addresses AS addr ON addr.order_id = orders.id AND addr.address_type = 'billing' ";
+                    
+                    // Use CONCAT to match full name (first_name + last_name)
+                    $count_where_conditions[] = "(orders.id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s)";
+                    $count_where_values[] = (int) $search;
+                    $count_where_values[] = '%' . $wpdb->esc_like($search) . '%';
+                }
+
+                // Order status
+                if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] != "all") {
+                    $count_where_conditions[] = "orders.status = %s";
+                    $count_where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
+                }
+                
+                // Customer ID
+                if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
+                    $count_where_conditions[] = "orders.customer_id = %d";
+                    $count_where_values[] = intval($_REQUEST['selected_customer_id']);
+                }
+                
+                // Quantity
+                if (
+                    isset($_REQUEST['selected_min_qty'], $_REQUEST['selected_max_qty']) &&
+                    is_numeric($_REQUEST['selected_min_qty']) &&
+                    is_numeric($_REQUEST['selected_max_qty'])
+                ) {
+                    $count_where_conditions[] = "rel.quantity BETWEEN %d AND %d";
+                    $count_where_values[] = intval($_REQUEST['selected_min_qty']);
+                    $count_where_values[] = intval($_REQUEST['selected_max_qty']);
+                }
+                
+                // Year filter
+                $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
+                $count_where_conditions[] = "YEAR(orders.date_created_gmt) = %d";
+                $count_where_values[] = $year;
+                
+                // Build final SQL
+                $count_sql = $wpdb->prepare(
+                    "SELECT COUNT(orders.id) FROM {$orders_table} AS orders
+                     $count_join
+                     WHERE " . implode(' AND ', $count_where_conditions),
+                    ...$count_where_values
+                );
+                
+                $total_orders = $wpdb->get_var($count_sql);
+                
+               // echo $count_sql;
+                
+            } else {
+                // Non-admin sees only their orders
+                $sql = $wpdb->prepare(
+                    "SELECT COUNT(id) FROM {$orders_table}
+                     WHERE customer_id = %d
+                     AND type = %s",
+                    $user_id, 'shop_order'
+                );
+                $total_orders = $wpdb->get_var($sql);
+                
+            }
+
+        }else if($table_order_type === 'sub_order_order'){
+
+         $filtered_orders = OAM_Helper::get_jars_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, false,  $start, $length);
+         if ( current_user_can('administrator') ) {
+
+            
+            $min_qty = isset($_REQUEST['selected_min_qty']) && is_numeric($_REQUEST['selected_min_qty']) ? (int) $_REQUEST['selected_min_qty'] : 1;
+            $max_qty = isset($_REQUEST['selected_max_qty']) && is_numeric($_REQUEST['selected_max_qty']) ? (int) $_REQUEST['selected_max_qty'] : 1000;
+
+
+            $selected_customer_id = isset($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id']) ? (int) $_REQUEST['selected_customer_id'] : '';
+
+            $search_val = isset($_REQUEST['search']['value']) ? sanitize_text_field($_REQUEST['search']['value']) : '';
+
+            $selected_year = isset($_REQUEST['selected_year']) && is_numeric($_REQUEST['selected_year']) 
+            ? (int) $_REQUEST['selected_year'] 
+            : 2025;
+    
+            
+            
+            $where_clauses = [];
+            $params = [];
+            
+            // Quantity filter
+            $where_clauses[] = "quantity BETWEEN %d AND %d";
+            $params[] = $min_qty;
+            $params[] = $max_qty;
+
+                            // Year filter
+            $where_clauses[] = "YEAR(created_date) = %d";
+            $params[] = $selected_year;
+
+            if (!empty($_REQUEST['search_by_organization'])) {
+                $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
+            
+                $where_clauses[] = "(
+                    CAST(order_id AS CHAR) = %s
+                    OR affiliate_token LIKE %s
+                )";
+            
+                $params[] = $search_by_organization;
+                $params[] = '%' . $wpdb->esc_like($search_by_organization) . '%';
+            }
+
 
             
             // Add user restriction for non-admins
