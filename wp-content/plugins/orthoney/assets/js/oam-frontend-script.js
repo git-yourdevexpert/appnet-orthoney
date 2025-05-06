@@ -1850,11 +1850,15 @@ jQuery(document).ready(function ($) {
                 $('.jar-search-by-organization').on('input', function (e) {
                 var searchrecipient = $(this).val();
 
+                if(searchrecipient == ""){
+                     table.ajax.reload(); // Reload DataTable via AJAX
+                }
+
                 if (searchrecipient.length > 2) {
                     table.ajax.reload(); // Reload DataTable via AJAX
                 }    
              });
-                
+
 
             $('#jar-select-customer').select2({
                 placeholder: 'Search',
@@ -2123,6 +2127,10 @@ jQuery(document).ready(function ($) {
             });
               $('.search-recipient-name, .search-by-organization').on('input', function (e) {
                 var searchrecipient = $(this).val();
+
+                   if(searchrecipient == ""){
+                     table.ajax.reload(); // Reload DataTable via AJAX
+                }
 
                 if (searchrecipient.length > 2) {
                     table.ajax.reload(); // Reload DataTable via AJAX
