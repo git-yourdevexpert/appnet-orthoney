@@ -903,20 +903,35 @@ body.woocommerce .quantity input.input-box:focus {
   gap: 10px;
   height: 100%;
   color: #333;
-  background-color: #dee2e6;
+
 }
 
 .order-process-block label:has(input[type="radio"]) span,
 .order-process-block label:has(input[type="radio"]){
-  border-radius: 4px 4px 0 0;
+  border-radius: 4px;
 }
 
 .order-process-block input:checked+span,
 .order-process-block input[type="radio"]:checked+span{
+
+  border-radius: 4px; 
+}
+.order-process-block .order-filter-tab label:has(input[type="radio"]) span {
+  background-color: #dee2e6;
+}
+
+.order-process-block .order-filter-tab label:has(input[type="radio"]) span,
+.order-process-block .order-filter-tab label:has(input[type="radio"]){
+  border-radius: 4px 4px 0 0;
+}
+
+.order-process-block .order-filter-tab input:checked+span,
+.order-process-block .order-filter-tab input[type="radio"]:checked+span{
   background: #ffffff;
   color:#333333 !important;
   border-radius: 4px 4px 0 0; 
 }
+
 .order-process-block .address-icon {
   width: 30px;
   height: 30px;
@@ -924,6 +939,7 @@ body.woocommerce .quantity input.input-box:focus {
 .order-process-block input:checked+span .address-icon {
   filter: brightness(0) saturate(100%) invert(98%) sepia(12%) saturate(347%) hue-rotate(243deg) brightness(116%) contrast(100%);
 }
+
 .order-process-block label:has(input[type="radio"]) input {
   position: absolute;
   top: -10px;
