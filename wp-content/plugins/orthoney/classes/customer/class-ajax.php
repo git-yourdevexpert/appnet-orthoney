@@ -1519,7 +1519,7 @@ class OAM_Ajax{
                     $successHtml .= '<div class="heading-title">
                     <div><h5 class="table-title">Verified Recipients</h5></div>
                     <div class="links-group">
-                    <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove all recipients who have already placed an order this season.">Remove Already Ordered Recipients</button>
+                    <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove all recipients who have already placed an order this season.">Remove Already Ordered Recipients</button><div class="vline"></div>
                     <button class="viewSuccessRecipientsAlreadyOrder btn-underline" data-status="0" data-tippy="View all recipients who have already placed an order this season." style="display:none">View Already Ordered Recipients</button>
                     </div></div>';
                     $successHtml .=  OAM_Helper::get_table_recipient_content($successData , $customGreeting);
