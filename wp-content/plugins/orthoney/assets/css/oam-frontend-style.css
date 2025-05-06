@@ -903,18 +903,19 @@ body.woocommerce .quantity input.input-box:focus {
   gap: 10px;
   height: 100%;
   color: #333;
+  background-color: #dee2e6;
 }
 
 .order-process-block label:has(input[type="radio"]) span,
 .order-process-block label:has(input[type="radio"]){
-  border-radius: 4px;
+  border-radius: 4px 4px 0 0;
 }
 
 .order-process-block input:checked+span,
 .order-process-block input[type="radio"]:checked+span{
-  background: var(--color-content-secondary);
-  color:#ffffff;
-  border-radius: 4px; 
+  background: #ffffff;
+  color:#333333;
+  border-radius: 4px 4px 0 0; 
 }
 .order-process-block .address-icon {
   width: 30px;
@@ -2970,6 +2971,9 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   column-gap: 20px;
   text-align: none;
   margin-top: 20px;
+  background: #fff;
+  border-radius: 0 0 10px 10px;
+  padding-bottom: 0;
 }
 
 #multiStepForm .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter{
@@ -3072,12 +3076,13 @@ flex-direction: column;
 
 .orthoney-datatable-warraper .dataTables_wrapper .custom-pdf-export-type-wrapper{
   display: flex;
-      width: 100%;
+      width: calc(100% + 40px);
       gap: 15px;
-      margin-bottom: 30px;
       padding-top: 20px;
       border-top: 1px solid #c8c8c8;
-      margin-top: 20px;
+      background: #f0f4f7;
+      margin: 20px -20px 0;
+      justify-content: end;
 }
 .orthoney-datatable-warraper table {
   border-collapse: separate;
