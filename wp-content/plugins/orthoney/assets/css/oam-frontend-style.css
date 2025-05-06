@@ -1037,7 +1037,8 @@ body.woocommerce .quantity input.input-box:focus {
 }
 .order-process-block button.far,
 .custom-table button.far,
-.order-process-block a.far {
+.order-process-block a.far,
+.recipient-lists-block a.far {
   background-color: #f0f4f7;
   display: inline-flex;
   margin-left: 0;
@@ -1049,6 +1050,7 @@ body.woocommerce .quantity input.input-box:focus {
   font-size: 15px;
   color: inherit;
 }
+.recipient-lists-block a.far:hover,
 .order-process-block button.far:hover,
 .order-process-block a.far:hover,
 .custom-table button.far:hover {
