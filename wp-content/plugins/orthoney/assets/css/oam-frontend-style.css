@@ -3740,6 +3740,7 @@ flex-direction: column;
     border-left: 0px;
     padding-left: 0;
     position: relative;
+    margin: 0;
   }
   .incomplete-order-block.order-process-block .thead-data:after,
   .incomplete-order-block.custom-table table td .thead-data:after,
