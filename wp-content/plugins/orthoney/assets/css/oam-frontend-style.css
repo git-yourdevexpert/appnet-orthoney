@@ -2971,13 +2971,13 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   text-align: none;
   margin-top: 20px;
 }
-#multiStepForm .orthoney-datatable-warraper .dataTables_wrapper{
-  background-color: #f7feff;
-  padding: 20px;
-  border-radius: 20px;
-}
+
 #multiStepForm .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter{
-margin-top: 0;
+  margin: 0 20px 0 0;
+  background: #fff;
+  padding: 15px;
+  border-radius: 20px 20px 0 0;
+  width: calc(100% - 23px);
 }
 .orthoney-datatable-warraper #customer-jar-orders-table_filter.dataTables_filter{
    float: none;
@@ -3293,6 +3293,19 @@ gap:15px;
   display: inline-block;
 }
 
+.links-group{
+   display: flex;
+   gap:15px;
+   align-items: center;
+}
+.links-group .vline{
+  width: 2px;
+  height: 30px;
+  background: #d9d9d9;
+  display: inline-block;
+  position: relative;
+  top: 3px;
+}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
