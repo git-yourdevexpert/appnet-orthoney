@@ -105,6 +105,7 @@ jQuery(document).ready(function($) {
 
     }
     jQuery('#affiliate_select').select2({
+        placeholder: 'Select an Organization below',
         matcher: function(params, data) {
             if (jQuery.trim(params.term) === '') {
                 return data;
@@ -1255,6 +1256,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if(removeRecipientsAlreadyOrder){
             removeRecipientsAlreadyOrder.style.display = 'inline-block';
+            removeRecipientsAlreadyOrder.closest('div').querySelector('.vline').style.display = 'inline-block';
         }
     }else{
         if(viewSuccessRecipientsAlreadyOrder){
@@ -1262,6 +1264,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if(removeRecipientsAlreadyOrder){
             removeRecipientsAlreadyOrder.style.display = 'none';
+            removeRecipientsAlreadyOrder.closest('div').querySelector('.vline').style.display = 'none';
         }
     }
 
@@ -2056,7 +2059,7 @@ jQuery(document).ready(function ($) {
              Customer:
                  <select id="select-customer" class="form-control"><option value="">Select customer</option></select>
              </label>
-                  <label class="customer-select-filter" style="display:none">
+                  <label class="customer-select-filter">
              Search Recipient Name:
              <input type="text" class="search-recipient-name" placeholder="Search Recipient Name" >
              </label>

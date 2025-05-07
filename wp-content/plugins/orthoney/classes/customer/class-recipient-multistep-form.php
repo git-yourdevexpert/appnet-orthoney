@@ -105,7 +105,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         ?>
         <div id="stepNav" class="tab-selections" <?php echo ((self::$atts_process_id != 0) ? 'style="display:none"' : '' ) ?>>
             <span class="step-nav-item <?php echo ($currentStep == 0  AND self::$atts_process_id == 0) ? 'active' : '' ?>" data-step="0">Step 1: Select an Organization</span>
-            <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Delivery Preference</span>
+            <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Order Method</span>
             <span class="step-nav-item <?php echo $currentStep == 2 ? 'active' : '' ?>" data-step="2">Step 3: Upload Recipients</span>
             <span class="step-nav-item <?php echo (($currentStep == 3 OR self::$atts_process_id != 0) ? 'active' : '') ?>" data-step="3">Step 4: Verify Recipients</span>
             <span class="step-nav-item <?php echo ($currentStep == 4 OR $currentStep == 5) ? 'active' : '' ?>" data-step="4">Step 5: Verify Address</span>
@@ -141,7 +141,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             $oh_affiliate_customer_linker = OAM_Helper::$oh_affiliate_customer_linker;
                             $users_table = OAM_Helper::$users_table;
                             $query = $wpdb->prepare(
-                                "SELECT a.ID, a.token, u.display_name, a.user_id 
+                                "SELECT a.ID, a.token, u.display_name, a.user_id
                                 FROM {$yith_wcaf_affiliates_table} AS a 
                                 JOIN {$users_table} AS u ON a.user_id = u.ID 
                                 WHERE a.user_id NOT IN (
@@ -157,8 +157,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             // $affiliateList = OAM_Helper::manage_affiliates_content('', 'blocked');
                             // $affiliateList = json_decode($affiliateList, true);
                          
-                            echo '<select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an affiliate.">';
-                            echo '<option ' . selected($affiliate, '0', false) . ' value="Orthoney">Unaffiliated</option>';
+                            echo '<select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an Organization.">';
+                            echo '<option></option><option ' . selected($affiliate, '0', false) . ' value="Orthoney">Honey from the Heart</option>';
                             
                             if (!empty($affiliateList)) {
                                 foreach ($affiliateList  as $key => $data) {
@@ -167,8 +167,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         $states = WC()->countries->get_states('US');
                                         $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
                                         $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
+                                        $orgName = get_user_meta($user_id, '_orgName', true) ?: get_user_meta($user_id, '_orgName', true);
                                         $state_name = isset($states[$state]) ? $states[$state] : $state;
-                                        $value = '[' . $data->token . '] ' . $data->display_name;
+                                        $value = '[' . $data->token . '] ' . $orgName ?:$data->display_name;
                                         if (!empty($city)) {
                                             $value .= ', ' . $city;
                                         }
@@ -318,9 +319,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 </div>
             </div>
             <div class="button-block">
-                <button type="button" class="back w-btn us-btn-style_2">Back</button>
-                <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>"
-                    class="next w-btn us-btn-style_1" style="float:right">Next</button>
+                <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>
+                <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>" class="next w-btn us-btn-style_1" style="float:right">Next</button>
             </div>
         </div>
     <?php
@@ -364,7 +364,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         <div class="char-counter"><span>250</span> characters remaining</div>
                                     </label>
                                     <div class="description">
-                                        <p>The universal greeting you enter applies to all recipients on your list. For different greetings, include them in your list before uploading; do not enter a universal greeting</p>
+                                        <p>To begin your order, please select an organization you'd like to support and then you can proceed.</p>
                                     </div>
                                 </div>
                                 <span class="error-message"></span>
@@ -401,7 +401,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 </div>
             </div>
             <div class="button-block">
-                <button type="button" class="back w-btn us-btn-style_2">Back</button>
+                <!-- <button type="button" class="back w-btn us-btn-style_2">Back</button> -->
+                <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>
                 <button type="button" class="submit_csv_file w-btn next-step us-btn-style_1" style="float:right">Next </button>
             </div>
         </div>
@@ -486,7 +487,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             $countKey = $key . 'Count';
                             if (!empty($result['data'][$countKey])) {
                                 echo '<button class="scroll-section-btn" data-section="' . $key . 'CSVData">' 
-                                    . $label . ' Recipient (' . $result['data'][$countKey] . ')</button>';
+                                    . $label . ' Recipients (' . $result['data'][$countKey] . ')</button>';
                             }
                         }
                         ?>
@@ -519,25 +520,27 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         </div>
                         <?php 
                     }
-                  
         
-                    if ($result['data']['totalCount'] != 0) {
+                    ?>
+                    <div class="button-block">
+                        <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>
+                        <?php
+                        if ($result['data']['totalCount'] != 0) { 
                         ?>
-                        <div class="two-cta-block">
-                            <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save Progress</a>
-                            <button class="verifyRecipientAddressButton w-btn us-btn-style_1 next-step"
-                                data-totalCount="<?php echo $result['data']['totalCount']; ?>"
-                                data-successCount="<?php echo $result['data']['successCount']; ?>"
-                                data-newCount="<?php echo $result['data']['newCount']; ?>"
-                                data-failCount="<?php echo $result['data']['failCount']; ?>"
-                                data-duplicateCount="<?php echo $result['data']['duplicateCount']; ?>"
-                                data-duplicatePassCount="<?php echo $result['data']['duplicatePassCount'];?>"
-                                data-duplicateFailCount="<?php echo $result['data']['duplicateFailCount']; ?>">
-                                Next
-                            </button>
-                        </div>
-                        <?php 
-                    } 
+                        <button class="verifyRecipientAddressButton w-btn us-btn-style_1 next-step"
+                            data-totalCount="<?php echo $result['data']['totalCount']; ?>"
+                            data-successCount="<?php echo $result['data']['successCount']; ?>"
+                            data-newCount="<?php echo $result['data']['newCount']; ?>"
+                            data-failCount="<?php echo $result['data']['failCount']; ?>"
+                            data-duplicateCount="<?php echo $result['data']['duplicateCount']; ?>"
+                            data-duplicatePassCount="<?php echo $result['data']['duplicatePassCount'];?>"
+                            data-duplicateFailCount="<?php echo $result['data']['duplicateFailCount']; ?>">
+                            Next
+                        </button>
+                        <?php  } ?>
+                    </div>
+                    <?php 
+                    
                 } 
             }
             ?>
@@ -602,7 +605,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         self::render_recipient_block('Verified Addresses', 'verified-block', 'verifyRecord', $result['data']['verifiedRecordCount'], $result['data']['totalCount'], $result['data']['verifiedData']);
                         echo '</div>';
                         if($result['data']['totalCount'] != 0){
-                            echo '<div class="two-cta-block">';
+                            echo '<div class="button-block">';
+                            echo '<a href="'.get_permalink().'" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>';
                             echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step">Proceed To CheckOut</button>';
                             echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
                             echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';

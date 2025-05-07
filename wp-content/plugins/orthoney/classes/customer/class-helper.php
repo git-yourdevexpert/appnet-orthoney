@@ -353,7 +353,7 @@ class OAM_Helper{
                 // Join with the optimized relation table
                 $join .= "INNER JOIN $order_relation AS rel ON rel.wc_order_id = orders.id";
 
-                $join .= " LEFT JOIN $recipient_ordertable AS rec ON rec.order_id = orders.id";
+                $join .= " LEFT JOIN $recipient_ordertable AS rec ON rec.order_id = rel.order_id";
 
 
 

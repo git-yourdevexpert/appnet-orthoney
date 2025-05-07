@@ -2601,7 +2601,7 @@ class OAM_Ajax{
                 $count_where_conditions = []; // As array for consistency
                 $count_where_values = [];
                 $count_join = "INNER JOIN $order_relation AS rel ON rel.wc_order_id = orders.id";
-                $count_join .= " LEFT JOIN $recipient_ordertable AS rec ON rec.order_id = orders.id";
+                $count_join .= " LEFT JOIN $recipient_ordertable AS rec ON rec.order_id = rel.order_id";
 
                 
                 // Order type
