@@ -1115,15 +1115,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (form) {
         const file = form.querySelector('input[type="file"]').files[0];
         if (!file) {
-          Swal.fire({
-            icon: "error",
-            title: "Oops...",
-            text: "Please select a file to upload!",
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            allowEnterKey: false,
-            showConfirmButton: false,
-          });
           return;
         }
 
