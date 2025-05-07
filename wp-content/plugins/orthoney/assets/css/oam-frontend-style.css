@@ -3365,7 +3365,7 @@ background-repeat:no-repeat;
 background-size:contain
 }
 
-.search-icon.close .icon{
+#multiStepForm .heading-title .right-col  .search-icon.close .icon{
 background-image:url(https://orthoney.appnet-projects.com/wp-content/uploads/2025/05/close-icon.png);
 background-size: 19px;
 }
