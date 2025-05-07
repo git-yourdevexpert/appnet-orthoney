@@ -3345,11 +3345,7 @@ gap:15px;
   .custom-table table td .thead-data {
     display: none;
   }
-  .exceptions .exceptions-wrapper {
-      flex-wrap: wrap;  
-  }
-  
-  .exceptions .exceptions-wrapper .sub-exceptions{flex:auto}
+
 }
 @media(max-width: 1350px) {
   .order-process-block .tab-selections .step-nav-item {
@@ -3576,6 +3572,11 @@ gap:15px;
       width: 100%;
       margin: 0 !important;
     }
+    .exceptions .exceptions-wrapper {
+      flex-wrap: wrap;  
+  }
+  
+  .exceptions .exceptions-wrapper .sub-exceptions{flex:auto}
 }
 @media(max-width: 782px) {
   .admin-bar .select2-container--open .select2-dropdown {
