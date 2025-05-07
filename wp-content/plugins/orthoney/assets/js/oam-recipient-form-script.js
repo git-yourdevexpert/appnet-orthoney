@@ -1186,7 +1186,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 500); // Slight delay to ensure popup is shown first
       }
     }
-    
+
     function csv_upload(form) {
       if (form) {
         const file = form.querySelector('input[type="file"]').files[0];
@@ -1504,7 +1504,7 @@ document.addEventListener("DOMContentLoaded", function () {
       
     }
 
-    function processDataSaveAjax(pid, currentStep) {
+   function processDataSaveAjax(pid, currentStep, redirect = '') {
       const formData = collectFormData();
       formData.append("action", "orthoney_order_process_ajax");
       if (pid == "") {
@@ -1531,12 +1531,18 @@ document.addEventListener("DOMContentLoaded", function () {
             const newUrl = `${basePath}?${urlParams.toString()}`;
             history.pushState(null, "", newUrl);
             console.log(data.data.step);
-            if (data.data.step == 4 || data.data.groups == 1) {
+            if(redirect != ''){
               setTimeout(function () {
-                window.location.reload();
+                window.location.href = redirect;
               }, 1000);
             }else{
-              Swal.close();
+              if (data.data.step == 4 || data.data.groups == 1) {
+                setTimeout(function () {
+                  window.location.reload();
+                }, 1000);
+              }else{
+                Swal.close();
+              }
             }
           }
         })
