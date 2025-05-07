@@ -519,25 +519,27 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         </div>
                         <?php 
                     }
-                  
         
-                    if ($result['data']['totalCount'] != 0) {
+                    ?>
+                    <div class="button-block">
+                        <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>
+                        <?php
+                        if ($result['data']['totalCount'] != 0) { 
                         ?>
-                        <div class="button-block">
-                            <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>
-                            <button class="verifyRecipientAddressButton w-btn us-btn-style_1 next-step"
-                                data-totalCount="<?php echo $result['data']['totalCount']; ?>"
-                                data-successCount="<?php echo $result['data']['successCount']; ?>"
-                                data-newCount="<?php echo $result['data']['newCount']; ?>"
-                                data-failCount="<?php echo $result['data']['failCount']; ?>"
-                                data-duplicateCount="<?php echo $result['data']['duplicateCount']; ?>"
-                                data-duplicatePassCount="<?php echo $result['data']['duplicatePassCount'];?>"
-                                data-duplicateFailCount="<?php echo $result['data']['duplicateFailCount']; ?>">
-                                Next
-                            </button>
-                        </div>
-                        <?php 
-                    } 
+                        <button class="verifyRecipientAddressButton w-btn us-btn-style_1 next-step"
+                            data-totalCount="<?php echo $result['data']['totalCount']; ?>"
+                            data-successCount="<?php echo $result['data']['successCount']; ?>"
+                            data-newCount="<?php echo $result['data']['newCount']; ?>"
+                            data-failCount="<?php echo $result['data']['failCount']; ?>"
+                            data-duplicateCount="<?php echo $result['data']['duplicateCount']; ?>"
+                            data-duplicatePassCount="<?php echo $result['data']['duplicatePassCount'];?>"
+                            data-duplicateFailCount="<?php echo $result['data']['duplicateFailCount']; ?>">
+                            Next
+                        </button>
+                        <?php  } ?>
+                    </div>
+                    <?php 
+                    
                 } 
             }
             ?>
