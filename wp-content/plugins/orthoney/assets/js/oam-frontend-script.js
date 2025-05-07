@@ -2059,7 +2059,7 @@ jQuery(document).ready(function ($) {
              Customer:
                  <select id="select-customer" class="form-control"><option value="">Select customer</option></select>
              </label>
-                  <label class="customer-select-filter" style="display:none">
+                  <label class="customer-select-filter">
              Search Recipient Name:
              <input type="text" class="search-recipient-name" placeholder="Search Recipient Name" >
              </label>
