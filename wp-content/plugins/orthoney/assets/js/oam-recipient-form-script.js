@@ -808,12 +808,25 @@ document.addEventListener("DOMContentLoaded", function () {
           const duplicatePassCount = event.target.getAttribute("data-duplicatePassCount");
           const duplicateFailCount = event.target.getAttribute("data-duplicateFailCount");
           let html = ``;
+          let failedhtml = ``;
+
+          if( (parseInt(duplicateFailCount) + parseInt(failCount)) != 0){
+            failedhtml = "<div class='sub-exceptions'><strong>Failed Recipients: </strong><ul>";
+            if(parseInt(failCount) != 0){
+              failedhtml += `<li><span>Failed Recipients: </span> ${failCount}</li>`;
+            }
+            if(parseInt(duplicateFailCount) != 0){
+              failedhtml += `<li><span>Duplicate Recipients: </span> ${duplicateFailCount}</li>`;
+            }
+            // failedhtml += `<li class="total-recipients"><span>Total Failed  Recipients: </span> ${(parseInt(duplicateFailCount) + parseInt(failCount))}</li>`;
+            failedhtml += "</ul></div>";
+          }
 
           if (parseInt(successCount) + parseInt(newCount) == totalCount && failCount == 0) {
               html = `All recipients have been successfully validated!`;
-          } else if (parseInt(successCount) + parseInt(newCount) != totalCount && failCount != 0 && successCount == 0 && newCount == 0 && duplicateCount == 0) {
+          } else if (parseInt(successCount) + parseInt(newCount) != totalCount && ( (parseInt(duplicateFailCount) + parseInt(failCount)) != 0) && successCount == 0 && newCount == 0 && duplicateCount == 0) {
             html = `All recipients have been failed!`;
-          }else if (parseInt(successCount) + parseInt(newCount) != totalCount && failCount != 0 && successCount == 0 && newCount == 0 && duplicateCount != 0) {
+          }else if (parseInt(successCount) + parseInt(newCount) != totalCount && ( (parseInt(duplicateFailCount) + parseInt(failCount)) != 0) && successCount == 0 && newCount == 0 && duplicateCount != 0) {
             html = `Out of ${totalCount} recipients, ${parseInt(duplicateCount)} have been duplicated!`;
           }else if (parseInt(successCount) + parseInt(newCount) != totalCount && failCount == 0 && successCount == 0 && newCount == 0 && duplicateCount != 0) {
             html = `All recipients have been duplicated!`;
@@ -823,7 +836,7 @@ document.addEventListener("DOMContentLoaded", function () {
             html += `Out of ${totalCount} recipients, `;
           
             if (successCount != 0  || newCount != 0) {
-              html += `${parseInt(successCount) + parseInt(newCount)} have been successfully validated. `;
+              html += `${parseInt(successCount) + parseInt(newCount) + parseInt(duplicatePassCount)} have been successfully validated. `;
             }
         }
           
@@ -832,35 +845,24 @@ document.addEventListener("DOMContentLoaded", function () {
           // }
 
           if (failCount != 0 || duplicateCount != 0 || newCount != 0 || successCount != 0) {
-            html += "<div class='exceptions'><strong>Exceptions: </strong><ul>";
+            html += "<div class='exceptions'><strong>Exceptions: </strong><div class='exceptions-wrapper'><div class='sub-exceptions'><strong>Passed Recipients: </strong><ul>";
           }
-
-         
 
           if (successCount != 0) {
             html += `<li><span>Successful Recipients: </span> ${successCount}</li>`;
           }
-          if (failCount != 0) {
-            html += `<li><span>Failed Recipients: </span> ${failCount}</li>`;
-          }
+          
          
           if (parseInt(newCount) !== 0) {
             html += `<li><span>New Recipient: </span> ${newCount}</li>`;
           }
-          if (duplicateCount !== 0) {
-            if (duplicatePassCount !== 0 && duplicateFailCount !== 0) {
-              html += `<li><span>Duplicate Recipients (Passed): </span> ${duplicatePassCount}</li>`;
-              html += `<li><span>Duplicate Recipients (Failed): </span> ${duplicateFailCount}</li>`;
-            } else if (duplicatePassCount !== 0) {
+          if (duplicateCount !== 0 && duplicatePassCount !== 0) {
               html += `<li><span>Duplicate Recipients: </span> ${duplicatePassCount}</li>`;
-            } else if (duplicateFailCount !== 0) {
-              html += `<li><span>Duplicate Recipients: </span> ${duplicateFailCount}</li>`;
-            }
           }
           
-          html += `<li class="total-recipients"><span>Total Recipients: </span> ${totalCount}</li>`;
+          // html += `<li class="total-recipients"><span>Total Passed Recipients: </span> ${totalCount - (parseInt(duplicateFailCount) + parseInt(failCount))}</li>`;
 
-          html += `</ul></div>`;
+          html += `</ul></div>${failedhtml}</div></div>`;
         
           // html += `<p>Please confirm if you would like to proceed with the successfully added records.</p>`;
 
@@ -874,9 +876,9 @@ document.addEventListener("DOMContentLoaded", function () {
             confirmButtonColor: "#3085d6",
             denyButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Proceed With Duplicate Records",
+            confirmButtonText: "Proceed With Duplicate Records ("+ (totalCount - (parseInt(duplicateFailCount) + parseInt(failCount))) + ")",
             cancelButtonText: "No, I Want to Update/Fix Records",
-            denyButtonText: "Proceed Without Duplicate Records",
+            denyButtonText: "Proceed Without Duplicate Records ("+ (totalCount - (parseInt(duplicateFailCount) + parseInt(failCount)) - duplicatePassCount) + ")",
             allowOutsideClick: false,
             allowEscapeKey: false,
             allowEnterKey: false,

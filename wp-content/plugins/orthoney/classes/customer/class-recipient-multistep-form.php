@@ -693,7 +693,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     public static function badge($jar = 0, $recipient = 0){
         ?>
         <div class="badge-group">
-            <div class="badge">
+            <div class="badge" style="display:none">
             <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/cart-icon.png" alt="cart icon" class="cart-icon">
                 <span class="badge-number"><?php echo $jar; ?></span>
             </div>
