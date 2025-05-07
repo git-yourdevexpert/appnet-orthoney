@@ -2729,9 +2729,10 @@ h1.checkout-title:after {
 /* end */
 .yith-wcaf-registration-form .forms-container .register-title {
   width: 100%;
+  display: none;
 }
 .yith-wcaf-registration-form .forms-container {
-  display: flex;
+ /* display: flex;
   flex-wrap: wrap;
   align-items: center;
   border: 1px solid #e3e7f0;
@@ -2742,11 +2743,12 @@ h1.checkout-title:after {
   position: relative;
   background: #f0f4f7;
   position: relative;
-  overflow: hidden;
+  overflow: hidden;*/
   width: 94%;
   margin-left: auto;
   margin-right: auto;
 }
+
 .yith-wcaf-registration-form .forms-container .register-form {
   width: 100%;
 }
