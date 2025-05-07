@@ -2744,9 +2744,9 @@ h1.checkout-title:after {
   background: #f0f4f7;
   position: relative;
   overflow: hidden;*/
-  width: 94%;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 100%;
+  margin-left: 50px;
+  margin-right: 50px;
 }
 
 .yith-wcaf-registration-form .forms-container .register-form {
@@ -3474,6 +3474,9 @@ transition: all 0.3s ease;
     margin: 40px 0 40px;
     padding: 0 40px 10px;
   }
+  .yith-wcaf-registration-form .forms-container{
+     margin: 0 40px;
+  }
 }
 @media (max-width: 1023px) {
   .login-register-block .overlay-bg {
@@ -3655,6 +3658,9 @@ transition: all 0.3s ease;
   .login-register-block .login-title {
     padding: 0 20px 0px;
   }
+  .yith-wcaf-registration-form .forms-container{
+    margin: 0 20px;
+ }
   .order-process-block {
     padding: 40px 20px 40px;
   }
