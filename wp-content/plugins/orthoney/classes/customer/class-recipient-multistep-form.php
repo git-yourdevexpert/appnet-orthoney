@@ -105,7 +105,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         ?>
         <div id="stepNav" class="tab-selections" <?php echo ((self::$atts_process_id != 0) ? 'style="display:none"' : '' ) ?>>
             <span class="step-nav-item <?php echo ($currentStep == 0  AND self::$atts_process_id == 0) ? 'active' : '' ?>" data-step="0">Step 1: Select an Organization</span>
-            <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Delivery Preference</span>
+            <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Order Method</span>
             <span class="step-nav-item <?php echo $currentStep == 2 ? 'active' : '' ?>" data-step="2">Step 3: Upload Recipients</span>
             <span class="step-nav-item <?php echo (($currentStep == 3 OR self::$atts_process_id != 0) ? 'active' : '') ?>" data-step="3">Step 4: Verify Recipients</span>
             <span class="step-nav-item <?php echo ($currentStep == 4 OR $currentStep == 5) ? 'active' : '' ?>" data-step="4">Step 5: Verify Address</span>
@@ -141,7 +141,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             $oh_affiliate_customer_linker = OAM_Helper::$oh_affiliate_customer_linker;
                             $users_table = OAM_Helper::$users_table;
                             $query = $wpdb->prepare(
-                                "SELECT a.ID, a.token, u.display_name, a.user_id 
+                                "SELECT a.ID, a.token, u.display_name, a.user_id
                                 FROM {$yith_wcaf_affiliates_table} AS a 
                                 JOIN {$users_table} AS u ON a.user_id = u.ID 
                                 WHERE a.user_id NOT IN (
