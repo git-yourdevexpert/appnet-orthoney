@@ -319,7 +319,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 </div>
             </div>
             <div class="button-block">
-                <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>
+            <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</button>
                 <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>" class="next w-btn us-btn-style_1" style="float:right">Next</button>
             </div>
         </div>
@@ -402,7 +402,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             </div>
             <div class="button-block">
                 <!-- <button type="button" class="back w-btn us-btn-style_2">Back</button> -->
-                <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>
+                <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</button>
                 <button type="button" class="submit_csv_file w-btn next-step us-btn-style_1" style="float:right">Next </button>
             </div>
         </div>
@@ -523,7 +523,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         
                     ?>
                     <div class="button-block">
-                        <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>
+                    <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</button>
                         <?php
                         if ($result['data']['totalCount'] != 0) { 
                         ?>
@@ -606,7 +606,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         echo '</div>';
                         if($result['data']['totalCount'] != 0){
                             echo '<div class="button-block">';
-                            echo '<a href="'.get_permalink().'" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>';
+                            echo '<button data-href="'.get_permalink().'" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</button>';
                             echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step">Proceed To CheckOut</button>';
                             echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
                             echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';

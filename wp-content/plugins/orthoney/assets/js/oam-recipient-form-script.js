@@ -234,6 +234,23 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
 
+      document.querySelectorAll("#multiStepForm .save_continue_later_btn").forEach((button) => {
+        button.addEventListener("click", function (event) {
+        event.preventDefault();
+        const target = event.target;
+        const redirect = target.getAttribute('data-href');
+        process_group_popup();
+        console.log(currentStep);
+        showStep(currentStep);
+
+          if(2 == currentStep){
+          const form = document.querySelector("#multiStepForm");
+            save_csv_upload(form);
+          }
+          processDataSaveAjax(pid?.value || "0", currentStep, redirect);
+        });
+      });
+
       document.querySelectorAll("#multiStepForm .next").forEach((button) => {
         button.addEventListener("click", function (event) {
         const address_block_error_message= document.querySelector('.address-block .error-message');
@@ -1094,6 +1111,82 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
+    function save_csv_upload(form) {
+      if (form) {
+        const file = form.querySelector('input[type="file"]').files[0];
+        if (!file) {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Please select a file to upload!",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+            showConfirmButton: false,
+          });
+          return;
+        }
+
+
+        let currentChunk = 0;
+        let totalRows = 0;
+        let pid = getURLParam("pid");
+
+        // Start processing after a slight delay to ensure UI update
+        setTimeout(() => {
+          
+            const formData = collectFormData();
+            formData.append("action", "orthoney_save_csv_temp_recipient_ajax");
+            formData.append("security", oam_ajax.nonce);
+            formData.append("currentStep", currentStep);
+
+            if (pid !== null) {
+              formData.append("pid", pid);
+            }
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", oam_ajax.ajax_url, true);
+
+            xhr.onload = function () {
+              if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                  if (currentChunk === 0) {
+                    totalRows = response.data.total_rows;
+                    pid = response.data.pid;                    
+                  }
+
+                } else {
+                  Swal.fire({
+                    icon: "error",
+                    title: "Upload Failed",
+                    text: response.data.message,
+                  });
+                }
+              } else {
+                Swal.fire({
+                  icon: "error",
+                  title: "Error",
+                  text: "An error occurred while processing the request.",
+                });
+              }
+            };
+
+            xhr.onerror = function () {
+              Swal.fire({
+                icon: "error",
+                title: "Network Error",
+                text: "A network error occurred during upload.",
+              });
+            };
+
+            xhr.send(formData);
+          
+
+        }, 500); // Slight delay to ensure popup is shown first
+      }
+    }
+    
     function csv_upload(form) {
       if (form) {
         const file = form.querySelector('input[type="file"]').files[0];
