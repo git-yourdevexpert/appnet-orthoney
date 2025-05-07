@@ -1,3 +1,21 @@
+jQuery("#multiStepForm .search-icon").each(function () {
+    jQuery(this).on("click", function () {
+      const tableContainer = jQuery(this).closest(".table-data");
+      const dataTableFilter = tableContainer.find(".dataTables_filter");
+      const isOpen = dataTableFilter.hasClass("open");
+  
+      // Close all filters and remove all 'close' icons
+      jQuery(".dataTables_filter").removeClass("open");
+      jQuery("#multiStepForm .search-icon").removeClass("close");
+  
+      // Open only if it was previously closed
+      if (!isOpen) {
+        dataTableFilter.addClass("open");
+        jQuery(this).addClass("close");
+      }
+    });
+});
+
 document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll(`

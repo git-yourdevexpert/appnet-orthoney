@@ -1415,7 +1415,7 @@ class OAM_Ajax{
      * 
 	 */
    
-    public function orthoney_get_csv_recipient_ajax_handler($userId = '', $processID = '', $atts_process_id = 0) {
+     public function orthoney_get_csv_recipient_ajax_handler($userId = '', $processID = '', $atts_process_id = 0) {
         
         $exclude_ids = $process_id = $customGreeting = $addressPartsHtml = $successHtml = $newDataHtml = $alreadyOrderHtml  = $failHtml = $duplicateHtml = '';
         $successData = $newData = $failData = $duplicateGroups = $alreadyOrderGroups = [];
@@ -1580,7 +1580,7 @@ class OAM_Ajax{
                         $bulkMargeButtonHtml = '<div class="tooltip" data-tippy="Keep 1 Entry and Delete Other Duplicate Entries"><button id="bulkMargeRecipient" class="btn-underline">Bulk Marge</button></div>';
                     }
                     
-                    $duplicateHtml .= '<div class="heading-title"><div><h5 class="table-title">Duplicate Recipient</h5> </div>'.$bulkMargeButtonHtml.'</div>';
+                    $duplicateHtml .= '<div class="heading-title"><div><h5 class="table-title">Duplicate Recipients</h5> </div><div class="right-col">'.$bulkMargeButtonHtml.'<div class="search-icon"> <div class="icon"></div></div></div></div>';
                     
                     foreach ($duplicateGroups as $groupIndex => $group) {
                         foreach($group as $data){
@@ -1599,7 +1599,7 @@ class OAM_Ajax{
             
                 // Generate new data HTML
                 if(!empty($newData)){
-                    $newDataHtml .= '<div class="heading-title"><h5 class="table-title">New Recipients</h5><div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div></div>';
+                    $newDataHtml .= '<div class="heading-title"><h5 class="table-title">New Recipients</h5><div class="right-col"><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button><div class="search-icon"> <div class="icon"></div></div>  </div>';
                     $newDataHtml .= OAM_Helper::get_table_recipient_content($newData, $customGreeting);
                     
                 }
@@ -1607,10 +1607,10 @@ class OAM_Ajax{
                 // Generate Success HTML
                 if(!empty($successData)){
                     $successHtml .= '<div class="heading-title">
-                    <div><h5 class="table-title">Verified Recipients</h5></div>
+                    <div><h5 class="table-title">Success Recipients</h5></div>
                     <div class="links-group">
                     <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove all recipients who have already placed an order this season.">Remove Already Ordered Recipients</button><div class="vline"></div>
-                    <button class="viewSuccessRecipientsAlreadyOrder btn-underline" data-status="0" data-tippy="View all recipients who have already placed an order this season." style="display:none">View Already Ordered Recipients</button>
+                    <button class="viewSuccessRecipientsAlreadyOrder btn-underline" data-status="0" data-tippy="View all recipients who have already placed an order this season." style="display:none">View Already Ordered Recipients</button><div class="search-icon"> <div class="icon"></div></div>  
                     </div></div>';
                     $successHtml .=  OAM_Helper::get_table_recipient_content($successData , $customGreeting);
                 }
@@ -1655,7 +1655,7 @@ class OAM_Ajax{
 
             
             if($failHtml != ''){
-                $failHtml = '<div class="download-csv"><div class="heading-title"><div><h5 class="table-title">Failed Recipeints</h5><p>To fix the failed data, edit the row and make the necessary changes OR upload a new CSV for failed recipients.</p></div><div><button data-tippy="Failed records can be downloaded" id="download-failed-recipient-csv" class="btn-underline" ><i class="far fa-download"></i> Download Failed Recipients</button></div></div> </div>'.$tableStart.$failHtml.$tableEnd;
+                $failHtml = '<div class="download-csv"><div class="heading-title"><div><h5 class="table-title">Failed Recipients</h5><p>To fix the failed data, edit the row and make the necessary changes OR upload a new CSV for failed recipients.</p></div><div><div class="right-col"><button data-tippy="Failed records can be downloaded" id="download-failed-recipient-csv" class="btn-underline" ><i class="far fa-download"></i> Download Failed Recipients</button><div class="search-icon"> <div class="icon"></div></div>  </div></div></div> </div>'.$tableStart.$failHtml.$tableEnd;
             }
             
             
