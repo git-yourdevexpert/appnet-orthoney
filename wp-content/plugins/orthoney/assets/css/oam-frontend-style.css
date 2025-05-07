@@ -3360,16 +3360,22 @@ background-size:contain
 .search-icon.close .icon{
 background-image:url(https://orthoney.appnet-projects.com/wp-content/uploads/2025/05/close-icon.png);
 }
-
+#multiStepForm .heading-title .right-col{
+display: flex;
+flex-wrap: wrap;
+gap:15px;
+align-items: center;
+}
 #multiStepForm  .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter {
-display:none;        
+opacity: 0;
+visibility: hidden;     
 position: absolute;
 top: -44px;
 right: 35px;
 width:0px;
 transition: all 0.3s ease;
 }
-#multiStepForm  .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter.open {display:block; width:370px; transition: all 0.3s ease;}
+#multiStepForm  .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter.open {opacity: 1; visibility: visible; width:370px; transition: all 0.3s ease;}
  
 /* responsive */
 @media (min-width: 993px) {
