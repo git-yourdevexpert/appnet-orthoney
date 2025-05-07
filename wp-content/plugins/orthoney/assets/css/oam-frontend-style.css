@@ -3102,7 +3102,7 @@ flex-direction: column;
       padding-top: 20px;
       border-top:0;
       background: #f0f4f7;
-      margin: 20px -20px 0;
+      margin: 0px -20px 0;
       justify-content: end;
 }
 .orthoney-datatable-warraper table {
@@ -3112,6 +3112,15 @@ flex-direction: column;
   background-color: #fff;
   box-shadow: none !important;
   margin-bottom: 20px;
+}
+.orthoney-datatable-warraper  .dataTables_scroll  .dataTables_scrollHead table{
+   border-radius: 10px 10px 0 0;
+}
+
+.orthoney-datatable-warraper  .dataTables_scroll  .dataTables_scrollHead table thead tr th{border-bottom: 0;}
+
+.orthoney-datatable-warraper  .dataTables_scroll  .dataTables_scrollBody table{
+  border-radius: 0 0 10px 10px;
 }
 .orthoney-datatable-warraper table thead {
   background-color: #ebeff6;
@@ -3284,7 +3293,7 @@ flex-direction: column;
 .badge-group{
 display: flex;
 gap:15px;
-margin-left: 10px;
+margin-right: 10px;
 }
 .badge-group .badge{
   color: #333;
