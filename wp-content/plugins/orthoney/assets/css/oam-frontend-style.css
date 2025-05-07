@@ -2729,9 +2729,10 @@ h1.checkout-title:after {
 /* end */
 .yith-wcaf-registration-form .forms-container .register-title {
   width: 100%;
+  display: none;
 }
 .yith-wcaf-registration-form .forms-container {
-  display: flex;
+ /* display: flex;
   flex-wrap: wrap;
   align-items: center;
   border: 1px solid #e3e7f0;
@@ -2742,11 +2743,12 @@ h1.checkout-title:after {
   position: relative;
   background: #f0f4f7;
   position: relative;
-  overflow: hidden;
-  width: 94%;
-  margin-left: auto;
-  margin-right: auto;
+  overflow: hidden;*/
+  max-width: 100%;
+  margin-left: 50px;
+  margin-right: 50px;
 }
+
 .yith-wcaf-registration-form .forms-container .register-form {
   width: 100%;
 }
@@ -2766,6 +2768,15 @@ h1.checkout-title:after {
   grid-column: span 12;
   margin-bottom: 16px;
 }
+
+.yith-wcaf-registration-form .password-wrapper {position: relative;}
+.yith-wcaf-registration-form .password-wrapper input.input.input-text{padding-right: 40px;}
+.yith-wcaf-registration-form .password-wrapper  a.toggle-button{    position: absolute;
+  right: 2px;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  height: 24px;}
 body .order-process-block button.show-password-input:empty,
 body .register-form button.show-password-input:empty {
   display: none;
@@ -3472,6 +3483,9 @@ transition: all 0.3s ease;
     margin: 40px 0 40px;
     padding: 0 40px 10px;
   }
+  .yith-wcaf-registration-form .forms-container{
+     margin: 0 40px;
+  }
 }
 @media (max-width: 1023px) {
   .login-register-block .overlay-bg {
@@ -3653,6 +3667,9 @@ transition: all 0.3s ease;
   .login-register-block .login-title {
     padding: 0 20px 0px;
   }
+  .yith-wcaf-registration-form .forms-container{
+    margin: 0 20px;
+ }
   .order-process-block {
     padding: 40px 20px 40px;
   }
