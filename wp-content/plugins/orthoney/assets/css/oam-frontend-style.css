@@ -3374,7 +3374,9 @@ flex-wrap: wrap;
 gap:15px;
 align-items: center;
 }
-
+#multiStepForm .recipient-group-section .heading-title  {
+  align-items: end;
+}
 .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter {
   text-align: left;
 }
