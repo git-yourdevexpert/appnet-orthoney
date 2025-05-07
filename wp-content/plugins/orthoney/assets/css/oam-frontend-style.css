@@ -3331,12 +3331,21 @@ gap:15px;
   position: relative;
   top: 3px;
 }
+.exceptions .exceptions-wrapper {
+  display: flex;    
+    gap: 30px;
+}
+
+.exceptions .exceptions-wrapper .sub-exceptions{flex:1}
+
+ 
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
   .custom-table table td .thead-data {
     display: none;
   }
+
 }
 @media(max-width: 1350px) {
   .order-process-block .tab-selections .step-nav-item {
@@ -3563,6 +3572,11 @@ gap:15px;
       width: 100%;
       margin: 0 !important;
     }
+    .exceptions .exceptions-wrapper {
+      flex-wrap: wrap;  
+  }
+  
+  .exceptions .exceptions-wrapper .sub-exceptions{flex:auto}
 }
 @media(max-width: 782px) {
   .admin-bar .select2-container--open .select2-dropdown {
