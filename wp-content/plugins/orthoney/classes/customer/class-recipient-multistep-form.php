@@ -630,15 +630,16 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         if ($recordCount > 0) {
             $viewAllBtn = '';            
             // $viewAllBtn = $recordCount > 10 ? '<button class="view-all-recipients btn-underline" data-status="0">View All Recipients</button>' : '';
-            echo '<div class="' . $block_id . '" id="' . $block_id . '" data-count="'.$recordCount.'">';
-            echo '<div class="block-row">';
-            echo '<div class="block-inner"><h3 class="title">' . $title . '</h3>';
-            echo '<p>Out of ' . $totalCount . ' Recipients, ' . $recordCount . ' are ' . strtolower($title) . '.</p></div>';
+            echo '<div class="' . $block_id . ' table-data" id="' . $block_id . '" data-count="'.$recordCount.'">';
+            echo '<div class="">';
+            echo '<div class="block-inner heading-title"><div><h3 class="title">' . $title . '</h3>';
+            echo '<p>Out of ' . $totalCount . ' Recipients, ' . $recordCount . ' are ' . strtolower($title) . '.</p></div><div class="search-icon"> <div class="icon"></div></div> </div>';
             echo '</div>';
             echo '<div id="' . $record_id . '">' . $data . $viewAllBtn . '</div>';
             echo '</div>';
         }
     }
+
 
     public static function single_address_form($currentStep){
         $user_id = self::$current_user_id;
@@ -699,16 +700,17 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         <div class="badge-group">
             <div class="badge" style="display:none">
             <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/cart-icon.png" alt="cart icon" class="cart-icon">
-                <span class="badge-number"><?php echo $jar; ?></span>
+                <span class="badge-number"><?php echo $recipient; ?></span>
             </div>
             <div class="badge">
             <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/jar-icon.png" alt="jar icon" class="jar-icon">
-                <span class="badge-number"><?php echo $recipient ; ?></span>
+                <span class="badge-number"><?php echo $jar ; ?></span>
             </div>
             
         </div>
         <?php
     }
+
     public static function popups(){
         echo OAM_Helper::manage_recipient_popup();
         echo OAM_Helper::view_details_recipient_popup();
