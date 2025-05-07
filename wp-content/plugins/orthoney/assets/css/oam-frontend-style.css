@@ -2982,10 +2982,7 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 .woocommerce h6 {
   font-family: var(--h1-font-family) !important;
 }
-.orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter{
-  margin-bottom: 20px;
-  margin-right: 20px;
-}
+
 .orthoney-datatable-warraper .dataTables_wrapper .dataTables_scroll .dataTables_scrollBody  {border: 0;}
 .orthoney-datatable-warraper .dataTables_wrapper .dataTables_scroll .dataTables_scrollBody table thead{background-color: #fff; visibility: collapse;} 
 .orthoney-datatable-warraper .dataTables_wrapper .dataTables_scroll .dataTables_scrollBody table thead th{border:0}
@@ -3369,6 +3366,7 @@ background-size:contain
 
 .search-icon.close .icon{
 background-image:url(https://orthoney.appnet-projects.com/wp-content/uploads/2025/05/close-icon.png);
+background-size: 19px;
 }
 #multiStepForm .heading-title .right-col{
 display: flex;
@@ -3376,17 +3374,23 @@ flex-wrap: wrap;
 gap:15px;
 align-items: center;
 }
+
+.orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter {
+  text-align: left;
+}
+
+
 #multiStepForm  .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter {
 opacity: 0;
 visibility: hidden;     
 position: absolute;
-top: -44px;
-right: 35px;
+top: -54px;
+    right: 48px;
 width:0px;
 transition: all 0.3s ease;
 }
 #multiStepForm  .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter.open {opacity: 1; visibility: visible; width:370px; transition: all 0.3s ease;}
- 
+ body.page-id-313 header .l-subheader-cell.at_right .w-btn{display: none;}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
