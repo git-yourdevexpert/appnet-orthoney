@@ -21,6 +21,7 @@ class OAM_Ajax{
         add_action( 'wp_ajax_orthoney_order_process_ajax', array( $this, 'orthoney_order_process_ajax_handler' ) );
         add_action( 'wp_ajax_orthoney_order_step_process_ajax', array( $this, 'orthoney_order_step_process_ajax_handler' ) );
         add_action( 'wp_ajax_orthoney_insert_temp_recipient_ajax', array( $this, 'orthoney_insert_temp_recipient_ajax_handler' ) );
+        add_action( 'wp_ajax_orthoney_save_csv_temp_recipient_ajax', array( $this, 'orthoney_save_csv_temp_recipient_ajax_handler' ) );
         
         add_action( 'wp_ajax_save_group_recipient_to_order_process', array( $this, 'orthoney_save_group_recipient_to_order_process_handler' ) );
 
@@ -828,6 +829,84 @@ class OAM_Ajax{
         wp_die();
     }
     
+    /**
+	 * Ajax handle function that Upload CSV file temp recipients
+	 *
+	 * @return JSON 
+     * 
+     * USE Helper function 
+     * validate_and_upload_csv(): This function validates the CSV file and saves the CSV upload activity log.
+     * 
+	 */
+    public function orthoney_save_csv_temp_recipient_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+    
+        $recipient_table = OAM_Helper::$order_process_recipient_table;
+        $order_process = OAM_Helper::$order_process_table;
+        $recipient_dir = OAM_Helper::$process_recipients_csv_dir;
+    
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+    
+        
+        $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) : 0;
+        $process_id = isset($_POST['pid']) ? intval($_POST['pid']) : '';
+        $process_name = (isset($_POST['csv_name']) && !empty($_POST['csv_name'])) ? sanitize_text_field($_POST['csv_name']) : 'Recipient List ' . $process_id;
+    
+        $check_process_status = OAM_COMMON_Custom::check_process_exist($process_name, $process_id);
+    
+        if ($check_process_status) {
+            wp_send_json_error(['message' => 'The recipient list name already exists. Please enter a different name.']);
+        }
+    
+        $csv_name_query = $wpdb->get_var($wpdb->prepare("SELECT csv_name FROM {$order_process} WHERE id = %d LIMIT 1", $process_id));
+        $file_path = $csv_name_query ? $recipient_dir . '/' . $csv_name_query : '';
+    
+        
+        if ($csv_name_query && file_exists($file_path)) {
+            unlink($file_path);
+        }
+        $wpdb->delete($recipient_table, ['pid' => $process_id], ['%d']);
+        
+    
+        // File upload handling (first chunk only)
+        if (isset($_FILES['csv_file']) && $_FILES['csv_file']['error'] === UPLOAD_ERR_OK) {
+            if (!file_exists($recipient_dir)) {
+                wp_mkdir_p($recipient_dir);
+            }
+    
+            $result = OAM_Helper::validate_and_upload_csv($_FILES['csv_file'], 0, $process_id, 'order_process');
+    
+            if (!$result['success']) {
+                wp_send_json_error(['message' => $result['message']]);
+                wp_die();
+            }
+    
+            $file_ext = pathinfo($_FILES['csv_file']['name'], PATHINFO_EXTENSION);
+            $unique_file_name = 'recipient_' . $process_id . '.' . $file_ext;
+            $recipient_file_path = trailingslashit($recipient_dir) . $unique_file_name;
+    
+            if (file_exists($recipient_file_path)) {
+                unlink($recipient_file_path);
+            }
+    
+            if (!copy($result['file_path'], $recipient_file_path)) {
+                wp_send_json_error(['message' => 'Failed to move uploaded file.']);
+                wp_die();
+            }
+    
+            $wpdb->update(
+                $order_process,
+                ['csv_name' => $unique_file_name, 'user_id' => get_current_user_id(), 'name' => $process_name],
+                ['id' => $process_id]
+            );
+    
+            $file_path = $recipient_file_path;
+        }
+    
+        wp_send_json_success(['message' => 'CSV uploaded']);
+    }
 
     /**
 	 * Ajax handle function that insert temp recipients
