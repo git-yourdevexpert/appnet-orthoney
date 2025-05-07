@@ -1255,6 +1255,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if(removeRecipientsAlreadyOrder){
             removeRecipientsAlreadyOrder.style.display = 'inline-block';
+            removeRecipientsAlreadyOrder.closest('div').querySelector('.vline').style.display = 'inline-block';
         }
     }else{
         if(viewSuccessRecipientsAlreadyOrder){
@@ -1262,6 +1263,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if(removeRecipientsAlreadyOrder){
             removeRecipientsAlreadyOrder.style.display = 'none';
+            removeRecipientsAlreadyOrder.closest('div').querySelector('.vline').style.display = 'none';
         }
     }
 
