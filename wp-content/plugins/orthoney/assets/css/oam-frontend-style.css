@@ -2986,7 +2986,8 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   margin-bottom: 20px;
   margin-right: 20px;
 }
-.orthoney-datatable-warraper .dataTables_wrapper .dataTables_scroll .dataTables_scrollBody table thead{background-color: #fff;} 
+.orthoney-datatable-warraper .dataTables_wrapper .dataTables_scroll .dataTables_scrollBody  {border: 0;}
+.orthoney-datatable-warraper .dataTables_wrapper .dataTables_scroll .dataTables_scrollBody table thead{background-color: #fff; visibility: collapse;} 
 .orthoney-datatable-warraper .dataTables_wrapper .dataTables_scroll .dataTables_scrollBody table thead th{border:0}
 .orthoney-datatable-warraper .dataTables_wrapper #customer-jar-orders-table_filter,
 .orthoney-datatable-warraper .dataTables_wrapper #customer-orders-table_filter {
@@ -2995,10 +2996,10 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   margin-bottom: 20px;
   margin-right: 0;
   font-size: 13px;
-  column-gap: 20px;
+  gap: 20px;
   text-align: none;
   background: #fff;
-  border-radius: 0 0 10px 10px;
+  border-radius:0;
   padding: 20px 20px 0 20px; 
 }
   
@@ -3099,9 +3100,9 @@ flex-direction: column;
       width: calc(100% + 40px);
       gap: 15px;
       padding-top: 20px;
-      border-top: 1px solid #c8c8c8;
+      border-top:0;
       background: #f0f4f7;
-      margin: 20px -20px 0;
+      margin: 0px -20px 0;
       justify-content: end;
 }
 .orthoney-datatable-warraper table {
@@ -3111,6 +3112,15 @@ flex-direction: column;
   background-color: #fff;
   box-shadow: none !important;
   margin-bottom: 20px;
+}
+.orthoney-datatable-warraper  .dataTables_scroll  .dataTables_scrollHead table{
+   border-radius: 10px 10px 0 0;
+}
+
+.orthoney-datatable-warraper  .dataTables_scroll  .dataTables_scrollHead table thead tr th{border-bottom: 0;}
+
+.orthoney-datatable-warraper  .dataTables_scroll  .dataTables_scrollBody table{
+  border-radius: 0 0 10px 10px;
 }
 .orthoney-datatable-warraper table thead {
   background-color: #ebeff6;
@@ -3283,7 +3293,7 @@ flex-direction: column;
 .badge-group{
 display: flex;
 gap:15px;
-margin-left: 10px;
+margin-right: 10px;
 }
 .badge-group .badge{
   color: #333;
