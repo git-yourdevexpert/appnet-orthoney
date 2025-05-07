@@ -318,9 +318,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 </div>
             </div>
             <div class="button-block">
-                <button type="button" class="back w-btn us-btn-style_2">Back</button>
-                <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>"
-                    class="next w-btn us-btn-style_1" style="float:right">Next</button>
+                <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>
+                <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>" class="next w-btn us-btn-style_1" style="float:right">Next</button>
             </div>
         </div>
     <?php
@@ -401,7 +400,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 </div>
             </div>
             <div class="button-block">
-                <button type="button" class="back w-btn us-btn-style_2">Back</button>
+                <!-- <button type="button" class="back w-btn us-btn-style_2">Back</button> -->
+                <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>
                 <button type="button" class="submit_csv_file w-btn next-step us-btn-style_1" style="float:right">Next </button>
             </div>
         </div>
@@ -486,7 +486,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             $countKey = $key . 'Count';
                             if (!empty($result['data'][$countKey])) {
                                 echo '<button class="scroll-section-btn" data-section="' . $key . 'CSVData">' 
-                                    . $label . ' Recipient (' . $result['data'][$countKey] . ')</button>';
+                                    . $label . ' Recipients (' . $result['data'][$countKey] . ')</button>';
                             }
                         }
                         ?>
@@ -523,8 +523,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         
                     if ($result['data']['totalCount'] != 0) {
                         ?>
-                        <div class="two-cta-block">
-                            <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save Progress</a>
+                        <div class="button-block">
+                            <a href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>
                             <button class="verifyRecipientAddressButton w-btn us-btn-style_1 next-step"
                                 data-totalCount="<?php echo $result['data']['totalCount']; ?>"
                                 data-successCount="<?php echo $result['data']['successCount']; ?>"
@@ -602,7 +602,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         self::render_recipient_block('Verified Addresses', 'verified-block', 'verifyRecord', $result['data']['verifiedRecordCount'], $result['data']['totalCount'], $result['data']['verifiedData']);
                         echo '</div>';
                         if($result['data']['totalCount'] != 0){
-                            echo '<div class="two-cta-block">';
+                            echo '<div class="button-block">';
+                            echo '<a href="'.get_permalink().'" class="w-btn us-btn-style_1 outline-btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</a>';
                             echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step">Proceed To CheckOut</button>';
                             echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
                             echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';
