@@ -3346,16 +3346,17 @@ margin-right: 10px;
 
 .exceptions .exceptions-wrapper .sub-exceptions{flex:1}
 
-.search-icon{
+#multiStepForm .heading-title .right-col .search-icon{
   width: 40px;
 height: 40px;
 display: flex;
 background: #fff;
 border-radius: 100%;
 align-items: center;
+cursor: pointer;
 justify-content: center;
 }
-.search-icon .icon{
+#multiStepForm .heading-title .right-col .search-icon .icon{
 width: 25px;
 height: 25px;
 background-image:url(https://orthoney.appnet-projects.com/wp-content/uploads/2025/05/magnifying-glass.png);
@@ -3370,12 +3371,14 @@ background-size: 19px;
 }
 #multiStepForm .heading-title .right-col{
 display: flex;
-flex-wrap: wrap;
+flex-wrap: nowrap;
+    white-space: nowrap;
 gap:15px;
 align-items: center;
 }
 #multiStepForm .recipient-group-section .heading-title  {
   align-items: end;
+  flex-wrap: nowrap;
 }
 .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter {
   text-align: left;
@@ -3631,6 +3634,9 @@ transition: all 0.3s ease;
   }
   
   .exceptions .exceptions-wrapper .sub-exceptions{flex:auto}
+  #multiStepForm .recipient-group-section .heading-title{flex-wrap: wrap;}
+  #multiStepForm .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter{right: 0;}
+  #multiStepForm .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter.open{width: 250px;}
 }
 @media(max-width: 782px) {
   .admin-bar .select2-container--open .select2-dropdown {
