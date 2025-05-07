@@ -2768,6 +2768,15 @@ h1.checkout-title:after {
   grid-column: span 12;
   margin-bottom: 16px;
 }
+
+.yith-wcaf-registration-form .password-wrapper {position: relative;}
+.yith-wcaf-registration-form .password-wrapper input.input.input-text{padding-right: 40px;}
+.yith-wcaf-registration-form .password-wrapper  a.toggle-button{    position: absolute;
+  right: 2px;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  height: 24px;}
 body .order-process-block button.show-password-input:empty,
 body .register-form button.show-password-input:empty {
   display: none;
