@@ -328,6 +328,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         } else {
           console.log("5");
+          if(validateCurrentStep()){
           currentStep++;
           if(currentStep == 1){
             const affiliateSelect = document.querySelector('#affiliate_select');
@@ -343,6 +344,7 @@ document.addEventListener("DOMContentLoaded", function () {
           process_group_popup();
           showStep(currentStep);
           processDataSaveAjax(pid?.value || "0", currentStep);
+        }
         }
       });
     });

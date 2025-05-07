@@ -105,6 +105,7 @@ jQuery(document).ready(function($) {
 
     }
     jQuery('#affiliate_select').select2({
+        placeholder: 'Select an Organization below',
         matcher: function(params, data) {
             if (jQuery.trim(params.term) === '') {
                 return data;

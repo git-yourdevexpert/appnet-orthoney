@@ -157,8 +157,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             // $affiliateList = OAM_Helper::manage_affiliates_content('', 'blocked');
                             // $affiliateList = json_decode($affiliateList, true);
                          
-                            echo '<select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an affiliate.">';
-                            echo '<option ' . selected($affiliate, '0', false) . ' value="Orthoney">Unaffiliated</option>';
+                            echo '<select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an Organization.">';
+                            echo '<option></option><option ' . selected($affiliate, '0', false) . ' value="Orthoney">Honey from the Heart</option>';
                             
                             if (!empty($affiliateList)) {
                                 foreach ($affiliateList  as $key => $data) {
@@ -167,8 +167,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         $states = WC()->countries->get_states('US');
                                         $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
                                         $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
+                                        $orgName = get_user_meta($user_id, '_orgName', true) ?: get_user_meta($user_id, '_orgName', true);
                                         $state_name = isset($states[$state]) ? $states[$state] : $state;
-                                        $value = '[' . $data->token . '] ' . $data->display_name;
+                                        $value = '[' . $data->token . '] ' . $orgName ?:$data->display_name;
                                         if (!empty($city)) {
                                             $value .= ', ' . $city;
                                         }
@@ -363,7 +364,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         <div class="char-counter"><span>250</span> characters remaining</div>
                                     </label>
                                     <div class="description">
-                                        <p>The universal greeting you enter applies to all recipients on your list. For different greetings, include them in your list before uploading; do not enter a universal greeting</p>
+                                        <p>To begin your order, please select an organization you'd like to support and then you can proceed.</p>
                                     </div>
                                 </div>
                                 <span class="error-message"></span>
