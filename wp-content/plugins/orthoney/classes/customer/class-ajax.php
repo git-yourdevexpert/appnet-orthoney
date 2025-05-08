@@ -2939,15 +2939,12 @@ class OAM_Ajax{
         </head>
         <body>';
     
-
-
-          
-
         foreach ($order_id_array as $order_id) {
             $order = wc_get_order($order_id);
             if (!$order) continue;
     
             $orderdata = OAM_COMMON_Custom::orthoney_get_order_data($order_id);
+            $sub_order_id =  OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID')?: $order_id;
             $name = esc_html($orderdata['customer_name']);
             $email = esc_html($orderdata['email']);
             $address = esc_html($orderdata['address']);
@@ -3027,20 +3024,21 @@ class OAM_Ajax{
             if(!empty($distAddressParts)){
                 $distName = implode(' ', $distNameParts);
             }else{
-                $distName = 'Orthoney';
+                $distName = 'Honey from the Heart';
             }
-            $affiliate_org_name = 'Orthoney';
+            $affiliate_org_name = 'Honey from the Heart';
             if (!empty($orderdata['suborderdata'])) {
                 $affiliate_org_name = $orderdata['suborderdata'][0]['suborder_affiliate_org_name'];
             }
 
-            $affiliate_org_name = 'Orthoney';
+            $affiliate_org_name = 'Honey from the Heart';
+            $suborder_affiliate_token = 'Honey from the Heart';
+            $refersite = site_url();
             if (!empty($orderdata['suborderdata'])) {
                 $suborder_affiliate_token = $orderdata['suborderdata'][0]['suborder_affiliate_token'];
+                $refersite = site_url().'?ref='.$suborder_affiliate_token;
             }
         
-            
-
     
             $html .= '
             <h2>'.date('Y').' Honey Reorder Form</h2>
@@ -3051,9 +3049,6 @@ class OAM_Ajax{
             </div>
             <div class="section">
                 <p>Dear ' . $name . ',</p>';
-
-
-                $refersite = site_url().'?ref='.$suborder_affiliate_token;
     
             // PDF content types
             if ($custom_order_pdf_type == "5p") {
@@ -3065,12 +3060,12 @@ class OAM_Ajax{
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
                     <p>Shipping is FREE for orders submitted online through $shipDate. After $shipDate, \$8.00 per jar is automatically added for shipping.</p>
-                    <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='.$refersite.'>$refersite</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $order_id . " when prompted.</p>";
+                    <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='.$refersite.'>$refersite</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $sub_order_id . " when prompted.</p>";
             } elseif ($custom_order_pdf_type == "2p") {
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
                     <p>Shipping is FREE for orders submitted online through $shipDate. After $shipDate, \$8.00 per jar is automatically added for shipping.</p>
-                    <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='.$refersite.'>$refersite</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $order_id . " when prompted.</p>
+                    <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='.$refersite.'>$refersite</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $sub_order_id . " when prompted.</p>
                     <p>If you are unable to order online, update this form with any additions, deletions or corrections, fill out the payment section and mail it to {$distName} {$distAddress}. Mail orders must be received by $shipDate or shipping charges will be added and charged to you.</p>";
             } else {
                 $pdftypepdfcontent = "
@@ -3098,15 +3093,13 @@ class OAM_Ajax{
             
            
             // Suborders
+            $html .= '<div class="section addresses"><p><strong>Jar\'s Orders:</strong></p>';
             if (!empty($orderdata['suborderdata'])) {
-                $html .= '<div class="section addresses"><p><strong>Jar\'s Orders:</strong></p>';
     
                 foreach ($orderdata['suborderdata'] as $suborderdata) {
 
                     $title = $suborderdata['suborder_full_name'];
                     //if (!$title) continue;
-                    
-    
                     $quantity = $suborderdata['suborder_data_quantity'];
                     $address_parts = [
                         $suborderdata['suborder_data_address_2'],
@@ -3124,28 +3117,44 @@ class OAM_Ajax{
                         <p><strong>' . $title . '</strong> &times; ' . $quantity . ' jar(s)<br>' . $full_address . '</p>
                     </div>';
                 }
-    
-              //  $html .= '</div><div class="page-break"></div>';
-               
+
               
-                
+    
+            }else{
+                $title = trim($order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name());
+                // Full shipping address
+                $address_parts = [
+                    $order->get_shipping_address_1(),
+                    $order->get_shipping_address_2(),
+                    $order->get_shipping_city(),
+                    $order->get_shipping_state(),
+                    $order->get_shipping_postcode()
+                ];
+                $full_address = implode(' ', array_filter($address_parts));
+
+                // Total quantity
+                $quantity = 0;
+                foreach ($order->get_items() as $item) {
+                    $quantity += (int) $item->get_quantity();
+                }
+
+                // Output block
+                $html .= sprintf(
+                    '<div class="address-block"><p><strong>%s</strong> &times; %d jar(s)<br>%s</p></div>',
+                    esc_html($title),
+                    $quantity,
+                    esc_html($full_address)
+                );
+
             }
-
-            
             $html .= '</div>';
-            $html .= '<p>Code : '.$suborder_affiliate_token.'</p>';
-             $html .= '<div style="page-break-after: always;"></div>';
-        }
-        // echo '<pre>';
-        // print_r($orderdata);
 
+            $html .= '<p>Code : '.$suborder_affiliate_token.'</p>';
+            $html .= '<div style="page-break-after: always;"></div>';
+        }
     
         $html .= '</body></html>';
-        
-        // echo '<pre>';
-        // print_r($orderdata);
-
-
+    
         // Generate PDF
         $dompdf = new \Dompdf\Dompdf();
         $dompdf->loadHtml($html);
