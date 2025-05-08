@@ -3406,7 +3406,8 @@ width:0px;
 transition: all 0.3s ease;
 }
 #multiStepForm  .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter.open {opacity: 1; visibility: visible; width:370px; transition: all 0.3s ease;}
- body.page-id-313 header .l-subheader-cell.at_right .w-btn{display: none;}
+ body.page-id-313 header .l-subheader-cell.at_right .w-btn,
+ body.page-id-262 header .l-subheader-cell.at_right .w-btn{display: none;}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
