@@ -1710,6 +1710,8 @@ document.addEventListener('click', function (event) {
             });
         });
 });
+
+
 const recipientOrderManageForm = document.querySelector("#recipient-manage-order-form form");
 
 function validateRecipientOrderManageForm(form) {
@@ -1788,11 +1790,17 @@ if (recipientOrderManageForm) {
 
 
 
+
+
+/**
+ * Recipient Jar order start 
+ */
+
+jQuery(function($) {
 jQuery(document).on('click', 'input[name="table_order_type"]', function (e) {
     // e.preventDefault();
     var otype = jQuery(this).val();
     if(otype == "main_order"){
-        
         jQuery("#customer-orders-table_wrapper").show();
         jQuery("#customer-jar-orders-table_wrapper").hide();
         jQuery("#customer-jar-orders-table").hide();
@@ -1800,233 +1808,19 @@ jQuery(document).on('click', 'input[name="table_order_type"]', function (e) {
         // customer-orders-table_filter
         // customer-orders-table_info
     }else if(otype == "sub_order_order"){
-        
-        
         jQuery("#customer-orders-table_wrapper").hide();
         jQuery("#customer-jar-orders-table_wrapper").show();
         jQuery("#customer-jar-orders-table").show();
 
-       
     }
-
 });
 
-
-/**
- * Recipient Jar order start 
- */
  
 jQuery(document).ready(function ($) {
-    var table = $('#customer-jar-orders-table').DataTable({
-        processing: false,
-        serverSide: true,
-        select: {
-            style: 'multi'
-        },
-        ajax: {
-            url: oam_ajax.ajax_url,
-            type: 'POST',
-            data: function (d) {
-                d.action = 'orthoney_customer_order_process_ajax';
-                d.security = oam_ajax.nonce;
-                d.custom_order_type = $('#custom-order-type-filter').val();
-                d.custom_order_status = $('#custom-order-status-filter').val();
-                d.table_order_type = 'sub_order_order';
-                d.selected_year = $('#jars-select-year').val();
-                const qtySlider = $('#jar-slider-range').slider("values");
-                d.selected_min_qty = qtySlider[0];
-                d.selected_max_qty = qtySlider[1];
-                d.selected_customer_id = $('#jar-select-customer').val();
-                d.search_by_organization = $('.jar-search-by-organization').val();
-            },
-            beforeSend: function () {
-                process_group_popup('Please wait while we process your request.');
-            },
-            complete: function () {
-                setTimeout(() => {
-                    Swal.close();
-                }, 1300);
-            },
-            error: function () {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'An error occurred while loading your orders.',
-                    icon: 'error',
-                });
-            },
-        },
-        columns: [
-            { data: 'jar_no' },
-            { data: 'date' },
-            { data: 'billing_name', orderable: false, searchable: false },
-            { data: 'affiliate_code', orderable: false, searchable: false },
-            { data: 'total_jar', orderable: false, searchable: false },
-            { data: 'status', orderable: false, searchable: false },
-            { data: 'action', orderable: false, searchable: false }
-        ],
-        drawCallback: function () {
-            initTippy();
-            $('#customer-jar-orders-table tbody tr.sub-order-row').remove();
-        },
-        initComplete: function () {
-            $("#customer-jar-orders-table_wrapper").hide();
-            $("#customer-jar-orders-table_length").hide();
-
-            const customFilter = `
-                <label class="yearblock">
-                    Order Year:
-                    <select id="jars-select-year" class="form-control">
-                        <option value="">Order year</option>
-                    </select>
-                </label>
-                <label class="customer-select-filter">
-                      Search By Organization Code:
-                    <input type="text" class="jar-search-by-organization" placeholder="Search By Organization Code" >
-                </label>
-                
-                <label class="customer-select-filter">
-                    Customer:
-                    <select id="jar-select-customer" class="form-control">
-                        <option value="">Select Customer</option>
-                    </select>
-                </label>
-                <label class="rangeblock">
-                    <label for="amount">Quantity Range:</label>
-                    <input type="text" id="jar_quantity_range" readonly style="border:0; color:#f6931f; font-weight:bold;">
-                    <div id="jar-slider-range"></div>
-                </label>
-            `;
-
-            $('#customer-jar-orders-table_filter').append(customFilter);
-            $('#customer-jar-orders-table_filter').append('<label><div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
-            $('#customer-jar-orders-table_filter').append('<label><div><button class="order-pdf-export w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Pdf</button></div></label>');
-
-            $('#customer-jar-orders-table_length').before('<div></div>');
-
-                $('.jar-search-by-organization').on('input', function (e) {
-                var searchrecipient = $(this).val();
-
-                if(searchrecipient == ""){
-                     table.ajax.reload(); // Reload DataTable via AJAX
-                }
-
-                if (searchrecipient.length > 2) {
-                    table.ajax.reload(); // Reload DataTable via AJAX
-                }    
-             });
-
-
-            $('#jar-select-customer').select2({
-                placeholder: 'Search',
-                allowClear: true,
-                ajax: {
-                    url: oam_ajax.ajax_url,
-                    type: 'POST',
-                    dataType: 'json',
-                    delay: 250,
-                    data: function (params) {
-                        return {
-                            action: 'orthoney_get_customers_autocomplete',
-                            customer: params.term
-                        };
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: data.map(function (item) {
-                                return { id: item.id, text: item.label };
-                            })
-                        };
-                    },
-                    cache: true
-                }
-            });
-
-            $(document).on('change', '#jar-select-customer, #jars-select-year', function () {
-                table.ajax.reload();
-            });
-
-            const yearSelect = document.getElementById('jars-select-year');
-            const startYear = new Date().getFullYear();
-            const endYear = 2018;
-            const defaultSelected = 2025;
-            const addedYears = new Set();
-
-            for (let year = startYear; year >= endYear; year--) {
-                if (!addedYears.has(year)) {
-                    const option = document.createElement('option');
-                    option.value = year;
-                    option.textContent = year;
-                    if (year === defaultSelected) option.selected = true;
-                    yearSelect.appendChild(option);
-                    addedYears.add(year);
-                }
-            }
-
-            $('.selectall-checkbox').on('change', function () {
-                $('.row-checkbox').prop('checked', this.checked);
-            });
-
-            $("#jar-slider-range").slider({
-                range: true,
-                min: 1,
-                max: 1000,
-                values: [1, 1000],
-                slide: function (event, ui) {
-                    $("#jar_quantity_range").val(ui.values[0] + " - " + ui.values[1]);
-                },
-                change: function (event, ui) {
-                    table.draw();
-                }
-            });
-
-            $("#jar_quantity_range").val(
-                $("#jar-slider-range").slider("values", 0) + " - " + $("#jar-slider-range").slider("values", 1)
-            );
-        }
-    });
+    order_filter_main_order();
+    order_filter_sub_order();
 });
-
-function jarfilter_trigger(jarOrderId) {
-    // 1. Click the radio input
-    //e.preventDefault();
-
-    var $radio = jQuery('#sub_order_order');
-    if ($radio.length && !$radio.prop('checked')) {
-        $radio.prop('checked', true).trigger('change');
-    }
-
-    // 2. Set value in the DataTables search input
-    var $searchInput = jQuery('#customer-jar-orders-table_filter input[type=search]');
-    if ($searchInput.length) {
-        $searchInput.val(jarOrderId);
-
-        if (jQuery.fn.dataTable.isDataTable('#customer-jar-orders-table')) {
-            jQuery('#customer-jar-orders-table').DataTable().search(jarOrderId).draw();
-        } else {
-            $searchInput.trigger('input');
-        }
-    }
-    
-    jQuery('#sub_order_order').click();
-
-}
-
-/**
- * Recipient Order End
- */
- 
-jQuery(document).ready(function ($) {
-
-    const recipientOrderID = getURLParam('recipient-order');
-    if (recipientOrderID) {
-        const recipientOrderElement = $('.viewRecipientOrder[data-order="' + recipientOrderID + '"]');
-        if (recipientOrderElement.length) {
-            const loader = document.querySelector(".multiStepForm.loader");
-            loader.style.display = "none";
-            recipientOrderElement.trigger('click');
-        }
-    }
-
+function order_filter_main_order(){
     var table = $('#customer-orders-table').DataTable({
         processing: false,
         serverSide: true,
@@ -2470,6 +2264,220 @@ jQuery(document).ready(function ($) {
            
         }
     });
+}
+function order_filter_sub_order(){
+
+    var table = $('#customer-jar-orders-table').DataTable({
+        processing: false,
+        serverSide: true,
+        select: {
+            style: 'multi'
+        },
+        ajax: {
+            url: oam_ajax.ajax_url,
+            type: 'POST',
+            data: function (d) {
+                d.action = 'orthoney_customer_order_process_ajax';
+                d.security = oam_ajax.nonce;
+                d.custom_order_type = $('#custom-order-type-filter').val();
+                d.custom_order_status = $('#custom-order-status-filter').val();
+                d.table_order_type = 'sub_order_order';
+                d.selected_year = $('#jars-select-year').val();
+                const qtySlider = $('#jar-slider-range').slider("values");
+                d.selected_min_qty = qtySlider[0];
+                d.selected_max_qty = qtySlider[1];
+                d.selected_customer_id = $('#jar-select-customer').val();
+                d.search_by_organization = $('.jar-search-by-organization').val();
+            },
+            beforeSend: function () {
+                process_group_popup('Please wait while we process your request.');
+            },
+            complete: function () {
+                setTimeout(() => {
+                    Swal.close();
+                }, 1300);
+            },
+            error: function () {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while loading your orders.',
+                    icon: 'error',
+                });
+            },
+        },
+        columns: [
+            { data: 'jar_no' },
+            { data: 'date' },
+            { data: 'billing_name', orderable: false, searchable: false },
+            { data: 'affiliate_code', orderable: false, searchable: false },
+            { data: 'total_jar', orderable: false, searchable: false },
+            { data: 'status', orderable: false, searchable: false },
+            { data: 'action', orderable: false, searchable: false }
+        ],
+        drawCallback: function () {
+            initTippy();
+            $('#customer-jar-orders-table tbody tr.sub-order-row').remove();
+        },
+        initComplete: function () {
+            $("#customer-jar-orders-table_wrapper").hide();
+            $("#customer-jar-orders-table_length").hide();
+
+            const customFilter = `
+                <label class="yearblock">
+                    Order Year:
+                    <select id="jars-select-year" class="form-control">
+                        <option value="">Order year</option>
+                    </select>
+                </label>
+                <label class="customer-select-filter">
+                      Search By Organization Code:
+                    <input type="text" class="jar-search-by-organization" placeholder="Search By Organization Code" >
+                </label>
+                
+                <label class="customer-select-filter">
+                    Customer:
+                    <select id="jar-select-customer" class="form-control">
+                        <option value="">Select Customer</option>
+                    </select>
+                </label>
+                <label class="rangeblock">
+                    <label for="amount">Quantity Range:</label>
+                    <input type="text" id="jar_quantity_range" readonly style="border:0; color:#f6931f; font-weight:bold;">
+                    <div id="jar-slider-range"></div>
+                </label>
+            `;
+
+            $('#customer-jar-orders-table_filter').append(customFilter);
+            $('#customer-jar-orders-table_filter').append('<label><div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
+            $('#customer-jar-orders-table_filter').append('<label><div><button class="order-pdf-export w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Pdf</button></div></label>');
+
+            $('#customer-jar-orders-table_length').before('<div></div>');
+
+                $('.jar-search-by-organization').on('input', function (e) {
+                var searchrecipient = $(this).val();
+
+                if(searchrecipient == ""){
+                     table.ajax.reload(); // Reload DataTable via AJAX
+                }
+
+                if (searchrecipient.length > 2) {
+                    table.ajax.reload(); // Reload DataTable via AJAX
+                }    
+             });
+
+
+            $('#jar-select-customer').select2({
+                placeholder: 'Search',
+                allowClear: true,
+                ajax: {
+                    url: oam_ajax.ajax_url,
+                    type: 'POST',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            action: 'orthoney_get_customers_autocomplete',
+                            customer: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.map(function (item) {
+                                return { id: item.id, text: item.label };
+                            })
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            $(document).on('change', '#jar-select-customer, #jars-select-year', function () {
+                table.ajax.reload();
+            });
+
+            const yearSelect = document.getElementById('jars-select-year');
+            const startYear = new Date().getFullYear();
+            const endYear = 2018;
+            const defaultSelected = 2025;
+            const addedYears = new Set();
+
+            for (let year = startYear; year >= endYear; year--) {
+                if (!addedYears.has(year)) {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    if (year === defaultSelected) option.selected = true;
+                    yearSelect.appendChild(option);
+                    addedYears.add(year);
+                }
+            }
+
+            $('.selectall-checkbox').on('change', function () {
+                $('.row-checkbox').prop('checked', this.checked);
+            });
+
+            $("#jar-slider-range").slider({
+                range: true,
+                min: 1,
+                max: 1000,
+                values: [1, 1000],
+                slide: function (event, ui) {
+                    $("#jar_quantity_range").val(ui.values[0] + " - " + ui.values[1]);
+                },
+                change: function (event, ui) {
+                    table.draw();
+                }
+            });
+
+            $("#jar_quantity_range").val(
+                $("#jar-slider-range").slider("values", 0) + " - " + $("#jar-slider-range").slider("values", 1)
+            );
+        }
+    });
+}
+
+
+});
+
+function jarfilter_trigger(jarOrderId) {
+    // 1. Click the radio input
+    //e.preventDefault();
+
+    var $radio = jQuery('#sub_order_order');
+    if ($radio.length && !$radio.prop('checked')) {
+        $radio.prop('checked', true).trigger('change');
+    }
+
+    // 2. Set value in the DataTables search input
+    var $searchInput = jQuery('#customer-jar-orders-table_filter input[type=search]');
+    if ($searchInput.length) {
+        $searchInput.val(jarOrderId);
+
+        if (jQuery.fn.dataTable.isDataTable('#customer-jar-orders-table')) {
+            jQuery('#customer-jar-orders-table').DataTable().search(jarOrderId).draw();
+        } else {
+            $searchInput.trigger('input');
+        }
+    }
+    
+}
+/**
+ * Recipient Order End
+ */
+ 
+jQuery(document).ready(function ($) {
+
+    const recipientOrderID = getURLParam('recipient-order');
+    if (recipientOrderID) {
+        const recipientOrderElement = $('.viewRecipientOrder[data-order="' + recipientOrderID + '"]');
+        if (recipientOrderElement.length) {
+            const loader = document.querySelector(".multiStepForm.loader");
+            loader.style.display = "none";
+            recipientOrderElement.trigger('click');
+        }
+    }
+
+    
 });
  
  
