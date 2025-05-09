@@ -2479,8 +2479,6 @@ class OAM_Ajax{
         $order_relation = $wpdb->prefix . 'oh_wc_order_relation';
         $order_addresses = $wpdb->prefix . 'wc_order_addresses';
 
-
-
          $table_order_type;
         if ($table_order_type === 'main_order') {
 
@@ -2807,17 +2805,15 @@ class OAM_Ajax{
                 $where[] = "user_id = %d";
                 $values[] = $selected_customer_id;
             }
-            
-        } else {
-            if ($selected_customer_id) {
-                $where[] = "user_id = %d";
-                $values[] = get_current_user_id();
-            }
 
+        } else {
+            $where[] = "user_id = %d";
+            $values[] = get_current_user_id();
         }
+        
         $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-            $sql = $wpdb->prepare("SELECT COUNT(id) FROM {$jar_table} $where_sql", ...$values);
-            $total_orders = $wpdb->get_var($sql);
+        $sql = $wpdb->prepare("SELECT COUNT(id) FROM {$jar_table} $where_sql", ...$values);
+        $total_orders = $wpdb->get_var($sql);
 
         wp_send_json([
             'draw' => $draw,
