@@ -224,12 +224,12 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         <div class="wpb_column vc_column_container" style="text-align:center">
                             <div class="address-block">
                                 <h3>Where would you like your order delivered?</h3>
-                                <label for="single_address">
+                                <label for="single_address" style="display: none">
                                     <input type="radio" id="single_address" name="delivery_preference" <?php echo $delivery_preference == 'single_address' ? 'checked' : '' ?> value="single_address" required
                                         data-error-message="Please select a delivery preference.">
                                     <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/address.png" alt="" class="address-icon">Ship to Single Address</span>
                                 </label>
-                                <label for="multiple_address">
+                                <label for="multiple_address" style="display: none">
                                     <input type="radio" id="multiple_address" name="delivery_preference" <?php echo $delivery_preference == 'multiple_address' ? 'checked' : '' ?> value="multiple_address" required
                                         data-error-message="Please select a delivery preference.">
                                     <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/destination.png" alt="" class="address-icon">Ship to Multiple Addresses</span>
@@ -262,7 +262,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         <div class="w-separator size_medium"></div>
                                     </div>
                                 </div>
-                                <div class="multiple-address-order" style="<?php echo $delivery_preference == 'multiple_address' ? '' : 'display:none' ?>" >
+                                <div class="multiple-address-order" >
                                     <input type="hidden" id="multiple-address-output" name="multiple_address_output"
                                         value="<?php echo $multiple_address_output ?>" data-error-message="Please choose an option to upload the recipient list.">
                                         <span class="error-message"></span>
