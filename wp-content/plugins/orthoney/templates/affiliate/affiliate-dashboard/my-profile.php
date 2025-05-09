@@ -94,3 +94,6 @@ $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
     </div>
 </div>
 </div>
+<br>
+<div class="order-process-block">
+<div class="heading-title"><h3 class="block-title">Change Password</h3><a href="<?php echo OAM_Helper::$customer_dashboard_link.'edit-account/'; ?>" class="add-user w-btn us-btn-style_1 active">Change Password</a></div></div>
