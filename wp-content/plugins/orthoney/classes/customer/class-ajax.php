@@ -2644,7 +2644,7 @@ class OAM_Ajax{
         wp_die();
     }
 
-    public function orthoney_customer_order_process_ajax_handler() {
+   public function orthoney_customer_order_process_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
 
@@ -2755,7 +2755,7 @@ class OAM_Ajax{
                 $count_where_values[] = $year;
                 
                 // Build final SQL
-                $count_sql = $wpdb->prepare(
+               echo $count_sql = $wpdb->prepare(
                     "SELECT COUNT(orders.id) FROM {$orders_table} AS orders
                      $count_join
                      WHERE " . implode(' AND ', $count_where_conditions),
@@ -2869,7 +2869,6 @@ class OAM_Ajax{
         ]);
         wp_die();
     }
-
 
     public function remove_pdf_data_handler() {
         $file_url = isset($_REQUEST['file_url']) ? esc_url_raw($_REQUEST['file_url']) : '';
