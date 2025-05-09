@@ -5,7 +5,9 @@ window.addEventListener('load', function() {
   setTimeout(() => {
           const loader = document.querySelector(".multiStepForm.loader"); // Find loader inside the form
           if (loader) {
+            if (!loader.classList.contains('register_affiliate_loader')) {
               loader.style.display = "none"; // Hide the loader
+            }
           }
       
   }, 1500);
