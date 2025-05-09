@@ -2673,11 +2673,9 @@ class OAM_Ajax{
          $table_order_type;
         if ($table_order_type === 'main_order') {
 
-        $filtered_orders = OAM_Helper::get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, false,  $start, $length, $selected_customer_id);
+            $filtered_orders = OAM_Helper::get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, false,  $start, $length, $selected_customer_id);
 
-            if ( current_user_can('administrator') ) {
-
-                $count_where_conditions = []; // As array for consistency
+            $count_where_conditions = []; // As array for consistency
                 $count_where_values = [];
                 $count_join = "INNER JOIN $order_relation AS rel ON rel.wc_order_id = orders.id";
                 $count_join .= " LEFT JOIN $recipient_ordertable AS rec ON rec.order_id = rel.order_id";
@@ -2713,10 +2711,6 @@ class OAM_Ajax{
                     $count_where_values[] = '%' . $wpdb->esc_like($search_by_recipient) . '%';
                 }
 
-                
-
-                
-
                 if (!empty($search)) {
                     $count_join .= " LEFT JOIN $order_addresses AS addr ON addr.order_id = orders.id AND addr.address_type = 'billing' ";
                     
@@ -2730,12 +2724,6 @@ class OAM_Ajax{
                 if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] != "all") {
                     $count_where_conditions[] = "orders.status = %s";
                     $count_where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
-                }
-                
-                // Customer ID
-                if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
-                    $count_where_conditions[] = "orders.customer_id = %d";
-                    $count_where_values[] = intval($_REQUEST['selected_customer_id']);
                 }
                 
                 // Quantity
@@ -2753,9 +2741,22 @@ class OAM_Ajax{
                 $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
                 $count_where_conditions[] = "YEAR(orders.date_created_gmt) = %d";
                 $count_where_values[] = $year;
+
+            if ( current_user_can('administrator') ) {
+
+                // Customer ID
+                if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
+                    $count_where_conditions[] = "orders.customer_id = %d";
+                    $count_where_values[] = intval($_REQUEST['selected_customer_id']);
+                }
+            
                 
-                // Build final SQL
-                $count_sql = $wpdb->prepare(
+            } else {
+                $count_where_conditions[] = "orders.customer_id = %d";
+                $count_where_values[] = get_current_user_id();
+            }
+            // Build final SQL
+             $count_sql = $wpdb->prepare(
                     "SELECT COUNT(orders.id) FROM {$orders_table} AS orders
                      $count_join
                      WHERE " . implode(' AND ', $count_where_conditions),
@@ -2763,20 +2764,10 @@ class OAM_Ajax{
                 );
                 
                 $total_orders = $wpdb->get_var($count_sql);
-                
-               // echo $count_sql;
-                
-            } else {
-                // Non-admin sees only their orders
-                $sql = $wpdb->prepare(
-                    "SELECT COUNT(id) FROM {$orders_table}
-                     WHERE customer_id = %d
-                     AND type = %s",
-                    $user_id, 'shop_order'
-                );
-                $total_orders = $wpdb->get_var($sql);
-                
-            }
+            
+            $total_orders = $wpdb->get_var($count_sql);
+
+
 
         }else if($table_order_type === 'sub_order_order'){
 

@@ -66,9 +66,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     if ($result) {
                         $setData = json_decode($result->data) ?? [];
 
-                        // echo "<pre>";
-                        // print_r( $setData);
-                        // echo "</pre>";
+                        echo "<pre>";
+                        print_r( $setData);
+                        echo "</pre>";
                         $currentStep = max(0, (int) $result->step);
                         $csv_name = $result->csv_name ?? '';
                         $group_name = $result->name ?? '';
@@ -289,7 +289,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     <div class="groups-wrapper input-wrapp" style="<?php echo $upload_type_output == 'select-group' ? '' : 'display:none' ?>">
                                         <!-- <h4>Choose from existing recipient list</h4> -->
                                         <div class="bg-card">
-                                            <select name="groups[]" data-error-message="Please select a Recipient List." multiple >
+                                            <select name="groups[]" data-error-message="Please select a Recipient List." <?php echo $upload_type_output == 'select-group' ? 'required' : '' ?> multiple >
                                                 <?php 
                                                 foreach ($getGroupList as $key => $data) {
                                                     $selected = '';
@@ -314,6 +314,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         </label>
                                         
                                     </div>
+                                    <span class="error-message multipleaddressordererrormessage" style="display:none"> Please choose an option to upload the recipient list.</span>
                                 </div>
                             </div>
                         </div>

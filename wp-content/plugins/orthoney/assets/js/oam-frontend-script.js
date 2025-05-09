@@ -1787,9 +1787,7 @@ if (recipientOrderManageForm) {
 }
 
 
-jQuery(document).on('click', '.filter-jar-order-by-wc-order', function (e) {
-jQuery('#sub_order_order').click();
-});
+
 jQuery(document).on('click', 'input[name="table_order_type"]', function (e) {
     // e.preventDefault();
     var otype = jQuery(this).val();
@@ -2008,6 +2006,9 @@ function jarfilter_trigger(jarOrderId) {
             $searchInput.trigger('input');
         }
     }
+    
+    jQuery('#sub_order_order').click();
+
 }
 
 /**

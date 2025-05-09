@@ -324,25 +324,15 @@ class OAM_Helper{
         $recipient_ordertable = $wpdb->prefix . 'oh_recipient_order';
         $order_relation = $wpdb->prefix . 'oh_wc_order_relation';
 
-
-    
         $filtered_orders = [];
-    // echo $search;
+        // echo $search;
 
         $limit = $length;
-        // $page = isset($page) ? (int)$page : 1;
-         $offset = $page;
+        $offset = $page;
 
-
-    
          $search_term = isset($_REQUEST['search']['value']) ? sanitize_text_field($_REQUEST['search']['value']) : '';
 
-            // If no cached data, build the query
-            if (current_user_can('administrator')) {
-
-
-
-                $orders_table = $wpdb->prefix . 'wc_orders';
+         $orders_table = $wpdb->prefix . 'wc_orders';
                 $order_relation = $wpdb->prefix . 'oh_wc_order_relation';
                 
                 $where_conditions = [];
@@ -352,11 +342,7 @@ class OAM_Helper{
 
                 // Join with the optimized relation table
                 $join .= "INNER JOIN $order_relation AS rel ON rel.wc_order_id = orders.id";
-
                 $join .= " LEFT JOIN $recipient_ordertable AS rec ON rec.order_id = rel.order_id";
-
-
-
 
                 if (!empty($_REQUEST['search_by_organization'])) {
                     $where_conditions[] = "(
@@ -388,7 +374,6 @@ class OAM_Helper{
                     
                 }
                 
-
                 
                 // Filter by shipping type
                 if (!empty($_REQUEST['custom_order_type'])) {
@@ -407,11 +392,7 @@ class OAM_Helper{
                     $where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
                 }
                 
-                // Customer ID
-                if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
-                    $where_conditions[] = "orders.customer_id = %d";
-                    $where_values[] = intval($_REQUEST['selected_customer_id']);
-                }
+                
                 
                 // Quantity range
                 if (
@@ -433,12 +414,25 @@ class OAM_Helper{
                 $where_conditions[] = "YEAR(orders.date_created_gmt) = %d";
                 $where_values[] = $year;
                 
-                // Limit and Offset
+                
+            // If no cached data, build the query
+            if (current_user_can('administrator')) {
+                // Customer ID
+                if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
+                    $where_conditions[] = "orders.customer_id = %d";
+                    $where_values[] = intval($_REQUEST['selected_customer_id']);
+                }
+
+            }else{
+                // Customer ID
+                $where_conditions[] = "orders.customer_id = %d";
+                $where_values[] = get_current_user_id();
+            }
+            // Limit and Offset
                 $where_values[] = $limit;
                 $where_values[] = $offset;
-                
-                // Final SQL
-               echo $sql = $wpdb->prepare(
+            
+                 $sql = $wpdb->prepare(
                     "SELECT DISTINCT orders.*, rel.order_id as rel_oid FROM $orders_table AS orders
                      $join
                      WHERE " . implode(' AND ', $where_conditions) . "
@@ -446,35 +440,13 @@ class OAM_Helper{
                      LIMIT %d OFFSET %d",
                     ...$where_values
                 );
-
-            }else{
-                 $sql = $wpdb->prepare(
-                    "SELECT * FROM $orders_table
-                     WHERE customer_id = %d
-                     AND status != %s
-                     AND type = %s
-                     ORDER BY date_updated_gmt DESC
-                     LIMIT %d OFFSET %d",
-                    $user_id, 'wc-checkout-draft', 'shop_order', $limit, $offset
-                );
-            }
         
-       //     print_r($_REQUEST);
-       //echo  $sql.'sql';
-        //    echo 'tesetsss';
-
             // Run query and cache the results for 5 minutes (300 seconds)
             $main_orders = $wpdb->get_results($sql);
           //  set_transient($transient_key, $main_orders, 300); // 5 minutes
      
-        // echo '<pre>';
-        // print_r($wpdb);
-
-
-
 
       foreach ($main_orders as $main_data) {
-
 
             $order_id = $main_data->id;
             $main_status = $main_data->status;
@@ -496,20 +468,6 @@ class OAM_Helper{
                 $total_quantity += $item->get_quantity();
             }
 
-            // if (
-            //     ($custom_order_type === 'single_address' && $order_type !== 'Single Address') ||
-            //     ($custom_order_type === 'multiple_address' && $order_type !== 'Multi Address')
-            // ) {
-            //     continue;
-            // }
-
-            // $matches_search_main = empty($search) ||
-            //     stripos((string)$order_id, $search) !== false ||
-            //     stripos($main_order->get_billing_first_name(), $search) !== false ||
-            //     stripos($main_order->get_billing_last_name(), $search) !== false ||
-            //     stripos($main_order->get_shipping_first_name(), $search) !== false||
-            //     stripos($main_order->get_shipping_last_name(), $search) !== false;
-
             $row_builder = $is_export ? 'build_export_order_row' : 'build_order_row';
             $row_data = OAM_Helper::$row_builder($main_data, $main_order, $order_type, $total_quantity);
 
@@ -527,7 +485,7 @@ class OAM_Helper{
     // Helper to build row array for a main or sub order
     public static function build_order_row($order_data, $order_obj, $order_type, $total_quantity, $parent_order = null) {
         global $wpdb;
-                $jar_order_id = $order_data->rel_oid;
+        $jar_order_id = $order_data->rel_oid;
 
         $user_id = get_current_user_id();
         $orders_table = $wpdb->prefix . 'wc_orders';

@@ -267,7 +267,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const deliveryPreference = document.querySelector(
           'input[name="delivery_preference"]:checked'
         );
+        const multipleaddressordererrormessage = document.querySelector('.multipleaddressordererrormessage')
 
+        multipleaddressordererrormessage.style.display = 'none';
         if (currentStep !== 0) {
           if (deliveryPreference) {
             console.log("1");
@@ -276,10 +278,13 @@ document.addEventListener("DOMContentLoaded", function () {
               if (deliveryPreference.value !== "single_address") {
                 console.log("2");
                 if (!uploadTypeOutput || uploadTypeOutput.value === '') {
-                  
-                  return;
+                  multipleaddressordererrormessage.style.display = 'block';
+                    return;
+                 
                 }
+                multipleaddressordererrormessage.style.display = 'none';
                 process_group_popup();
+                
                 currentStep += uploadTypeOutput.value === "add-manually" || uploadTypeOutput.value === "select-group" ? 2 : 1;
                 // currentStep = Math.min(currentStep, steps.length - 1);
                 console.log("currentStep", currentStep);
@@ -420,8 +425,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const multiple_address_output = document.querySelector(
           ".multiple-address-order #multiple-address-output"
         );
+         const multipleaddressordererrormessage = document.querySelector('.multipleaddressordererrormessage')
+
+        multipleaddressordererrormessage.style.display = 'none';
+        let groups_select = '';
         if(groups_wrapper){
-          const groups_select = groups_wrapper.querySelector("select");
+          groups_select = groups_wrapper.querySelector("select");
         }
         multiple_address_output.value = this.value;
         if (this.value == "select-group") {
