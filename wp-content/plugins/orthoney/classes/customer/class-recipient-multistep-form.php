@@ -230,7 +230,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/address.png" alt="" class="address-icon">Ship to Single Address</span>
                                 </label>
                                 <label for="multiple_address" style="display: none">
-                                    <input type="radio" id="multiple_address" name="delivery_preference" <?php echo $delivery_preference == 'multiple_address' ? 'checked' : '' ?> value="multiple_address" required
+                                    <input type="radio" id="multiple_address" name="delivery_preference" checked value="multiple_address" required
                                         data-error-message="Please select a delivery preference.">
                                     <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/destination.png" alt="" class="address-icon">Ship to Multiple Addresses</span>
                                 </label>
