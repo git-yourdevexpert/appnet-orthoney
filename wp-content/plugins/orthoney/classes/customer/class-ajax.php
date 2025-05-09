@@ -2644,7 +2644,7 @@ class OAM_Ajax{
         wp_die();
     }
 
-    public function orthoney_customer_order_process_ajax_handler() {
+   public function orthoney_customer_order_process_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
 
@@ -2869,7 +2869,6 @@ class OAM_Ajax{
         ]);
         wp_die();
     }
-
 
     public function remove_pdf_data_handler() {
         $file_url = isset($_REQUEST['file_url']) ? esc_url_raw($_REQUEST['file_url']) : '';
