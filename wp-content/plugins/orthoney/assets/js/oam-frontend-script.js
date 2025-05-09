@@ -11,6 +11,60 @@ function setCookie(name, value, days) {
         document.cookie = cookie;
     }
 }
+function affiliateDatatable(){
+    ["affiliate-orderlist-table", "affiliate-results"].forEach((id) => {
+      const div = document.getElementById(id);
+      if (div && div.innerHTML.trim() !== "") {
+        const tableEl = div.querySelector("table");
+        if (tableEl && !jQuery(tableEl).hasClass('dataTable')) {
+          const $table = jQuery(tableEl);
+    
+          // Initialize DataTable
+          const dataTable = $table.DataTable({
+            paging: false,
+           
+            paging: true,
+            fixedHeader: true,
+            scrollCollapse: false,
+            info: true,
+            searching: true,
+            responsive: true,
+            deferRender: false,
+            lengthChange: false,
+            language: {
+                search: "",
+                searchPlaceholder: "Search..." 
+              },
+              columnDefs: [
+                {
+                  targets: -1,        // -1 means "last column"
+                  orderable: false    // disables sorting
+                }
+              ]
+          });
+    
+          // Hide pagination & info if only 1 page
+          dataTable.on('draw', function () {
+            const pageInfo = dataTable.page.info();
+            const wrapper = $table.closest('.dataTables_wrapper');
+            const pagination = wrapper.find('.dataTables_paginate');
+            const infoText = wrapper.find('.dataTables_info');
+    
+            if (pageInfo.pages <= 1) {
+              pagination.hide();
+              infoText.hide();
+            } else {
+              pagination.show();
+              infoText.show();
+            }
+          });
+    
+          // Trigger initial check
+          dataTable.draw();
+        }
+      }
+    });
+  }
 
 function VerifyRecipientsDatatable(){
     ["failCSVData", "successCSVData", "newCSVData"].forEach((id) => {
@@ -100,6 +154,7 @@ function process_group_popup(selectHtml = '') {
 });
 
 jQuery(document).ready(function($) {
+    affiliateDatatable();
     
     if(getURLParam('action') == 'afficted-link' && getURLParam('token') != ''){
 

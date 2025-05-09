@@ -36,6 +36,6 @@ $users = $wpdb->get_results($wpdb->prepare(
         </div>
         <div id="affiliate-results"></div>
     <?php else : ?>
-        <p>No team member found!</p>
+        <p>First, create a team member, then it will be workable.</p>
     <?php endif; ?>
 </div>

@@ -26,14 +26,14 @@ $requests = $wpdb->get_results(
 <div class="affiliate-dashboard order-process-block">
     <h3>Linked Customers</h3>
     <!-- Search and filter options -->
-    <div class="filter-container">
+    <div class="filter-container orthoney-datatable-warraper">
         <input type="text" id="customer-email-search" required placeholder="Enter Customer Email" data-error-message="Please enter a Email.">
         
             <span class="error-message"></span>
     <button id="search-button" class="w-btn us-btn-style_2">Search</button>
     <ul id="customer-email-results"></ul>
     </div>
-    <div id="affiliate-results">
+    <div id="affiliate-results" class="orthoney-datatable-warraper">
         <table>
             <thead>
                 <tr>
@@ -63,10 +63,11 @@ $requests = $wpdb->get_results(
                         
                         // Show resend button if status is pending
                         if ($request->status == 0) {
-                            echo '<td><div class="thead-data">Action</div><button class="resend-email-btn w-btn us-btn-style_1" data-customer-id="' . esc_attr($request->customer_id) . '">Resend Email</button></td>';
+                            echo '<td><div class="thead-data">Action</div><button class="resend-email-btn icon-txt-btn" data-customer-id="' . esc_attr($request->customer_id) . '"><img src="https://orthoney.appnet-projects.com/wp-content/plugins/orthoney/assets/image/re-order-icon.png">Resend Email</button></td>';
                         } else {
                             if ($request->status == 1) {
-                                echo '<td><div class="thead-data">Action</div><button class="customer-login-btn w-btn us-btn-style_1" data-user-id="' . esc_attr($request->customer_id) . '">Login as Customer</button></td>';
+                                echo '<td><div class="thead-data">Action</div>';
+                                echo '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($request->customer_id) . '"><img src="https://orthoney.appnet-projects.com/wp-content/plugins/orthoney/assets/image/re-order-icon.png">Login as Customer</button></td>';
                             }else{
                                 echo '<td><div class="thead-data">Action</div>-</td>';
                             }
