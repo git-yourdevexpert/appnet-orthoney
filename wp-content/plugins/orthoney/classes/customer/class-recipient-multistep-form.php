@@ -276,7 +276,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'select-group' ? 'checked' : '' ?> value="select-group" data-error-message="Please select a delivery preference.">
                                             <span>
                                                 <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/book.png" alt="" class="address-icon">
-                                                Choose from Existing Recipient List
+                                                Reorder from previous year
                                             </span>
                                         </label>
                                         
@@ -303,12 +303,12 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?>  <?php echo $upload_type_output == 'upload-csv' ? 'checked' : '' ?> value="upload-csv" data-error-message="Please select a delivery preference.">
                                             <span>
                                                 <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/file.png" alt="" class="address-icon">
-                                                Upload New Recipient List
+                                                Upload a new order from a list
                                             </span>
                                         </label>
                                         <label>
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'add-manually' ? 'checked' : '' ?> value="add-manually" data-error-message="Please select a delivery preference."> <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/contract.png" alt="" class="address-icon">
-                                                Manually Add Recipient Addresses
+                                                Enter a new order
                                             </span>
                                         </label>
                                     </div>
