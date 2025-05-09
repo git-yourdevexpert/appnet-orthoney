@@ -236,7 +236,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 </label>
                                 <span class="error-message" style="display:none">Please choose your shipped type.</span>
                             </div>
-                            <div class="address-inner">
+                            <div class="address-inner" style="margin-top:0px">
                                 <div class="single-address-order greeting-box"
                                     style="<?php echo  $delivery_preference == 'single_address'  ? '' : 'display:none' ?>">
                                     <div class="bg-card">
