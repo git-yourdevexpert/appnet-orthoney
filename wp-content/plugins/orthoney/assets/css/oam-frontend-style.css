@@ -3317,10 +3317,10 @@ margin-right: 10px;
 }
 .badge-group  .badge .badge-number{
   position: absolute;
-  top: -10px;
-  font-size: 11px;
-  width: 22px;
-  height: 21px;
+  top: -15px;
+  font-size: 9px;
+  width: 27px;
+  height: 27px;
   border-radius: 100%;
   background: var(--color-content-secondary);
   color: #fff;
