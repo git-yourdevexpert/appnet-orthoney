@@ -438,7 +438,7 @@ class OAM_Helper{
                 $where_values[] = $offset;
                 
                 // Final SQL
-                $sql = $wpdb->prepare(
+               echo $sql = $wpdb->prepare(
                     "SELECT DISTINCT orders.*, rel.order_id as rel_oid FROM $orders_table AS orders
                      $join
                      WHERE " . implode(' AND ', $where_conditions) . "

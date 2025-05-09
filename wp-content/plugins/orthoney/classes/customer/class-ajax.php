@@ -2755,7 +2755,7 @@ class OAM_Ajax{
                 $count_where_values[] = $year;
                 
                 // Build final SQL
-               echo $count_sql = $wpdb->prepare(
+                $count_sql = $wpdb->prepare(
                     "SELECT COUNT(orders.id) FROM {$orders_table} AS orders
                      $count_join
                      WHERE " . implode(' AND ', $count_where_conditions),
