@@ -267,16 +267,17 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         value="<?php echo $multiple_address_output ?>" data-error-message="Please choose an option to upload the recipient list.">
                                         <span class="error-message"></span>
                                         <div class="multiple-address-grid">
+                                        <label>
+                                            <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'add-manually' ? 'checked' : '' ?> value="add-manually" data-error-message="Please select a delivery preference."> <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/contract.png" alt="" class="address-icon">
+                                                Enter a New Order
+                                            </span>
+                                        </label>
                                         <?php 
                                     $user = self::$current_user_id;
                                     $getGroupList = OAM_Helper::getGroupList($user);
                                     if(!empty($getGroupList)){
                                     ?>
-                                    <label>
-                                            <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'add-manually' ? 'checked' : '' ?> value="add-manually" data-error-message="Please select a delivery preference."> <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/contract.png" alt="" class="address-icon">
-                                                Enter a New Order
-                                            </span>
-                                        </label>
+                                        
                                         <label>
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'select-group' ? 'checked' : '' ?> value="select-group" data-error-message="Please select a delivery preference.">
                                             <span>
