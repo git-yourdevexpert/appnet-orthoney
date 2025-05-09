@@ -164,116 +164,88 @@ class OAM_Helper{
         return $filtered_orders;
     }
     
-    public static function get_jars_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length) {
+   public static function get_jars_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length) {
         global $wpdb;
         $orders_table = $wpdb->prefix . 'wc_orders'; 
         $filtered_orders = [];
-    
+
         // Pagination calculation
         $offset = $page;
         $limit = $length;
         $min_qty = isset($_REQUEST['selected_min_qty']) && is_numeric($_REQUEST['selected_min_qty']) ? (int) $_REQUEST['selected_min_qty'] : 1;
         $max_qty = isset($_REQUEST['selected_max_qty']) && is_numeric($_REQUEST['selected_max_qty']) ? (int) $_REQUEST['selected_max_qty'] : 1000;
-
         $selected_customer_id = isset($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id']) ? (int) $_REQUEST['selected_customer_id'] : '';
-
         $search_val = isset($_REQUEST['search']['value']) ? trim(sanitize_text_field($_REQUEST['search']['value'])) : '';
+        $selected_year = isset($_REQUEST['selected_year']) && is_numeric($_REQUEST['selected_year']) ? (int) $_REQUEST['selected_year'] : 2025;
 
-        $selected_year = isset($_REQUEST['selected_year']) && is_numeric($_REQUEST['selected_year']) 
-        ? (int) $_REQUEST['selected_year'] 
-        : 2025;
-
-        
         $where_clauses = [];
         $params = [];
-        
-        // Quantity filter for both admin and non-admin
+
+        // Quantity filter
         $where_clauses[] = "quantity BETWEEN %d AND %d";
         $params[] = $min_qty;
         $params[] = $max_qty;
 
-       // Year filter
+        // Year filter
         $where_clauses[] = "YEAR(created_date) = %d";
         $params[] = $selected_year;
-        
 
         if (!empty($_REQUEST['search_by_organization'])) {
             $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
-        
             $where_clauses[] = "(
                 CAST(order_id AS CHAR) = %s
                 OR affiliate_token LIKE %s
             )";
-        
             $params[] = $search_by_organization;
             $params[] = '%' . $wpdb->esc_like($search_by_organization) . '%';
         }
 
+        if (!empty($search_val)) {
+            $where_clauses[] = "(recipient_order_id LIKE %s OR full_name LIKE %s)";
+            $search_param = '%' . $wpdb->esc_like($search_val) . '%';
+            $params[] = $search_param;
+            $params[] = $search_param;
+        }
 
+        if (current_user_can('administrator')) {
             if ($selected_customer_id) {
                 $where_clauses[] = "user_id = %d";
                 $params[] = $selected_customer_id;
             }
+        } else {
+            $where_clauses[] = "user_id = %d";
+            $params[] = get_current_user_id();
+        }
 
-            if (!empty($search_val)) {
-                $where_clauses[] = "(recipient_order_id LIKE %s OR full_name LIKE %s)";
-                $search_param = '%' . $wpdb->esc_like($search_val) . '%';
-                $params[] = $search_param;
-                $params[] = $search_param;
-            }
-            
-        
-            $where_sql = '';
-            if (!empty($where_clauses)) {
-                $where_sql = 'WHERE ' . implode(' AND ', $where_clauses);
-            }        
-        // Add pagination params at the end
+        $where_sql = '';
+        if (!empty($where_clauses)) {
+            $where_sql = 'WHERE ' . implode(' AND ', $where_clauses);
+        }
+
+        // Add pagination
         $params[] = $limit;
         $params[] = $page;
-        
-        // Get orders
-        if (current_user_can('administrator')) {
-            $sql = $wpdb->prepare(
-                "
-                SELECT 
-                    recipient_order_id AS jar_no,
-                    order_id AS order_no,
-                    created_date AS date,
-                    full_name AS billing_name,
-                    full_name AS shipping_name,
-                    affiliate_token AS affiliate_code,
-                    quantity AS total_jar,
-                    order_type AS type
-                FROM {$wpdb->prefix}oh_recipient_order
-                $where_sql
-                LIMIT %d OFFSET %d
-                ",
-                ...$params
-            );
-            
-            
-        } else {
-            $sql = $wpdb->prepare(
-                "
-                SELECT 
-                    recipient_order_id AS jar_no,
-                    order_id AS order_no,
-                    created_date AS date,
-                    full_name AS billing_name,
-                    full_name AS shipping_name,
-                    affiliate_token AS affiliate_code,
-                    quantity AS total_jar,
-                    order_type AS type
-                FROM {$wpdb->prefix}oh_recipient_order
-                WHERE user_id = %d
-                LIMIT %d OFFSET %d
-                ",
-                $user_id, $limit, $offset
-            );
-        }
-    
+
+        $sql = $wpdb->prepare(
+            "
+            SELECT 
+                recipient_order_id AS jar_no,
+                order_id AS order_no,
+                created_date AS date,
+                full_name AS billing_name,
+                full_name AS shipping_name,
+                affiliate_token AS affiliate_code,
+                quantity AS total_jar,
+                order_type AS type
+            FROM {$wpdb->prefix}oh_recipient_order
+            $where_sql
+            LIMIT %d OFFSET %d
+            ",
+            ...$params
+        );
+
         $jarsorder = $wpdb->get_results($sql, ARRAY_A);
-    
+
         // Process each order
         $filtered_orders = array_map(function($order) use ($wpdb) {
             $order['status'] = '';
@@ -281,184 +253,155 @@ class OAM_Helper{
                 OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format,
                 strtotime($order['date'])
             );
-    
+
             $recipient_order_id = esc_attr($order['jar_no']);
             $order_no = esc_attr($order['order_no']);
             $recipient_name = esc_attr($order['billing_name']);
-    
+
             $wc_order_id = $wpdb->get_var($wpdb->prepare(
                 "SELECT order_id
-                 FROM {$wpdb->prefix}wc_orders_meta
-                 WHERE meta_key = %s AND meta_value = %s",
+                FROM {$wpdb->prefix}wc_orders_meta
+                WHERE meta_key = %s AND meta_value = %s",
                 '_orthoney_OrderID',
                 $order_no
             ));
-    
+
             $resume_url = '';
             if ($wc_order_id && ($wc_order = wc_get_order($wc_order_id))) {
                 $order_date = $wc_order->get_date_created();
                 $editable = OAM_COMMON_Custom::check_order_editable($order_date);
-    
+
                 $resume_url = '<a class="far fa-eye" href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id}?recipient-order={$recipient_order_id}") . '"></a>';
                 $editLink = '';
                 if ($editable) {
                     $editLink = '<button class="far fa-edit editRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>';
                 }
             }
-    
+
             $order['action'] = $resume_url . $editLink . '
-            <button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>
-        ';
-    
+                <button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>';
+
             return $order;
         }, $jarsorder);
-    
+
         return $filtered_orders;
     }
 
-     public static  function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
+
+    public static function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
         global $wpdb;
 
         $orders_table = $wpdb->prefix . 'wc_orders';
         $order_meta_table = $wpdb->prefix . 'wc_orders_meta';
         $recipient_ordertable = $wpdb->prefix . 'oh_recipient_order';
         $order_relation = $wpdb->prefix . 'oh_wc_order_relation';
+        $order_addresses = $wpdb->prefix . 'wc_order_addresses';
 
         $filtered_orders = [];
-        // echo $search;
 
         $limit = $length;
         $offset = $page;
 
-         $search_term = isset($_REQUEST['search']['value']) ? sanitize_text_field($_REQUEST['search']['value']) : '';
+        $search_term = isset($_REQUEST['search']['value']) ? sanitize_text_field($_REQUEST['search']['value']) : '';
 
-         $orders_table = $wpdb->prefix . 'wc_orders';
-                $order_relation = $wpdb->prefix . 'oh_wc_order_relation';
-                
-                $where_conditions = [];
-                $where_values = [];
-                $join = "";
-                $order_addresses = $wpdb->prefix . 'wc_order_addresses';
+        $where_conditions = [];
+        $where_values = [];
+        $join = "";
 
-                // Join with the optimized relation table
-                $join .= "INNER JOIN $order_relation AS rel ON rel.wc_order_id = orders.id";
-                $join .= " LEFT JOIN $recipient_ordertable AS rec ON rec.order_id = rel.order_id";
+        $join .= "INNER JOIN $order_relation AS rel ON rel.wc_order_id = orders.id";
+        $join .= " LEFT JOIN $recipient_ordertable AS rec ON rec.order_id = rel.order_id";
 
-                if (!empty($_REQUEST['search_by_organization'])) {
-                    $where_conditions[] = "(
-                        CAST(orders.id AS CHAR) = %s 
-                        OR rel.affiliate_code LIKE %s
-                    )";
-                
-                    $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
-                
-                    $where_values[] = $search_by_organization;
-                    $where_values[] = '%' . $wpdb->esc_like($search_by_organization) . '%';
-                }
+        if (!empty($_REQUEST['search_by_organization'])) {
+            $where_conditions[] = "(
+                CAST(orders.id AS CHAR) = %s 
+                OR rel.affiliate_code LIKE %s
+            )";
+            $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
+            $where_values[] = $search_by_organization;
+            $where_values[] = '%' . $wpdb->esc_like($search_by_organization) . '%';
+        }
 
-                if (!empty($_REQUEST['search_by_recipient'])) {
-                    $search_by_recipient = sanitize_text_field($_REQUEST['search_by_recipient']);
-                
-                    // Compare against full_name column in oh_recipient_order (aliased as rec)
-                    $where_conditions[] = "rec.full_name LIKE %s";
-                    $where_values[] = '%' . $wpdb->esc_like($search_by_recipient) . '%';
-                }
-                
-                
-                if (!empty($search_term)) {
-                    $join .= " LEFT JOIN $order_addresses AS addr ON addr.order_id = orders.id AND addr.address_type = 'billing' ";
-                    
-                    $where_conditions[] = "(orders.id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s)";
-                    $where_values[] = (int) $search_term;
-                    $where_values[] = '%' . $wpdb->esc_like($search_term) . '%';
-                    
-                }
-                
-                
-                // Filter by shipping type
-                if (!empty($_REQUEST['custom_order_type'])) {
-                    if ($_REQUEST['custom_order_type'] === "multiple_address") {
-                        $where_conditions[] = "rel.order_type = %s";
-                        $where_values[] = 'multi_address';
-                    } elseif ($_REQUEST['custom_order_type'] === "single_address") {
-                        $where_conditions[] = "rel.order_type = %s";
-                        $where_values[] = 'single_address';
-                    }
-                }
-                
-                // Order status
-                if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] !== "all") {
-                    $where_conditions[] = "orders.status = %s";
-                    $where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
-                }
-                
-                
-                
-                // Quantity range
-                if (
-                    isset($_REQUEST['selected_min_qty'], $_REQUEST['selected_max_qty']) &&
-                    is_numeric($_REQUEST['selected_min_qty']) &&
-                    is_numeric($_REQUEST['selected_max_qty'])
-                ) {
-                    $where_conditions[] = "rel.quantity BETWEEN %d AND %d";
-                    $where_values[] = intval($_REQUEST['selected_min_qty']);
-                    $where_values[] = intval($_REQUEST['selected_max_qty']);
-                }
-                
-                // Order type
-                $where_conditions[] = "orders.type = %s";
-                $where_values[] = 'shop_order';
-                
-                // Year
-                $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
-                $where_conditions[] = "YEAR(orders.date_created_gmt) = %d";
-                $where_values[] = $year;
-                
-                
-            // If no cached data, build the query
-            if (current_user_can('administrator')) {
-                // Customer ID
-                if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
-                    $where_conditions[] = "orders.customer_id = %d";
-                    $where_values[] = intval($_REQUEST['selected_customer_id']);
-                }
+        if (!empty($_REQUEST['search_by_recipient'])) {
+            $search_by_recipient = sanitize_text_field($_REQUEST['search_by_recipient']);
+            $where_conditions[] = "rec.full_name LIKE %s";
+            $where_values[] = '%' . $wpdb->esc_like($search_by_recipient) . '%';
+        }
 
-            }else{
-                // Customer ID
-                $where_conditions[] = "orders.customer_id = %d";
-                $where_values[] = get_current_user_id();
+        if (!empty($search_term)) {
+            $join .= " LEFT JOIN $order_addresses AS addr ON addr.order_id = orders.id AND addr.address_type = 'billing'";
+            $where_conditions[] = "(orders.id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s)";
+            $where_values[] = (int) $search_term;
+            $where_values[] = '%' . $wpdb->esc_like($search_term) . '%';
+        }
+
+        if (!empty($_REQUEST['custom_order_type'])) {
+            if ($_REQUEST['custom_order_type'] === "multiple_address") {
+                $where_conditions[] = "rel.order_type = %s";
+                $where_values[] = 'multi_address';
+            } elseif ($_REQUEST['custom_order_type'] === "single_address") {
+                $where_conditions[] = "rel.order_type = %s";
+                $where_values[] = 'single_address';
             }
-            // Limit and Offset
-                $where_values[] = $limit;
-                $where_values[] = $offset;
-            
-                 $sql = $wpdb->prepare(
-                    "SELECT DISTINCT orders.*, rel.order_id as rel_oid FROM $orders_table AS orders
-                     $join
-                     WHERE " . implode(' AND ', $where_conditions) . "
-                     ORDER BY orders.date_updated_gmt DESC
-                     LIMIT %d OFFSET %d",
-                    ...$where_values
-                );
-        
-            // Run query and cache the results for 5 minutes (300 seconds)
-            $main_orders = $wpdb->get_results($sql);
-          //  set_transient($transient_key, $main_orders, 300); // 5 minutes
-     
+        }
 
-      foreach ($main_orders as $main_data) {
+        if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] !== "all") {
+            $where_conditions[] = "orders.status = %s";
+            $where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
+        }
 
+        if (
+            isset($_REQUEST['selected_min_qty'], $_REQUEST['selected_max_qty']) &&
+            is_numeric($_REQUEST['selected_min_qty']) &&
+            is_numeric($_REQUEST['selected_max_qty'])
+        ) {
+            $where_conditions[] = "rel.quantity BETWEEN %d AND %d";
+            $where_values[] = intval($_REQUEST['selected_min_qty']);
+            $where_values[] = intval($_REQUEST['selected_max_qty']);
+        }
+
+        $where_conditions[] = "orders.type = %s";
+        $where_values[] = 'shop_order';
+
+        $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
+        $where_conditions[] = "YEAR(orders.date_created_gmt) = %d";
+        $where_values[] = $year;
+
+        if (current_user_can('administrator')) {
+            if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
+                $where_conditions[] = "orders.customer_id = %d";
+                $where_values[] = intval($_REQUEST['selected_customer_id']);
+            }
+        } else {
+            $where_conditions[] = "orders.customer_id = %d";
+            $where_values[] = get_current_user_id();
+        }
+
+        $where_values[] = $limit;
+        $where_values[] = $offset;
+
+        $sql = $wpdb->prepare(
+            "SELECT DISTINCT orders.*, rel.order_id as rel_oid FROM $orders_table AS orders
+            $join
+            WHERE " . implode(' AND ', $where_conditions) . "
+            ORDER BY orders.date_updated_gmt DESC
+            LIMIT %d OFFSET %d",
+            ...$where_values
+        );
+
+        $main_orders = $wpdb->get_results($sql);
+
+        foreach ($main_orders as $main_data) {
             $order_id = $main_data->id;
             $main_status = $main_data->status;
 
             if ($custom_order_status !== 'all' && $custom_order_status !== $main_status) {
                 continue;
             }
+
             $main_order = wc_get_order($order_id);
             if (!$main_order) continue;
 
             $order_type = 'Multi Address';
-            
             $total_quantity = 0;
 
             foreach ($main_order->get_items() as $item) {
@@ -472,14 +415,13 @@ class OAM_Helper{
             $row_data = OAM_Helper::$row_builder($main_data, $main_order, $order_type, $total_quantity);
 
             if ($table_order_type === 'main_order') {
-              
-                    $filtered_orders[] = $row_data;
-             
+                $filtered_orders[] = $row_data;
             }
         }
 
         return $filtered_orders;
     }
+
 
 
     // Helper to build row array for a main or sub order
