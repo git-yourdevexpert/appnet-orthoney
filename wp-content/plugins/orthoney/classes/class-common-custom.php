@@ -26,7 +26,7 @@ class OAM_COMMON_Custom {
         add_filter( 'user_registration_modify_field_validation_response',  array($this, 'custom_user_registration_email_exists_message'), 10, 2 );
 
         add_filter( 'woocommerce_registration_auth_new_customer', '__return_false' );
-        add_action( 'woocommerce_created_customer', array($this,'custom_redirect_after_registration_based_on_role' ));
+        // add_action( 'woocommerce_created_customer', array($this,'custom_redirect_after_registration_based_on_role' ));
         add_shortcode( 'registration_success_msg', array($this, 'show_success_message_on_login') );
 
 
