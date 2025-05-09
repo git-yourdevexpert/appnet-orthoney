@@ -66,9 +66,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     if ($result) {
                         $setData = json_decode($result->data) ?? [];
 
-                        echo "<pre>";
-                        print_r( $setData);
-                        echo "</pre>";
+                        // echo "<pre>";
+                        // print_r( $setData);
+                        // echo "</pre>";
                         $currentStep = max(0, (int) $result->step);
                         $csv_name = $result->csv_name ?? '';
                         $group_name = $result->name ?? '';
