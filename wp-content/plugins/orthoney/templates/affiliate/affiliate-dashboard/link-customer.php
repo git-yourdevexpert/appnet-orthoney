@@ -68,7 +68,7 @@ $requests = $wpdb->get_results(
                         } else {
                             if ($request->status == 1) {
                                 echo '<td><div class="thead-data">Action</div>';
-                                echo '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($request->customer_id) . '"><img src="https://orthoney.appnet-projects.com/wp-content/plugins/orthoney/assets/image/re-order-icon.png">Login as Customer</button></td>';
+                                echo '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($request->customer_id) . '"><img src="https://orthoney.appnet-projects.com/wp-content/plugins/orthoney/assets/image/login-customer-icon.png">Login as Customer</button></td>';
                             }else{
                                 echo '<td><div class="thead-data">Action</div>-</td>';
                             }
