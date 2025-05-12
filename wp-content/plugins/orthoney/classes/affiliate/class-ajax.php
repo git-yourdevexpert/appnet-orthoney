@@ -14,6 +14,7 @@ class OAM_AFFILIATE_Ajax{
 
         // Affiliate Profile function
         add_action( 'wp_ajax_update_affiliate_profile', array( $this, 'update_affiliate_profile_handler' ) );
+        add_action( 'wp_ajax_update_price_affiliate_profile', array( $this, 'update_price_affiliate_profile_handler' ) );
 
         //Manage Affiliate Team Member 
         add_action( 'wp_ajax_manage_affiliate_team_member_users', array( $this, 'manage_affiliate_team_member_users_handler' ) );
@@ -249,6 +250,21 @@ class OAM_AFFILIATE_Ajax{
         }
     }
 
+    public function update_price_affiliate_profile_handler() {
+        // Verify nonce for security
+        check_ajax_referer('oam_nonce', 'security');
+
+        if (!is_user_logged_in()) {
+            wp_send_json(['success' => false, 'message' => 'You must be logged in to update your profile.']);
+            wp_die();
+        }
+        $user_id = get_current_user_id();
+        $product_price = sanitize_text_field($_POST['product_price']);
+        update_user_meta($user_id, 'DJarPrice', $product_price);
+
+        wp_send_json(['success' => true, 'message' => 'Product price update successfully!']);
+        wp_die();
+    }
     // Affiliate Profile function
     public function update_affiliate_profile_handler() {
 

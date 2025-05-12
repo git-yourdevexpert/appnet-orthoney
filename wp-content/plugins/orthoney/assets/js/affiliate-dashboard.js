@@ -283,6 +283,47 @@ document.addEventListener('click', function (event) {
             });
         });
     }
+    if (event.target.id === 'affiliate-product-price-profile') {
+        process_group_popup();
+        event.preventDefault();
+       
+
+        const form = document.querySelector('#affiliate-update-price-form');
+        const formData = new FormData(form);
+        formData.append('action', 'update_price_affiliate_profile');
+        formData.append("security", oam_ajax.nonce);  // nonce.
+
+        fetch(oam_ajax.ajax_url, {
+            method: 'POST',
+            body: formData,
+        })
+
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: data.message || "Updated price successfully!",
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true
+                });
+            } else {
+                Swal.fire({
+                    title: "Error",
+                    text: data.message || "Something went wrong. Please try again",
+                    icon: "error",
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while updating the Affiliate profile.',
+                icon: 'error',
+            });
+        });
+    }
 });
 
 //Edit my profile
