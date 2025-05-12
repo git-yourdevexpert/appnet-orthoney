@@ -24,11 +24,6 @@ class OAM_WC_Customizer {
 
         // add_filter('woocommerce_order_again_cart_item_data' , array($this,'woocommerce_order_again_cart_item_data_handler'), 10, 3);
         add_filter('render_block' , array($this,'checkout_order_summary_render_block_handler'), 10, 2);
-        
-        // Hide sub order 
-        // add_filter('woocommerce_order_query_args' , array($this,'only_show_main_order_handler'), 10, 2);
-
-        add_action( 'add_meta_boxes', array($this, 'admin_sub_order_metabox') );
 
         add_filter( 'woocommerce_package_rates', array($this,'conditional_shipping_based_on_acf_date'), 10, 2 );
 
@@ -252,113 +247,6 @@ class OAM_WC_Customizer {
         }
 
         return $rates;
-    }
-
-    public function admin_sub_order_metabox() {
-        $screen = class_exists( '\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) && wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
-            ? wc_get_page_screen_id( 'shop-order' )
-            : 'shop_order';
-    
-        add_meta_box(
-            'recipient_sub_order',
-            'Recipients Sub Order lists',
-            array ($this, 'admin_sub_order_metabox_callback'),
-            $screen,
-            'normal',
-            'high'
-        );
-    }
-    
-    // Metabox content
-    public function admin_sub_order_metabox_callback($object, $item_id) {
-        // Get the WC_Order object
-        $order = is_a($object, 'WP_Post') ? wc_get_order($object->ID) : $object;
-        
-        // Check if order exists
-        if (!$order) {
-            echo '<p>Order not found.</p>';
-            return;
-        }
-        
-        // Get order items
-        $items = $order->get_items();
-        $order_status = wc_get_order_status_name($order->get_status()); // Get readable order status
-        
-        if (empty($items)) {
-            echo '<p>No items found in this order.</p>';
-            return;
-        }
-
-        global $wpdb;
-        $group_recipient_table = OAM_Helper::$group_recipient_table;
-        ?>
-    
-        <table class="widefat fixed striped">
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Full Name</th>
-                    <th>Company Name</th>
-                    <th>Address</th>
-                    <th>Quantity</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($items as $item_id => $item){
-
-                    $recipient_id   = wc_get_order_item_meta($item_id, '_recipient_recipient_id', true);
-                    $groupRecipientCount = $wpdb->get_row($wpdb->prepare(
-                        "SELECT order_id FROM $group_recipient_table WHERE recipient_id = %d",
-                        $recipient_id
-                    ));
-
-                    if ($groupRecipientCount && !empty($groupRecipientCount->order_id)) {
-                        $sub_order = wc_get_order($groupRecipientCount->order_id);
-                        // Retrieve meta data
-                        $full_name    = wc_get_order_item_meta($item_id, 'full_name', true);
-                        $company_name = wc_get_order_item_meta($item_id, '_recipient_company_name', true);
-                        $address_1    = wc_get_order_item_meta($item_id, '_recipient_address_1', true);
-                        $address_2    = wc_get_order_item_meta($item_id, '_recipient_address_2', true);
-                        $city         = wc_get_order_item_meta($item_id, '_recipient_city', true);
-                        $state        = wc_get_order_item_meta($item_id, '_recipient_state', true);
-                        $zipcode      = wc_get_order_item_meta($item_id, '_recipient_zipcode', true);
-                        $quantity     = $item->get_quantity();
-        
-                        // Format address
-                        $address_parts = array_filter([$address_1, $address_2, $city, $state, $zipcode]);
-                        $formatted_address = !empty($address_parts) ? implode(', ', array_map('esc_html', $address_parts)) : '-';
-                        $status = 'completed'; // default fallback status
-
-if ( is_a( $sub_order, 'WC_Order' ) ) {
-    $status = $sub_order->get_status();
-}
-                        ?>
-                        <tr>
-                            <td><a href="<?php echo admin_url() ?>admin.php?page=wc-orders&action=edit&id=<?php echo $groupRecipientCount->order_id; ?>"><?php echo $groupRecipientCount->order_id; ?></a></td>
-                            <td><?php echo !empty($full_name) ? esc_html($full_name) : '-'; ?></td>
-                            <td><?php echo !empty($company_name) ? esc_html($company_name) : '-'; ?></td>
-                            <td><?php echo $formatted_address; ?></td>
-                            <td><?php echo esc_html($quantity); ?></td>
-                            <td class="order_status column-order_status">
-                            <mark class="order-status status-<?php echo esc_attr( sanitize_title( $status ) ); ?> tips">
-    <span><?php echo esc_html( $status ); ?></span>
-</mark>
-                            </td>
-                            <td><a href="<?php echo admin_url() ?>admin.php?page=wc-orders&action=edit&id=<?php echo $groupRecipientCount->order_id; ?>"><span data-tippy="View Order" class="dashicons dashicons-visibility"></span></a></td>
-                        </tr>
-                    <?php } 
-                    } 
-                ?>
-            </tbody>
-        </table>
-        <?php
-    }
-    
-    public function only_show_main_order_handler( $query_args ) {
-        $query_args['parent_order_id'] = 0;
-        return $query_args;
     }
 
     
