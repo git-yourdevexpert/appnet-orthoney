@@ -178,7 +178,7 @@
   margin-left: 0;
 }
 .order-process-block .tab-selections .step-nav-item.active {
-  background: #00afaa;
+  background: var(--color-header-middle-text-hover);
   color: #fff;
 }
 .order-process-block .step-one {
@@ -204,7 +204,7 @@
   margin-bottom: 15px;
 }
 .order-process-block .organization-step .content-title {
-  background: rgba(0, 175, 170, 0.66);
+  background:var(--color-header-middle-text-hover);
   padding: 15px 15px;
   text-align: center;
   color: #23172b;
