@@ -1272,6 +1272,34 @@ class OAM_Helper{
     }
 
 	/**
+	 * Helper function that get all previous year Order List
+	 *
+	 * Starts the list before the elements are added.
+	 *
+	 * @return array $groups is array with user data.
+	 */
+
+	public static function getLastYearOrderList($user_id = ''){
+        global $wpdb;
+
+        $customer_id = $user_id;
+
+        $results = $wpdb->get_col( $wpdb->prepare(
+            "
+            SELECT id
+            FROM {$wpdb->prefix}wc_orders
+            WHERE customer_id = %d
+            AND YEAR(date_created_gmt) >= 2021
+            AND YEAR(date_created_gmt) < YEAR(CURDATE())
+            ORDER BY date_created_gmt DESC
+            ",
+            $customer_id
+        ) );
+
+        return $results;
+    }
+
+	/**
 	 * Helper function that get group lists
 	 *
 	 * Starts the list before the elements are added.

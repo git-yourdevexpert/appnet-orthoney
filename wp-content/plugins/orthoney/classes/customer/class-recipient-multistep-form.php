@@ -202,6 +202,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         $single_address_greeting = '';
         $upload_type_output = '';
         $groups = [];
+        $orders = [];
 
         if (!empty($data)) {
             $delivery_preference = (!empty($data->delivery_preference)) ? $data->delivery_preference : '';
@@ -210,6 +211,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             $single_address_quantity = $data->single_address_quantity ? $data->single_address_quantity : '';
             $single_address_greeting = $data->single_address_greeting ? $data->single_address_greeting : '';
             $groups = isset($data->groups) ? $data->groups : [];
+            $orders = isset($data->orders) ? $data->orders : [];
         }
         ?>
         <div class="step" id="step2">
@@ -274,7 +276,44 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         </label>
                                         <?php 
                                     $user = self::$current_user_id;
+                                    $getLastYearOrderList = OAM_Helper::getLastYearOrderList($user);
+                                  
+                                    if(!empty($getLastYearOrderList)){
+                                        ?>
+                                        <label>
+                                            <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'select-order' ? 'checked' : '' ?> value="select-order" data-error-message="Please select a delivery preference.">
+                                            <span>
+                                                <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/book.png" alt="" class="address-icon">
+                                               Reorder from Previous Year 
+                                            </span>
+                                        </label>
+                                        
+                                    <div class="order-wrapper input-wrapp" style="<?php echo $upload_type_output == 'select-order' ? '' : 'display:none' ?>">
+                                        <!-- <h4>Choose from existing recipient list</h4> -->
+                                        <div class="bg-card">
+                                            <select name="orders[]" data-error-message="Please select a order." <?php echo $upload_type_output == 'select-order' ? 'required' : '' ?>>
+                                                <?php 
+                                                 echo '<option></option>';
+                                                foreach ($getLastYearOrderList as $key => $order) {
+
+                                                    $custom_order_id = OAM_COMMON_Custom::get_order_meta($order, '_orthoney_OrderID');
+                                                    $selected = '';
+                                                    if(in_array($order, $orders)){
+                                                        $selected =  'selected';
+                                                    }
+                                                    echo '<option '.$selected.' value="'.$order.'">'.$custom_order_id.'</option>';
+                                                }
+                                                ?>
+                                                
+                                            </select>
+                                            <span class="error-message"></span>
+                                        </div>
+                                    </div>
+                                        <?php
+
+                                    }
                                     $getGroupList = OAM_Helper::getGroupList($user);
+                                    
                                     if(!empty($getGroupList)){
                                     ?>
                                         
@@ -282,7 +321,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'select-group' ? 'checked' : '' ?> value="select-group" data-error-message="Please select a delivery preference.">
                                             <span>
                                                 <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/book.png" alt="" class="address-icon">
-                                                Reorder from Previous Year
+                                                Choose from Existing Recipient List 
                                             </span>
                                         </label>
                                         

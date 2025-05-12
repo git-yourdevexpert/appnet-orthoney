@@ -285,36 +285,34 @@ document.addEventListener("DOMContentLoaded", function () {
                 multipleaddressordererrormessage.style.display = 'none';
                 process_group_popup();
                 
-                currentStep += uploadTypeOutput.value === "add-manually" || uploadTypeOutput.value === "select-group" ? 2 : 1;
+                currentStep += uploadTypeOutput.value === "add-manually" || uploadTypeOutput.value === "select-group" || uploadTypeOutput.value === "select-order" ? 2 : 1;
                 // currentStep = Math.min(currentStep, steps.length - 1);
                 console.log("currentStep", currentStep);
                 if (uploadTypeOutput.value === "add-manually") {
                   addRecipientManuallyPopup(1);
                 }
 
-                if (uploadTypeOutput.value === "select-group") {
-                  console.log("select-group");
-                  var selectedValues = Array.from(
-                    document.querySelector('select[name="groups[]"]')
-                      .selectedOptions
-                  ).map((option) => option.value);
+                if (["select-group", "select-order"].includes(uploadTypeOutput.value)) {
+                    console.log("select-group");
 
-                  addRecipientSelectedGroupValues(selectedValues).then(
-                    (status) => {
-                      if (status === false) {
+                    const selectName = uploadTypeOutput.value === "select-group" ? "groups[]" : "orders[]";
+                    const selectedValues = Array.from(
+                      document.querySelector(`select[name="${selectName}"]`)
+                        .selectedOptions
+                    ).map(option => option.value);
+
+                    addRecipientSelectedGroupOrdersValues(selectedValues, uploadTypeOutput.value).then(status => {
+                      if (!status) {
                         return;
                       } else {
-                        // currentStep = currentStep + 1;
                         console.log("currentStep", currentStep);
                         setTimeout(() => {
-                          // showStep(currentStep);
                           processDataSaveAjax(pid?.value || "0", currentStep);
                         }, 500);
                       }
-                      return;
-                    }
-                  );
-                }
+                    });
+                  }
+
               } else {
                 console.log("3");
                 process_group_popup();
@@ -414,38 +412,38 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
 
-    document
-    .querySelectorAll('#multiStepForm input[name="upload_type_output"]')
-    .forEach((input) => {
-      input.addEventListener("click", function (event) {
-        // event.preventDefault();
-        const groups_wrapper = document.querySelector(
-          ".multiple-address-order .groups-wrapper"
-        );
-        const multiple_address_output = document.querySelector(
-          ".multiple-address-order #multiple-address-output"
-        );
-         const multipleaddressordererrormessage = document.querySelector('.multipleaddressordererrormessage')
+    document.querySelectorAll('#multiStepForm input[name="upload_type_output"]').forEach(input => {
+    input.addEventListener("click", function () {
+      const orderWrapper = document.querySelector(".multiple-address-order .order-wrapper");
+      const groupsWrapper = document.querySelector(".multiple-address-order .groups-wrapper");
+      const multipleAddressOutput = document.querySelector(".multiple-address-order #multiple-address-output");
+      const errorMessage = document.querySelector('.multipleaddressordererrormessage');
+      
+      // Hide the error message initially
+      errorMessage.style.display = 'none';
 
-        multipleaddressordererrormessage.style.display = 'none';
-        let groups_select = '';
-        if(groups_wrapper){
-          groups_select = groups_wrapper.querySelector("select");
-        }
-        multiple_address_output.value = this.value;
-        if (this.value == "select-group") {
-          groups_wrapper.style.display = "block";
-          if(groups_wrapper){
-            groups_select.setAttribute("required", "required");
-          }
-        } else {
-          groups_wrapper.style.display = "none";
-          if(groups_wrapper){
-            groups_select.removeAttribute("required");
-          }
-        }
-      });
+      const orderSelect = orderWrapper ? orderWrapper.querySelector("select") : null;
+      const groupsSelect = groupsWrapper ? groupsWrapper.querySelector("select") : null;
+
+      // Set the value of the multiple address output
+      multipleAddressOutput.value = this.value;
+
+      // Handle display logic for order and group sections
+      const displayOrderWrapper = this.value === "select-order";
+      const displayGroupsWrapper = this.value === "select-group";
+
+      orderWrapper.style.display = displayOrderWrapper ? "block" : "none";
+      groupsWrapper.style.display = displayGroupsWrapper ? "block" : "none";
+
+      // Adjust the required attribute for selects based on selected value
+      if (orderSelect) {
+        orderSelect.required = displayOrderWrapper;
+      }
+      if (groupsSelect) {
+        groupsSelect.required = displayGroupsWrapper;
+      }
     });
+  });
 
       document.querySelectorAll("#checkout_proceed_with_addresses_button").forEach((button) => {
         button.addEventListener("click", async function (event) {
@@ -1074,7 +1072,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
-    function addRecipientSelectedGroupValues(selectedValues) {
+    function addRecipientSelectedGroupOrdersValues(selectedValues, type) {
       process_group_popup(
         "Please wait while Recipients are being processed..."
       );
@@ -1083,8 +1081,9 @@ document.addEventListener("DOMContentLoaded", function () {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
-          action: "save_group_recipient_to_order_process",
-          groups: selectedValues,
+          action: "save_group_orders_recipient_to_order_process",
+          ids: selectedValues,
+          type: type,
           security: oam_ajax.nonce,
           pid: getURLParam("pid"),
         }),
@@ -1538,7 +1537,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 window.location.href = redirect;
               }, 1000);
             }else{
-              if (data.data.step == 4 || data.data.groups == 1) {
+              if (data.data.step == 4 || data.data.step == 3 || data.data.groups == 1) {
                 setTimeout(function () {
                   window.location.reload();
                 }, 1000);
