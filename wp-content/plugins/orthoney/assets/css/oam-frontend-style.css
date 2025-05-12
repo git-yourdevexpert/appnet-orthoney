@@ -2425,14 +2425,13 @@ html body .w-btn.outline-btn.round-btn:hover i {
   align-items: center;
   letter-spacing: 0.02em;
   border-radius: 4px;
-  color: #00afaa !important;
-  border-color: #00afaa;
-  border: 1px solid;
+  color: #ffffff !important;
   background-color: transparent;
   cursor: pointer;
+  background-color: var(--color-header-middle-text-hover);
 }
 .dashboard-block .w-btn.us-btn-style_1:hover {
-  background-color: #00afaa;
+  background-color:var(--color-content-secondary);
   color: #fff !important;
 }
 .order-block-wrap {
