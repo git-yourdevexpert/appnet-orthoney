@@ -258,13 +258,30 @@ class OAM_AFFILIATE_Ajax{
             wp_send_json(['success' => false, 'message' => 'You must be logged in to update your profile.']);
             wp_die();
         }
+
         $user_id = get_current_user_id();
         $product_price = sanitize_text_field($_POST['product_price']);
+
+        // Update current user's price
         update_user_meta($user_id, 'DJarPrice', $product_price);
 
-        wp_send_json(['success' => true, 'message' => 'Product price update successfully!']);
+        // Get team members associated with this user
+        $user_ids = get_users([
+            'role'       => 'affiliate_team_member',
+            'meta_key'   => 'associated_affiliate_id',
+            'meta_value' => strval($user_id),
+            'fields'     => 'ID'
+        ]);
+
+        // Update each team member's price
+        foreach ($user_ids as $id) {
+            update_user_meta($id, 'DJarPrice', $product_price);
+        }
+
+        wp_send_json(['success' => true, 'message' => 'Product price updated successfully!']);
         wp_die();
     }
+
     // Affiliate Profile function
     public function update_affiliate_profile_handler() {
 

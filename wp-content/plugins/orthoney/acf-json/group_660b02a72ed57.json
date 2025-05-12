@@ -1,0 +1,75 @@
+{
+    "key": "group_660b02a72ed57",
+    "title": "Extra Testimonial Information",
+    "fields": [
+        {
+            "key": "field_660b02a8a8295",
+            "label": "Label 1",
+            "name": "label_1",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "This could be a position at a company or a City, State. This will be the primary label under the testimonial, second only to their name.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_660b032c7b5e7",
+            "label": "Label 2",
+            "name": "label_2",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "This could be the company name or any other secondary information needed about the person. This will be the second label under the testimonial, below Label 1.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "testimonial"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "acf_after_title",
+    "style": "default",
+    "label_placement": "left",
+    "instruction_placement": "label",
+    "hide_on_screen": [
+        "discussion",
+        "comments",
+        "revisions",
+        "author",
+        "format",
+        "page_attributes",
+        "categories",
+        "tags",
+        "send-trackbacks"
+    ],
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "modified": 1747036232
+}

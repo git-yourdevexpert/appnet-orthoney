@@ -267,6 +267,9 @@ document.addEventListener('click', function (event) {
                     showConfirmButton: false,
                     timerProgressBar: true
                 });
+                setTimeout(function () {
+                  window.location.reload();
+                }, 750);
             } else {
                 Swal.fire({
                     title: "Error",
@@ -308,6 +311,10 @@ document.addEventListener('click', function (event) {
                     showConfirmButton: false,
                     timerProgressBar: true
                 });
+                 setTimeout(function () {
+                  window.location.reload();
+                }, 750);
+
             } else {
                 Swal.fire({
                     title: "Error",
