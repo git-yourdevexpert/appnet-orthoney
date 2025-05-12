@@ -3432,6 +3432,7 @@ transition: all 0.3s ease;
     background: #fff;
     display: block;
  }   
+ .product-price-box {display: flex; gap:5px; align-items: center;}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
