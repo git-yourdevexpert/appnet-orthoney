@@ -27,13 +27,14 @@ $requests = $wpdb->get_results(
     <h3>Linked Customers</h3>
     <!-- Search and filter options -->
     <div class="filter-container orthoney-datatable-warraper">
-        <input type="text" id="customer-email-search" required placeholder="Enter Customer Email" data-error-message="Please enter a Email.">
+        <div class="customer-email-search">       <input type="text" id="customer-email-search" required placeholder="Enter Customer Email" data-error-message="Please enter a Email.">
         
             <span class="error-message"></span>
     <button id="search-button" class="w-btn us-btn-style_2">Search</button>
-    <ul id="customer-email-results"></ul>
+    <ul id="customer-email-results"></ul></div>
+ 
     </div>
-    <div id="affiliate-results" class="orthoney-datatable-warraper">
+    <div id="affiliate-results" class="orthoney-datatable-warraper table-with-search-block">
         <table>
             <thead>
                 <tr>
