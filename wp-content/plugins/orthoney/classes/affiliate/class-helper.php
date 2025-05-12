@@ -145,7 +145,7 @@ class OAM_AFFILIATE_Helper {
         $current_url = OAM_Helper::$organization_dashboard_link . '/order-list/';
         $html .= '<div>
                     <div class="">
-                        <div class="recipient-lists-block custom-table orthoney-datatable-warraper" id="affiliate-orderlist-table">';
+                        <div class="recipient-lists-block custom-table orthoney-datatable-warraper table-with-search-block" id="affiliate-orderlist-table">';
                            
         $html .=    '
                     <table >
