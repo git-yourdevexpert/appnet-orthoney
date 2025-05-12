@@ -86,7 +86,7 @@ $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row text-right">
-                    <button type="button" class="add-user us-btn-style_1" id="save-profile">Save</button>
+                    <button type="button" class="add-user w-btn us-btn-style_1" id="save-profile">Save</button>
 
                 </div>
             </div>
@@ -105,15 +105,16 @@ $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
     <div class="affiliate-profile" id="update-price-affiliate-form">
         <form id="affiliate-update-price-form">
             <div class="form-row gfield--width-half">
+                <label for="city">Product Price</label>
                 <div class="product-price-box">
-                    <div class="col-left">
-                            <label for="city">Product Price</label>
+                    <div class="col-left">   
+                         
                             <input type="text" name="product_price" id="product_price" value="<?php echo esc_attr($product_price); ?>" data-error-message="Please enter a product price">
                             <span class="error-message"></span>   
                   </div>    
         
                     <div class="col-right text-right">
-                        <button type="button" class="add-user us-btn-style_1" id="affiliate-product-price-profile">Update Price</button>
+                        <button type="button" class="add-user w-btn us-btn-style_1" id="affiliate-product-price-profile">Update Price</button>
                     </div>
                </div>
             </div>
