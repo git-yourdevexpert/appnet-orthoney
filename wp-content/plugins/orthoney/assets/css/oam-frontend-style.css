@@ -237,13 +237,13 @@
   min-height: 39px;
 }
 .select2-container .select2-dropdown {
-  border-color: #00afaa;
+  border-color: var(--color-header-middle-text-hover);
 }
 .select2-container.select2-container--default .select2-search--dropdown .select2-search__field {
   height: 35px;
   min-height: 35px;
   line-height: 35px;
-  border-color: #00afaa !important;
+  border-color: var(--color-header-middle-text-hover) !important;
   box-shadow: none;
   color: #333 !important;
 }
@@ -349,11 +349,11 @@ body .select2-container--default .select2-results__option--highlighted.select2-r
   padding: 20px;
 }
 .select2-container.select2-container--open .select2-selection {
-  border-color: #00afaa;
+  border-color: var(--color-header-middle-text-hover);
 }
 .select2-container.select2-container--default.select2-container--focus .select2-selection--multiple {
   border: 0px;
-  box-shadow: 0px 0px 0px 1px #00afaa;
+  box-shadow: 0px 0px 0px 1px var(--color-header-middle-text-hover);
   text-align: left;
 }
 .select2-container--default .select2-selection--multiple .select2-selection__clear {
@@ -504,7 +504,7 @@ body .select2-container--default .select2-results__option--highlighted.select2-r
   padding: calc(var(--inputs-height, 2em) / 2 + var(--inputs-border-width, 1px) - 0.7em) var(--inputs-padding, .6em);
 }
 .popup-show .recipient-view-details-wrapper ul li::marker {
-  color: #00afaa;
+  color: var(--color-header-middle-text-hover);
 }
 body .lity-wrap {
   overflow: auto;
@@ -658,7 +658,7 @@ body.woocommerce .quantity button.plus {
 }
 .quantity button:hover,
 body.woocommerce .quantity button:hover {
-  background: #00afaa;
+  background: var(--color-header-middle-text-hover);
 }
 .quantity button:after,
 .quantity button:before,
@@ -786,7 +786,7 @@ body.woocommerce .quantity input.input-box:focus {
   grid-template-columns: repeat(2, 1fr);
 }
 .order-process-block ul li::marker {
-  color: #00afaa;
+  color: var(--color-header-middle-text-hover);
 }
 .order-process-block input[type="file"] {
   padding: 0 !important;
@@ -794,7 +794,7 @@ body.woocommerce .quantity input.input-box:focus {
 .order-process-block input[type="file"]::file-selector-button {
   border: none;
   color: white;
-  background-color: #00afaa;
+  background-color: var(--color-header-middle-text-hover);
   cursor: pointer;
   transition: all 0.25s ease-in;
   cursor: pointer;
@@ -968,7 +968,7 @@ body.woocommerce .quantity input.input-box:focus {
   content: "✔";
 } */
 .order-process-block input:checked+span {
-  background: #00afaa;
+  background: var(--color-header-middle-text-hover);
   color: #fff !important;
   font-weight: bold;
 }
@@ -1116,7 +1116,7 @@ body.woocommerce .quantity input.input-box:focus {
   transition: 0.3s;
 }
 .order-process-block .textlink:hover {
-  color: #00afaa;
+  color: var(--color-header-middle-text-hover);
 }
 .order-process-block table button.keep_this_and_delete_others {
   background: transparent;
@@ -1127,7 +1127,7 @@ body.woocommerce .quantity input.input-box:focus {
   text-underline-offset: 5px;
 }
 .order-process-block table button.keep_this_and_delete_others:hover {
-  color: #00afaa;
+  color: var(--color-header-middle-text-hover);
 }
 .order-process-block .recipient-group-section .table-data {
   margin-bottom: 30px;
@@ -1174,7 +1174,7 @@ body.woocommerce .quantity input.input-box:focus {
   justify-content: flex-end;
 }
 .swal2-actions .swal2-confirm {
-  background-color: #00afaa !important;
+  background-color: var(--color-header-middle-text-hover) !important;
 }
 .order-process-block .unverified-block {
   margin-bottom: 30px;
@@ -1502,14 +1502,14 @@ body .user-registration .ur-frontend-form.login label {
   border-radius: 0 !important;
 }
 .user-registration .user-registration-form__label input[type="checkbox"]:checked {
-  background: #00afaa;
+  background: var(--color-header-middle-text-hover);
 }
 .user-registration .user-registration-form__label input[type="checkbox"]:checked::before {
   color: #fff;
 }
 .user-registration .lost_password a,
 .user-registration .user-registration-register a {
-  color: #00afaa !important;
+  color: var(--color-header-middle-text-hover) !important;
 }
 .user-registration .lost_password a:hover,
 .user-registration .user-registration-register a:hover {
@@ -1652,14 +1652,14 @@ body .user-registration-social-connect-networks .ursc-network-lists {
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
   background: transparent;
-  border-bottom: 3px solid #00afaa;
+  border-bottom: 3px solid var(--color-header-middle-text-hover);
 }
 .btn-underline {
   background: transparent;
   text-decoration: underline;
   text-align: left;
   transition: 0.3s;
-  color: #00afaa;
+  color: var(--color-header-middle-text-hover);
   text-underline-offset: 5px;
   padding: 0;
 }
@@ -1768,7 +1768,7 @@ body .user-registration-social-connect-networks .ursc-network-lists {
   border-bottom: 1px solid #e4e7e9;
   height: 100%;
   margin: 0;
-  color: #00afaa !important;
+  color: var(--color-header-middle-text-hover) !important;
   font-size: 16px;
   padding: 6px 0;
   display: flex;
@@ -1813,7 +1813,7 @@ body .user-registration-social-connect-networks .ursc-network-lists {
   color: #333;
 }
 .viewAllRecipientsPopupCheckoutContent .viewAllRecipientsPopupCheckout:hover {
-  color: #00afaa !important;
+  color: var(--color-header-middle-text-hover) !important;
 }
 .forgot-block .vc_column-inner {
   border: 1px solid #e3e7f0 !important;
@@ -1927,7 +1927,7 @@ body .forgot-block .custom-login-btn:hover {
   padding-right: 20px;
 }
 .wp-block-woocommerce-checkout .wp-block-woocommerce-checkout-order-summary-block .wc-block-components-checkout-order-summary__title {
-  background-color: #00afaa;
+  background-color: var(--color-header-middle-text-hover);
   padding-top: 16px;
   margin: 0;
 }
@@ -2283,10 +2283,10 @@ body.user-registration-page .user-registration.ur-frontend-form form .user-regis
   border-radius: 0px;
 }
 body .wc-block-components-radio-control .wc-block-components-radio-control__input:checked {
-  border: 1px solid #00afaa;
+  border: 1px solid var(--color-header-middle-text-hover);
 }
 body .wc-block-components-radio-control .wc-block-components-radio-control__input:checked:before {
-  background: #00afaa;
+  background: var(--color-header-middle-text-hover);
 }
 .swal2-popup .exceptions {
   margin-top: 20px;
@@ -3860,7 +3860,7 @@ transition: all 0.3s ease;
   .order-process-block .recipient-group-nav .scroll-section-btn {
     width: 100%;
     margin: 0;
-    border: 1px solid #00afaa;
+    border: 1px solid var(--color-header-middle-text-hover);
     border-radius: 0;
   }
   .wc-block-checkout__form .wc-block-authnet-gateway-container input[type=tel] {
