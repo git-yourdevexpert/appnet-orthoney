@@ -1699,7 +1699,7 @@ body .user-registration-social-connect-networks .ursc-network-lists {
   top: 0;
   height: 100%;
   width: 100%;
-  background: rgba(0, 175, 170, 0.85);
+  background: rgba(107,190,86,0.65);
 }
 .login-register-block .overlay-bg .vc_column-inner {
   position: relative;
@@ -3433,6 +3433,8 @@ transition: all 0.3s ease;
     display: block;
  }   
  .product-price-box {display: flex; gap:5px; align-items: center;}
+  .product-price-box  .col-left{position: relative;}
+    .product-price-box  .col-left .error-message{position: absolute;}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
