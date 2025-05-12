@@ -17,6 +17,7 @@ $your_organizations_website = get_user_meta($user_id, '_yith_wcaf_your_organizat
 $phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true);
 $address = get_user_meta($user_id, '_yith_wcaf_address', true);
 $city = get_user_meta($user_id, '_yith_wcaf_city', true);
+$product_price = get_user_meta($user_id, 'DJarPrice', true);
 $state = get_user_meta($user_id, '_yith_wcaf_state', true);
 $zipcode = get_user_meta($user_id, '_yith_wcaf_zipcode', true);
 $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
@@ -94,6 +95,27 @@ $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
     </div>
 </div>
 </div>
+
+
+<br>
+<div class="order-process-block">
+    <div class="heading-title">
+        <h3 class="block-title">Update Product Price</h3>
+    </div>
+    <div class="affiliate-profile" id="update-price-affiliate-form">
+        <form id="affiliate-update-price-form">
+            <div class="form-row gfield--width-half">
+                <label for="city">Product Price</label>
+                <input type="text" name="product_price" id="product_price" value="<?php echo esc_attr($product_price); ?>" data-error-message="Please enter a product price">
+                <span class="error-message"></span>
+            </div>
+            <div class="form-row text-right">
+                <button type="button" class="add-user us-btn-style_1" id="affiliate-product-price-profile">Update Price</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <br>
 <div class="order-process-block">
 <div class="heading-title"><h3 class="block-title">Change Password</h3><a href="<?php echo OAM_Helper::$customer_dashboard_link.'edit-account/'; ?>" class="add-user w-btn us-btn-style_1 active">Change Password</a></div></div>

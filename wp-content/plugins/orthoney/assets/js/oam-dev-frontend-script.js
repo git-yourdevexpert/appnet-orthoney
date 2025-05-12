@@ -59,6 +59,27 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
     
+    document.querySelectorAll('#product_price').forEach(input => {
+        input.addEventListener("input", () => {
+            // Remove invalid characters (only digits and a single dot allowed)
+            let value = input.value.replace(/[^0-9.]/g, '');
+
+            // Ensure only one dot is present
+            const parts = value.split('.');
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+
+            // Limit to 2 decimal places
+            if (parts.length === 2) {
+                parts[1] = parts[1].substring(0, 2); // Keep only 2 digits after dot
+                value = parts[0] + '.' + parts[1];
+            }
+
+            input.value = value;
+        });
+    });
+
     
 
     //append new passwordless login button beside social icon
