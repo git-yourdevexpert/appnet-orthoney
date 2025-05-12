@@ -24,7 +24,7 @@ $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
 
 //TODO
 ?>
-<div class="order-process-block">
+<div class="order-process-block form-deisgn">
 <div class="heading-title"><h3 class="block-title">My Profile</h3></div>
     <div class="affiliate-profile" id="update-affiliate-form">
     

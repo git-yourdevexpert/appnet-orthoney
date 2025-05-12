@@ -3421,6 +3421,17 @@ transition: all 0.3s ease;
     height: 35px;
     background: #fff;
     display: block;}
+ .form-deisgn form input,
+  .form-deisgn form  select, 
+   .form-deisgn form  textarea{
+   border-radius: 5px;
+    border: 0;
+    min-height: 35px !important;
+    font-size: 13px;
+    height: 35px;
+    background: #fff;
+    display: block;
+ }   
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
