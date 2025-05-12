@@ -206,7 +206,7 @@ class OAM_AFFILIATE_Helper {
                         <div class="row-block">
                             <h4 class="block-title">Total Orders</h4>
                             <div class="see-all">
-                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30"  height="30" /></div>
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/jar-icon.png" width="30"  height="30" /></div>
                             </div>
                         </div>
                         <div class="sub-heading">'.(!empty($details['orders']) ? count( $details['orders']) : '0').'</div>
@@ -215,7 +215,7 @@ class OAM_AFFILIATE_Helper {
                         <div class="row-block">
                             <h4 class="block-title">Total Jar Sell</h4>
                             <div class="see-all">
-                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30" height="30" /></div>
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/jar-icon.png" width="30" height="30" /></div>
                             </div>
                         </div>
                         <div class="sub-heading">'.(!empty($details['total_quantity']) ? esc_html($details['total_quantity']) : '0').'</div>
@@ -224,7 +224,7 @@ class OAM_AFFILIATE_Helper {
                         <div class="row-block">
                             <h4 class="block-title">Claim Commission</h4>
                             <div class="see-all">
-                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/speedicon.svg" width="30" height="30" /></div>
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/commission-icon.png" width="30" height="30" /></div>
                             </div>
                         </div>
                         <div class="sub-heading">
