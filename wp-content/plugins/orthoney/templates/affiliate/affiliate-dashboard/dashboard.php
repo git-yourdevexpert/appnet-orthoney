@@ -31,12 +31,14 @@ if (empty($details['token'])) {
                         <div class="dashboard-card">
                             <div class="row-block">
                                 <h4>Claimable Orders</h4>
-                                <div class="see-all"><a href="' . esc_url($current_url) . '" class="w-btn us-btn-style_1">View all</a></div>
+                                
                             </div>';
-                echo OAM_AFFILIATE_Helper::affiliate_order_list($details, 5);
+                echo OAM_AFFILIATE_Helper::affiliate_order_list($details);
                 echo '</div></div>';
             }
             ?>
         </div>
     </div>
 </div>
+
+<!-- <div class="see-all"><a href="' . esc_url($current_url) . '" class="w-btn us-btn-style_1">View all</a></div> -->
