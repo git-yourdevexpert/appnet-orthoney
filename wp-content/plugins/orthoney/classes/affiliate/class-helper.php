@@ -290,7 +290,7 @@ class OAM_AFFILIATE_Helper {
                 INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON c.order_id = oi.order_id AND oi.order_item_type = 'line_item'
                 INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
                 WHERE c.affiliate_id = %d 
-                AND YEAR(o.date_created) = YEAR(CURDATE())
+                -- AND YEAR(o.date_created) = YEAR(CURDATE())
                 AND o.parent_order_id = 0",
                 $affiliate_id
             ));
