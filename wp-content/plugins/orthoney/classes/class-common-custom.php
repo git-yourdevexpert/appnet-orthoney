@@ -152,11 +152,21 @@ class OAM_COMMON_Custom {
         }
     }
     
-    
     public static function get_product_custom_price($product_id, $affiliate_id) {
         $product = wc_get_product( $product_id );
-        return $price = $product ? $product->get_price() : 15;
+        $price = 15;
+        $affiliate_id_result = $wpdb->get_var( $wpdb->prepare(
+            "SELECT ID FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id = %d",
+            $affiliate_id
+        ) );
+        if ( $affiliate_id ) {
+            $price = $product_price = get_user_meta($user_id, 'DJarPrice', true);
+        }else{
+            $price =$product->get_price();
+        }
+        return $price;
     }
+
     public static function redirect_user_based_on_role($roles) {
         $redirects = [
             'administrator'         => home_url('wp-admin'),
