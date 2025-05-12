@@ -3412,6 +3412,15 @@ transition: all 0.3s ease;
     top: 20px !important;
 }
  
+.table-with-search-block .dataTables_wrapper .dataTables_filter{margin-bottom: 20px;}
+.customer-email-search{display: flex; gap:5px}
+.customer-email-search input{    border-radius: 5px;
+    border: 0;
+    min-height: 35px !important;
+    font-size: 13px;
+    height: 35px;
+    background: #fff;
+    display: block;}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
