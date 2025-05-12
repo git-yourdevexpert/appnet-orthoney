@@ -2418,9 +2418,9 @@ html body .w-btn.outline-btn.round-btn:hover i {
   text-align: left;
 }
 .dashboard-block .w-btn.us-btn-style_1 {
-  font-size: 16px;
-  padding: 10px 30px;
-  text-transform: capitalize;
+  font-size: 12px;
+  padding: 12px 30px;
+  text-transform: uppercase;
   display: inline-flex;
   align-items: center;
   letter-spacing: 0.02em;
