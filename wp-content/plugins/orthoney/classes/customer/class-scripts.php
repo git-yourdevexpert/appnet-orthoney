@@ -39,7 +39,7 @@ class OAM_Scripts
         ];
         
         foreach ($libs as $lib) {
-            wp_enqueue_script($lib[0], $plugin_url . $lib[1], $lib[2] ?? [], $lib[3] ?? null, true);
+            wp_enqueue_script($lib[0], $plugin_url . $lib[1], $lib[2] ?? [], time(), true);
         }
         
         foreach ($styles as $style) {
