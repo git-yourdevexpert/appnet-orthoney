@@ -17,7 +17,7 @@ if ($redirect_back_user_id) {
 <div class="order-block-wrap">
         <div class="order-process-dashboard">
             <div class="dashboard-block">
-                <h3 class="block-title">Welcome to the Customer Dashboard</h3>
+                <h3 class="block-title">Welcome to the Customer Area</h3>
                 <div class="block-row">
                     <?php 
 
