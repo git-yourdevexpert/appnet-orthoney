@@ -24,7 +24,7 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
 
 ?>
 <div class="incomplete-order-block order-process-block orthoney-datatable-warraper">
-    <div class="heading-title"><h3 class="block-title">Failed Recipients</h3></div>
+    <div class="heading-title"><h3 class="block-title">Failed Addresses</h3></div>
     <table id="incomplete-order-table" data-failed="1" class="display">
         <thead>
             <tr>
