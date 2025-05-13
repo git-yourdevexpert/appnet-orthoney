@@ -525,7 +525,7 @@ class OAM_COMMON_Custom {
         if (is_user_logged_in()) {
             $output .= '<li>Hi, ' . $display_name . '!</li>';
             if (in_array('administrator', $roles)) {
-                $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Area</a></li>';
+                $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Dashboard</a></li>';
                 $output .= '<li><a href="' . ORGANIZATION_DASHBOARD_LINK . '">Organization Area</a></li>';
                 $output .= '<li><a href="' . SALES_REPRESENTATIVE_DASHBOARD_LINK . '">Sales Representative Area</a></li>';
             } else {
