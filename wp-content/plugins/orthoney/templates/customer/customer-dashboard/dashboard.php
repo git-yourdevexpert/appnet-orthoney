@@ -24,7 +24,7 @@ if ($redirect_back_user_id) {
                     // echo OAM_COMMON_Custom::switch_back_user();
                     
                     $title = 'Place Order';
-                    $content = 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid qui, assumenda adipisci tenetur nemo culpa repellendus quaerat aut magni quidem. Inventore expedita voluptas facere ipsa alias fugiat non nulla recusandae! Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid qui, assumenda adipisci tenetur nemo culpa repellendus quaerat aut magni quidem. Inventore expedita voluptas facere ipsa alias fugiat non nulla recusandae!';
+                     $content = '<h3>A Jar of Honey, A World of Meaning</h3><h4>Every jar helps fund meaningful programs and spread holiday joy!</h4>';
                    
                     echo OAM_COMMON_Custom::info_block($title, $content);
                     ?>
