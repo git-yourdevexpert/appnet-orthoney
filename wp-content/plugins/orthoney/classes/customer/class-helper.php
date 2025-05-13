@@ -1444,7 +1444,7 @@ class OAM_Helper{
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Name</th>
+                        <th>List Name</th>
                         <th>Date</th>
                         <th>Action</th>
                     </tr>
@@ -1457,7 +1457,7 @@ class OAM_Helper{
                     $resume_url = esc_url(OAM_Helper::$customer_dashboard_link.'/groups/details/'.$data->id);
                     $html .= '<tr data-id="52" data-verify="0" data-group="0">
                     <td><div class="thead-data">Id</div>'.esc_html($data->id).'</td>
-                    <td><div class="thead-data">Name</div>'.esc_html($data->name).'</td>
+                    <td><div class="thead-data">List Name</div>'.esc_html($data->name).'</td>
                     <td><div class="thead-data">Date</div>'.esc_html($created_date).'</td>
                     <td><div class="thead-data">Action</div><a href="'.esc_url( $resume_url ).'" class="w-btn action-link"><img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="resume icon">Open</a></td>
                 </tr>';

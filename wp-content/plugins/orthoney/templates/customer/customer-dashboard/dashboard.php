@@ -48,12 +48,12 @@ if ($redirect_back_user_id) {
                 <div class="two-col-grid">
                     <div class="cl-left">
                         <?php 
-                        echo OAM_Helper::incomplete_orders_dashboard_widget('Incomplete orders', 3, esc_url(OAM_Helper::$customer_dashboard_link.'incomplete-order/'));
+                        echo OAM_Helper::incomplete_orders_dashboard_widget('Incomplete Orders', 3, esc_url(OAM_Helper::$customer_dashboard_link.'incomplete-order/'));
                         ?>
                     </div>
                     <div class="cl-right">
                     <?php 
-                        echo OAM_Helper::failed_recipients_dashboard_widget('Failed addresses', 3, esc_url(OAM_Helper::$customer_dashboard_link.'failed-recipients/'));
+                        echo OAM_Helper::failed_recipients_dashboard_widget('Failed Addresses', 3, esc_url(OAM_Helper::$customer_dashboard_link.'failed-recipients/'));
                         ?>
                     
                     </div>
