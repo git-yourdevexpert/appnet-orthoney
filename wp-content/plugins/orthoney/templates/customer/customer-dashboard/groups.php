@@ -32,7 +32,7 @@ $current_url = home_url( $_SERVER['REQUEST_URI'] );
         <thead>
             <tr>
                 <th>Sr No</th>
-                <th>Recipient List Name</th>
+                <th>List Name</th>
                 <th>Number of Recipients</th>
                 <th>Date</th>
                 <th>Action</th>
