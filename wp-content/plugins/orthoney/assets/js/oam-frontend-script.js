@@ -2551,6 +2551,8 @@ function jarfilter_trigger(jarOrderId) {
         }
     }
     
+    jQuery('#sub_order_order').click();
+
 }
 /**
  * Recipient Order End
