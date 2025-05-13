@@ -24,7 +24,7 @@ if ($redirect_back_user_id) {
                     // echo OAM_COMMON_Custom::switch_back_user();
                     
                     $title = 'Place Order';
-                    $content = '<h3 class="text-color-yellow">A Jar of Honey, A World of Meaning</h3><h5 class="block-title">Every jar helps fund meaningful programs and spread holiday joy!</h5>';
+                    $content = '<div class="text-center"><h3 class="text-color-yellow">A Jar of Honey, A World of Meaning</h3><h4 class="block-title">Every jar helps fund meaningful programs and spread holiday joy!</h4></div>';
                    
                     echo OAM_COMMON_Custom::info_block($title, $content);
                     ?>
