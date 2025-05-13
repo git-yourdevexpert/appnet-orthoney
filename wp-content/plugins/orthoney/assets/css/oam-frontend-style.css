@@ -1,3 +1,9 @@
+.text-color-green{
+   color :var(--color-header-middle-text-hover);
+}
+.text-color-yellow{
+   color:var(--color-content-primary);
+}
 /* Multi-Step Form Styling */
 .order-block-wrap {
   position: relative;
