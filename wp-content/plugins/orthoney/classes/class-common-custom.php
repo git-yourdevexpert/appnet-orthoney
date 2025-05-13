@@ -531,10 +531,10 @@ class OAM_COMMON_Custom {
             } else {
                 // Check for customer without affiliate roles
                 if (in_array('customer', $roles) && !in_array('yith_affiliate', $roles) && !in_array('affiliate_team_member', $roles)) {
-                    $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Area</a></li>';
+                    $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Dashboard</a></li>';
                 } else {
                     if (in_array('customer', $roles)) {
-                        $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Dashboard/a></li>';
+                        $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Dashboard</a></li>';
                     }
                     if (in_array('yith_affiliate', $roles) || in_array('affiliate_team_member', $roles)) {
                         $output .= '<li><a href="' . ORGANIZATION_DASHBOARD_LINK . '">Organization Area</a></li>';
