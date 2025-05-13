@@ -634,7 +634,7 @@ class OAM_COMMON_Custom {
             <h4 class="block-title">' . esc_html($title) . '</h4>
             <div class="see-all"><a href="'.esc_url(ORDER_PROCESS_LINK).'" class="w-btn us-btn-style_1">Order Now</a></div>
             </div>
-            <div class="description">' . esc_html($content) . '</div>
+            <div class="description">' . html_entity_decode($content) . '</div>
             </div>';
         }
         
