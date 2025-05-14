@@ -66,7 +66,29 @@ class OAM_Helper{
 
 	public function __construct() {}
     
-    
+     public static function get_affiliate_by_pid($user_id) {
+        $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
+        global $wpdb;
+        
+        $token = $wpdb->get_var($wpdb->prepare(
+            "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d",
+            $user_id
+        ));
+
+        $states = WC()->countries->get_states('US');
+        $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
+        $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
+        $orgName = get_user_meta($user_id, '_orgName', true) ?: get_user_meta($user_id, '_orgName', true);
+        $state_name = isset($states[$state]) ? $states[$state] : $state;
+        $details = '[' . $token . '] ' . $orgName ?:$data->display_name;
+        if (!empty($city)) {
+            $details .= ', ' . $city;
+        }
+        if (!empty($state)) {
+            $details .= ', ' . $state_name;
+        }
+        return $details;
+     }
     public static function get_recipient_by_pid($pid) {
         global $wpdb;
         $process = $wpdb->get_row($wpdb->prepare(

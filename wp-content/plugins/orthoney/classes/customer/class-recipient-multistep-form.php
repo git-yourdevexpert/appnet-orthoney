@@ -306,8 +306,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
 
                                                     $custom_order_id = OAM_COMMON_Custom::get_order_meta($order, '_orthoney_OrderID');
                                                     $selected = '';
-                                                    if(in_array($order, $orders)){
-                                                        $selected =  'selected';
+                                                    if(!empty($orders)){
+                                                        if(in_array($order, $orders)){
+                                                            $selected =  'selected';
+                                                        }
                                                     }
                                                     echo '<option '.$selected.' value="'.$order.'">'.$custom_order_id.'</option>';
                                                 }
@@ -785,26 +787,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     public static function organization_data($affiliate){
         $details= 'Honey from the Heart';
         if($affiliate!= 'Orthoney'){
-            $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
-            global $wpdb;
-            $user_id = $affiliate;
-            $token = $wpdb->get_var($wpdb->prepare(
-                "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d",
-                $user_id
-            ));
-
-            $states = WC()->countries->get_states('US');
-            $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
-            $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
-            $orgName = get_user_meta($user_id, '_orgName', true) ?: get_user_meta($user_id, '_orgName', true);
-            $state_name = isset($states[$state]) ? $states[$state] : $state;
-            $details = '[' . $token . '] ' . $orgName ?:$data->display_name;
-            if (!empty($city)) {
-                $details .= ', ' . $city;
-            }
-            if (!empty($state)) {
-                $details .= ', ' . $state_name;
-            }
+           $details = OAM_Helper::get_affiliate_by_pid($affiliate);
         }
         ?>
         <p class="organization-details">
