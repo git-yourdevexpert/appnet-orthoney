@@ -59,8 +59,7 @@ class OAM_COMMON_Custom {
         ob_start();
         if ( isset( $_GET['registration'] ) && $_GET['registration'] == 'success' ) {
             ?>
-            <div class="woocommerce-message" role="alert" tabindex="-1">
-            Your account was created successfully. Your login details have been sent to your email address.	</div>
+            <div class="woocommerce-message"> Your account has been created successfully. You will be able to access the Organization Area once your account is approved by the admin.</div>
             <?php
         }
         return ob_get_clean();
