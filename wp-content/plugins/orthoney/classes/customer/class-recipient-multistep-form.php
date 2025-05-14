@@ -233,7 +233,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         }
         ?>
         <div class="step" id="step2">
-            <div class="heading-title">
+            <div class="heading-title organization_data_show">
                 <div>
                     <?php echo self::organization_data($affiliate_select) ?>
                 </div>
@@ -405,7 +405,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         }
         ?>
         <div class="step" id="step3">
-            <div class="heading-title">
+            <div class="heading-title organization_data_show">
                 <div>
                     <?php echo self::organization_data($affiliate_select) ?>
                 </div>
@@ -804,7 +804,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         }
         ?>
         <p class="organization-details">
-            Organization: <strong><?php echo $details;?></strong>
+            Organization: <strong class="organization_value"><?php echo $details;?></strong>
         </p>
         <?php
     }
