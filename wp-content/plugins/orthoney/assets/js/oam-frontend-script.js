@@ -2428,7 +2428,6 @@ function order_filter_sub_order(){
                 <label class="yearblock">
                     Order Year:
                     <select id="jars-select-year" class="form-control">
-                        <option value="">Order year</option>
                     </select>
                 </label>
                 <label class="customer-select-filter">
@@ -2541,7 +2540,7 @@ function order_filter_sub_order(){
 
 });
 
-function jarfilter_trigger(jarOrderId) {
+function jarfilter_trigger(jarOrderId,year) {
     // 1. Click the radio input
     //e.preventDefault();
 
@@ -2556,11 +2555,16 @@ function jarfilter_trigger(jarOrderId) {
         $searchInput.val(jarOrderId);
 
         if (jQuery.fn.dataTable.isDataTable('#customer-jar-orders-table')) {
-            jQuery('#customer-jar-orders-table').DataTable().search(jarOrderId).draw();
+            jQuery('#customer-jar-orders-table').DataTable().search(jarOrderId);
         } else {
             $searchInput.trigger('input');
         }
     }
+       var $yearSelect = jQuery('#jars-select-year');
+    if ($yearSelect.length) {
+        $yearSelect.val(year).trigger('change'); // Trigger 'change' to make sure any event listeners react
+    }
+    
     jQuery('#sub_order_order').click();
     
 }
