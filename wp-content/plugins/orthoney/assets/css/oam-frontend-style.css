@@ -3207,7 +3207,8 @@ flex-direction: column;
   height: 39px;
   border-radius: 0;
 }
-
+.ur-form-grid .ur-pro-input-icon-padding{padding-left: 20px !important;}
+.ur-form-grid  span.ur-icon{display: none;}
 .register-form .ur-icon:before {
   position: absolute;
   top: 42px;
@@ -3222,7 +3223,7 @@ flex-direction: column;
 }
 .register-form .form-row  .woocommerce-input-wrapper .select2-selection,
 .register-form .form-row  .woocommerce-input-wrapper input.input-text{
-  padding-left: 40px !important;
+  padding-left: 20px !important;
   line-height: 1 !important;
 }
 .register-form  #profile_oam_heart_field label .optional{
@@ -3441,6 +3442,7 @@ transition: all 0.3s ease;
  .product-price-box {display: flex; gap:5px; align-items: center;}
   .product-price-box  .col-left{position: relative;}
     .product-price-box  .col-left .error-message{position: absolute;}
+
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
