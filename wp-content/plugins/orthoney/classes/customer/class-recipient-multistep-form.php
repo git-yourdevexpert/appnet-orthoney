@@ -168,9 +168,22 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     if($data->token != ''){
                                         $user_id = $data->user_id;
                                         $states = WC()->countries->get_states('US');
-                                        $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
-                                        $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
-                                        $orgName = get_user_meta($user_id, '_orgName', true) ?: get_user_meta($user_id, '_orgName', true);
+                                        $state = get_user_meta($user_id, '_yith_wcaf_state', true);
+                                        
+                                        if (empty($state)) {
+                                            $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
+                                        }
+
+                                        $city = get_user_meta($user_id, '_yith_wcaf_city', true);
+                                        if (empty($city)) {
+                                            $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
+                                        }
+
+                                        $orgName = get_user_meta($user_id, '_orgName', true);
+                                        if (empty($orgName)) {
+                                            $orgName = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+                                        }
+
                                         $state_name = isset($states[$state]) ? $states[$state] : $state;
                                         $value = '[' . $data->token . '] ' . $orgName ?:$data->display_name;
                                         if (!empty($city)) {
