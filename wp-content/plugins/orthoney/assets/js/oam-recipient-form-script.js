@@ -516,7 +516,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 Swal.getDenyButton().style.display = "inline-block";
                 
                 if (!unverifiedButton && verifiedButton) {
-                  Swal.getConfirmButton().textContent = "Yes, Proceed"; 
+                  // Swal.getConfirmButton().textContent = "Yes, Proceed"; 
+                  Swal.getDenyButton().textContent = "Yes, Proceed"; 
                 }
               }
             },
