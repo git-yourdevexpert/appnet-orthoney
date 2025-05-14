@@ -2548,6 +2548,7 @@ function jarfilter_trigger(jarOrderId) {
             $searchInput.trigger('input');
         }
     }
+    jQuery('#sub_order_order').click();
     
 }
 /**
