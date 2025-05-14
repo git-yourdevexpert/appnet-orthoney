@@ -410,8 +410,6 @@ class OAM_Helper{
             ...$where_values
         );
 
-        echo $sql;
-
         $main_orders = $wpdb->get_results($sql);
 
         foreach ($main_orders as $main_data) {
@@ -1124,7 +1122,7 @@ class OAM_Helper{
 
                 <div class="footer-btn gfield--width-full">
                 <button type='button' class=" w-btn us-btn-style_4" data-lity-close>Cancel</button>
-                <button type="submit">Add New Recipient Details</button>
+                <button type="submit">Add Recipient to Cart</button>
                 </div>
             </form>
         </div>

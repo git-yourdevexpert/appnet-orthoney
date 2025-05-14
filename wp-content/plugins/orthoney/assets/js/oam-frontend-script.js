@@ -1166,14 +1166,14 @@ document.addEventListener('click', function (event) {
                     
                         const viewpopup = document.querySelector('#recipient-view-details-popup .recipient-view-details-wrapper');
                         viewpopup.innerHTML = html;
-                        form.querySelector('[type="submit"]').innerHTML = 'Add New Recipient Details';
+                        form.querySelector('[type="submit"]').innerHTML = 'Add Recipient to Cart';
                     }
                     setTimeout(function() {
                         lity(event.target.getAttribute('data-popup'));
                         if (event.target.classList.contains('editRecipient')){
                             form.querySelector('button[type="submit"]').innerHTML = 'Edit Recipient Details';
                         }else{
-                            form.querySelector('[type="submit"]').innerHTML = 'Add New Recipient Details';
+                            form.querySelector('[type="submit"]').innerHTML = 'Add Recipient to Cart';
                         }
                         jQuery(form).find('#state').val(state).trigger('change');
                         
