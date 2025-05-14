@@ -3207,7 +3207,7 @@ flex-direction: column;
   height: 39px;
   border-radius: 0;
 }
-
+.ur-form-grid .ur-pro-input-icon-padding{padding-left: 20px !important;}
 .ur-form-grid  span.ur-icon{display: none;}
 .register-form .ur-icon:before {
   position: absolute;
