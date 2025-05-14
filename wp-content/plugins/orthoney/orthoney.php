@@ -211,3 +211,20 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 //     return $show_admin_bar;
 // }
 // add_filter('show_admin_bar', 'hide_admin_bar_for_affiliates');
+
+
+
+add_filter( 'query', function( $query ) {
+     global $wpdb;
+
+    $orders_table   = $wpdb->prefix . 'wc_orders';
+    $relation_table = $wpdb->prefix . 'oh_wc_order_relation';
+
+    if (
+        strpos( $query, $orders_table ) !== false || 
+        strpos( $query, $relation_table ) !== false
+    ) {
+        error_log( 'Query Hooked: ' . $query );
+    }
+    return $query;
+});
