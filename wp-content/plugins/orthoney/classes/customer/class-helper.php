@@ -402,10 +402,10 @@ class OAM_Helper{
         $where_values[] = $offset;
 
         $sql = $wpdb->prepare(
-            "SELECT DISTINCT orders.*, rel.order_id as rel_oid FROM $orders_table AS orders
+            "SELECT orders.*, rel.order_id as rel_oid FROM $orders_table AS orders
             $join
             WHERE " . implode(' AND ', $where_conditions) . "
-            ORDER BY orders.date_updated_gmt DESC
+           GROUP BY orders.id ORDER BY orders.date_updated_gmt DESC
             LIMIT %d OFFSET %d",
             ...$where_values
         );
