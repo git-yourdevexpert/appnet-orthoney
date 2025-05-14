@@ -524,19 +524,19 @@ class OAM_COMMON_Custom {
         if (is_user_logged_in()) {
             $output .= '<li>Hi, ' . $display_name . '!</li>';
             if (in_array('administrator', $roles)) {
-                $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Dashboard</a></li>';
-                $output .= '<li><a href="' . ORGANIZATION_DASHBOARD_LINK . '">Organization Dashboard</a></li>';
+                $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Area</a></li>';
+                $output .= '<li><a href="' . ORGANIZATION_DASHBOARD_LINK . '">Organization Area</a></li>';
                 $output .= '<li><a href="' . SALES_REPRESENTATIVE_DASHBOARD_LINK . '">Sales Representative Area</a></li>';
             } else {
                 // Check for customer without affiliate roles
                 if (in_array('customer', $roles) && !in_array('yith_affiliate', $roles) && !in_array('affiliate_team_member', $roles)) {
-                    $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Dashboard</a></li>';
+                    $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Area</a></li>';
                 } else {
                     if (in_array('customer', $roles)) {
-                        $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Dashboard</a></li>';
+                        $output .= '<li><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Area</a></li>';
                     }
                     if (in_array('yith_affiliate', $roles) || in_array('affiliate_team_member', $roles)) {
-                        $output .= '<li><a href="' . ORGANIZATION_DASHBOARD_LINK . '">Organization Dashboard</a></li>';
+                        $output .= '<li><a href="' . ORGANIZATION_DASHBOARD_LINK . '">Organization Area</a></li>';
                     }
                     if (in_array('sales_representative', $roles)) {
                         $output .= '<li><a href="' . SALES_REPRESENTATIVE_DASHBOARD_LINK . '">Sales Representative Area</a></li>';
