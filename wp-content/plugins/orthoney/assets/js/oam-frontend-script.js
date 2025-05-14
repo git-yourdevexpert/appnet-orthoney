@@ -267,6 +267,12 @@ jQuery(document).ready(function($) {
     });
 
 });
+jQuery(document).on('focus', '.select2-selection--single', function (e) {
+  // Only open if not already open
+  if (!jQuery(this).closest('.select2-container').hasClass('select2-container--open')) {
+    jQuery(this).closest('.select2-container').prev('select').select2('open');
+  }
+});
 
 function initTippy() {
     document.querySelectorAll('[data-tippy]').forEach((el) => {
