@@ -1311,7 +1311,7 @@ class OAM_Helper{
             SELECT id
             FROM {$wpdb->prefix}wc_orders
             WHERE customer_id = %d
-            AND YEAR(date_created_gmt) >= 2021
+            AND YEAR(date_created_gmt) >= 2023
             AND YEAR(date_created_gmt) < YEAR(CURDATE())
             ORDER BY date_created_gmt DESC
             ",

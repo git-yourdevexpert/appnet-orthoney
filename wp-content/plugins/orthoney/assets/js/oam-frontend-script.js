@@ -1,16 +1,23 @@
 function setCookie(name, value, days) {
     const domain = window.location.hostname;
-    let cookie = `${name}=${value}; path=/; domain=${domain}; max-age=${days * 86400}`;
-    
-    // Check if the cookie exists, if so update it
-    if (document.cookie.split('; ').find(row => row.startsWith(name))) {
-        // Cookie exists, update it
+    const maxAge = days * 86400;
+    const cookie = `${name}=${encodeURIComponent(value)}; path=/; domain=${domain}; max-age=${maxAge}; secure; samesite=strict`;
+
+    // Check if cookie exists by looking for exact name=
+    const cookieExists = document.cookie
+        .split('; ')
+        .some(row => row.startsWith(`${name}=`));
+
+    if (cookieExists) {
+        // Update the cookie
         document.cookie = cookie;
     } else {
-        // Cookie does not exist, set it
+        // Set the cookie
         document.cookie = cookie;
     }
 }
+
+
 function affiliateDatatable(){
     [ "affiliate-results"].forEach((id) => {
       const div = document.getElementById(id);

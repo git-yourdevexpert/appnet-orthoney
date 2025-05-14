@@ -238,8 +238,13 @@ class OAM_Ajax{
             $this->update_user_meta_from_order($userID, $wc_order);
         }
 
-        setcookie('yith_wcaf_referral_token', $affiliate_token, time() + 86400, '/');
-        setcookie('yith_wcaf_referral_history', $affiliate_token, time() + 86400, '/');
+        if (isset($_COOKIE['yith_wcaf_referral_token'])) {
+                setcookie('yith_wcaf_referral_token', $processExistResult, time() + 3600, "/", "", true, true);
+            }
+
+            if (isset($_COOKIE['yith_wcaf_referral_history'])) {
+                setcookie('yith_wcaf_referral_history', $processExistResult, time() + 3600, "/", "", true, true);
+            }
 
         $redirect_url = esc_url(ORDER_PROCESS_LINK . "?pid=$process_id");
         wp_send_json_success([
@@ -580,8 +585,13 @@ class OAM_Ajax{
             $this->update_user_meta_from_order($userID, $wc_order);
         }
 
-        setcookie('yith_wcaf_referral_token', $affiliate_token, time() + 86400, '/');
-        setcookie('yith_wcaf_referral_history', $affiliate_token, time() + 86400, '/');
+       if (isset($_COOKIE['yith_wcaf_referral_token'])) {
+                setcookie('yith_wcaf_referral_token', $processExistResult, time() + 3600, "/", "", true, true);
+            }
+
+            if (isset($_COOKIE['yith_wcaf_referral_history'])) {
+                setcookie('yith_wcaf_referral_history', $processExistResult, time() + 3600, "/", "", true, true);
+            }
     }
 
     // Update user billing/shipping meta from order
@@ -2625,7 +2635,7 @@ class OAM_Ajax{
                 $count_where_values[] = $year;
                 
                 // Build final SQL
-              echo  $count_sql = $wpdb->prepare(
+                $count_sql = $wpdb->prepare(
                     "SELECT COUNT(orders.id) FROM {$orders_table} AS orders
                      $count_join
                      WHERE " . implode(' AND ', $count_where_conditions),
@@ -2638,7 +2648,7 @@ class OAM_Ajax{
                 
             } else {
                 // Non-admin sees only their orders
-             echo   $sql = $wpdb->prepare(
+                $sql = $wpdb->prepare(
                     "SELECT COUNT(id) FROM {$orders_table}
                      WHERE customer_id = %d
                      AND type = %s",
@@ -2823,8 +2833,8 @@ class OAM_Ajax{
             $values[] = $user_id;
         }
 
-     $sql = $wpdb->prepare(
-            "SELECT COUNT(DISTINCT orders.id) FROM {$orders_table} AS orders
+        $sql = $wpdb->prepare(
+            "SELECT COUNT(orders.id) FROM {$orders_table} AS orders
             $join
             WHERE " . implode(' AND ', $where),
             ...$values
