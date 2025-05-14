@@ -350,12 +350,17 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         } else {
           console.log("5");
+
+          const affiliateSelect = document.querySelector('#affiliate_select');
+           
+          const selectedOption = affiliateSelect.options[affiliateSelect.selectedIndex];
+          const dataToken = selectedOption.getAttribute('data-token');
+          const optionText = selectedOption.text;
+          const organization_data_show= document.querySelector('.organization_data_show .organization_value');
+          organization_data_show.innerHTML = optionText;
           if(validateCurrentStep()){
           currentStep++;
           if(currentStep == 1){
-            const affiliateSelect = document.querySelector('#affiliate_select');
-            const selectedOption = affiliateSelect.options[affiliateSelect.selectedIndex];
-            const dataToken = selectedOption.getAttribute('data-token');
             
             if (dataToken) {
               setCookie('yith_wcaf_referral_token', dataToken, 1);
