@@ -410,6 +410,8 @@ class OAM_Helper{
             ...$where_values
         );
 
+        echo $sql;
+
         $main_orders = $wpdb->get_results($sql);
 
         foreach ($main_orders as $main_data) {
