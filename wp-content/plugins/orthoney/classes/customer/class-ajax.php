@@ -2824,7 +2824,7 @@ class OAM_Ajax{
         }
 
      $sql = $wpdb->prepare(
-            "SELECT COUNT(orders.id) FROM {$orders_table} AS orders
+            "SELECT COUNT(DISTINCT orders.id) FROM {$orders_table} AS orders
             $join
             WHERE " . implode(' AND ', $where),
             ...$values
