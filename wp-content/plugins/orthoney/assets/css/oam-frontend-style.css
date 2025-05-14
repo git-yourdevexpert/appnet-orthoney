@@ -3419,7 +3419,7 @@ transition: all 0.3s ease;
     top: 20px !important;
 }
  
-.table-with-search-block .dataTables_wrapper .dataTables_filter{margin-bottom: 20px;}
+.table-with-search-block .dataTables_wrapper .dataTables_filter{margin-bottom: 20px; display: flex; gap:15px}
 .customer-email-search{display: flex; gap:5px}
 .filter-container .customer-email-search input{    border-radius: 5px;
     border: 0;
