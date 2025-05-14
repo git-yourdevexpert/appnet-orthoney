@@ -2823,7 +2823,7 @@ class OAM_Ajax{
             $values[] = $user_id;
         }
 
-       echo $sql = $wpdb->prepare(
+     $sql = $wpdb->prepare(
             "SELECT COUNT(orders.id) FROM {$orders_table} AS orders
             $join
             WHERE " . implode(' AND ', $where),
