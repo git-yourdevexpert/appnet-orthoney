@@ -123,7 +123,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         ?>
         <div class="step" id="step1">
             <div class="heading-title">
-            <div></div><div>
+                <div>
+                    
+                </div>
+                <div>
                     <?php echo self::badge(0,0) ?>
                 </div>
             </div>
@@ -197,15 +200,17 @@ class OAM_RECIPIENT_MULTISTEP_FORM
 
     public static function step_2($data){
         $delivery_preference = '';
+        $delivery_preference = '';
         $multiple_address_output = '';
         $single_address_quantity = '';
         $single_address_greeting = '';
         $upload_type_output = '';
         $groups = [];
-        $orders = [];
+        $affiliate_select = '';
 
         if (!empty($data)) {
             $delivery_preference = (!empty($data->delivery_preference)) ? $data->delivery_preference : '';
+            $affiliate_select = (!empty($data->affiliate_select)) ? $data->affiliate_select : 'Orthoney';
             $multiple_address_output = $data->multiple_address_output ? $data->multiple_address_output : '';
             $upload_type_output = !empty($data->upload_type_output) ? $data->upload_type_output : '';
             $single_address_quantity = $data->single_address_quantity ? $data->single_address_quantity : '';
@@ -216,7 +221,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         ?>
         <div class="step" id="step2">
             <div class="heading-title">
-            <div></div><div>
+                <div>
+                    <?php echo self::organization_data($affiliate_select) ?>
+                </div>
+                <div>
                     <?php echo self::badge(0,0) ?>
                 </div>
             </div>
@@ -373,13 +381,21 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         $csv_dir = OAM_Helper::$process_recipients_csv_url;
         $greeting = '';
         $csvName = '';
+         $affiliate_select = 'Orthoney';
         if (!empty($data)) {
             $groups = (!empty($data->groups)) ? $data->groups : '';
             $csvName = $data->csv_name != '' ? $data->csv_name : '';
             $greeting = (!empty($data->greeting)) ? $data->greeting : '';
+            $affiliate_select = (!empty($data->affiliate_select)) ? $data->affiliate_select : 'Orthoney';
         }
         ?>
         <div class="step" id="step3">
+            <div class="heading-title">
+                <div>
+                    <?php echo self::organization_data($affiliate_select) ?>
+                </div>
+                <div></div>
+            </div>
             <div class="wpb_column vc_column_container">
                 <div class="vc_column-inner">
                     <div class="g-cols wpb_row via_grid cols_3-2 laptops-cols_inherit tablets-cols_inherit mobiles-cols_1 valign_top type_default">
@@ -452,6 +468,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     }
 
     public static function step_4($data, $currentStep, $group_name){
+        $affiliate_select = 'Orthoney';
+        if (!empty($data)) {
+            $affiliate_select = (!empty($data->affiliate_select)) ? $data->affiliate_select : 'Orthoney';
+        }
         ?>
         <div class="step" id="step4">
         <?php
@@ -492,6 +512,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     ?>
                     <div class="heading-title">
                         <div>
+                            <div>
+                                <?php echo self::organization_data($affiliate_select) ?>
+                            </div>
                             <div class="group-name">
                                 Recipient List Name: <strong><?php echo $group_name; ?></strong><button class="editProcessName far fa-edit" data-name="<?php echo $group_name; ?>" data-tippy="Edit Recipient List Name"></button>
                             </div>
@@ -594,6 +617,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
 
     public static function step_5($data, $currentStep, $group_name){
 
+        $affiliate_select = 'Orthoney';
+        if (!empty($data)) {
+            $affiliate_select = (!empty($data->affiliate_select)) ? $data->affiliate_select : 'Orthoney';
+        }
         $duplicate = $data->duplicate ?? 1;
         $recipientAddressIds = $data->recipientAddressIds ?? [];
         $singleAddressCheckoutStatus = $data->singleAddressCheckoutStatus ?? '';
@@ -618,6 +645,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         ?>
                         <div class="heading-title">
                             <div>
+                                <div>
+                                <?php echo self::organization_data($affiliate_select) ?>
+                            </div>
                                 <div class="group-name">
                                     Recipient List Name: <strong><?php echo $group_name; ?></strong>
                                     <button class="editProcessName far fa-edit" 
@@ -750,6 +780,36 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             </div>
             
         </div>
+        <?php
+    }
+    public static function organization_data($affiliate){
+        $details= 'Honey from the Heart';
+        if($affiliate!= 'Orthoney'){
+            $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
+            global $wpdb;
+            $user_id = $affiliate;
+            $token = $wpdb->get_var($wpdb->prepare(
+                "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d",
+                $user_id
+            ));
+
+            $states = WC()->countries->get_states('US');
+            $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
+            $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
+            $orgName = get_user_meta($user_id, '_orgName', true) ?: get_user_meta($user_id, '_orgName', true);
+            $state_name = isset($states[$state]) ? $states[$state] : $state;
+            $details = '[' . $token . '] ' . $orgName ?:$data->display_name;
+            if (!empty($city)) {
+                $details .= ', ' . $city;
+            }
+            if (!empty($state)) {
+                $details .= ', ' . $state_name;
+            }
+        }
+        ?>
+        <p class="organization-details">
+            Organization: <strong><?php echo $details;?></strong>
+        </p>
         <?php
     }
 
