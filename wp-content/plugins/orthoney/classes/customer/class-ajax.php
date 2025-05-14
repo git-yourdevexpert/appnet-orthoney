@@ -2638,7 +2638,7 @@ class OAM_Ajax{
                 
             } else {
                 // Non-admin sees only their orders
-                $sql = $wpdb->prepare(
+             echo   $sql = $wpdb->prepare(
                     "SELECT COUNT(id) FROM {$orders_table}
                      WHERE customer_id = %d
                      AND type = %s",
@@ -2823,7 +2823,7 @@ class OAM_Ajax{
             $values[] = $user_id;
         }
 
-        $sql = $wpdb->prepare(
+       echo $sql = $wpdb->prepare(
             "SELECT COUNT(orders.id) FROM {$orders_table} AS orders
             $join
             WHERE " . implode(' AND ', $where),
