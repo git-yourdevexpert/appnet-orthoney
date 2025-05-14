@@ -821,9 +821,8 @@ document.addEventListener('click', function (event) {
                                 Swal.fire({
                                     title: data.data.message,
                                     icon: 'success',
-                                    timer: 2000,
                                     showConfirmButton: false,
-                                    timerProgressBar: true
+                                    timerProgressBar: false
                                 });
                                 
                                 setTimeout(function() {
@@ -926,9 +925,8 @@ document.addEventListener('click', function (event) {
                         Swal.fire({
                             title: 'Recipient removed successfully!',
                             icon: 'success',
-                            timer: 2000,
                             showConfirmButton: false,
-                            timerProgressBar: true
+                            timerProgressBar: false
                         });
 
                         setTimeout(function() {
@@ -2551,8 +2549,6 @@ function jarfilter_trigger(jarOrderId) {
         }
     }
     
-    jQuery('#sub_order_order').click();
-
 }
 /**
  * Recipient Order End

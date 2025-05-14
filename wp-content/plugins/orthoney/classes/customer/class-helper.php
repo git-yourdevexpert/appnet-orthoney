@@ -954,7 +954,7 @@ class OAM_Helper{
             $placeholders = implode(',', array_fill(0, count($recipientAddressIds), '%d'));
             $recipientQuery = $wpdb->prepare(
                 "SELECT * FROM {$order_process_recipient_table} WHERE pid = %d AND visibility = %d AND id IN ($placeholders)" ,
-               array_merge([$order_process_id, 1], $recipientAddressIds)
+                array_merge([$order_process_id, 1], $recipientAddressIds)
             );
         }else{
 
