@@ -161,7 +161,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             // $affiliateList = json_decode($affiliateList, true);
                          
                             echo '<select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an Organization.">';
-                            echo '<option></option><option ' . selected($affiliate, '0', false) . ' value="Orthoney">Honey from the Heart</option>';
+                            echo '<option></option><option data-token="'.$data->token.'" ' . selected($affiliate, '0', false) . ' value="Orthoney">Honey from the Heart</option>';
                             
                             if (!empty($affiliateList)) {
                                 foreach ($affiliateList  as $key => $data) {
