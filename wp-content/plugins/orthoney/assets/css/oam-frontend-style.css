@@ -3441,6 +3441,7 @@ transition: all 0.3s ease;
  .product-price-box {display: flex; gap:5px; align-items: center;}
   .product-price-box  .col-left{position: relative;}
     .product-price-box  .col-left .error-message{position: absolute;}
+    .register-form .ur-icon:before{display: none;}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
