@@ -2434,39 +2434,7 @@ function order_filter_main_order(){
             });
  
  
-            // setTimeout(function () {
-            //     const searchBox = $('#customer-orders-table_filter input');
-            //     searchBox.attr('placeholder', 'Search by name');
            
-            //     searchBox.off('input').on('input', function () {
-            //         const val = this.value.trim();
-            //         const wordCount = val.split(/\s+/).filter(Boolean).length;
-           
-            //         if (wordCount >= 3 || val.length === 0) {
-            //             table.search(val).draw();
-            //         }
-            //     });
-            // }, 100);
- 
-            // function toggleRecipientColumn() {
-            //     const selectedType = $('input[name="table_order_type"]:checked').val();
-            //     const filterWrapper = $('.custom-order-status-filter-wrapper');
-            //     const recipientCountColumnIndex = 7;
-            //     const recipientNameColumnIndex = 4;
-            //     const jarNoColumnIndex = 0;
- 
-            //     if (selectedType === 'sub_order_order') {
-            //         filterWrapper.show();
-            //         table.column(jarNoColumnIndex).visible(true);
-            //         table.column(recipientNameColumnIndex).visible(true);
-            //         table.column(recipientCountColumnIndex).visible(false);
-            //     } else {
-            //         filterWrapper.hide();
-            //         table.column(jarNoColumnIndex).visible(false);
-            //         table.column(recipientNameColumnIndex).visible(false);
-            //         table.column(recipientCountColumnIndex).visible(true);
-            //     }
-            // }
             function toggleRecipientColumn() {
                 const selectedType = $('input[name="table_order_type"]:checked').val();
                 const filterWrapper = $('.custom-order-status-filter-wrapper');
@@ -2505,7 +2473,7 @@ function order_filter_main_order(){
                     $('.search-by-organization').val(''); // Set default
                     $('#order_status').val("all"); // Set default
                     $('#custom-order-type-filter').val("all"); // Set default
-                               jQuery('#customer-orders-table_filter input[type="search"]').val('');
+                    jQuery('#customer-orders-table_filter input[type="search"]').val('');
                      
                       const min = $("#slider-range").slider("option", "min");
                         const max = $("#slider-range").slider("option", "max");
