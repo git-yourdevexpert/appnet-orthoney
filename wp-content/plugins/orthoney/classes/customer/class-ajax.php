@@ -2819,9 +2819,24 @@ class OAM_Ajax{
             $values[] = (int) $_REQUEST['selected_max_qty'];
         }
 
-        $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
+        // $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
+        // $where[] = "YEAR(orders.date_created_gmt) = %d";
+        // $values[] = $year;
+
+             if($_REQUEST['draw'] == 1){
+                $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
         $where[] = "YEAR(orders.date_created_gmt) = %d";
         $values[] = $year;
+
+         }
+
+
+         if(!empty($_REQUEST['selected_year'])){
+            $year = $_REQUEST['selected_year'];
+            $where[] = "YEAR(orders.date_created_gmt) = %d";
+            $values[] = $year;
+        }
+
 
         if (current_user_can('administrator')) {
             if (!empty($selected_customer_id) && is_numeric($selected_customer_id)) {

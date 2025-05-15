@@ -310,7 +310,7 @@ class OAM_Helper{
     }
 
 
-    public static function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
+     public static function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
         global $wpdb;
 
         $orders_table = $wpdb->prefix . 'wc_orders';
@@ -384,9 +384,18 @@ class OAM_Helper{
         $where_conditions[] = "orders.type = %s";
         $where_values[] = 'shop_order';
 
-        $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
-        $where_conditions[] = "YEAR(orders.date_created_gmt) = %d";
-        $where_values[] = $year;
+        if(!empty($_REQUEST['selected_year'])){
+                $year = $_REQUEST['selected_year'];
+                $where_conditions[] = "YEAR(orders.date_created_gmt) = %d";
+                $where_values[] = $year;
+        }
+
+         if($_REQUEST['draw'] == 1){
+               $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
+                $where_conditions[] = "YEAR(orders.date_created_gmt) = %d";
+                $where_values[] = $year;
+
+         }
 
         if (current_user_can('administrator')) {
             if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {

@@ -1923,7 +1923,7 @@ jQuery(document).ready(function ($) {
     order_filter_sub_order();
 });
 function order_filter_main_order(){
-    var table = $('#customer-orders-table').DataTable({
+   var table = $('#customer-orders-table').DataTable({
         processing: false,
         serverSide: true,
         select: {
@@ -1962,7 +1962,9 @@ function order_filter_main_order(){
                     text: 'An error occurred while loading your orders.',
                     icon: 'error',
                 });
-            },
+            }
+        //searching: false // disables default search box
+
         },
         columns: [
             {
@@ -1993,12 +1995,14 @@ function order_filter_main_order(){
             $('#customer-orders-table tbody tr.sub-order-row').remove();
         },
         initComplete: function () {
-            jQuery("#customer-orders-table_length").hide();
+        //    jQuery("#customer-orders-table_length").hide();
 
             const customFilter = `
               <label class="yearblock">
                 Order Year:
                 <select id="select-year" class="form-control">
+                <option value="">Select year</option>
+
                 </select>
             </label>
              
@@ -2023,7 +2027,7 @@ function order_filter_main_order(){
                Order Status:
                 <select id="order_status" name="order_status" class="" tabindex="-1" aria-hidden="true">
                     <option value="all">All</option><option value="wc-processing">Processing</option>
-				    <option value="wc-pending">Pending payment</option><option value="wc-processing">Processing</option><option value="wc-on-hold">On hold</option><option value="wc-completed">Completed</option><option value="wc-cancelled">Cancelled</option><option value="wc-refunded">Refunded</option><option value="wc-failed">Failed</option><option value="wc-checkout-draft">Draft</option></select>
+                    <option value="wc-pending">Pending payment</option><option value="wc-processing">Processing</option><option value="wc-on-hold">On hold</option><option value="wc-completed">Completed</option><option value="wc-cancelled">Cancelled</option><option value="wc-refunded">Refunded</option><option value="wc-failed">Failed</option><option value="wc-checkout-draft">Draft</option></select>
              </label>
                 <label>
                     Shipping Type:
@@ -2052,6 +2056,14 @@ function order_filter_main_order(){
                 <input type="text" id="quantity_range" readonly="" style="border:0; color:#f6931f; font-weight:bold;">
                 <div id="slider-range"></div>
                 </label>
+
+                 <div>
+                    <button class="filter_btton  w-btn us-btn-style_1">Filter</Button>
+                    <button class="reset_btton w-btn us-btn-style_1">Reset</Button>
+                </div>
+               
+
+
                 <div class="custom-pdf-export-type-wrapper">
 
                    <label>
@@ -2076,27 +2088,37 @@ function order_filter_main_order(){
  
             toggleRecipientColumn();
  
-            $('#custom-order-type-filter, #custom-order-status-filter').on('change', function (e) {
-                e.preventDefault();
-                table.ajax.reload();
-            });
-              $('.search-recipient-name, .search-by-organization').on('input', function (e) {
-                var searchrecipient = $(this).val();
+            // $('#custom-order-type-filter, #custom-order-status-filter').on('change', function (e) {
+            //     e.preventDefault();
+            //     table.ajax.reload();
+            // });
+            //   $('.search-recipient-name, .search-by-organization').on('input', function (e) {
+            //     var searchrecipient = $(this).val();
 
-                   if(searchrecipient == ""){
-                     table.ajax.reload(); // Reload DataTable via AJAX
-                }
+            //        if(searchrecipient == ""){
+            //          table.ajax.reload(); // Reload DataTable via AJAX
+            //     }
 
-                if (searchrecipient.length > 2) {
-                    table.ajax.reload(); // Reload DataTable via AJAX
-                }    
-             });
+            //     if (searchrecipient.length > 2) {
+            //         table.ajax.reload(); // Reload DataTable via AJAX
+            //     }    
+            //  });
  
             $(document).on('click', 'input[name="table_order_type"]', function (e) {
                 // e.preventDefault();
                 toggleRecipientColumn();
               //  table.ajax.reload();
             });
+
+            // $(document).ready(function() {
+            //     if (!$('#select-year').val()) {
+                   
+            //         const currentYear = new Date().getFullYear();
+            //          console.log(currentYear+123);
+            //         $('#select-year').val(currentYear); // Set default
+            //     }
+            // });
+
  
             const yearSelect = document.getElementById('select-year');
             const startYear = new Date().getFullYear();
@@ -2128,7 +2150,7 @@ function order_filter_main_order(){
                     $( "#quantity_range" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
                    // table.draw(); // Redraw DataTable with new filter
                   },change: function( event, ui ) {
-                    table.draw(); // ✅ fires once after sliding stops
+                   // table.draw(); // ✅ fires once after sliding stops
                   }
                   
                 });
@@ -2361,15 +2383,42 @@ function order_filter_main_order(){
             }
 
             jQuery(document).on('change', '#select-customer, #order_status, #select-year', function (e) {
+               // table.ajax.reload();
+             });
+
+            jQuery(document).on('click', '.filter_btton', function (e) {
                 table.ajax.reload();
              });
+               jQuery(document).on('click', '.reset_btton', function (e) {
+                
+               
+                    const currentYear = new Date().getFullYear();
+                    $('#select-year').val(currentYear); // Set default
+                    $('#select-customer').val(''); // Set default
+                    $('.search-recipient-name').val(''); // Set default
+                    $('.search-by-organization').val(''); // Set default
+                    $('#order_status').val("all"); // Set default
+                    $('#custom-order-type-filter').val("all"); // Set default
+                          
+                     
+                      const min = $("#slider-range").slider("option", "min");
+                        const max = $("#slider-range").slider("option", "max");
+                        $("#slider-range").slider("values", [min, max]);
+                        $("#quantity_range").val(min + " - " + max); // update display, if applicable
+                                        
+                    
+              
+
+                table.ajax.reload();
+             });
+ 
            
         }
     });
 }
 function order_filter_sub_order(){
 
-    var table = $('#customer-jar-orders-table').DataTable({
+   var table = $('#customer-jar-orders-table').DataTable({
         processing: false,
         serverSide: true,
         select: {
@@ -2422,12 +2471,13 @@ function order_filter_sub_order(){
         },
         initComplete: function () {
             $("#customer-jar-orders-table_wrapper").hide();
-            $("#customer-jar-orders-table_length").hide();
+           // $("#customer-jar-orders-table_length").hide();
 
             const customFilter = `
                 <label class="yearblock">
                     Order Year:
                     <select id="jars-select-year" class="form-control">
+                    <option value="">Select year</option>
                     </select>
                 </label>
                 <label class="customer-select-filter">
@@ -2446,6 +2496,10 @@ function order_filter_sub_order(){
                     <input type="text" id="jar_quantity_range" readonly style="border:0; color:#f6931f; font-weight:bold;">
                     <div id="jar-slider-range"></div>
                 </label>
+                <div>
+                    <button class="jar_filter_btton  w-btn us-btn-style_1">Filter</button>
+                    <button class="jar_reset_btton w-btn us-btn-style_1">Reset</button>
+                </div>
             `;
 
             $('#customer-jar-orders-table_filter').append(customFilter);
@@ -2454,17 +2508,17 @@ function order_filter_sub_order(){
 
             $('#customer-jar-orders-table_length').before('<div></div>');
 
-                $('.jar-search-by-organization').on('input', function (e) {
-                var searchrecipient = $(this).val();
+            //     $('.jar-search-by-organization').on('input', function (e) {
+            //     var searchrecipient = $(this).val();
 
-                if(searchrecipient == ""){
-                     table.ajax.reload(); // Reload DataTable via AJAX
-                }
+            //     if(searchrecipient == ""){
+            //          table.ajax.reload(); // Reload DataTable via AJAX
+            //     }
 
-                if (searchrecipient.length > 2) {
-                    table.ajax.reload(); // Reload DataTable via AJAX
-                }    
-             });
+            //     if (searchrecipient.length > 2) {
+            //         table.ajax.reload(); // Reload DataTable via AJAX
+            //     }    
+            //  });
 
 
             $('#jar-select-customer').select2({
@@ -2492,9 +2546,28 @@ function order_filter_sub_order(){
                 }
             });
 
-            $(document).on('change', '#jar-select-customer, #jars-select-year', function () {
+            // $(document).on('change', '#jar-select-customer, #jars-select-year', function () {
+            //     table.ajax.reload();
+            // });
+             $(document).on('click', '.jar_filter_btton', function () {
                 table.ajax.reload();
             });
+               $(document).on('click', '.jar_reset_btton', function () {
+                  const currentYear = new Date().getFullYear();
+                    $('#jars-select-year').val(currentYear); // Set default
+                    $('#jar-select-customer').val(''); // Set default
+                    $('.jar-search-by-organization').val(''); // Set default   
+                     
+                    const min = $("#jar-slider-range").slider("option", "min");
+                    const max = $("#jar-slider-range").slider("option", "max");
+                    $("#jar-slider-range").slider("values", [min, max]);
+                    $("#jar_quantity_range").val(min + " - " + max); // update display, if applicable
+                    
+                table.ajax.reload();
+            });
+
+             
+
 
             const yearSelect = document.getElementById('jars-select-year');
             const startYear = new Date().getFullYear();
@@ -2526,7 +2599,7 @@ function order_filter_sub_order(){
                     $("#jar_quantity_range").val(ui.values[0] + " - " + ui.values[1]);
                 },
                 change: function (event, ui) {
-                    table.draw();
+                  //  table.draw();
                 }
             });
 
