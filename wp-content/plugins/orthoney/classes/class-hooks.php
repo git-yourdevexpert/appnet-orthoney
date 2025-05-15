@@ -11,13 +11,13 @@ class OAM_Hooks {
     public function __construct() {
         // add_filter('woocommerce_locate_template', array($this, 'custom_plugin_woocommerce_template'), 10, 3);
         add_action('init', array($this,'grant_switch_users_capability'));
-        add_action('admin_init', array($this, 'add_dynamic_menu_items'));
+        add_action('current_screen', array($this, 'add_dynamic_menu_items'));
     }
 
     /**
      * Add Dynamic Menu Item callback
      */
-    public function add_dynamic_menu_items() {
+    public function add_dynamic_menu_items($screen) {
         // Check if we are in the admin area
         if (is_admin()) {
             $screen = get_current_screen();
