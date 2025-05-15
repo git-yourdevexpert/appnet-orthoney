@@ -2620,6 +2620,7 @@ body .woocommerce .order-process-block .button {
   gap: 5px;
   white-space: nowrap;
 }
+.button-icon-underline img,
 .icon-txt-btn img,
 .action-link img,
 .list-user-img {
@@ -2664,7 +2665,7 @@ body .woocommerce .order-process-block .button {
 .dashboard-block .recipient-lists-block table .w-btn:hover {
   color: var(--color-content-primary);
 }
-.button-icon-underline,
+
 .dashboard-block .recipient-lists-block table .w-btn:before {
   display: none;
 }
