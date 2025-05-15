@@ -471,18 +471,18 @@ document.addEventListener("DOMContentLoaded", function () {
           if (unverifiedButton && verifiedButton) {
             const unverifiedCount = unverified_table.getAttribute("data-count");
             const verifiedCount = verified_table.getAttribute("data-count");
-           html = `Out of the ${(parseInt(verifiedCount) + parseInt(unverifiedCount))} recipients, ${(parseInt(verifiedCount))}  have been successfully verified.`;
+           html = `Out of the ${(parseInt(verifiedCount) + parseInt(unverifiedCount))} recipients, ${(parseInt(verifiedCount))}  have successfully verified addresses`;
 
             html += `<div class='exceptions'><strong>Exceptions: </strong><ul>`;
             
             if (verified_table) {
               if (verifiedCount != 0) {
-                html += `<li><span>Verified Recipients: </span> ${verifiedCount}</li>`;
+                html += `<li><span>Verified Addresses: </span> ${verifiedCount}</li>`;
               }
             }
             if (unverified_table) {
               if (unverifiedCount != 0) {
-                html += `<li><span>Unverified Recipients: </span> ${unverifiedCount}</li>`;
+                html += `<li><span>Unverified Addresses: </span> ${unverifiedCount}</li>`;
               }
             }
             
@@ -500,9 +500,9 @@ document.addEventListener("DOMContentLoaded", function () {
             confirmButtonColor: "#3085d6",
             denyButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Proceed With All Records",
-            cancelButtonText: "No, I Want to Update/Fix Records",
-            denyButtonText: "Proceed With Only Verified Records",
+            confirmButtonText: "Proceed With All Recipients",
+            cancelButtonText: "No, I Want to Update/Fix Errors",
+            denyButtonText: "Proceed With Only Verified Recipients",
             allowOutsideClick: false,
             allowEscapeKey: false,
             allowEnterKey: false,

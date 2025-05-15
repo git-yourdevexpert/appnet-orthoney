@@ -292,7 +292,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         <div class="multiple-address-grid">
                                         <label>
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'add-manually' ? 'checked' : '' ?> value="add-manually" data-error-message="Please select a delivery preference."> <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/contract.png" alt="" class="address-icon">
-                                                Enter a New Order
+                                                Enter Details into an Online Form
                                             </span>
                                         </label>
                                         <?php 
@@ -371,7 +371,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?>  <?php echo $upload_type_output == 'upload-csv' ? 'checked' : '' ?> value="upload-csv" data-error-message="Please select a delivery preference.">
                                             <span>
                                                 <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/file.png" alt="" class="address-icon">
-                                                Upload a New Order From a List
+                                               Upload the Details from a List
                                             </span>
                                         </label>
                                         
@@ -384,7 +384,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 </div>
             </div>
             <div class="button-block">
-            <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</button>
+            <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
                 <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>" class="next w-btn us-btn-style_1" style="float:right">Next</button>
             </div>
         </div>
@@ -418,7 +418,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             <div>
                                 <h3>Recipient List</h3>
                                 <div class="file-upload field-block">
-                                    <label><span class="title-block">File Upload: <small>(Accept: .csv, .xlsx, .xls)</small></span></label>
+                                    <label><span class="title-block">File Upload: <small>(Accept: .csv, .xlsx, OR .xls)</small></span></label>
                                     <input type="file" accept=".csv, .xlsx, .xls" id="fileInput"
                                         value="<?php echo ($csv_name != '' ? $csv_dir . '' . $csv_name : '') ?>" name="csv_file"
                                         required data-error-message="Please upload a CSV file.">
@@ -436,9 +436,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                             data-error-message="Type here..."><?php echo $greeting ?></textarea>
                                         <div class="char-counter"><span>250</span> characters remaining</div>
                                     </label>
-                                    <div class="description">
+                                    <!-- <div class="description">
                                         <p>To begin your order, please select an organization you'd like to support and then you can proceed.</p>
-                                    </div>
+                                    </div> -->
                                 </div>
                                 <span class="error-message"></span>
                             </div>
@@ -448,18 +448,18 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 <h3>Download a sample file to see the correct format for your list.</h3>
                                 <div class="file-lists">
                                     <div class="file-title">
-                                        <p>The file should have the following fields:</p>
+                                        <p>The file must have the following columns with these exact headings:</p>
                                     </div>
                                     <ul>
                                         <li>Full Name</li>
-                                        <li>Company Name (may be left blank)</li>
+                                        <li>Company Name (column is required, even if it's blank)</li>
                                         <li>Mailing address</li>
-                                        <li>Suite/Apt#(may be left blank)</li>
+                                        <li>Suite/Apt# (column is required, even if it's blank)</li>
                                         <li>City</li>
                                         <li>State (2 letter abbreviation)</li>
                                         <li>Zipcode</li>
                                         <li>Quantity</li>
-                                        <li>Greeting (may be left blank)</li>
+                                        <li>Greeting (column is required, even if it's blank)</li>
                                     </ul>
                                 </div>
                                 <div class="file-title format">
@@ -475,7 +475,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             </div>
             <div class="button-block">
                 <!-- <button type="button" class="back w-btn us-btn-style_2">Back</button> -->
-                <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</button>
+                <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
                 <button type="button" class="submit_csv_file w-btn next-step us-btn-style_1" style="float:right">Next </button>
             </div>
         </div>
@@ -603,7 +603,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         
                     ?>
                     <div class="button-block">
-                    <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</button>
+                    <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
                         <?php
                         if ($result['data']['totalCount'] != 0) { 
                         ?>
@@ -693,7 +693,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         echo '</div>';
                         if($result['data']['totalCount'] != 0){
                             echo '<div class="button-block">';
-                            echo '<button data-href="'.get_permalink().'" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Your order progress has been saved under Incomplete Orders.">Save & Continue Later</button>';
+                            echo '<button data-href="'.get_permalink().'" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>';
                             echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step">Proceed To CheckOut</button>';
                             echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
                             echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';
