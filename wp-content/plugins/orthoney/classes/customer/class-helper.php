@@ -192,7 +192,7 @@ class OAM_Helper{
         global $wpdb;
         $orders_table = $wpdb->prefix . 'wc_orders'; 
         $filtered_orders = [];
-         $tabletype = sanitize_text_field($_POST['tabletype']);
+        $tabletype = isset($_POST['tabletype']) ? sanitize_text_field($_POST['tabletype']) : 'administrator-dashboard';
 
         // Pagination calculation
         $offset = $page;
@@ -328,7 +328,7 @@ class OAM_Helper{
         $offset = $page;
 
         $search_term = isset($_REQUEST['search']['value']) ? sanitize_text_field($_REQUEST['search']['value']) : '';
-        $tabletype = sanitize_text_field($_POST['tabletype']);
+        $tabletype = isset($_POST['tabletype']) ? sanitize_text_field($_POST['tabletype']) : 'administrator-dashboard';
         $where_conditions = [];
         $where_values = [];
         $join = "";
@@ -487,7 +487,7 @@ class OAM_Helper{
         $orders_table = $wpdb->prefix . 'wc_orders';
     
         $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order_data->date_created_gmt));
-        $tabletype = sanitize_text_field($_POST['tabletype']);
+        $tabletype = isset($_POST['tabletype']) ? sanitize_text_field($_POST['tabletype']) : 'administrator-dashboard';
         if ($tabletype == 'administrator-dashboard') {
             $billing_name = $display_name;
         }else{
