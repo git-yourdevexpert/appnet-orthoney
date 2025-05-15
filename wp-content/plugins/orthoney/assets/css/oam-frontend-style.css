@@ -3455,6 +3455,12 @@ transition: all 0.3s ease;
     gap: 10px;
     align-items: center;
 }
+#customer-jar-orders-table_filter  .jar_filter_btton,
+#customer-jar-orders-table_filter  .jar_reset_btton,
+#customer-orders-table_filter .filter_btton,
+#customer-orders-table_filter .reset_btton{
+    margin-top: 20px;
+}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
@@ -3708,6 +3714,12 @@ transition: all 0.3s ease;
     #customer-jar-orders-table_wrapper  .dataTables_length label,
 #customer-orders-table_wrapper .dataTables_length label{
  display: block;
+}
+#customer-jar-orders-table_filter  .jar_filter_btton,
+#customer-jar-orders-table_filter  .jar_reset_btton,
+#customer-orders-table_filter .filter_btton,
+#customer-orders-table_filter .reset_btton{
+    margin-top: 0px;
 }
 }
 @media(max-width: 782px) {
