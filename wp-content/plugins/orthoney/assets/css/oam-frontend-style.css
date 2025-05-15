@@ -3460,6 +3460,15 @@ transition: all 0.3s ease;
 #customer-orders-table_filter .reset_btton{
     margin-top: 20px;
 }
+
+#customer-jar-orders-table_filter  button.jar_filter_btton,
+#customer-orders-table_filter button.filter_btton{
+       background: var(--color-content-link);
+}
+#customer-jar-orders-table_filter  button.jar_filter_btton:hover,
+#customer-orders-table_filter button.filter_btton:hover{
+  background-color: var(--color-content-secondary);
+}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
