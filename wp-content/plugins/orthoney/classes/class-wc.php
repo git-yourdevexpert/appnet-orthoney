@@ -476,7 +476,7 @@ class OAM_WC_Customizer {
                 <div id="viewAllRecipientsPopupCheckout" class="lity-popup-normal lity-hide">
                     <div class="popup-show order-process-block orthoney-datatable-warraper">
                         <h3>All Recipients Details</h3>
-                        <div class="table-wrapper">
+                        <div class="table-wrapper table-with-search-block">
                             <table>
                                 <thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th></tr></thead>
                                 <tbody>' . $table_content . '</tbody>
