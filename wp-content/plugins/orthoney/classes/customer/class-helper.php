@@ -490,9 +490,9 @@ class OAM_Helper{
         $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order_data->date_created_gmt));
         $tabletype = isset($_POST['tabletype']) ? sanitize_text_field($_POST['tabletype']) : 'administrator-dashboard';
         if ($tabletype == 'administrator-dashboard') {
-            $billing_name = $display_name;
-        }else{
             $billing_name = $order_obj->get_billing_first_name() . ' ' . $order_obj->get_billing_last_name();
+        }else{
+            $billing_name = $display_name;
         }
 
         $shipping_name = $order_obj->get_shipping_first_name() . ' ' . $order_obj->get_shipping_last_name();
