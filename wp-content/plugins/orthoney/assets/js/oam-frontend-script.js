@@ -1214,6 +1214,7 @@ document.addEventListener('click', function (event) {
     
         const status = event.target.getAttribute('data-status');
     
+        
         if (status == '0') {
             event.target.setAttribute('data-status', '1');
             event.target.textContent = "View All Recipients";
@@ -1235,8 +1236,8 @@ document.addEventListener('click', function (event) {
                 }
             });
 
-            VerifyRecipientsDatatable();
-    
+           
+           
         } else {
             event.target.setAttribute('data-status', '0');
             event.target.textContent = "View Already Ordered Recipients";
@@ -1264,6 +1265,9 @@ document.addEventListener('click', function (event) {
         setTimeout(() => {
             initTippy();
         }, 250);
+         setTimeout(() => {
+                //  VerifyRecipientsDatatable();
+            }, 300);
     }
     
 
@@ -2217,6 +2221,7 @@ function order_filter_main_order(){
             const tableType = ``;
             $('#customer-orders-table_length').before('<div>' + tableType + '</div>');
  
+            jQuery('#customer-orders-table_filter input[type=search]').off();
             toggleRecipientColumn();
  
     
@@ -2584,6 +2589,7 @@ const tabletype =  $('#customer-orders-table').data('tabletype');
 
             $('#customer-jar-orders-table_length').before('<div></div>');
 
+              jQuery('#customer-jar-orders-table_filter input[type=search]').off();
             //     $('.jar-search-by-organization').on('input', function (e) {
             //     var searchrecipient = $(this).val();
 
