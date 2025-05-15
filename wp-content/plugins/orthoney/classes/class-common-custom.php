@@ -254,12 +254,12 @@ class OAM_COMMON_Custom {
                 return;
             }
 
-            setcookie('yith_wcaf_referral_token', $processExistResult);
-            setcookie('yith_wcaf_referral_history', $processExistResult);
+            setcookie('yith_wcaf_referral_token', $processExistResult, time() - 3600, "/", "", true, true);
+            setcookie('yith_wcaf_referral_history', $processExistResult, time() - 3600, "/", "", true, true);
         } else {
             
-            setcookie('yith_wcaf_referral_token', $token);
-            setcookie('yith_wcaf_referral_history', $token);
+            setcookie('yith_wcaf_referral_token', $token , time() - 3600, "/", "", true, true);
+            setcookie('yith_wcaf_referral_history', $token, time() - 3600, "/", "", true, true);
         }
     }
 
