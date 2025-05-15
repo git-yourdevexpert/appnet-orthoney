@@ -483,7 +483,8 @@ class OAM_Helper{
             $display_name = $user_info->display_name;
         
         }
-        
+
+      
         $orders_table = $wpdb->prefix . 'wc_orders';
     
         $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order_data->date_created_gmt));
