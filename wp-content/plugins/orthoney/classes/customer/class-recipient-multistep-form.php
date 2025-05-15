@@ -246,7 +246,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     <div class="g-cols wpb_row via_grid laptops-cols_inherit tablets-cols_inherit mobiles-cols_1 valign_top type_default">
                         <div class="wpb_column vc_column_container" style="text-align:center">
                             <div class="address-block">
-                                <h3>How would you like to enter your order?</h3>
+                                <h3>How Would You Like to Enter Your Order?</h3>
                                 <label for="single_address" style="display: none">
                                     <input type="radio" id="single_address" name="delivery_preference" <?php echo $delivery_preference == 'single_address' ? 'checked' : '' ?> value="single_address" required
                                         data-error-message="Please select a delivery preference.">
@@ -257,7 +257,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         data-error-message="Please select a delivery preference.">
                                     <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/destination.png" alt="" class="address-icon">Ship to Multiple Addresses</span>
                                 </label>
-                                <span class="error-message" style="display:none">Please choose your shipped type.</span>
+                                <span class="error-message" style="display:none">Please Choose Your Shipping Type.</span>
                             </div>
                             <div class="address-inner" style="margin-top:0px">
                                 <div class="single-address-order greeting-box"
