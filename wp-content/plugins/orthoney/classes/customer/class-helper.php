@@ -889,7 +889,9 @@ class OAM_Helper{
             if (($handle = fopen($file_path, 'r')) !== false) {
                 $header = fgetcsv($handle);
                 fclose($handle);
-                $header_lower = array_map('strtolower', $header);
+                $header_lower = array_map(function($val) {
+                    return strtolower(trim($val));
+                }, $header);
     
                 $missing_columns = array_diff($required_columns_lower, $header_lower);
                 if (!empty($missing_columns)) {
@@ -899,23 +901,26 @@ class OAM_Helper{
         } elseif ($file_extension === 'xlsx') {
             require_once OH_PLUGIN_DIR_PATH. 'libs/SimpleXLSX/SimpleXLSX.php';
     
-           if ($xlsx = SimpleXLSX::parse($file_path)) {
-                // Use rowsEx to ensure raw values are extracted
+            if ($xlsx = SimpleXLSX::parse($file_path)) {
+                // Use rowsEx() to avoid issues with formatted cells
                 $rows = $xlsx->rowsEx();
 
                 if (empty($rows) || !is_array($rows[0])) {
-                    return self::log_and_return(false, $method, $process_id, 'Invalid or empty XLSX file', $file_path);
+                    return self::log_and_return(false, $method, $process_id, 'Invalid or empty XLSX file.', $file_path);
                 }
 
-                // Extract header row (first row), ignore formatting
+                // Extract plain text values from the header
                 $header = array_map(function($cell) {
                     return isset($cell['value']) ? trim($cell['value']) : '';
                 }, $rows[0]);
 
-                // Normalize header to lowercase for comparison
-                $header_lower = array_map('strtolower', $header);
+                // Normalize headers: lowercase, trim, collapse whitespace
+                $header_lower = array_map(function($val) {
+                    return strtolower(trim(preg_replace('/\s+/', ' ', trim($val))));
+                }, $header);
 
-                // Compare with required columns
+
+                // Compare against required columns (make sure $required_columns_lower is normalized the same way)
                 $missing_columns = array_diff($required_columns_lower, $header_lower);
                 if (!empty($missing_columns)) {
                     return self::log_and_return(false, $method, $process_id, 'Invalid XLSX format. Missing required columns: ' . implode(', ', $missing_columns), $file_path);
@@ -933,7 +938,11 @@ class OAM_Helper{
                 }
             
                 $header = $rows[0];
-                $header_lower = array_map('strtolower', $header);
+                            
+                $header_lower = array_map(function($val) {
+                    return strtolower(trim($val));
+                }, $header);
+
                 $missing_columns = array_diff($required_columns_lower, $header_lower);
             
                 if (!empty($missing_columns)) {

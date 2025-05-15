@@ -1127,7 +1127,9 @@ class OAM_Ajax{
     
         $required_columns = OH_REQUIRED_COLUMNS;
         $required_columns_lower = array_map('strtolower', $required_columns);
-        $header_lower = array_map('strtolower', $header);
+        $header_lower = array_map(function($val) {
+                return strtolower(trim($val));
+            }, $header);
     
         $missing_columns = array_diff($required_columns_lower, $header_lower);
         if (!empty($missing_columns)) {
