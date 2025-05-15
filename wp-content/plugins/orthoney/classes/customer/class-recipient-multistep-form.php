@@ -246,7 +246,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     <div class="g-cols wpb_row via_grid laptops-cols_inherit tablets-cols_inherit mobiles-cols_1 valign_top type_default">
                         <div class="wpb_column vc_column_container" style="text-align:center">
                             <div class="address-block">
-                                <h3>Where would you like your order delivered?</h3>
+                                <h3>How would you like to enter your order?</h3>
                                 <label for="single_address" style="display: none">
                                     <input type="radio" id="single_address" name="delivery_preference" <?php echo $delivery_preference == 'single_address' ? 'checked' : '' ?> value="single_address" required
                                         data-error-message="Please select a delivery preference.">
