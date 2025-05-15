@@ -3442,14 +3442,13 @@ transition: all 0.3s ease;
  .product-price-box {display: flex; gap:5px; align-items: center;}
   .product-price-box  .col-left{position: relative;}
     .product-price-box  .col-left .error-message{position: absolute;}
-    #customer-jar-orders-table_wrapper  .dataTables_length,
+#customer-jar-orders-table_wrapper  .dataTables_length,
 #customer-orders-table_wrapper .dataTables_length{
       position: absolute;
     right: 0;
     bottom: calc(100% + 10px);
-    
-}
-    #customer-jar-orders-table_wrapper  .dataTables_length label,
+ }
+   #customer-jar-orders-table_wrapper .dataTables_length label,
 #customer-orders-table_wrapper .dataTables_length label{
   display: flex;
     gap: 10px;
