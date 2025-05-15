@@ -2661,7 +2661,7 @@ body .woocommerce .order-process-block .button {
   color: #333;
   text-align: left;
 }
-.button-icon-underline,
+.button-icon-underline:hover,
 .dashboard-block .recipient-lists-block table .w-btn:hover {
   color: var(--color-content-primary);
 }
