@@ -3447,6 +3447,13 @@ transition: all 0.3s ease;
       position: absolute;
     right: 0;
     bottom: calc(100% + 10px);
+    
+}
+    #customer-jar-orders-table_wrapper  .dataTables_length label,
+#customer-orders-table_wrapper .dataTables_length label{
+  display: flex;
+    gap: 10px;
+    align-items: center;
 }
 /* responsive */
 @media (min-width: 993px) {
@@ -3697,6 +3704,10 @@ transition: all 0.3s ease;
      position: relative;
     margin: 10px 0;
     bottom: 0;
+}
+    #customer-jar-orders-table_wrapper  .dataTables_length label,
+#customer-orders-table_wrapper .dataTables_length label{
+ display: block;
 }
 }
 @media(max-width: 782px) {
