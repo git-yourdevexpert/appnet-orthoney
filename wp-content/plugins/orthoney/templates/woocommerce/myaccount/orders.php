@@ -1,4 +1,11 @@
 <?php
+
+$uri = $_SERVER['REQUEST_URI'];
+$path = trim(parse_url($uri, PHP_URL_PATH), '/');
+$segments = explode('/', $path);
+
+$first_segment = isset($segments[0]) ? $segments[0] : '';
+
 /**
  * Orders
  *
@@ -37,7 +44,7 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
     echo OAM_COMMON_Custom::message_design_block($message);
     return;
 }
-if (in_array('customer', $user_roles)){
+if ($first_segment == 'dashboard'){
    ?>
    <style>
      .customer-select-filter{display:none}
@@ -60,14 +67,14 @@ if (in_array('customer', $user_roles)){
             <span>Jar Order</span>
         </label>
     </div>
-    <table id="customer-orders-table" class="display">
+    <table id="customer-orders-table" data-tabletype="<?php echo $first_segment; ?>" class="display">
     <thead>
         <tr>
             <th>Select</th>
             <th>Jar No</th>
             <th>Order No</th>
             <th>Date</th>
-            <th>Billing Name</th>
+            <th><?php echo ($first_segment == 'dashboard') ? 'Billing Name': 'Customer Name'  ?></th>
             <th>Recipient Name</th>
             <th>Organization Code</th>
             <th>Total Honey Jar</th>
