@@ -56,7 +56,19 @@ class OAM_Hooks {
                             'Associated Organizations' => CUSTOMER_DASHBOARD_LINK . 'organizations/',
                             'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account/',
                         ]
-                    ]
+                    ],
+                    'admin-menu' => [ // Menu slug
+                        'id' => 22, // Menu ID
+                        'items' => [
+                            'Dashboard' => ADMINISTRATOR_DASHBOARD_LINK,
+                            'Orders' => ADMINISTRATOR_DASHBOARD_LINK . 'orders/',
+                            'Manage Customer' => ADMINISTRATOR_DASHBOARD_LINK . 'customer/',
+                            'Manage Organizations' => ADMINISTRATOR_DASHBOARD_LINK . 'organizations/',
+                            'Manage Sales Representative' => ADMINISTRATOR_DASHBOARD_LINK . 'sales_representative/',
+                            'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account/',
+                            
+                        ]
+                    ],
                 ];
     
                 foreach ($menus as $menu_slug => $menu_data) {

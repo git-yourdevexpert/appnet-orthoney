@@ -1647,6 +1647,131 @@ jQuery(document).ready(function ($) {
     });
 });
 
+jQuery(document).ready(function($) {
+    const table = new DataTable('#admin-customer-table', {
+        ajax: {
+            url: oam_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'orthoney_admin_get_customers_data'
+            }
+        },
+        columns: [
+            { data: 'id' },
+            { data: 'name' },
+            { data: 'email' },
+            { data: 'action' }
+        ],
+        columnDefs: [
+            {
+                targets: -1,       
+                orderable: false    
+            }
+        ],
+         language: {
+            processing: `
+                <div class="loader multiStepForm" style="display:block">
+                    <div>
+                        <h2 class="swal2-title">Processing...</h2>
+                        <div class="swal2-html-container">Please wait while we process your request.</div>
+                        <div class="loader-5"></div>
+                    </div>
+                </div>
+            `
+        },
+        responsive: true,
+         processing: true,
+        paging: true,
+        searching: true,
+    });
+});
+
+jQuery(document).ready(function($) {
+    const table = new DataTable('#admin-sales-representative-table', {
+        ajax: {
+            url: oam_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'orthoney_admin_get_sales_representative_data'
+            }
+        },
+        columns: [
+            { data: 'id' },
+            { data: 'name' },
+            { data: 'email' },
+            { data: 'action' }
+        ],
+          columnDefs: [
+            {
+                targets: -1,       
+                orderable: false    
+            }
+        ],
+        language: {
+            processing: `
+                <div class="loader multiStepForm" style="display:block">
+                    <div>
+                        <h2 class="swal2-title">Processing...</h2>
+                        <div class="swal2-html-container">Please wait while we process your request.</div>
+                        <div class="loader-5"></div>
+                    </div>
+                </div>
+            `
+        },
+        responsive: true,
+        processing: true,
+        paging: true,
+        searching: true,
+    });
+    table.on('draw', function () {
+        const info = table.page.info(); // Get pagination info
+        if (info.page === 0) {
+            table.column(3).visible(false); // Hide column index 3
+        } else {
+            table.column(3).visible(true); // Show it otherwise
+        }
+    });
+});
+
+jQuery(document).ready(function($) {
+    const table = new DataTable('#admin-organizations-table', {
+        ajax: {
+            url: oam_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'orthoney_admin_get_organizations_data'
+            }
+        },
+        columns: [
+            { data: 'id' },
+            { data: 'name' },
+            { data: 'token' },
+            { data: 'action' }
+        ],
+        columnDefs: [
+            {
+                targets: -1,       
+                orderable: false    
+            }
+        ],
+         language: {
+            processing: `
+                <div class="loader multiStepForm" style="display:block">
+                    <div>
+                        <h2 class="swal2-title">Processing...</h2>
+                        <div class="swal2-html-container">Please wait while we process your request.</div>
+                        <div class="loader-5"></div>
+                    </div>
+                </div>
+            `
+        },
+        responsive: true,
+        processing: true,
+        paging: true,
+        searching: true,
+    });
+});
+
 //incomplete order process code
 jQuery(document).ready(function ($) {
     const $table = $('#incomplete-order-table');

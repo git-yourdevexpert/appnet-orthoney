@@ -82,6 +82,7 @@ if ( ! defined( 'OH_DOMAIN' ) ) {
 $link_array = array(
     'customer_dashboard_link'             => 'CUSTOMER_DASHBOARD_LINK', 
     'organization_dashboard_link'         => 'ORGANIZATION_DASHBOARD_LINK',
+    'administrator_dashboard_link'        => 'ADMINISTRATOR_DASHBOARD_LINK',
     'sales_representative_dashboard_link' => 'SALES_REPRESENTATIVE_DASHBOARD_LINK',
     'customer_login_link'                 => 'CUSTOMER_LOGIN_LINK',
     'customer_register_link'              => 'CUSTOMER_REGISTER_LINK',
@@ -123,6 +124,9 @@ require_once OH_PLUGIN_DIR_PATH . 'classes/customer/class-customer.php';
 
 // Sales Representative
 require_once OH_PLUGIN_DIR_PATH . 'classes/sales-representative/class-sales-representative.php';
+
+// Administrator
+require_once OH_PLUGIN_DIR_PATH . 'classes/administrator/class-administrator.php';
 
 // Register activation hook
 // register_activation_hook(__FILE__, 'orthoney_create_custom_tables');

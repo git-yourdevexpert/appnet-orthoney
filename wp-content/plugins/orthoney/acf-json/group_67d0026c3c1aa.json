@@ -231,6 +231,23 @@
             "return_format": "array"
         },
         {
+            "key": "field_6824c17bb273b",
+            "label": "Administrator Dashboard Link",
+            "name": "administrator_dashboard_link",
+            "aria-label": "",
+            "type": "link",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "array",
+            "allow_in_bindings": 1
+        },
+        {
             "key": "field_67eccb85eaf2d",
             "label": "",
             "name": "",
@@ -331,5 +348,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1745904540
+    "modified": 1747239307
 }
