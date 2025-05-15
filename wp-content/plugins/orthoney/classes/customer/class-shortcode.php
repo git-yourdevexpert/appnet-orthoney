@@ -110,17 +110,20 @@ class OAM_Shortcode
                 <tbody>
                     <?php foreach ($row_data as $order) :
                         $order_id = $order['order_no'];
-                      
+                      $orderdata = wc_get_order( $order_id );
                         $order_date = $order['date'];
                         $total_price = $order['price'];
                         $items = $order['total_recipient'];
                         
                         $quantity = $order['total_jar'];
+
+                          $billing_first_name = $orderdata->get_billing_first_name();
+                            $billing_last_name  = $orderdata->get_billing_last_name();
                     ?>
                         <tr>
                             <td><?php echo esc_html($order_id); ?></td>
                             <td><?php echo esc_html($order_date); ?></td>
-                            <td><?php echo esc_html($order['billing_name']); ?></td>
+                            <td><?php echo esc_html($billing_first_name .' '.  $billing_last_name); ?></td>
                             <td><?php echo esc_html($order['affiliate_code']); ?></td>
                             <td><?php echo esc_html($quantity); ?></td>
                             <td><?php echo wp_kses_post($total_price); ?></td>
