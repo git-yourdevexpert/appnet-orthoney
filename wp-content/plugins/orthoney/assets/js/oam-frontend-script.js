@@ -2466,7 +2466,10 @@ function order_filter_main_order(){
              });
 
             jQuery(document).on('click', '.filter_btton', function (e) {
-                table.ajax.reload();
+                value = jQuery('#customer-orders-table_filter input[type=search]').val();
+ 
+                table.search(value).draw();
+                // table.ajax.reload();
              });
                jQuery(document).on('click', '.reset_btton', function (e) {
                 
@@ -2632,7 +2635,9 @@ const tabletype =  $('#customer-orders-table').data('tabletype');
             //     table.ajax.reload();
             // });
              $(document).on('click', '.jar_filter_btton', function () {
-                table.ajax.reload();
+                 value = jQuery('#customer-jar-orders_filter input[type=search]').val();
+ 
+                        table.search(value).draw();
             });
                $(document).on('click', '.jar_reset_btton', function () {
                   const currentYear = new Date().getFullYear();
