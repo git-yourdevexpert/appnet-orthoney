@@ -2574,7 +2574,7 @@ class OAM_Ajax{
         $draw = intval($_POST['draw']);
         $start = intval($_POST['start']);
         $length = intval($_POST['length']);
-        $tabletype = sanitize_text_field($_POST['tabletype']);
+        $tabletype = isset($_POST['tabletype']) ? sanitize_text_field($_POST['tabletype']) : 'administrator-dashboard';
 
         $custom_order_type = sanitize_text_field($_POST['custom_order_type'] ?? 'all');
         $custom_order_status = sanitize_text_field($_POST['custom_order_status'] ?? 'all');
@@ -2693,7 +2693,7 @@ class OAM_Ajax{
         $draw = intval($_POST['draw']);
         $start = intval($_POST['start']);
         $length = intval($_POST['length']);
-         $tabletype = sanitize_text_field($_POST['tabletype']);
+        $tabletype = isset($_POST['tabletype']) ? sanitize_text_field($_POST['tabletype']) : 'administrator-dashboard';
 
         $custom_order_type = sanitize_text_field($_POST['custom_order_type'] ?? 'all');
         $custom_order_status = sanitize_text_field($_POST['custom_order_status'] ?? 'all');
