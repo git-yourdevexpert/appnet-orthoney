@@ -192,6 +192,7 @@ class OAM_Helper{
         global $wpdb;
         $orders_table = $wpdb->prefix . 'wc_orders'; 
         $filtered_orders = [];
+         $tabletype = sanitize_text_field($_POST['tabletype']);
 
         // Pagination calculation
         $offset = $page;
@@ -231,7 +232,7 @@ class OAM_Helper{
             $params[] = $search_param;
         }
 
-        if (current_user_can('administrator')) {
+        if ($tabletype == 'administrator-dashboard') {
             if ($selected_customer_id) {
                 $where_clauses[] = "user_id = %d";
                 $params[] = $selected_customer_id;
@@ -327,7 +328,7 @@ class OAM_Helper{
         $offset = $page;
 
         $search_term = isset($_REQUEST['search']['value']) ? sanitize_text_field($_REQUEST['search']['value']) : '';
-
+        $tabletype = sanitize_text_field($_POST['tabletype']);
         $where_conditions = [];
         $where_values = [];
         $join = "";
@@ -352,10 +353,17 @@ class OAM_Helper{
         }
 
         if (!empty($search_term)) {
-            $join .= " LEFT JOIN $order_addresses AS addr ON addr.order_id = orders.id AND addr.address_type = 'billing'";
-            $where_conditions[] = "(orders.id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s)";
-            $where_values[] = (int) $search_term;
-            $where_values[] = '%' . $wpdb->esc_like($search_term) . '%';
+            if ($tabletype == 'administrator-dashboard') {
+                $join .= " LEFT JOIN {$wpdb->users} AS u ON u.ID = orders.customer_id";
+                $where_conditions[] = "u.display_name LIKE %s";
+                $where_values[] = '%' . $wpdb->esc_like($search_term) . '%';
+            }else{
+               // echo 'asdasdasdasd';
+                $join .= " LEFT JOIN $order_addresses AS addr ON addr.order_id = orders.id AND addr.address_type = 'billing'";
+                $where_conditions[] = "(orders.id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s)";
+                $where_values[] = $search_term;
+                $where_values[] = '%' . $wpdb->esc_like($search_term) . '%';
+            }
         }
 
         if (!empty($_REQUEST['custom_order_type'])) {
@@ -399,7 +407,7 @@ class OAM_Helper{
 
          }
 
-        if (current_user_can('administrator')) {
+        if ($tabletype == 'administrator-dashboard') {
             if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
                 $where_conditions[] = "orders.customer_id = %d";
                 $where_values[] = intval($_REQUEST['selected_customer_id']);
@@ -412,11 +420,13 @@ class OAM_Helper{
         $where_values[] = $limit;
         $where_values[] = $offset;
 
-        $sql = $wpdb->prepare(
-            "SELECT orders.*, rel.order_id as rel_oid FROM $orders_table AS orders
+         $sql = $wpdb->prepare(
+            "SELECT orders.*, orders.customer_id, rel.order_id as rel_oid 
+            FROM $orders_table AS orders
             $join
             WHERE " . implode(' AND ', $where_conditions) . "
-           GROUP BY orders.id ORDER BY orders.date_updated_gmt DESC
+            GROUP BY orders.id 
+            ORDER BY orders.date_updated_gmt DESC
             LIMIT %d OFFSET %d",
             ...$where_values
         );
@@ -464,10 +474,26 @@ class OAM_Helper{
         $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
 
         $user_id = get_current_user_id();
+
+        $customer_id = $order_obj->user_id; 
+        $display_name = '';
+
+        if ( $customer_id ) {
+            $user_info = get_userdata( $customer_id );
+            $display_name = $user_info->display_name;
+        
+        }
+        
         $orders_table = $wpdb->prefix . 'wc_orders';
     
         $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order_data->date_created_gmt));
-        $billing_name = $order_obj->get_billing_first_name() . ' ' . $order_obj->get_billing_last_name();
+        $tabletype = sanitize_text_field($_POST['tabletype']);
+        if ($tabletype == 'administrator-dashboard') {
+            $billing_name = $display_name;
+        }else{
+            $billing_name = $order_obj->get_billing_first_name() . ' ' . $order_obj->get_billing_last_name();
+        }
+
         $shipping_name = $order_obj->get_shipping_first_name() . ' ' . $order_obj->get_shipping_last_name();
         $referral_id = $order_obj->get_meta('_yith_wcaf_referral', true) ?: 'Orthoney';
         $order_total = wc_price($order_obj->get_total());

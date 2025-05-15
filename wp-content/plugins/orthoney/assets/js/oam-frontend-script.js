@@ -2046,11 +2046,16 @@ jQuery(document).on('click', 'input[name="table_order_type"]', function (e) {
 jQuery(document).ready(function ($) {
     order_filter_main_order();
     order_filter_sub_order();
+    
 });
+
 function order_filter_main_order(){
+    const tabletype =  $('#customer-orders-table').data('tabletype');
+
    var table = $('#customer-orders-table').DataTable({
         processing: false,
         serverSide: true,
+         searchDelay: 350,
         select: {
             style: 'multi' // or 'single'
           },
@@ -2067,6 +2072,7 @@ function order_filter_main_order(){
                 d.selected_order_status = $('#order_status').val(); // 
                 d.selected_year = $('#select-year').val(); // 
                 const qtySlider = $('#slider-range').slider("values");
+                d.tabletype = tabletype;
                 d.selected_min_qty = qtySlider[0] || 1;
                 d.selected_max_qty = qtySlider[1] || 1000;
                 d.search_by_recipient = $('.search-recipient-name').val();
@@ -2205,7 +2211,7 @@ function order_filter_main_order(){
                 
             `;
             $('#customer-orders-table_filter').append(customFilter);
-            // $('#customer-orders-table_filter').append('<label>&nbsp;<div><button class="order-export-data w-btn us-btn-style_1" data-tippy="Download CSV file for the current data.">Export Data</button></div></label>');
+         
             $('#customer-orders-table_filter').append('');
  
             const tableType = ``;
@@ -2213,36 +2219,13 @@ function order_filter_main_order(){
  
             toggleRecipientColumn();
  
-            // $('#custom-order-type-filter, #custom-order-status-filter').on('change', function (e) {
-            //     e.preventDefault();
-            //     table.ajax.reload();
-            // });
-            //   $('.search-recipient-name, .search-by-organization').on('input', function (e) {
-            //     var searchrecipient = $(this).val();
-
-            //        if(searchrecipient == ""){
-            //          table.ajax.reload(); // Reload DataTable via AJAX
-            //     }
-
-            //     if (searchrecipient.length > 2) {
-            //         table.ajax.reload(); // Reload DataTable via AJAX
-            //     }    
-            //  });
+    
  
             $(document).on('click', 'input[name="table_order_type"]', function (e) {
                 // e.preventDefault();
                 toggleRecipientColumn();
               //  table.ajax.reload();
             });
-
-            // $(document).ready(function() {
-            //     if (!$('#select-year').val()) {
-                   
-            //         const currentYear = new Date().getFullYear();
-            //          console.log(currentYear+123);
-            //         $('#select-year').val(currentYear); // Set default
-            //     }
-            // });
 
  
             const yearSelect = document.getElementById('select-year');
@@ -2331,8 +2314,6 @@ function order_filter_main_order(){
             });
             
             
-            
- 
             jQuery('.selectall-checkbox').on('change', function() {
                 jQuery('.row-checkbox').prop('checked', this.checked);
               });
@@ -2524,7 +2505,7 @@ function order_filter_main_order(){
                     $('.search-by-organization').val(''); // Set default
                     $('#order_status').val("all"); // Set default
                     $('#custom-order-type-filter').val("all"); // Set default
-                          
+                               jQuery('#customer-orders-table_filter input[type="search"]').val('');
                      
                       const min = $("#slider-range").slider("option", "min");
                         const max = $("#slider-range").slider("option", "max");
@@ -2540,9 +2521,10 @@ function order_filter_main_order(){
            
         }
     });
+    
 }
 function order_filter_sub_order(){
-
+const tabletype =  $('#customer-orders-table').data('tabletype');
    var table = $('#customer-jar-orders-table').DataTable({
         processing: false,
         serverSide: true,
@@ -2562,6 +2544,7 @@ function order_filter_sub_order(){
                 const qtySlider = $('#jar-slider-range').slider("values");
                 d.selected_min_qty = qtySlider[0];
                 d.selected_max_qty = qtySlider[1];
+                d.tabletype = tabletype;
                 d.selected_customer_id = $('#jar-select-customer').val();
                 d.search_by_organization = $('.jar-search-by-organization').val();
             },
@@ -2682,6 +2665,10 @@ function order_filter_sub_order(){
                     $('#jars-select-year').val(currentYear); // Set default
                     $('#jar-select-customer').val(''); // Set default
                     $('.jar-search-by-organization').val(''); // Set default   
+                    jQuery('#customer-jar-orders-table_filter input[type="search"]').val('');
+
+                    
+
                      
                     const min = $("#jar-slider-range").slider("option", "min");
                     const max = $("#jar-slider-range").slider("option", "max");
@@ -2733,6 +2720,7 @@ function order_filter_sub_order(){
             );
         }
     });
+    
 }
 
 
