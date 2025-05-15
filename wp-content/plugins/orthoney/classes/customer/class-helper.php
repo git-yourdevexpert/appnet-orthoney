@@ -407,19 +407,16 @@ class OAM_Helper{
 
          }
 
-         
-            if ($tabletype == 'administrator-dashboard') {
-                if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
-                    $where_conditions[] = "orders.customer_id = %d";
-                    $where_values[] = intval($_REQUEST['selected_customer_id']);
-                }
-            } else {
+        if ($tabletype == 'administrator-dashboard') {
+            if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
                 $where_conditions[] = "orders.customer_id = %d";
-                $where_values[] = get_current_user_id();
+                $where_values[] = intval($_REQUEST['selected_customer_id']);
             }
+        } else {
+            $where_conditions[] = "orders.customer_id = %d";
+            $where_values[] = get_current_user_id();
+        }
 
-         
-        
         $where_values[] = $limit;
         $where_values[] = $offset;
 

@@ -3445,14 +3445,13 @@ class OAM_Ajax{
                 }
     
                 $display_name = ($item->process_by == 0) ? 'Self' : esc_html(get_userdata($item->process_by)->display_name);
-
-
+    
                 $data[] = [
                     'id' => esc_html($item->id),
                     'name' => esc_html($item->name),
                     'ordered_by' => esc_html($display_name),
                     'date' => esc_html($created_date),
-                    'action' => "<a href='$resume_url' class='button-icon-underline'>" . ($failed == 1 ? '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="resume icon">View Recipients' : '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="resume icon">Resume Order') . "</a> " . ($failed != 1 ? $download_button : '')
+                    'action' => "<a href='$resume_url' class='w-btn us-btn-style_1 outline-btn sm-btn'>" . ($failed == 1 ? 'View Recipients' : 'Resume Order') . "</a> " . ($failed != 1 ? $download_button : '')
                 ];
             }
         }
