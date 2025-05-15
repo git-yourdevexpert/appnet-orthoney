@@ -3442,7 +3442,12 @@ transition: all 0.3s ease;
  .product-price-box {display: flex; gap:5px; align-items: center;}
   .product-price-box  .col-left{position: relative;}
     .product-price-box  .col-left .error-message{position: absolute;}
-
+    #customer-jar-orders-table_wrapper  .dataTables_length,
+#customer-orders-table_wrapper .dataTables_length{
+      position: absolute;
+    right: 0;
+    bottom: calc(100% + 10px);
+}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
@@ -3687,6 +3692,12 @@ transition: all 0.3s ease;
   #multiStepForm .recipient-group-section .heading-title{flex-wrap: wrap;}
   #multiStepForm .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter{right: 0;}
   #multiStepForm .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter.open{width: 250px;}
+  #customer-jar-orders-table_wrapper .dataTables_length,
+  #customer-orders-table_wrapper .dataTables_length{
+     position: relative;
+    margin: 10px 0;
+    bottom: 0;
+}
 }
 @media(max-width: 782px) {
   .admin-bar .select2-container--open .select2-dropdown {
