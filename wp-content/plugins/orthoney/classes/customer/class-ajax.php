@@ -1121,17 +1121,17 @@ class OAM_Ajax{
             $rows = $xls->rows();
             $header = $rows[0];
         } else {
-            wp_send_json_error(['message' => 'Unsupported file type. Only CSV, XLSX, and XLS are allowed.']);
+            wp_send_json_error(['message' => 'Unsupported file type. Only CSV, XLSX, OR XLS are allowed.']);
             wp_die();
         }
     
         $required_columns = OH_REQUIRED_COLUMNS;
-        $required_columns_lower = array_map('strtolower', $required_columns);
+        $required_columns_lower = array_map('strtolower', array_map('trim', $required_columns));
         $header_lower = array_map(function($val) {
-                return strtolower(trim($val));
-            }, $header);
+            return strtolower(trim($val));
+        }, $header);
     
-        $missing_columns = array_diff($required_columns_lower, $header_lower);
+       $missing_columns = array_diff($required_columns_lower, $header_lower);
         if (!empty($missing_columns)) {
             wp_send_json_error(['message' => 'Missing required columns: ' . implode(', ', $missing_columns)]);
             wp_die();
@@ -2219,6 +2219,7 @@ class OAM_Ajax{
         $method =  isset($_POST['method']) ? $_POST['method'] : 'process';
         
         $group_id =  isset($_POST['group_id']) ? $_POST['group_id'] : 0;
+        $invalid_address =  isset($_POST['invalid_address']) ? $_POST['invalid_address'] : 0;
         global $wpdb;
         
         // Check for required fields
@@ -2246,77 +2247,104 @@ class OAM_Ajax{
         }
         
         
-        $address_verified = $_POST['address_verified'] ? $_POST['address_verified'] : 0 ;
-        // Sanitize and prepare common data
-        $data = [
-            'full_name' => sanitize_text_field($_POST['full_name']),
-            'company_name'  => sanitize_text_field($_POST['company_name']),
-            'address_1'  => sanitize_textarea_field($_POST['address_1']),
-            'address_2'  => isset($_POST['address_2']) ? sanitize_textarea_field($_POST['address_2']) : '',
-            'city'       => sanitize_text_field($_POST['city']),
-            'state'      => sanitize_text_field($_POST['state']),
-            'zipcode'    => sanitize_text_field($_POST['zipcode']),
-            'quantity'   => $_POST['quantity'],
-            'greeting'   => sanitize_textarea_field($_POST['greeting']),
-            'reasons'    => '',
-            'verified'   => 1,
-            'visibility' => 1,
-            'timestamp'  => current_time('mysql'),
-        ];
-        
-        $table = OAM_Helper::$order_process_recipient_table;
-        
-        
-        $recipient_id = isset($_POST['recipient_id']) ? absint($_POST['recipient_id']) : null;
-        $process_id = isset($_POST['pid']) ? absint($_POST['pid']) : null;
-        
-        // Construct the key for checking existing records
-        $record_key = $data['full_name'] . '|' . 
-        $data['address_1'] . '|' . 
-        $data['city'] . '|' . 
-        $data['state'] . '|' . 
-        $data['zipcode'];
-        
-        $status = '';
-        $result = false;
-        
-        if($method == 'group'){
-            $table = OAM_Helper::$group_recipient_table;
-            $existing_recipient = $wpdb->get_row( $wpdb->prepare(
-                "SELECT id, visibility FROM $table WHERE full_name = %s AND address_1 = %s AND city = %s AND state = %s AND zipcode = %s AND group_id = %d", 
-                $data['full_name'], $data['address_1'], $data['city'], $data['state'], $data['zipcode'], $group_id
-                )
-            );
-        }else{
-        
-            $existing_recipient = $wpdb->get_row( $wpdb->prepare(
-                "SELECT id, visibility FROM $table WHERE full_name = %s AND address_1 = %s AND city = %s AND state = %s AND zipcode = %s AND pid = %d", 
-                $data['full_name'], $data['address_1'], $data['city'], $data['state'], $data['zipcode'], $process_id
-                )
-            );
-        }
-        
+            $address_verified = $_POST['address_verified'] ? $_POST['address_verified'] : 0 ;
+            // Sanitize and prepare common data
+            $data = [
+                'full_name' => sanitize_text_field($_POST['full_name']),
+                'company_name'  => sanitize_text_field($_POST['company_name']),
+                'address_1'  => sanitize_textarea_field($_POST['address_1']),
+                'address_2'  => isset($_POST['address_2']) ? sanitize_textarea_field($_POST['address_2']) : '',
+                'city'       => sanitize_text_field($_POST['city']),
+                'state'      => sanitize_text_field($_POST['state']),
+                'zipcode'    => sanitize_text_field($_POST['zipcode']),
+                'quantity'   => $_POST['quantity'],
+                'greeting'   => sanitize_textarea_field($_POST['greeting']),
+                'reasons'    => '',
+                'verified'   => 1,
+                'visibility' => 1,
+                'timestamp'  => current_time('mysql'),
+            ];
             
-        if (!$recipient_id && $existing_recipient) {
-            if ($existing_recipient->visibility == 1) {
-                wp_send_json_error(['message' => 'A recipient with the same details already exists.']);
-            } else {
-                // Only update visibility to 1
-                $result = $wpdb->update($table, ['visibility' => 1], ['id' => $existing_recipient->id], ['address_verified' => 0]);
-                if ($result !== false) {
+            $table = OAM_Helper::$order_process_recipient_table;
+            
+            
+            $recipient_id = isset($_POST['recipient_id']) ? absint($_POST['recipient_id']) : null;
+            $process_id = isset($_POST['pid']) ? absint($_POST['pid']) : null;
+
+            if($invalid_address == 1){
+                $result = $wpdb->update(
+                            $table,
+                            $data,
+                            ['id' => $recipient_id]
+                        );
+                        $status = 'update';
+            
+                    OAM_Helper::order_process_recipient_activate_log($recipient_id, $status, wp_json_encode($changes), $method);
+                    $success_message = 'Recipient details updated successfully!';
+                    if ($result !== false) {
                     wp_send_json_success([
-                        'status'       => 'update',
-                        'recipient_id' => $existing_recipient->id,
-                        'message'      => 'Recipient reactivated successfully!',
+                        'status'       => $status,
+                        'user'         => get_current_user_id(),
+                        'recipient_id' => $recipient_id,
+                        'message'      => $success_message,
                     ]);
-                   
-                    OAM_Helper::order_process_recipient_activate_log($existing_recipient->id, 'reactivated', '', $method);
                 } else {
-                    wp_send_json_error(['message' => 'Failed to update visibility.']);
+                    wp_send_json_error([
+                        'message' => $wpdb->last_error ?: 'Database operation failed.',
+                    ]);
+                }
+
+            }
+       
+            
+            // Construct the key for checking existing records
+            $record_key = $data['full_name'] . '|' . 
+            $data['address_1'] . '|' . 
+            $data['city'] . '|' . 
+            $data['state'] . '|' . 
+            $data['zipcode'];
+            
+            $status = '';
+            $result = false;
+            
+            if($method == 'group'){
+                $table = OAM_Helper::$group_recipient_table;
+                $existing_recipient = $wpdb->get_row( $wpdb->prepare(
+                    "SELECT id, visibility FROM $table WHERE full_name = %s AND address_1 = %s AND city = %s AND state = %s AND zipcode = %s AND group_id = %d", 
+                    $data['full_name'], $data['address_1'], $data['city'], $data['state'], $data['zipcode'], $group_id
+                    )
+                );
+            }else{
+            
+                $existing_recipient = $wpdb->get_row( $wpdb->prepare(
+                    "SELECT id, visibility FROM $table WHERE full_name = %s AND address_1 = %s AND city = %s AND state = %s AND zipcode = %s AND pid = %d", 
+                    $data['full_name'], $data['address_1'], $data['city'], $data['state'], $data['zipcode'], $process_id
+                    )
+                );
+            }
+    
+            
+            if (!$recipient_id && $existing_recipient) {
+                if ($existing_recipient->visibility == 1) {
+                    wp_send_json_error(['message' => 'A recipient with the same details already exists.']);
+                } else {
+                    // Only update visibility to 1
+                    $result = $wpdb->update($table, ['visibility' => 1], ['id' => $existing_recipient->id], ['address_verified' => 0]);
+                    if ($result !== false) {
+                        wp_send_json_success([
+                            'status'       => 'update',
+                            'recipient_id' => $existing_recipient->id,
+                            'message'      => 'Recipient reactivated successfully!',
+                        ]);
+                    
+                        OAM_Helper::order_process_recipient_activate_log($existing_recipient->id, 'reactivated', '', $method);
+                    } else {
+                        wp_send_json_error(['message' => 'Failed to update visibility.']);
+                    }
                 }
             }
-        }
-            
+
+
         if ($recipient_id) {
             // Update existing recipient
             $existing_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $recipient_id), ARRAY_A);
@@ -2335,7 +2363,7 @@ class OAM_Ajax{
                 $validation_result = json_decode(OAM_Helper::validate_address(
                     $data['address_1'], $data['address_2'], $data['city'], $data['state'], $data['zipcode']
                 ), true);
-            
+        
                 
                 if ($validation_result) {
                     $verified_status = $validation_result['success'] ? 1 : 0;
@@ -2343,7 +2371,7 @@ class OAM_Ajax{
                    
                     
                     if ($verified_status == 0) {
-                        wp_send_json_error(['message' => 'The address is incorrect. Please enter the correct address.']);
+                        wp_send_json_error(['message' => $validation_result['message']]);
                     }else{
                         // wp_send_json_success(['message' => 'The address is correct.']);
                         $result = $wpdb->update(

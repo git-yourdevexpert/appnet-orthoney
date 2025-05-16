@@ -355,9 +355,11 @@ document.addEventListener("DOMContentLoaded", function () {
            
           const selectedOption = affiliateSelect.options[affiliateSelect.selectedIndex];
           const dataToken = selectedOption.getAttribute('data-token');
-          const optionText = selectedOption.text;
+          setTimeout(() => {
+            const optionText = selectedOption.text;
           const organization_data_show= document.querySelector('.organization_data_show .organization_value');
           organization_data_show.innerHTML = optionText;
+          }, 250);
           if(validateCurrentStep()){
           currentStep++;
           if(currentStep == 1){
@@ -461,34 +463,38 @@ document.addEventListener("DOMContentLoaded", function () {
     
           let html = ``;
           if (!unverifiedButton && verifiedButton) {
-            html = `All recipients have been successfully validated!`;
+            html = `All submitted addresses are verified`;
           }
           if (unverifiedButton && !verifiedButton) {
-            html = `All recipients have been unsuccessfully validated!`;
+            html = `All submitted addresses are unverified`;
           }
     
          
           if (unverifiedButton && verifiedButton) {
-            const unverifiedCount = unverified_table.getAttribute("data-count");
-            const verifiedCount = verified_table.getAttribute("data-count");
-           html = `Out of the ${(parseInt(verifiedCount) + parseInt(unverifiedCount))} recipients, ${(parseInt(verifiedCount))}  have successfully verified addresses`;
+            html = `Out of the ${(parseInt(verifiedCount) + parseInt(unverifiedCount))} submitted addresses`;
+            if(verifiedButton == 1){
+              html =`, ${(parseInt(verifiedCount))}  has been successfully verified.`;
+            }else{
+              html =`, ${(parseInt(verifiedCount))}  have been successfully verified.`;
+            }
+          }
+
+          let unverifiedCount = 0;
+          let verifiedCount = 0;
+          if (unverifiedButton) {
+             unverifiedCount = unverified_table.getAttribute("data-count");
+          }
+          if (verifiedButton) {
+            verifiedCount = verified_table.getAttribute("data-count");
+          }
+           
 
             html += `<div class='exceptions'><strong>Exceptions: </strong><ul>`;
             
-            if (verified_table) {
-              if (verifiedCount != 0) {
-                html += `<li><span>Verified Addresses: </span> ${verifiedCount}</li>`;
-              }
-            }
-            if (unverified_table) {
-              if (unverifiedCount != 0) {
-                html += `<li><span>Unverified Addresses: </span> ${unverifiedCount}</li>`;
-              }
-            }
+            html += `<li><span>Verified Addresses: </span> ${verifiedCount}</li>`;
+            html += `<li><span>Unverified Addresses: </span> ${unverifiedCount}</li>`;
             
-            html += `<li class="total-recipients"><span>Total Recipients: </span> ${(parseInt(verifiedCount) + parseInt(unverifiedCount))}</li></ul>`;
-          }
-          
+            // html += `<li class="total-recipients"><span>Total Recipients: </span> ${(parseInt(verifiedCount) + parseInt(unverifiedCount))}</li></ul>`;
           
           const result = await Swal.fire({
             title:  html,
@@ -512,18 +518,18 @@ document.addEventListener("DOMContentLoaded", function () {
               if (unverifiedButton) {  
                 Swal.getConfirmButton().style.display = "inline-block";
           
-                if (unverifiedButton && !verifiedButton) {
-                  Swal.getConfirmButton().textContent = "Yes, Proceed"; 
-                }
+                // if (unverifiedButton && !verifiedButton) {
+                //   Swal.getConfirmButton().textContent = "Yes, Proceed"; 
+                // }
               }
           
               if (verifiedButton) {  
                 Swal.getDenyButton().style.display = "inline-block";
                 
-                if (!unverifiedButton && verifiedButton) {
-                  // Swal.getConfirmButton().textContent = "Yes, Proceed"; 
-                  Swal.getDenyButton().textContent = "Yes, Proceed"; 
-                }
+                // if (!unverifiedButton && verifiedButton) {
+                //   // Swal.getConfirmButton().textContent = "Yes, Proceed"; 
+                //   Swal.getDenyButton().textContent = "Yes, Proceed"; 
+                // }
               }
             },
           });
@@ -882,17 +888,17 @@ document.addEventListener("DOMContentLoaded", function () {
             html += "<div class='exceptions'><strong>Exceptions: </strong><div class='exceptions-wrapper'><div class='sub-exceptions'><strong>Passed Recipients: </strong><ul>";
           }
 
-          if (successCount != 0) {
+          // if (successCount != 0) {
             html += `<li><span>Successful Recipients: </span> ${successCount}</li>`;
-          }
+          // }
           
          
-          if (parseInt(newCount) !== 0) {
+          // if (parseInt(newCount) !== 0) {
             html += `<li><span>New Recipient: </span> ${newCount}</li>`;
-          }
-          if (duplicateCount !== 0 && duplicatePassCount !== 0) {
+          // }
+          // if (duplicateCount !== 0 && duplicatePassCount !== 0) {
               html += `<li><span>Duplicate Recipients: </span> ${duplicatePassCount}</li>`;
-          }
+          // }
           
           // html += `<li class="total-recipients"><span>Total Passed Recipients: </span> ${totalCount - (parseInt(duplicateFailCount) + parseInt(failCount))}</li>`;
 
@@ -928,7 +934,7 @@ document.addEventListener("DOMContentLoaded", function () {
               if (successCount > 0 || newCount != 0) {
                 Swal.getDenyButton().style.display = "inline-block";
                 if (duplicateCount == 0) {
-                  Swal.getDenyButton().textContent = "Yes, Proceed"; 
+                  // Swal.getDenyButton().textContent = "Yes, Proceed"; 
                 }
               }
             },

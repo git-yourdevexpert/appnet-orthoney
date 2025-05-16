@@ -385,7 +385,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 </div>
             </div>
             <div class="button-block">
-            <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
+                <div>
+                    <button type="button" class="back w-btn us-btn-style_2">Back</button>
+                    <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
+                </div>
                 <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>" class="next w-btn us-btn-style_1" style="float:right">Next</button>
             </div>
         </div>
@@ -415,7 +418,35 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             <div class="wpb_column vc_column_container">
                 <div class="vc_column-inner">
                     <div class="g-cols wpb_row via_grid cols_3-2 laptops-cols_inherit tablets-cols_inherit mobiles-cols_1 valign_top type_default">
-                        <div class="wpb_column vc_column_container steps-column">
+                    <div class="wpb_column vc_column_container steps-column">
+                            <div class="download-file-block">
+                                <h3><strong>INSTRUCTIONS</strong></h3>
+                                <h3 style="padding-top: 0;">Download a sample file to see the correct format for your list.</h3>
+                                <div class="file-lists">
+                                    <div class="file-title">
+                                        <p>The file must have the following columns with these exact headings:</p>
+                                    </div>
+                                    <ul>
+                                        <li>Full Name</li>
+                                        <li>Company Name (column is required, even if it's blank)</li>
+                                        <li>Mailing address</li>
+                                        <li>Suite/Apt# (column is required, even if it's blank)</li>
+                                        <li>City</li>
+                                        <li>State (2 letter abbreviation)</li>
+                                        <li>Zipcode</li>
+                                        <li>Quantity</li>
+                                        <li>Greeting (column is required, even if it's blank)</li>
+                                    </ul>
+                                </div>
+                                <div class="file-title format">
+                                    <p>Save or export your list as a .csv, .xlsx, OR .xls before uploading.</p>
+                                </div>
+                                <div class="download-file">
+                                    <a href="<?php echo esc_url(OH_PLUGIN_DIR_URL . 'assets/recipient_sample.csv'); ?>" class="us-btn-style_1 submit-csv-btn " download><i class="far fa-download"></i> Download Sample File</a>
+                                </div>
+                            </div>
+                        </div>    
+                    <div class="wpb_column vc_column_container steps-column">
                             <div>
                                 <h3>Recipient List</h3>
                                 <div class="file-upload field-block">
@@ -444,39 +475,15 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 <span class="error-message"></span>
                             </div>
                         </div>
-                        <div class="wpb_column vc_column_container steps-column">
-                            <div class="download-file-block">
-                                <h3>Download a sample file to see the correct format for your list.</h3>
-                                <div class="file-lists">
-                                    <div class="file-title">
-                                        <p>The file must have the following columns with these exact headings:</p>
-                                    </div>
-                                    <ul>
-                                        <li>Full Name</li>
-                                        <li>Company Name (column is required, even if it's blank)</li>
-                                        <li>Mailing address</li>
-                                        <li>Suite/Apt# (column is required, even if it's blank)</li>
-                                        <li>City</li>
-                                        <li>State (2 letter abbreviation)</li>
-                                        <li>Zipcode</li>
-                                        <li>Quantity</li>
-                                        <li>Greeting (column is required, even if it's blank)</li>
-                                    </ul>
-                                </div>
-                                <div class="file-title format">
-                                    <p>Save or export your list as a .csv, .xlsx, .xls before uploading.</p>
-                                </div>
-                                <div class="download-file">
-                                    <a href="<?php echo esc_url(OH_PLUGIN_DIR_URL . 'assets/recipient_sample.csv'); ?>" class="us-btn-style_1 submit-csv-btn " download><i class="far fa-download"></i> Download Sample File</a>
-                                </div>
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
             </div>
             <div class="button-block">
-                <!-- <button type="button" class="back w-btn us-btn-style_2">Back</button> -->
-                <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
+                <div>
+                    <button type="button" class="back w-btn us-btn-style_2">Back</button>
+                    <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
+                </div>
                 <button type="button" class="submit_csv_file w-btn next-step us-btn-style_1" style="float:right">Next </button>
             </div>
         </div>

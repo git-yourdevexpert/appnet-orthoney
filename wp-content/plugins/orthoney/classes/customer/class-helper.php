@@ -890,6 +890,17 @@ class OAM_Helper{
             if (($handle = fopen($file_path, 'r')) !== false) {
                 $header = fgetcsv($handle);
                 fclose($handle);
+
+                if (!empty($header[0])) {
+                    // Remove BOM if present
+                    $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+
+                    // Remove leading '#' from first column of header
+                    if (strpos(trim($header[0]), '#') === 0) {
+                        $header[0] = ltrim($header[0], "# \t\n\r\0\x0B");
+                    }
+                }
+                
                 $header_lower = array_map(function($val) {
                     return strtolower(trim($val));
                 }, $header);
@@ -915,6 +926,15 @@ class OAM_Helper{
                     return isset($cell['value']) ? trim($cell['value']) : '';
                 }, $rows[0]);
 
+                if (!empty($header[0])) {
+                    // Remove BOM if somehow present
+                    $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+                    // Remove leading '#' symbol from first column name
+                    if (strpos(trim($header[0]), '#') === 0) {
+                        $header[0] = ltrim($header[0], "# \t\n\r\0\x0B");
+                    }
+                }
+
                 // Normalize headers: lowercase, trim, collapse whitespace
                 $header_lower = array_map(function($val) {
                     return strtolower(trim(preg_replace('/\s+/', ' ', trim($val))));
@@ -939,6 +959,16 @@ class OAM_Helper{
                 }
             
                 $header = $rows[0];
+
+                if (!empty($header[0])) {
+                    // Remove BOM (just in case)
+                    $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+
+                    // Remove leading "#" from first column name
+                    if (strpos(trim($header[0]), '#') === 0) {
+                        $header[0] = ltrim($header[0], "# \t\n\r\0\x0B");
+                    }
+                }
                             
                 $header_lower = array_map(function($val) {
                     return strtolower(trim($val));
@@ -1439,14 +1469,17 @@ class OAM_Helper{
         $auth_token = 'RXTN0yzOth5dFffkvvb6';
 
     
-        $url = "https://us-street.api.smarty.com/street-address?"
+        $url = "https://us-street.api.smartystreets.com/street-address?"
              . http_build_query([
                  'auth-id'    => $auth_id,
                  'auth-token' => $auth_token,
-                 'street'     => trim($delivery_line_1 . ' ' . $delivery_line_2),
+                 'street'     => trim($delivery_line_2 . ' ' . $delivery_line_1),
                  'city'       => $city,
                  'state'      => $state,
                  'zipcode'    => $zipcode,
+                 'match'      => 'invalid',
+                 'geocode'    => true,
+                 'candidates' => 5,
              ]);
     
         $response = wp_remote_get($url);
@@ -1454,13 +1487,10 @@ class OAM_Helper{
         if (is_wp_error($response)) {
             $response = ['success' => false, 'message' => 'Error fetching address validation.'];
         }
-    
-       
 
         $body = wp_remote_retrieve_body($response);
 
         $data = json_decode($body, true);
-    
     
         if (empty($data)) {
             $response = ['success' => false, 'message' => 'Invalid address.'];
@@ -1473,7 +1503,13 @@ class OAM_Helper{
         if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {
             $response = ['success' => true, 'message' => 'Valid and deliverable address.'];
         }else{
-            $response = ['success' => false, 'message' => 'Invalid address format.'];
+            $message = 'Invalid address format.';
+            $dpv_footnotes = $data[0]['analysis']['footnotes'] ?? '';
+            if ($dpv_footnotes !== '' && !empty($dpv_footnotes)) {
+                $message = self::addressCorrections($dpv_footnotes);
+            }
+           
+            $response = ['success' => false, 'message' =>  $message];
         }
 
         return json_encode($response);
@@ -1503,6 +1539,74 @@ class OAM_Helper{
         return wp_remote_retrieve_body($response);
     }
 
+    public static function addressCorrections($code = '') {
+        
+         $addressCorrections = [
+                'A#'  => 'Corrected ZIP Code',
+                'B#'  => 'Corrected city/state spelling',
+                'C#'  => 'Invalid city/state/ZIP',
+                'D#'  => 'No ZIP+4 assigned',
+                'E#'  => 'Same ZIP for multiple',
+                'F#'  => 'Address not found',
+                'G#'  => 'Used addressee data',
+                'H#'  => 'Missing secondary number',
+                'I#'  => 'Insufficient/ incorrect address data',
+                'J#'  => 'Dual address',
+                'K#'  => 'Cardinal rule match',
+                'L#'  => 'Changed address component',
+                'LL# or LI#' => 'Flagged address for LACSLink',
+                'LI#' => 'Flagged address for LACSLink',
+                'LL#' => 'Flagged address for LACSLink',
+                'M#'  => 'Corrected street spelling',
+                'N#'  => 'Fixed abbreviations',
+                'O#'  => 'Multiple ZIP+4; lowest used',
+                'P#'  => 'Better address exists',
+                'Q#'  => 'Unique ZIP match',
+                'R#'  => 'No match; EWS: Match soon',
+                'S#'  => 'Unrecognized secondary address',
+                'T#'  => 'Multiple response due to magnet street syndrome',
+                'U#'  => 'Unofficial city name',
+                'V#'  => 'Unverifiable city/state',
+                'W#'  => 'Invalid delivery address',
+                'X#'  => 'Default Unique ZIP Code',
+                'Y#'  => 'Military match',
+                'Z#'  => 'Matched with ZIPMOVE',
+                // Secondary Set
+                'AA' => 'Street name, city, state, and ZIP are all valid.',
+                'A1' => 'Address not present in USPS data.',
+                'BB' => 'Entire address is valid.',
+                'CC' => 'The submitted secondary information (apartment, suite, etc.) was not recognized. Secondary number is NOT REQUIRED for delivery.',
+                'C1' => 'The submitted secondary information (apartment, suite, etc.) was not recognized. Secondary number IS REQUIRED for delivery.',
+                'F1' => 'Military or diplomatic address',
+                'G1' => 'General delivery address',
+                'M1' => 'Primary number (e.g., house number) is missing.',
+                'M3' => 'Primary number (e.g., house number) is invalid.',
+                'N1' => 'Address is missing secondary information (apartment, suite, etc.) which IS REQUIRED for delivery..',
+                'PB' => 'PO Box street style address.',
+                'P1' => 'PO, RR, or HC box number is missing.',
+                'P3' => 'PO, RR, or HC box number is invalid.',
+                'RR' => 'Confirmed address with private mailbox (PMB) info.',
+                'R1' => 'Confirmed address without private mailbox (PMB) info.',
+                'R7' => "Confirmed as a valid address that doesn't currently receive US Postal Service street delivery.",
+                'TA' => 'Primary number was matched by dropping trailing alpha.',
+                'U1' => 'Address has a "unique" ZIP Code.',
+
+                // New additions
+                'AABB'     => 'ZIP, state, city, street name, and primary number match.',
+                'AABBCC'   => 'ZIP, state, city, street name, and primary number match, but secondary does not. A secondary is not required for delivery.',
+                'AAC1'     => 'ZIP, state, city, street name, and primary number match, but secondary does not. A secondary is required for delivery.',
+                'AAM1'     => 'ZIP, state, city, and street name match, but the primary number is missing.',
+                'AAM3'     => 'ZIP, state, city, and street name match, but the primary number is invalid.',
+                'AAN1'     => 'ZIP, state, city, street name, and primary number match, but there is secondary information such as apartment or suite that would be helpful.',
+                'AABBR1'   => 'ZIP, state, city, street name, and primary number match. Address confirmed without private mailbox (PMB) info.',
+            ];
+
+            $message = 'Invalid address format.';
+            if ($code !== '' && isset($addressCorrections[$code])) {
+                $message = $addressCorrections[$code];
+            }
+            return $message;
+    }
     public static function group_dashboard_widget($title = "", $limit = 3, $link = '') {
         global $wpdb;
         $user_id = get_current_user_id();
