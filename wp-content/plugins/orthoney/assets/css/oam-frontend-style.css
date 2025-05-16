@@ -3155,9 +3155,12 @@ flex-direction: column;
   text-transform: capitalize;
   box-shadow: none !important;
   padding: 0.6rem 1rem !important;
-  border-bottom: none !important;
-  
+ 
 }
+.orthoney-datatable-warraper #incomplete-order-table table td{
+  border-bottom: 0 !important;
+}
+
 .orthoney-datatable-warraper .paging_simple_numbers {
   gap: 5px;
 }
