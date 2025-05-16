@@ -54,7 +54,7 @@ $requests = $wpdb->get_results(
                         $customer = get_userdata($request->customer_id);
                         $customer_name = $customer ? esc_html($customer->display_name) : 'Unknown';
                         $customer_email = $customer ? esc_html($customer->user_email) : 'Unknown';
-                        $status_label = ($request->status == 1) ? 'Approved' : 'Pending';
+                        $status_label = ($request->status == 1) ? '<span class="badge-success">Approved</span>' : '<span class="badge-warning">Pending</span>';
                         
                         echo '<tr>
                                 <td><div class="thead-data">ID</div>' . esc_html($request->id) . '</td>

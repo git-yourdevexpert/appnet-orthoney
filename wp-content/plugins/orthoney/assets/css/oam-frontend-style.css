@@ -3155,6 +3155,7 @@ flex-direction: column;
   text-transform: capitalize;
   box-shadow: none !important;
   padding: 0.6rem 1rem !important;
+  border-bottom: none !important;
   
 }
 .orthoney-datatable-warraper .paging_simple_numbers {
