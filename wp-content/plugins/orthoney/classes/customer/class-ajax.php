@@ -3451,7 +3451,7 @@ class OAM_Ajax{
                     'name' => esc_html($item->name),
                     'ordered_by' => esc_html($display_name),
                     'date' => esc_html($created_date),
-                    'action' => "<a href='$resume_url' class='w-btn button-icon-underline'>" . ($failed == 1 ? '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt=""> View Recipients' : '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt=""> Resume Order') . "</a> " . ($failed != 1 ? $download_button : '')
+                    'action' => "<a href='$resume_url' class='button-icon-underline'>" . ($failed == 1 ? '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt=""> View Recipients' : '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt=""> Resume Order') . "</a> " . ($failed != 1 ? $download_button : '')
                 ];
             }
         }
