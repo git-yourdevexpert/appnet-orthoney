@@ -50,6 +50,7 @@ class OAM_Shortcode
      * Show Recent Orders 
      */
     public function display_recent_orders($atts) {
+       
         // Ensure WooCommerce is active
         if (!class_exists('WooCommerce')) {
             return '<p>' . esc_html__('WooCommerce is not active.', OH_DOMAIN) . '</p>';
@@ -90,9 +91,40 @@ class OAM_Shortcode
         $show_see_all = count($total_orders) > $limit;
     
         ob_start(); 
-        
+         global $wpdb;
         $user_id = get_current_user_id();
-        $row_data = OAM_Helper::get_filtered_orders($user_id , 'main_order', 'all', 'all','',false, '', $limit, '');
+            echo $query = $wpdb->prepare("
+            SELECT 
+                orders.id AS order_id,
+                orders.date_created_gmt AS order_date,
+                om_total.meta_value AS total_price,
+                ba.first_name AS billing_first_name,
+                ba.last_name AS billing_last_name,
+                om_aff.meta_value AS affiliate_code,
+                SUM(CASE WHEN oim.meta_key = '_qty' THEN CAST(oim.meta_value AS UNSIGNED) ELSE 0 END) AS total_quantity
+            FROM {$wpdb->prefix}wc_orders AS orders
+            INNER JOIN {$wpdb->prefix}oh_wc_order_relation AS rel 
+                ON rel.wc_order_id = orders.id
+            LEFT JOIN {$wpdb->prefix}oh_recipient_order AS rec 
+                ON rec.order_id = rel.order_id
+            LEFT JOIN {$wpdb->prefix}wc_orders_meta AS om_total 
+                ON om_total.order_id = orders.id AND om_total.meta_key = '_order_total'
+            LEFT JOIN {$wpdb->prefix}wc_orders_meta AS om_aff 
+                ON om_aff.order_id = orders.id AND om_aff.meta_key = '_yith_wcaf_referral'
+            LEFT JOIN {$wpdb->prefix}wc_order_addresses AS ba 
+                ON ba.order_id = orders.id AND ba.address_type = 'billing'
+            LEFT JOIN {$wpdb->prefix}woocommerce_order_items AS oi 
+                ON oi.order_id = orders.id AND oi.order_item_type = 'line_item'
+            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS oim 
+                ON oim.order_item_id = oi.order_item_id
+            WHERE orders.customer_id = %d
+            GROUP BY orders.id
+            ORDER BY orders.date_created_gmt DESC
+            LIMIT %d
+        ", $user_id, $limit);
+
+            $row_data = $wpdb->get_results($query);
+            print_r($row_data);
 
         ?>
             <table>
@@ -109,25 +141,29 @@ class OAM_Shortcode
                 </thead>
                 <tbody>
                     <?php foreach ($row_data as $order) :
-                        $order_id = $order['order_no'];
-                      $orderdata = wc_get_order( $order_id );
-                        $order_date = $order['date'];
-                        $total_price = $order['price'];
-                        $items = $order['total_recipient'];
-                        
-                        $quantity = $order['total_jar'];
+                        $order_id = $order->order_id;
+                        $orderdata = wc_get_order( $order_id );
+                        $order_date = $order->order_date;
+                        $total_price = $order->total_price;
+                   
+                        $quantity = $order->total_quantity ;
+                        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". $order_id);
 
-                          $billing_first_name = $orderdata->get_billing_first_name();
-                            $billing_last_name  = $orderdata->get_billing_last_name();
+                       $affiliate_code = 'Honey from the Heart';
+                       
+                       if($order->affiliate_code == 'Orthoney' OR $order->affiliate_code == ''){
+                            $affiliate_code =  $order->affiliate_code;
+                       }
+
                     ?>
                         <tr>
                             <td><?php echo esc_html($order_id); ?></td>
                             <td><?php echo esc_html($order_date); ?></td>
-                            <td><?php echo esc_html($billing_first_name .' '.  $billing_last_name); ?></td>
-                            <td><?php echo esc_html($order['affiliate_code']); ?></td>
+                            <td><?php echo esc_html($order->billing_first_name . ' ' . $order->billing_last_name ); ?></td>
+                            <td><?php echo esc_html(); ?></td>
                             <td><?php echo esc_html($quantity); ?></td>
                             <td><?php echo wp_kses_post($total_price); ?></td>
-                            <td><?php echo $order['action'] ?></td>
+                            <td><?php echo '<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>'; ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -135,8 +171,6 @@ class OAM_Shortcode
         <?php
         return ob_get_clean();
     }
-    
-   
 
 }
 new OAM_Shortcode();
