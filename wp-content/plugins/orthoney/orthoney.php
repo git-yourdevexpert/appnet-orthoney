@@ -62,7 +62,7 @@ if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins',
 }
 
 // Define required columns
-$required_columns = ['full name','Company Name', 'Mailing Address', 'Suite/Apt', 'city', 'state', 'zipcode', 'quantity', 'greeting'];
+$required_columns = ['full name','Company Name', 'Mailing Address', 'Suite/Apt#', 'city', 'state', 'zipcode', 'quantity', 'greeting'];
 
 if ( ! defined( 'OH_REQUIRED_COLUMNS' ) ) {
     define( 'OH_REQUIRED_COLUMNS', $required_columns );
