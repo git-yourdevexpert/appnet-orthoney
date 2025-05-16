@@ -471,6 +471,16 @@ document.addEventListener("DOMContentLoaded", function () {
           if (unverifiedButton && !verifiedButton) {
             html = `All submitted addresses are unverified`;
           }
+
+          let unverifiedCount = 0;
+          let verifiedCount = 0;
+          if (unverifiedButton) {
+             unverifiedCount = unverified_table.getAttribute("data-count");
+          }
+          if (verifiedButton) {
+            verifiedCount = verified_table.getAttribute("data-count");
+          }
+           
     
          
           if (unverifiedButton || verifiedButton) {
@@ -483,7 +493,6 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           
-           
 
             html += `<div class='exceptions'><strong>Exceptions: </strong><ul>`;
             
