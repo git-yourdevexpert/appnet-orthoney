@@ -439,9 +439,12 @@ document.addEventListener("DOMContentLoaded", function () {
       const displayOrderWrapper = this.value === "select-order";
       const displayGroupsWrapper = this.value === "select-group";
 
-      orderWrapper.style.display = displayOrderWrapper ? "block" : "none";
+      if(orderWrapper){
+       orderWrapper.style.display = displayOrderWrapper ? "block" : "none";
+      }
+      if(groupsWrapper){
       groupsWrapper.style.display = displayGroupsWrapper ? "block" : "none";
-
+      }
       // Adjust the required attribute for selects based on selected value
       if (orderSelect) {
         orderSelect.required = displayOrderWrapper;
