@@ -3479,15 +3479,11 @@ transition: all 0.3s ease;
 
 .lity  .lity-container  form input,
 .lity  .lity-container  form select,
-.lity  .lity-container  form textarea,
 .lity  .lity-container  form .select2-selection,
 body.woocommerce-account .woocommerce-EditAccountForm input,
 body.woocommerce-account .woocommerce-EditAccountForm select,
-body.woocommerce-account .woocommerce-EditAccountForm  .select2-selection,
-body.woocommerce-account .woocommerce-EditAccountForm textarea,
 body.woocommerce-account .woocommerce-change-password-wrapper select,
-body.woocommerce-account .woocommerce-change-password-wrapper input,
-body.woocommerce-account .woocommerce-change-password-wrapper textarea{
+body.woocommerce-account .woocommerce-change-password-wrapper input{
       border-radius: 5px;
     border: 0;
     min-height: 35px !important;
@@ -3496,6 +3492,24 @@ body.woocommerce-account .woocommerce-change-password-wrapper textarea{
     background: #fff;
     display: block;
 }
+
+.lity  .lity-container  form textarea,
+body.woocommerce-account .woocommerce-EditAccountForm textarea,
+body.woocommerce-account .woocommerce-change-password-wrapper textarea{
+        border-radius: 5px;
+    border: 0;
+    min-height: 35px !important;
+    font-size: 13px;
+    background: #fff;
+    display: block;
+}
+#recipient-manage-popup input:focus,
+#recipient-manage-popup button:focus,
+#recipient-manage-popup textarea:focus{
+  box-shadow: rgba(6,5,1,0.153) 0px 0px 0px 1px;
+  border: 1px solid orange;
+}
+
 .dataTable tbody td .red-text{
      font-weight:700;
      color:red;
