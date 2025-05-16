@@ -3470,12 +3470,12 @@ transition: all 0.3s ease;
 #customer-orders-table_filter button.filter_btton:hover{
   background-color: var(--color-content-secondary) !important; 
 }
-.woocommerce-EditAccountForm input,
-.woocommerce-EditAccountForm select,
-.woocommerce-EditAccountForm textarea,
-.woocommerce-change-password-wrapper select,
-.woocommerce-change-password-wrapper input,
-.woocommerce-change-password-wrapper textarea{
+body.woocommerce-account .woocommerce-EditAccountForm input,
+body.woocommerce-account .woocommerce-EditAccountForm select,
+body.woocommerce-account .woocommerce-EditAccountForm textarea,
+body.woocommerce-account .woocommerce-change-password-wrapper select,
+body.woocommerce-account .woocommerce-change-password-wrapper input,
+body.woocommerce-account .woocommerce-change-password-wrapper textarea{
       border-radius: 5px;
     border: 0;
     min-height: 35px !important;
