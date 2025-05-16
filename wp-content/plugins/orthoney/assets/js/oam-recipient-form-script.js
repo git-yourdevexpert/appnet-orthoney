@@ -495,7 +495,7 @@ document.addEventListener("DOMContentLoaded", function () {
             html += `<div class='exceptions'><strong>Exceptions: </strong><ul>`;
             
             html += `<li><span>Verified Addresses: </span> ${verifiedCount}</li>`;
-            html += `<li><span>Unverified Addresses: </span> ${verifiedCount}</li>`;
+            html += `<li><span>Unverified Addresses: </span> ${unverifiedCount}</li>`;
             
             // html += `<li class="total-recipients"><span>Total Recipients: </span> ${(parseInt(verifiedCount) + parseInt(unverifiedCount))}</li></ul>`;
           
