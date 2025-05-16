@@ -54,13 +54,13 @@ $requests = $wpdb->get_results(
                         $customer = get_userdata($request->customer_id);
                         $customer_name = $customer ? esc_html($customer->display_name) : 'Unknown';
                         $customer_email = $customer ? esc_html($customer->user_email) : 'Unknown';
-                        $status_label = ($request->status == 1) ? 'Approved' : 'Pending';
+                        $status_label = ($request->status == 1) ? '<span class="green-text">Approved</span>' :  '<span class="red-text"> Pending</span>';
                         
                         echo '<tr>
                                 <td><div class="thead-data">ID</div>' . esc_html($request->id) . '</td>
                                 <td><div class="thead-data">Customer Name</div>' . $customer_name . '</td>
                                 <td><div class="thead-data">Customer Email</div>' . $customer_email . '</td>
-                                <td><div class="thead-data">Status</div>' . esc_html($status_label) . '</td>';
+                                <td><div class="thead-data">Status</div>' . ($status_label) . '</td>';
                         
                         // Show resend button if status is pending
                         if ($request->status == 0) {
