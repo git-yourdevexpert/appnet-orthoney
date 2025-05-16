@@ -916,7 +916,7 @@ document.addEventListener("DOMContentLoaded", function () {
             confirmButtonColor: "#3085d6",
             denyButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Proceed With Duplicate Records ("+ (totalCount - (parseInt(duplicateFailCount) + parseInt(failCount))) + ")",
+            confirmButtonText: "Proceed With Duplicate Records ("+ ((parseInt(duplicateCount))) + ")",
             cancelButtonText: "No, I Want to Update/Fix Records",
             denyButtonText: "Proceed Without Duplicate Records ("+ (totalCount - (parseInt(duplicateFailCount) + parseInt(failCount)) - duplicatePassCount) + ")",
             allowOutsideClick: false,
