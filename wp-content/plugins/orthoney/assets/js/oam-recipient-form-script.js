@@ -492,7 +492,7 @@ document.addEventListener("DOMContentLoaded", function () {
             html += `<div class='exceptions'><strong>Exceptions: </strong><ul>`;
             
             html += `<li><span>Verified Addresses: </span> ${verifiedCount}</li>`;
-            html += `<li><span>Unverified Addresses: </span> ${unverifiedCount}</li>`;
+            html += `<li><span>Unverified Addresses: </span> ${verifiedCount}</li>`;
             
             // html += `<li class="total-recipients"><span>Total Recipients: </span> ${(parseInt(verifiedCount) + parseInt(unverifiedCount))}</li></ul>`;
           
@@ -506,9 +506,9 @@ document.addEventListener("DOMContentLoaded", function () {
             confirmButtonColor: "#3085d6",
             denyButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Proceed With All Recipients",
+            confirmButtonText: "Proceed With All Recipients (" + (parseInt(verifiedCount) + parseInt(verifiedCount)) + ")",
             cancelButtonText: "No, I Want to Update/Fix Errors",
-            denyButtonText: "Proceed With Only Verified Recipients",
+            denyButtonText: "Proceed With Only Verified Recipients (" + parseInt(verifiedCount)  + ")",
             allowOutsideClick: false,
             allowEscapeKey: false,
             allowEnterKey: false,
