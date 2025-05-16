@@ -751,7 +751,7 @@ class OAM_Helper{
 						
                         $reasons = implode(", ", json_decode($data->reasons, true));
                         if($reasons != ''){
-							$reasonsHtml = '<div class="tooltip" data-tippy="'.$reasons.'">Failed</span></div>';
+							$reasonsHtml = '<div class="tooltip" data-tippy="'.$reasons.'">Data Failed</span></div>';
                         }
                     }
                     $reasonsHtml .= '</div>';
@@ -790,7 +790,7 @@ class OAM_Helper{
 
                 if($alreadyOrder == 0){
                     if($reverify != 1){
-                        $html .= '<td data-label="Status"><div class="thead-data">Status</div>'.(($data->verified == 0) ? $reasonsHtml: 'Passed').'</td>';
+                        $html .= '<td data-label="Status"><div class="thead-data">Status</div>'.(($data->verified == 0) ? $reasonsHtml: 'Data Validated').'</td>';
                     }
                     if($reverify == 1){
                         $html .= '<td data-label="Action"><div class="thead-data">Action</div>';
