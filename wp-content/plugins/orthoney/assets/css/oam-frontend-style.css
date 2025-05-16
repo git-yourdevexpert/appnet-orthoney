@@ -3474,6 +3474,10 @@ transition: all 0.3s ease;
 #customer-orders-table_filter button.filter_btton:hover{
   background-color: var(--color-content-secondary) !important; 
 }
+
+.lity  .lity-container  form input,
+.lity  .lity-container  form select,
+.lity  .lity-container  form textarea,
 body.woocommerce-account .woocommerce-EditAccountForm input,
 body.woocommerce-account .woocommerce-EditAccountForm select,
 body.woocommerce-account .woocommerce-EditAccountForm textarea,
