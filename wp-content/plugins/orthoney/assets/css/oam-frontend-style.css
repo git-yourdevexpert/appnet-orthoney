@@ -3507,6 +3507,7 @@ body.woocommerce-account .woocommerce-change-password-wrapper textarea{
 #recipient-manage-popup button:focus,
 #recipient-manage-popup textarea:focus{
   box-shadow: rgba(6,5,1,0.153) 0px 0px 0px 1px;
+  border: 1px solid orange;
 }
 
 .dataTable tbody td .red-text{
