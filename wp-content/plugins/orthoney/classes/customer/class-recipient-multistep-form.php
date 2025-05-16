@@ -439,7 +439,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     </ul>
                                 </div>
                                 <div class="file-title format">
-                                    <p>Save or export your list as a .csv, .xlsx, OR .xls before uploading.</p>
+                                    <p>Save or export your list as a .csv, .xlsx, or .xls before uploading.</p>
                                 </div>
                                 <div class="download-file">
                                     <a href="<?php echo esc_url(OH_PLUGIN_DIR_URL . 'assets/recipient_sample.csv'); ?>" class="us-btn-style_1 submit-csv-btn " download><i class="far fa-download"></i> Download Sample File</a>
