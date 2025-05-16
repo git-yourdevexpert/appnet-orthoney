@@ -1007,81 +1007,135 @@ function validateRecipientManageForm(form) {
 if (recipientManageForm) {
     recipientManageForm.addEventListener("submit", function (e) {
         e.preventDefault(); // Prevent form submission
-        
-        if (!validateRecipientManageForm(this)) {
-            return; // Stop if validation fails
-        }
+
+        if (!validateRecipientManageForm(this)) return;
 
         process_group_popup();
 
+        const formData = new FormData(this);
+
+        // Determine step and address verification
         let address_verified = 0;
-        const step = document.querySelector(".step-nav-item.active").getAttribute('data-step');
-        if(step == 4){
-        // if (document.getElementById("unverifiedRecord") || document.getElementById("verifiedRecord")) {
+        const step = document.querySelector(".step-nav-item.active")?.getAttribute('data-step');
+        if (step == 4) {
             address_verified = 1;
         }
 
-        let group_id = 0;
+        // Determine method and group/order ID
         let method = 'process';
-        const customer_dashboard_recipient_list = document.querySelector("#customer-dashboard-recipient-list");
-        if(customer_dashboard_recipient_list){
+        let group_id = 0;
+
+        const customerList = document.querySelector("#customer-dashboard-recipient-list");
+        const orderData = document.querySelector("#recipient-order-data");
+
+        if (customerList) {
             method = 'group';
-            group_id = customer_dashboard_recipient_list.getAttribute('data-groupid');
+            group_id = customerList.getAttribute('data-groupid') || 0;
         }
 
-        const recipient_order_data = document.querySelector("#recipient-order-data");
-
-        if(recipient_order_data){
+        if (orderData) {
             method = 'order';
             group_id = 0;
         }
 
-        const formData = new FormData(this);
+        // Append additional data
         formData.append('action', 'manage_recipient_form');
         formData.append('method', method);
         formData.append('group_id', group_id);
         formData.append('address_verified', address_verified);
 
-        fetch(oam_ajax.ajax_url, {
-            method: 'POST',
-            body: formData,
-        })
-        .then(response => response.json())  
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    title: data.data.message,
-                    icon: 'success',
-                    timer: 3500,
-                    showConfirmButton: false,
-                    timerProgressBar: true
-                }).then(() => {
-                    window.location.reload();
-                    recipientManageForm.reset();
-                });
+        // AJAX request function
+        const sendFormData = (fd) => {
+            return fetch(oam_ajax.ajax_url, {
+                method: 'POST',
+                body: fd,
+            }).then(res => res.json());
+        };
 
-                const currentLity = document.querySelector('[data-lity-close]');
-                if (currentLity) {
-                    currentLity.click();
+        // Initial request
+        sendFormData(formData)
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: data.data.message,
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timerProgressBar: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        allowEnterKey: false,
+                    });
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+
+                    // Close lity popup if open
+                    document.querySelector('[data-lity-close]')?.click();
+                } else {
+                    // If invalid address, ask user confirmation
+                    Swal.fire({
+                        html: '<h2 class="swal2-title" style="padding-top: 0;">'+data.data.message+' <br><br>Would you like to fix it or continue with this address?</h2>',
+                      
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, Proceed',
+                        cancelButtonText: 'Review & Edit Address',
+                        reverseButtons: true,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        allowEnterKey: false,
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            formData.append('invalid_address', 1);
+                            process_group_popup();
+                            sendFormData(formData)
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire({
+                                            title: data.data.message,
+                                            icon: 'success',
+                                            showConfirmButton: false,
+                                            timerProgressBar: false,
+                                            allowOutsideClick: false,
+                                            allowEscapeKey: false,
+                                            allowEnterKey: false,
+                                        });
+
+                                        setTimeout(() => {
+                                            window.location.reload();
+                                        }, 1500);
+                                    } else {
+                                        Swal.fire({
+                                            title: 'Error',
+                                            text: data.data.message || 'Failed to remove recipients.',
+                                            icon: 'error',
+                                        });
+                                    }
+                                })
+                                .catch(() => {
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: 'An error occurred while removing recipients.',
+                                        icon: 'error',
+                                    });
+                                });
+                        }
+                    });
                 }
-            } else {
+            })
+            .catch(error => {
+                console.error('Error during AJAX request:', error);
                 Swal.fire({
                     title: 'Error',
-                    text: data.data.message || 'Failed to update recipient details.',
+                    text: 'An error occurred while processing the request.',
                     icon: 'error',
                 });
-            }
-        })
-        .catch(error => {
-            console.error('Error during AJAX request:', error);
-            Swal.fire({
-                title: 'Error',
-                text: 'An error occurred while processing the request.',
-                icon: 'error',
             });
-        });
     });
 }
+
 
 
 /*
