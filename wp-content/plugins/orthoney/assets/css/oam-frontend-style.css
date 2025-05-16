@@ -3488,12 +3488,12 @@ body.woocommerce-account .woocommerce-change-password-wrapper textarea{
     background: #fff;
     display: block;
 }
-.dataTable tbody td .text-red{
+.dataTable tbody td .red-text{
      font-weight:700;
      color:red;
 }
 
-.dataTable tbody td .text-green{
+.dataTable tbody td .green-text{
      font-weight:700;
      color:var(--color-content-link)
 }
