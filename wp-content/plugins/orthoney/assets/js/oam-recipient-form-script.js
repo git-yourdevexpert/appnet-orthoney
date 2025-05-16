@@ -481,7 +481,7 @@ document.addEventListener("DOMContentLoaded", function () {
             verifiedCount = verified_table.getAttribute("data-count");
           }
          
-          if (unverifiedButton && verifiedButton) {
+          if (unverifiedButton ||  verifiedButton) {
             html = `Out of the ${(parseInt(verifiedCount) + parseInt(unverifiedCount))} submitted addresses`;
             if(verifiedButton == 1){
               html =`, ${(parseInt(verifiedCount))}  has been successfully verified.`;
