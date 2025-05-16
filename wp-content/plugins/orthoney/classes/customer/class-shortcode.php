@@ -124,7 +124,7 @@ class OAM_Shortcode
         ", $user_id, $limit);
 
             $row_data = $wpdb->get_results($query);
-            print_r($row_data);
+          
 
         ?>
             <table>
@@ -144,15 +144,21 @@ class OAM_Shortcode
                         $order_id = $order->order_id;
                         $orderdata = wc_get_order( $order_id );
                         $order_date = $order->order_date;
-                        $total_price = $order->total_price;
+                        $total_price = wc_price($orderdata->get_total());
                    
                         $quantity = $order->total_quantity ;
                         $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". $order_id);
 
                        $affiliate_code = 'Honey from the Heart';
                        
-                       if($order->affiliate_code == 'Orthoney' OR $order->affiliate_code == ''){
-                            $affiliate_code =  $order->affiliate_code;
+                       if($order->affiliate_code == 'Orthoney' && $order->affiliate_code == ''){
+                           $affiliate_code = 'Honey from the Heart';
+                        }else{
+                           $affiliate_code =  $order->affiliate_code;
+
+                       }
+                       if($affiliate_code == ''){
+                        $affiliate_code = 'Honey from the Heart';
                        }
 
                     ?>
@@ -160,7 +166,7 @@ class OAM_Shortcode
                             <td><?php echo esc_html($order_id); ?></td>
                             <td><?php echo esc_html($order_date); ?></td>
                             <td><?php echo esc_html($order->billing_first_name . ' ' . $order->billing_last_name ); ?></td>
-                            <td><?php echo esc_html(); ?></td>
+                            <td><?php echo esc_html($affiliate_code); ?></td>
                             <td><?php echo esc_html($quantity); ?></td>
                             <td><?php echo wp_kses_post($total_price); ?></td>
                             <td><?php echo '<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>'; ?></td>
