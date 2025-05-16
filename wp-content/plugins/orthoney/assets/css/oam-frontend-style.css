@@ -3157,7 +3157,7 @@ flex-direction: column;
   padding: 0.6rem 1rem !important;
  
 }
-.orthoney-datatable-warraper #incomplete-order-table table td{
+.orthoney-datatable-warraper #incomplete-order-table tbody td{
   border-bottom: 0 !important;
 }
 
