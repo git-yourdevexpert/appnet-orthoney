@@ -93,7 +93,7 @@ class OAM_Shortcode
         ob_start(); 
          global $wpdb;
         $user_id = get_current_user_id();
-            echo $query = $wpdb->prepare("
+            $query = $wpdb->prepare("
             SELECT 
                 orders.id AS order_id,
                 orders.date_created_gmt AS order_date,
