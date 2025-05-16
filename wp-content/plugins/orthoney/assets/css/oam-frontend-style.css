@@ -3040,7 +3040,8 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
 }
 .orthoney-datatable-warraper .dataTables_wrapper input:focus,
 .orthoney-datatable-warraper .dataTables_wrapper input,
-.orthoney-datatable-warraper .dataTables_wrapper select {
+.orthoney-datatable-warraper .dataTables_wrapper select ,
+.dataTables_wrapper .dataTables_filter input{
   border-radius: 5px;
   border: 0;
   min-height: 35px !important;
@@ -3157,6 +3158,7 @@ flex-direction: column;
   padding: 0.6rem 1rem !important;
  
 }
+.orthoney-datatable-warraper #group-recipient-table td,
 .orthoney-datatable-warraper #incomplete-order-table tbody td{
   border-bottom: 0 !important;
 }
