@@ -16,7 +16,7 @@ class OAM_Hooks {
     }
 
     public function orthoney_confirm_link_shortcode( $atts ) {
- ob_start();
+        ob_start();
         $atts = shortcode_atts(
             array(
                 'title'  => __( 'Click me' ),
@@ -32,17 +32,15 @@ class OAM_Hooks {
         $title  = esc_html( $atts['title'] );
         $href   = esc_url( $atts['href'] );
         $target = esc_attr( $atts['target'] );
-        $text   = esc_attr( $atts['text'] );
-        $text   = esc_attr( $atts['text'] );
+        
         $loggedin   = is_user_logged_in() ? '1' : '0';
 
         // Output anchor. The JS looks for .confirmation_link
         return sprintf(
-            '<a class="confirmation_link" href="%1$s" target="%2$s" data-text="%4$s" data-text="%4$s">%3$s</a>',
+            '<a class="confirmation_link" href="%1$s" target="%2$s">%3$s</a>',
             $href,
             $target,
             $title,
-            $text,
             $loggedin
         );
         return ob_get_clean();

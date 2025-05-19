@@ -3047,7 +3047,17 @@ jQuery(document).ready(function ($) {
             allowEnterKey: false,
 		}).then((result) => {
 			if (result.isConfirmed) {
+                process_group_popup();
+				fetch(oam_ajax.ajax_url, {
+				method: 'POST',
+				credentials: 'same-origin',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: new URLSearchParams({ action: 'oam_ajax_logout' })
+			})
+			
+			.finally(() => {
 				window.location.href = logoutUrl;
+			});
 			}
 		});
 	});

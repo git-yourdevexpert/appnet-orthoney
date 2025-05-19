@@ -28,12 +28,16 @@ class OAM_COMMON_Custom {
         add_filter( 'woocommerce_registration_auth_new_customer', '__return_false' );
         // add_action( 'woocommerce_created_customer', array($this,'custom_redirect_after_registration_based_on_role' ));
         add_shortcode( 'registration_success_msg', array($this, 'show_success_message_on_login') );
-
+        add_action( 'wp_ajax_oam_ajax_logout',array($this, 'oam_ajax_logout') );
 
     }
 
     public static function init() {}
     
+    public function oam_ajax_logout() {
+        wp_logout();            
+        wp_send_json_success();
+    }
     public function custom_redirect_after_registration_based_on_role( $customer_id ) {
         if ( is_admin() || wp_doing_ajax() ) return;
 
