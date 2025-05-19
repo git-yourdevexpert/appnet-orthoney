@@ -751,3 +751,8 @@ document.addEventListener('click', async function (event) {
         });
     }
 });
+
+jQuery(function ($) {
+	
+	$('#profile_consent_field').prop('checked', true);
+});
