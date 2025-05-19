@@ -108,7 +108,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             <span class="step-nav-item <?php echo ($currentStep == 0  AND self::$atts_process_id == 0) ? 'active' : '' ?>" data-step="0">Step 1: Select an Organization</span>
             <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Order Method</span>
             <span class="step-nav-item <?php echo $currentStep == 2 ? 'active' : '' ?>" data-step="2">Step 3: Upload Recipients</span>
-            <span class="step-nav-item <?php echo (($currentStep == 3 OR self::$atts_process_id != 0) ? 'active' : '') ?>" data-step="3">Step 4: Add/Verified Recipients</span>
+            <span class="step-nav-item <?php echo (($currentStep == 3 OR self::$atts_process_id != 0) ? 'active' : '') ?>" data-step="3">Step 4: Add/Edit Recipients</span>
             <span class="step-nav-item <?php echo ($currentStep == 4 OR $currentStep == 5) ? 'active' : '' ?>" data-step="4">Step 5: Verify Address</span>
             <span class="step-nav-item" data-step="5">Step 6: Checkout</span>
         </div>
@@ -344,7 +344,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         <label>
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'select-group' ? 'checked' : '' ?> value="select-group" data-error-message="Please select a delivery preference.">
                                             <span>
-                                                <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/book.png" alt="" class="address-icon">
+                                                <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/book.png" alt="book" class="address-icon">
                                                 Choose from Existing Recipient List 
                                             </span>
                                         </label>
@@ -387,7 +387,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             <div class="button-block">
                 <div>
                     <button type="button" class="back w-btn us-btn-style_2">Back</button>
-                    <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
+                    <button data-href="<?php echo CUSTOMER_DASHBOARD_LINK; ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
                 </div>
                 <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>" class="next w-btn us-btn-style_1" style="float:right">Next</button>
             </div>
@@ -482,7 +482,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             <div class="button-block">
                 <div>
                     <button type="button" class="back w-btn us-btn-style_2">Back</button>
-                    <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
+                    <button data-href="<?php echo CUSTOMER_DASHBOARD_LINK; ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
                 </div>
                 <button type="button" class="submit_csv_file w-btn next-step us-btn-style_1" style="float:right">Next </button>
             </div>
@@ -611,7 +611,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         
                     ?>
                     <div class="button-block">
-                    <button data-href="<?php echo get_permalink(); ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
+                    <button data-href="<?php echo CUSTOMER_DASHBOARD_LINK; ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
                         <?php
                         if ($result['data']['totalCount'] != 0) { 
                         ?>
@@ -701,7 +701,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         echo '</div>';
                         if($result['data']['totalCount'] != 0){
                             echo '<div class="button-block">';
-                            echo '<button data-href="'.get_permalink().'" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>';
+                            echo '<button data-href="'.CUSTOMER_DASHBOARD_LINK.'" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>';
                             echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step">Proceed To CheckOut</button>';
                             echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
                             echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';
