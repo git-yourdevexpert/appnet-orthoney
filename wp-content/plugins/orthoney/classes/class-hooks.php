@@ -33,15 +33,15 @@ class OAM_Hooks {
         $href   = esc_url( $atts['href'] );
         $target = esc_attr( $atts['target'] );
         
-        $loggedin   = is_user_logged_in() ? '1' : '0';
+        $loggedin   = is_user_logged_in() ? 1 : 0;
 
         // Output anchor. The JS looks for .confirmation_link
         return sprintf(
-            '<a class="confirmation_link" href="%1$s" target="%2$s">%3$s</a>',
+        '<a class="confirmation_link" href="%s" target="%s" data-loginstatus="%d">%s</a>',
             $href,
             $target,
-            $title,
-            $loggedin
+            $loggedin,
+            $title
         );
         return ob_get_clean();
     }
