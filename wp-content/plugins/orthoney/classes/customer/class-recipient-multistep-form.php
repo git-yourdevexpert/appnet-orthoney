@@ -291,7 +291,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         value="<?php echo $multiple_address_output ?>" data-error-message="Please choose an option to upload the recipient list.">
                                         <span class="error-message"></span>
                                         <div class="multiple-address-grid">
-                                        <label>
+                                        <label >
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'add-manually' ? 'checked' : '' ?> value="add-manually" data-error-message="Please select a delivery preference."> <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/contract.png" alt="" class="address-icon">
                                                 Enter Details into an Online Form
                                             </span>
@@ -341,7 +341,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     if(!empty($getGroupList)){
                                     ?>
                                         
-                                        <label>
+                                        <label style="display:none">
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'select-group' ? 'checked' : '' ?> value="select-group" data-error-message="Please select a delivery preference.">
                                             <span>
                                                 <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/book.png" alt="book" class="address-icon">
@@ -428,14 +428,14 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     </div>
                                     <ul>
                                         <li>Full Name</li>
-                                        <li>Company Name (column is required, even if it's blank)</li>
+                                        <li>Company Name <br> <small>(column is required, even if it's blank)</small></li>
                                         <li>Mailing address</li>
-                                        <li>Suite/Apt# (column is required, even if it's blank)</li>
+                                        <li>Suite/Apt# <br> <small>(column is required, even if it's blank)</small></li>
                                         <li>City</li>
-                                        <li>State (2 letter abbreviation)</li>
+                                        <li>State <br> <small>(2 letter abbreviation)</small></li>
                                         <li>Zipcode</li>
                                         <li>Quantity</li>
-                                        <li>Greeting (column is required, even if it's blank)</li>
+                                        <li>Greeting <br> <small>(column is required, even if it's blank)</small></li>
                                     </ul>
                                 </div>
                                 <div class="file-title format">
