@@ -2408,7 +2408,7 @@ class OAM_Ajax{
             
 
             OAM_Helper::order_process_recipient_activate_log($wpdb->insert_id, $status, 'manually added' , $method);
-            $success_message = 'Recipient details added successfully!';
+            $success_message = 'Recipient Details Added.';
         }
         
         // Handle the result
