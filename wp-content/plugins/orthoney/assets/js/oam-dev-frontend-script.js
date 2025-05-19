@@ -56,6 +56,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 // General validation for other fields
                 input.value = input.value.replace(/[^a-zA-Z0-9, .]/g, '');
             }
+
+             /* ---------- custom allow-lists ---------- */
+            if (input.id === 'full_name' || input.id === 'company_name' ) {
+                // Allow letters, numbers, space, apostrophe, hyphen, ampersand, dot, comma, parentheses
+                input.value = input.value.replace(/[^0-9a-zA-Z '&.,()-]/g, '');
+            }
+
+            if (input.id === 'address_1' || input.id === 'address_2') {
+                // Same as address plus hash (#)
+                input.value = input.value.replace(/[^0-9a-zA-Z ,.#'&/()-]/g, '');
+            }
+
+            if (input.id === 'city') {
+                // Allow letters, numbers, space, hyphen, apostrophe/okina (` or ’), dot, parentheses
+                input.value = input.value.replace(/[^0-9a-zA-Z \-'.`()]/g, '');
+            }
+            
         });
     });
     

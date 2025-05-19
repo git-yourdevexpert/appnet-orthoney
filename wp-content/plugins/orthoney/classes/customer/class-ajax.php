@@ -2280,7 +2280,7 @@ class OAM_Ajax{
                         $status = 'update';
             
                     OAM_Helper::order_process_recipient_activate_log($recipient_id, $status, wp_json_encode($changes), $method);
-                    $success_message = 'Recipient details updated successfully!';
+                    $success_message = 'Recipient details updated.';
                     if ($result !== false) {
                     wp_send_json_success([
                         'status'       => $status,
@@ -2389,7 +2389,7 @@ class OAM_Ajax{
             $status = 'update';
             
             OAM_Helper::order_process_recipient_activate_log($recipient_id, $status, wp_json_encode($changes), $method);
-            $success_message = 'Recipient details updated successfully!';
+            $success_message = 'Recipient details updated.';
             
         } else {
             // Insert new recipient
