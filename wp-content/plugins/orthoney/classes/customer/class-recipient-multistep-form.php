@@ -428,14 +428,14 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     </div>
                                     <ul>
                                         <li>Full Name</li>
-                                        <li>Company Name <br> <small>(column is required, even if it's blank)</small></li>
+                                        <li>Company Name <br> <small><i>(column is required, even if it's blank)</i></small></li>
                                         <li>Mailing address</li>
-                                        <li>Suite/Apt# <br> <small>(column is required, even if it's blank)</small></li>
+                                        <li>Suite/Apt# <br> <small><i>(column is required, even if it's blank)</i></small></li>
                                         <li>City</li>
-                                        <li>State <br> <small>(2 letter abbreviation)</small></li>
+                                        <li>State <br> <small><i>(2 letter abbreviation)</i></li>
                                         <li>Zipcode</li>
                                         <li>Quantity</li>
-                                        <li>Greeting <br> <small>(column is required, even if it's blank)</small></li>
+                                        <li>Greeting <br> <small><i>(column is required, even if it's blank)</i></small></li>
                                     </ul>
                                 </div>
                                 <div class="file-title format">
