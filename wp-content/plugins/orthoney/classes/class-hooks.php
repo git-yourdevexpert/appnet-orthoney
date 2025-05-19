@@ -22,7 +22,7 @@ class OAM_Hooks {
                 'title'  => __( 'Click me' ),
                 'href'   => '#',
                 'target' => '_self',
-                'text'   => '',
+                'class'   => '',
             ),
             $atts,
             'confirm_link'
@@ -32,12 +32,13 @@ class OAM_Hooks {
         $title  = esc_html( $atts['title'] );
         $href   = esc_url( $atts['href'] );
         $target = esc_attr( $atts['target'] );
+        $class = esc_attr( $atts['class'] );
         
         $loggedin   = is_user_logged_in() ? 1 : 0;
 
         // Output anchor. The JS looks for .confirmation_link
         return sprintf(
-        '<a class="confirmation_link" href="%s" target="%s" data-loginstatus="%d">%s</a>',
+        '<a class="confirmation_link '.$class.'" href="%s" target="%s" data-loginstatus="%d">%s</a>',
             $href,
             $target,
             $loggedin,
