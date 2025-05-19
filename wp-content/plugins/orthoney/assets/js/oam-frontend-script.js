@@ -3020,3 +3020,35 @@ document.addEventListener('DOMContentLoaded', function () {
         switchBackLink.remove();
     }
 });
+
+jQuery(document).ready(function ($) {
+	$(document).on('click', '.confirmation_link', function (e) {
+		e.preventDefault();
+
+		const logoutUrl = $(this).attr('href');
+		const message   = "Clicking this will log you out and redirect you to the Organization Registration page.<br>Do you want to continue?";
+        const loginStatus = $(this).data('loginstatus');
+        if(loginStatus == 0){
+            window.location.href = logoutUrl;
+			return;
+        }
+        
+		Swal.fire({
+			html: message,
+			icon: 'question',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, Proceed',
+			cancelButtonText: 'Cancel',
+            reverseButtons: true,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+		}).then((result) => {
+			if (result.isConfirmed) {
+				window.location.href = logoutUrl;
+			}
+		});
+	});
+});
