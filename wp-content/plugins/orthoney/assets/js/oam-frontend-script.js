@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", initTippy);
   
       function updateButtonStates() {
         const value = parseInt(inputBox.value);
-        minusBtn.disabled = value <= 1;
+        // minusBtn.disabled = value == 1;
         plusBtn.disabled = value >= parseInt(inputBox.max);
       }
   
@@ -1208,7 +1208,7 @@ document.addEventListener('click', function (event) {
                         form.querySelector('#zipcode').value      = zipcode;
                         form.querySelector('#quantity').value = quantity > 0 ? quantity : 1;
                         form.querySelector('#greeting').value     = greeting;
-                        form.querySelector('button[type="submit"]').innerHTML = 'Edit Recipient Details';
+                        form.querySelector('button[type="submit"]').innerHTML = 'Update Recipient Details';
                         form.querySelector('.textarea-div .char-counter span').innerHTML = 250 - form.querySelector('#greeting').value.length;
                     }
                     
@@ -1232,7 +1232,7 @@ document.addEventListener('click', function (event) {
                     setTimeout(function() {
                         lity(event.target.getAttribute('data-popup'));
                         if (event.target.classList.contains('editRecipient')){
-                            form.querySelector('button[type="submit"]').innerHTML = 'Edit Recipient Details';
+                            form.querySelector('button[type="submit"]').innerHTML = 'Update Recipient Details';
                         }else{
                             form.querySelector('[type="submit"]').innerHTML = 'Add Recipient to Cart';
                         }
