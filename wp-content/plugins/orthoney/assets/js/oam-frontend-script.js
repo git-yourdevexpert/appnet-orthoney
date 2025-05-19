@@ -2190,8 +2190,7 @@ function order_filter_main_order(){
               <label class="yearblock">
                 Order Year:
                 <select id="select-year" class="form-control">
-                <option value="">Select year</option>
-
+                <option value="">All Years</option>
                 </select>
             </label>
              
@@ -2615,7 +2614,7 @@ const tabletype =  $('#customer-orders-table').data('tabletype');
                 <label class="yearblock">
                     Order Year:
                     <select id="jars-select-year" class="form-control">
-                    <option value="">Select year</option>
+                    <option value="">All Years</option>
                     </select>
                 </label>
                 <label class="customer-select-filter">
@@ -2689,7 +2688,7 @@ const tabletype =  $('#customer-orders-table').data('tabletype');
             //     table.ajax.reload();
             // });
              $(document).on('click', '.jar_filter_btton', function () {
-                 value = jQuery('#customer-jar-orders_filter input[type=search]').val();
+                 value = jQuery('#customer-jar-orders-table_filter input[type=search]').val();
  
                         table.search(value).draw();
             });
@@ -2699,9 +2698,6 @@ const tabletype =  $('#customer-orders-table').data('tabletype');
                     $('#jar-select-customer').val(''); // Set default
                     $('.jar-search-by-organization').val(''); // Set default   
                     jQuery('#customer-jar-orders-table_filter input[type="search"]').val('');
-
-                    
-
                      
                     const min = $("#jar-slider-range").slider("option", "min");
                     const max = $("#jar-slider-range").slider("option", "max");

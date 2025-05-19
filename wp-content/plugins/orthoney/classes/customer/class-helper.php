@@ -201,7 +201,7 @@ class OAM_Helper{
         $max_qty = isset($_REQUEST['selected_max_qty']) && is_numeric($_REQUEST['selected_max_qty']) ? (int) $_REQUEST['selected_max_qty'] : 1000;
         $selected_customer_id = isset($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id']) ? (int) $_REQUEST['selected_customer_id'] : '';
         $search_val = isset($_REQUEST['search']['value']) ? trim(sanitize_text_field($_REQUEST['search']['value'])) : '';
-        $selected_year = isset($_REQUEST['selected_year']) && is_numeric($_REQUEST['selected_year']) ? (int) $_REQUEST['selected_year'] : 2025;
+        $selected_year = isset($_REQUEST['selected_year']) && is_numeric($_REQUEST['selected_year']) ? (int) $_REQUEST['selected_year'] : '';
 
         $where_clauses = [];
         $params = [];
@@ -212,8 +212,10 @@ class OAM_Helper{
         $params[] = $max_qty;
 
         // Year filter
-        $where_clauses[] = "YEAR(created_date) = %d";
-        $params[] = $selected_year;
+        if (!empty($_REQUEST['selected_year'])) {
+            $where_clauses[] = "YEAR(created_date) = %d";
+            $params[] = $selected_year;
+        }
 
         if (!empty($_REQUEST['search_by_organization'])) {
             $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
@@ -251,7 +253,7 @@ class OAM_Helper{
         $params[] = $limit;
         $params[] = $page;
 
-        $sql = $wpdb->prepare(
+       $sql = $wpdb->prepare(
             "
             SELECT 
                 recipient_order_id AS jar_no,
@@ -355,13 +357,18 @@ class OAM_Helper{
         if (!empty($search_term)) {
             if ($tabletype == 'administrator-dashboard') {
                 $join .= " LEFT JOIN {$wpdb->users} AS u ON u.ID = orders.customer_id";
-                $where_conditions[] = "u.display_name LIKE %s";
+                $where_conditions[] = "(orders.id = %d OR rec.order_id = %d OR rec.wc_order_id = %d OR u.display_name LIKE %s )";
+                $where_values[] = absint( $search_term ); 
+                $where_values[] = absint( $search_term ); 
+                $where_values[] = absint( $search_term ); 
                 $where_values[] = '%' . $wpdb->esc_like($search_term) . '%';
             }else{
-               // echo 'asdasdasdasd';
+                
                 $join .= " LEFT JOIN $order_addresses AS addr ON addr.order_id = orders.id AND addr.address_type = 'billing'";
-                $where_conditions[] = "(orders.id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s)";
-                $where_values[] = $search_term;
+                $where_conditions[] = "(orders.id = %d OR rec.order_id = %d OR rec.wc_order_id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s)";
+                $where_values[] = absint( $search_term ); 
+                $where_values[] = absint( $search_term );
+                $where_values[] = absint( $search_term );
                 $where_values[] = '%' . $wpdb->esc_like($search_term) . '%';
             }
         }

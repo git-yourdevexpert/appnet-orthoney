@@ -2644,14 +2644,18 @@ class OAM_Ajax{
 
         if (!empty($search)) {
             if ($tabletype == 'administrator-dashboard') {
-                 $join .= " LEFT JOIN {$wpdb->users} AS u ON u.ID = orders.customer_id";
+                 $join .= " LEFT JOIN {$wpdb->users} AS u ON u.ID = orders.customer_id OR addr.order_id = %d OR addr.wc_order_id = %d";
                 $where[] = "u.display_name LIKE %s";
                 $values[] = '%' . $wpdb->esc_like($search) . '%';
+                $where_values[] = absint( $search_term ); 
+                $where_values[] = absint( $search_term ); 
             }else{
                 $join .= " LEFT JOIN $order_addresses AS addr ON addr.order_id = orders.id AND addr.address_type = 'billing'";
-                $where[] = "(orders.id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s)";
+                $where[] = "(orders.id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s OR addr.order_id = %d OR addr.wc_order_id = %d)";
                 $values[] = (int) $search;
                 $values[] = '%' . $wpdb->esc_like($search) . '%';
+                $where_values[] = absint( $search_term ); 
+                $where_values[] = absint( $search_term ); 
             }
         }
 
@@ -2735,15 +2739,18 @@ class OAM_Ajax{
 
         $min_qty = is_numeric($_REQUEST['selected_min_qty'] ?? null) ? (int) $_REQUEST['selected_min_qty'] : 1;
         $max_qty = is_numeric($_REQUEST['selected_max_qty'] ?? null) ? (int) $_REQUEST['selected_max_qty'] : 1000;
-        $year = is_numeric($_REQUEST['selected_year'] ?? null) ? (int) $_REQUEST['selected_year'] : date("Y");
+        $year = is_numeric($_REQUEST['selected_year'] ?? null) ? (int) $_REQUEST['selected_year'] : '';
         $selected_customer_id = is_numeric($_REQUEST['selected_customer_id'] ?? null) ? (int) $_REQUEST['selected_customer_id'] : null;
 
         $where[] = "quantity BETWEEN %d AND %d";
         $values[] = $min_qty;
         $values[] = $max_qty;
 
-        $where[] = "YEAR(created_date) = %d";
-        $values[] = $year;
+
+        if (!empty($_REQUEST['selected_year'])) {
+            $where[] = "YEAR(created_date) = %d";
+            $values[] = $year;
+        }
 
         if (!empty($_REQUEST['search_by_organization'])) {
             $search_org = sanitize_text_field($_REQUEST['search_by_organization']);
