@@ -465,12 +465,7 @@ document.addEventListener("DOMContentLoaded", function () {
           const verified_table = document.querySelector("#verified-block"); // Select a single element
     
           let html = ``;
-          if (!unverifiedButton && verifiedButton) {
-            html = `All submitted addresses are verified`;
-          }
-          if (unverifiedButton && !verifiedButton) {
-            html = `All submitted addresses are unverified`;
-          }
+          
 
           let unverifiedCount = 0;
           let verifiedCount = 0;
@@ -480,10 +475,15 @@ document.addEventListener("DOMContentLoaded", function () {
           if (verifiedButton) {
             verifiedCount = verified_table.getAttribute("data-count");
           }
-           
-    
+
+          if (parseInt(unverifiedCount) == 0 && parseInt(verifiedCount) != 0) {
+            html = `All submitted addresses are verified`;
+          }
+          if (parseInt(unverifiedCount) != 0 && parseInt(verifiedCount) == 0) {
+            html = `All submitted addresses are unverified`;
+          }
          
-          if (unverifiedButton || verifiedButton) {
+          if (html == '') {
             html = `Out of the ${(parseInt(verifiedCount) + parseInt(unverifiedCount))} submitted addresses`;
             if(verifiedButton == 1){
               html +=`, ${(parseInt(verifiedCount))}  has been successfully verified.`;
@@ -493,7 +493,6 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           
-
             html += `<div class='exceptions'><strong>Exceptions: </strong><ul>`;
             
             html += `<li><span>Verified Addresses: </span> ${verifiedCount}</li>`;
@@ -520,21 +519,16 @@ document.addEventListener("DOMContentLoaded", function () {
             reverseButtons: true,
             width: "970px",
             willOpen: () => {
-              if (unverifiedButton) {  
+              if (parseInt(unverifiedCount) != 0 && parseInt(verifiedCount) == 0) {
                 Swal.getConfirmButton().style.display = "inline-block";
-          
-                // if (unverifiedButton && !verifiedButton) {
-                //   Swal.getConfirmButton().textContent = "Yes, Proceed"; 
-                // }
-              }
-          
-              if (verifiedButton) {  
+                Swal.getConfirmButton().textContent = "Yes, Proceed (" + parseInt(unverifiedCount)  + ")"; 
+              } else if (parseInt(unverifiedCount) == 0 && parseInt(verifiedCount) != 0) {
                 Swal.getDenyButton().style.display = "inline-block";
+                Swal.getDenyButton().textContent = "Yes, Proceed(" + (parseInt(verifiedCount) + parseInt(unverifiedCount)) + ")"; 
                 
-                // if (!unverifiedButton && verifiedButton) {
-                //   // Swal.getConfirmButton().textContent = "Yes, Proceed"; 
-                //   Swal.getDenyButton().textContent = "Yes, Proceed"; 
-                // }
+              }else{
+                 Swal.getConfirmButton().style.display = "inline-block";
+                 Swal.getDenyButton().style.display = "inline-block";
               }
             },
           });
