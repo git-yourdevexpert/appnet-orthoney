@@ -3518,7 +3518,22 @@ body.woocommerce-account .woocommerce-change-password-wrapper textarea{
      font-weight:700;
      color:var(--color-content-link)
 }
-
+.user-registration .login a.custom-signup-link {font-size: 13px;
+    line-height: 1.2 !important;
+    font-weight: 600;
+    font-style: normal;
+    letter-spacing: 0.02em;
+    border-radius: 4px;
+    padding: 1.2em 2.4em;
+    background: var(--color-content-secondary);
+    border-color: transparent;
+    color: #ffffff !important;
+    display: block;
+    width: 100%;
+    text-align: CENTER;}
+ .user-registration .login a.custom-signup-link:hover{
+   background-color: var(--color-header-middle-text-hover);
+ }   
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
