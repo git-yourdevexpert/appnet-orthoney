@@ -3518,7 +3518,7 @@ body.woocommerce-account .woocommerce-change-password-wrapper textarea{
      font-weight:700;
      color:var(--color-content-link)
 }
-.user-registration.login a.custom-signup-link {font-size: 13px;
+.user-registration .login a.custom-signup-link {font-size: 13px;
     line-height: 1.2 !important;
     font-weight: 600;
     font-style: normal;
