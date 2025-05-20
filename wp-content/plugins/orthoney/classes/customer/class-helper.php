@@ -1480,7 +1480,7 @@ class OAM_Helper{
              . http_build_query([
                  'auth-id'    => $auth_id,
                  'auth-token' => $auth_token,
-                 'street'     => trim($delivery_line_2 . ' ' . $delivery_line_1),
+                 'street'     => trim($delivery_line_1 . ' ' . $delivery_line_2),
                  'city'       => $city,
                  'state'      => $state,
                  'zipcode'    => $zipcode,
@@ -1502,7 +1502,29 @@ class OAM_Helper{
         if (empty($data)) {
             $response = ['success' => false, 'message' => 'Invalid address.'];
         }
-    
+
+        if(!empty($data[0]['components'])){
+            if ($city !== $data[0]['components']['city_name']) {
+                $response = [
+                    'success' => false,
+                    'message' => 'Provided city is invalid. Vallid city is <span style="color: #6BBE56;">'.$data[0]['components']['city_name'].'</span>'
+                ];
+                return json_encode($response);
+            } elseif ($state !== $data[0]['components']['state_abbreviation']) {
+                $response = [
+                    'success' => false,
+                    'message' => 'Provided state is invalid. Vallid state is <span style="color: #6BBE56;">'.$data[0]['components']['state_abbreviation'].'</span>'
+                ];
+                return json_encode($response);
+            } elseif ($zipcode !== $data[0]['components']['zipcode']) {
+                $response = [
+                    'success' => false,
+                    'message' => 'Provided zipcode is invalid. Vallid zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'</span>'
+                ];
+                return json_encode($response);
+            }
+        }
+       
         // Extract DPV match code
         $dpv_match_code = $data[0]['analysis']['dpv_match_code'] ?? '';
     
