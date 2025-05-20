@@ -92,9 +92,9 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         }
 
         // Ensure the current user has permission to switch users.
-        if (!current_user_can('switch_users')) {
-            wp_send_json(['success' => false, 'message' => 'You do not have permission to switch users.']);
-        }
+        // if (!current_user_can('switch_users')) {
+        //     wp_send_json(['success' => false, 'message' => 'You do not have permission to switch users.']);
+        // }
 
         $user = get_user_by('ID', $user_id);
 
