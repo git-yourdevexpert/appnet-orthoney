@@ -792,166 +792,136 @@ class OAM_Ajax{
 	 * @return JSON 
      * 
 	 */ 
-    public function orthoney_order_step_process_completed_ajax_handler() {
-        check_ajax_referer('oam_nonce', 'security');
-        global $wpdb;
-    
-        $order_process_table           = OAM_Helper::$order_process_table;
-        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
-        $duplicate  = isset($_POST['duplicate']) ? intval($_POST['duplicate']) : 1;
-        
-        $address_list = [];
-        $address_ids = [];
-        $process_id  = isset($_POST['pid']) ? intval($_POST['pid']) : 0;
-        $group_id    = isset($_POST['group_id']) ? intval($_POST['group_id']) : 0;
-        $user        = get_current_user_id();
-        $stepData    = $_POST ?? [];
-        $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
-    
-        if ($process_id === 0) {
-            wp_send_json_error(['message' => 'Invalid Process ID.']);
-        }
-    
-        // Update order process table
-        $result = $wpdb->update(
-            $order_process_table,
-            [
-                'data' => wp_json_encode($stepData),
-                'step' => sanitize_text_field($currentStep),
-            ],
-            ['id' => $process_id]
-        );
-    
-        if ($result === false) {
-            wp_send_json_error(['message' => 'Database update failed.']);
-        }
-    
-        // Verify recipient addresses if group_id is provided
-        if ($process_id) {
-            $recipients = $wpdb->get_results(
-                $wpdb->prepare(
-                    "SELECT id, address_1, address_2, city, state, zipcode FROM {$order_process_recipient_table} 
-                     WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d",
-                    $user, $process_id, 1, 1
-                )
-            );
-        
-            //
-            // if($duplicate == 0){
-            //     foreach ($recipients as $recipient) {
-            //         // Create unique key for comparison
-            //         $key = $recipient->full_name . '|' . 
-            //                 str_replace($recipient->address_1, ',' , '' ). ' ' . str_replace($recipient->address_2 , ',' , '') . '|' . 
-            //             $recipient->city . '|' . 
-            //             $recipient->state . '|' . 
-            //             $recipient->zipcode;
-                    
-            //         // Store record in the map
-            //         if (!isset($recordMap[$key])) {
-            //             $recordMap[$key] = [];
-            //         }
-            //         $recordMap[$key][] = $recipient;
-            //     }
-        
-            //     foreach ($recordMap as $key => $records) {
-            //         if (count($records) > 1) {
-            //             // This is a group of duplicates
-            //             $duplicateGroups[] = $records;
-            //         } else {
-            //             $address_list[] = $records;
-            //         }
-            //     }
-            // }else{
-            
-                
-            // }    
+   public function orthoney_order_step_process_completed_ajax_handler() {
+    check_ajax_referer('oam_nonce', 'security');
+    global $wpdb;
 
-            foreach ($recipients as $recipient) {
-                $street = trim(($recipient->address_1 ?? '') . ' ' . ($recipient->address_2 ?? ''));
-                $address_list[] = [
-                    "input_id"   => $recipient->id,
-                    "street"     => $street ?? '',
-                    "city"       => $recipient->city ?? '',
-                    "state"      => $recipient->state ?? '',
-                    "zipcode"    => $recipient->zipcode ?? '',
-                    "candidates" => 10,
-                    'match'      => 'invalid',
-                    'geocode'    => true,
-                ];
-            }
-            // Process addresses in chunks of 80
-            $chunk_size = 80;
-            $address_chunks = array_chunk($address_list, $chunk_size);
-            $delay_time = 2; // Adjustable delay time in seconds
-    
-            foreach ($address_chunks as $index => $chunk) {
-               
-                // Call API with the current chunk
-                $multi_validate_address = OAM_Helper::multi_validate_address($chunk);
-    
-              
-                // Check if the API response is valid
-                if (empty($multi_validate_address) || !is_string($multi_validate_address)) {
-                    error_log("Address validation API failed or returned an invalid response.");
-                    continue; // Skip this chunk if API response is invalid
-                }
-    
-                $multi_validate_address_result = json_decode($multi_validate_address, true);
-    
-                 
-                if (!empty($multi_validate_address_result)) {
-                    foreach ($multi_validate_address_result as $data) {
-                        $pid = $data['input_id'];
+    $order_process_table           = OAM_Helper::$order_process_table;
+    $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+    $duplicate  = isset($_POST['duplicate']) ? intval($_POST['duplicate']) : 1;
+
+    $address_list = [];
+    $process_id  = isset($_POST['pid']) ? intval($_POST['pid']) : 0;
+    $user        = get_current_user_id();
+    $stepData    = $_POST ?? [];
+    $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
+
+    if ($process_id === 0) {
+        wp_send_json_error(['message' => 'Invalid Process ID.']);
+    }
+
+    // Update order process table
+    $result = $wpdb->update(
+        $order_process_table,
+        [
+            'data' => wp_json_encode($stepData),
+            'step' => sanitize_text_field($currentStep),
+        ],
+        ['id' => $process_id]
+    );
+
+    if ($result === false) {
+        wp_send_json_error(['message' => 'Database update failed.']);
+    }
+
+    // Verify recipient addresses if process_id is valid
+    $recipients = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT id, address_1, address_2, city, state, zipcode FROM {$order_process_recipient_table} 
+             WHERE user_id = %d AND pid = %d AND visibility = %d AND verified = %d",
+            $user, $process_id, 1, 1
+        )
+    );
+
+    foreach ($recipients as $recipient) {
+        $street = trim(($recipient->address_1 ?? '') . ' ' . ($recipient->address_2 ?? ''));
+        $address_list[] = [
+            "input_id"   => $recipient->id,
+            "street"     => $street,
+            "city"       => $recipient->city ?? '',
+            "state"      => $recipient->state ?? '',
+            "zipcode"    => $recipient->zipcode ?? '',
+            "candidates" => 10,
+            'match'      => 'invalid',
+            'geocode'    => true,
+        ];
+    }
+
+    // Process addresses in chunks
+    $chunk_size = 80;
+    $address_chunks = array_chunk($address_list, $chunk_size);
+    $delay_time = 2; // Delay in seconds
+
+    foreach ($address_chunks as $index => $chunk) {
+        // Call API
+        $multi_validate_address = OAM_Helper::multi_validate_address($chunk);
+
+        // Check if the API response is valid
+        if (empty($multi_validate_address) || !is_string($multi_validate_address)) {
+            error_log("Address validation API failed or returned an invalid response.");
+            continue;
+        }
+
+        $multi_validate_address_result = json_decode($multi_validate_address, true);
+
+        if (!empty($multi_validate_address_result)) {
+            foreach ($multi_validate_address_result as $i => $data) {
+                $pid = $data['input_id'];
+                $success = true;
+                $message = '';
+                $dpv_match_code = $data['analysis']['dpv_match_code'] ?? '';
+                $components = $data['components'] ?? [];
+
+                $original = $chunk[$i] ?? [];
+
+                if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {
+                    if (!empty($components)) {
+                        if (($original['city'] ?? '') !== ($components['city_name'] ?? '')) {
+                            $message = 'Provided city is invalid. Valid city is <span style="color: #6BBE56;">' . esc_html($components['city_name']) . '</span>';
+                            $success = false;
+                        } elseif (($original['state'] ?? '') !== ($components['state_abbreviation'] ?? '')) {
+                            $message = 'Provided state is invalid. Valid state is <span style="color: #6BBE56;">' . esc_html($components['state_abbreviation']) . '</span>';
+                            $success = false;
+                        } elseif (($original['zipcode'] ?? '') !== ($components['zipcode'] ?? '')) {
+                            $message = 'Provided zipcode is invalid. Valid zipcode is <span style="color: #6BBE56;">' . esc_html($components['zipcode']) . '</span>';
+                            $success = false;
+                        }
+                    }
+                } else {
+                    $message = 'Invalid address format.';
+                    $dpv_footnotes = $data['analysis']['footnotes'] ?? '';
+                    if (!empty($dpv_footnotes)) {
+                        $message = OAM_Helper::addressCorrections($dpv_footnotes);
                         $success = false;
-                        $message = '';
-                        $dpv_match_code = $data['analysis']['dpv_match_code'] ?? '';
-
-                         if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {
-                                if(!empty($data[0]['components'])){
-                                    if ($city !== $data[0]['components']['city_name']) {
-                                        $message = 'Provided city is invalid. Vallid city is <span style="color: #6BBE56;">'.$data[0]['components']['city_name'].'</span>';
-                                    } elseif ($state !== $data[0]['components']['state_abbreviation']) {
-                                        $message = 'Provided state is invalid. Vallid state is <span style="color: #6BBE56;">'.$data[0]['components']['state_abbreviation'].'</span>';
-
-                                    } elseif ($zipcode !== $data[0]['components']['zipcode']) {
-                                        $message =  'Provided zipcode is invalid. Vallid zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'</span>';
-                                    }
-                                }
-                                $success = true;
-                                
-                            }else{
-                                $message = 'Invalid address format.';
-                                $dpv_footnotes = $data[0]['analysis']['footnotes'] ?? '';
-                                if ($dpv_footnotes !== '' && !empty($dpv_footnotes)) {
-                                    $message = self::addressCorrections($dpv_footnotes);
-                                }
-                            }
-                        
-                            if ($success === false) {
-                                $update_result = $wpdb->update(
-                                    $order_process_recipient_table,
-                                    ['address_verified' => intval(1)],
-                                    ['id' => $pid]
-                                );
-        
-                                if ($update_result === false) {
-                                    error_log("Failed to update address verification for ID: $pid");
-                                }
-                            }
-
                     }
                 }
-    
-                // Add delay between chunks (except after the last chunk)
-                if ($index < count($address_chunks) - 1) {
-                    sleep($delay_time);
+
+                if ($success === true) {
+                    $update_result = $wpdb->update(
+                        $order_process_recipient_table,
+                        ['address_verified' => 1],
+                        ['id' => $pid]
+                    );
+
+                    if ($update_result === false) {
+                        error_log("Failed to update address verification for ID: $pid");
+                    }
                 }
+               
+                // You can optionally log $message or store it elsewhere
             }
         }
 
-        wp_send_json_success(['message' => 'Process completed successfully.']);
-        wp_die();
+        // Delay between chunks except the last
+        if ($index < count($address_chunks) - 1) {
+            sleep($delay_time);
+        }
     }
+
+
+    wp_send_json_success(['message' => 'Process completed successfully.']);
+}
+
     
     /**
 	 * Ajax handle function that Upload CSV file temp recipients
