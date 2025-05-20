@@ -1863,7 +1863,7 @@ jQuery(document).ready(function($) {
     if (path === '/login/') {
         linkHtml = '<a class="custom-signup-link" href="/registration/">Click Here to Create an Account</a>';
     } else if (path === '/organization-login/') {
-        linkHtml = '<a class="custom-signup-link" href="/organization-registration/">Click Here to Create an Organization Account</a>';
+        linkHtml = '<a class="custom-signup-link" href="/organization-registration/">Click Here to Create an Account</a>';
     }
 
     if (linkHtml) {
