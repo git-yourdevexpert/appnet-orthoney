@@ -1503,33 +1503,35 @@ class OAM_Helper{
             $response = ['success' => false, 'message' => 'Invalid address.'];
         }
 
-        if(!empty($data[0]['components'])){
-            if ($city !== $data[0]['components']['city_name']) {
-                $response = [
-                    'success' => false,
-                    'message' => 'Provided city is invalid. Vallid city is <span style="color: #6BBE56;">'.$data[0]['components']['city_name'].'</span>'
-                ];
-                return json_encode($response);
-            } elseif ($state !== $data[0]['components']['state_abbreviation']) {
-                $response = [
-                    'success' => false,
-                    'message' => 'Provided state is invalid. Vallid state is <span style="color: #6BBE56;">'.$data[0]['components']['state_abbreviation'].'</span>'
-                ];
-                return json_encode($response);
-            } elseif ($zipcode !== $data[0]['components']['zipcode']) {
-                $response = [
-                    'success' => false,
-                    'message' => 'Provided zipcode is invalid. Vallid zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'</span>'
-                ];
-                return json_encode($response);
-            }
-        }
+        
        
         // Extract DPV match code
         $dpv_match_code = $data[0]['analysis']['dpv_match_code'] ?? '';
     
         // Check DPV match code for validity
         if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {
+            if(!empty($data[0]['components'])){
+                if ($city !== $data[0]['components']['city_name']) {
+                    $response = [
+                        'success' => false,
+                        'message' => 'Provided city is invalid. Vallid city is <span style="color: #6BBE56;">'.$data[0]['components']['city_name'].'</span>'
+                    ];
+                    return json_encode($response);
+                } elseif ($state !== $data[0]['components']['state_abbreviation']) {
+                    $response = [
+                        'success' => false,
+                        'message' => 'Provided state is invalid. Vallid state is <span style="color: #6BBE56;">'.$data[0]['components']['state_abbreviation'].'</span>'
+                    ];
+                    return json_encode($response);
+                } elseif ($zipcode !== $data[0]['components']['zipcode']) {
+                    $response = [
+                        'success' => false,
+                        'message' => 'Provided zipcode is invalid. Vallid zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'</span>'
+                    ];
+                    return json_encode($response);
+                }
+            }
+
             $response = ['success' => true, 'message' => 'Valid and deliverable address.'];
         }else{
             $message = 'Invalid address format.';
@@ -1600,34 +1602,6 @@ class OAM_Helper{
                 'X#'  => 'Default Unique ZIP Code',
                 'Y#'  => 'Military match',
                 'Z#'  => 'Matched with ZIPMOVE',
-                // Secondary Set
-                'AA' => 'Street name, city, state, and ZIP are all valid.',
-                'A1' => 'Address not present in USPS data.',
-                'BB' => 'Entire address is valid.',
-                'CC' => 'The submitted secondary information (apartment, suite, etc.) was not recognized. Secondary number is NOT REQUIRED for delivery.',
-                'C1' => 'The submitted secondary information (apartment, suite, etc.) was not recognized. Secondary number IS REQUIRED for delivery.',
-                'F1' => 'Military or diplomatic address',
-                'G1' => 'General delivery address',
-                'M1' => 'Primary number (e.g., house number) is missing.',
-                'M3' => 'Primary number (e.g., house number) is invalid.',
-                'N1' => 'Address is missing secondary information (apartment, suite, etc.) which IS REQUIRED for delivery..',
-                'PB' => 'PO Box street style address.',
-                'P1' => 'PO, RR, or HC box number is missing.',
-                'P3' => 'PO, RR, or HC box number is invalid.',
-                'RR' => 'Confirmed address with private mailbox (PMB) info.',
-                'R1' => 'Confirmed address without private mailbox (PMB) info.',
-                'R7' => "Confirmed as a valid address that doesn't currently receive US Postal Service street delivery.",
-                'TA' => 'Primary number was matched by dropping trailing alpha.',
-                'U1' => 'Address has a "unique" ZIP Code.',
-
-                // New additions
-                'AABB'     => 'ZIP, state, city, street name, and primary number match.',
-                'AABBCC'   => 'ZIP, state, city, street name, and primary number match, but secondary does not. A secondary is not required for delivery.',
-                'AAC1'     => 'ZIP, state, city, street name, and primary number match, but secondary does not. A secondary is required for delivery.',
-                'AAM1'     => 'ZIP, state, city, and street name match, but the primary number is missing.',
-                'AAM3'     => 'ZIP, state, city, and street name match, but the primary number is invalid.',
-                'AAN1'     => 'ZIP, state, city, street name, and primary number match, but there is secondary information such as apartment or suite that would be helpful.',
-                'AABBR1'   => 'ZIP, state, city, street name, and primary number match. Address confirmed without private mailbox (PMB) info.',
             ];
 
             $message = 'Invalid address format.';
