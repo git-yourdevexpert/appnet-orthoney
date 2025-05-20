@@ -3531,7 +3531,7 @@ body.woocommerce-account .woocommerce-change-password-wrapper textarea{
     display: block;
     width: 100%;
     text-align: CENTER;}
- .user-registration.login a.custom-signup-link:hover{
+ .user-registration .login a.custom-signup-link:hover{
    background-color: var(--color-header-middle-text-hover);
  }   
 /* responsive */
