@@ -2687,28 +2687,27 @@ const tabletype =  $('#customer-orders-table').data('tabletype');
             // $(document).on('change', '#jar-select-customer, #jars-select-year', function () {
             //     table.ajax.reload();
             // });
-             $(document).on('click', '.jar_filter_btton', function () {
+            $(document).on('click', '.jar_filter_btton', function () {
                  value = jQuery('#customer-jar-orders-table_filter input[type=search]').val();
- 
-                        table.search(value).draw();
+                 table.search(value).draw();
             });
-               $(document).on('click', '.jar_reset_btton', function () {
-                  const currentYear = new Date().getFullYear();
-                    $('#jars-select-year').val(currentYear); // Set default
-                    $('#jar-select-customer').val(''); // Set default
-                    $('.jar-search-by-organization').val(''); // Set default   
-                    jQuery('#customer-jar-orders-table_filter input[type="search"]').val('');
-                     
-                    const min = $("#jar-slider-range").slider("option", "min");
-                    const max = $("#jar-slider-range").slider("option", "max");
-                    $("#jar-slider-range").slider("values", [min, max]);
-                    $("#jar_quantity_range").val(min + " - " + max); // update display, if applicable
+
+            jQuery(document).on('click', '.jar_reset_btton', function ($) {
+                const currentYear = new Date().getFullYear();
+                jQuery('#jars-select-year').val(currentYear); // Set default
+                jQuery('#jar-select-customer').val(''); // Set default
+                jQuery('.jar-search-by-organization').val(''); // Set default   
+                jQuery('#customer-jar-orders-table_filter input[type="search"]').val('');
+                
+                const min = jQuery("#jar-slider-range").slider("option", "min");
+                const max = jQuery("#jar-slider-range").slider("option", "max");
+                jQuery("#jar-slider-range").slider("values", [min, max]);
+                jQuery("#jar_quantity_range").val(min + " - " + max); // update display, if applicable
+                setTimeout(() => {
+                   table.search('').columns().search('').draw();
                     
-                table.ajax.reload();
+                }, 1000);
             });
-
-             
-
 
             const yearSelect = document.getElementById('jars-select-year');
             const startYear = new Date().getFullYear();
@@ -2780,6 +2779,7 @@ function jarfilter_trigger(jarOrderId,year) {
         $yearSelect.val(year).trigger('change'); // Trigger 'change' to make sure any event listeners react
     }
     
+    jQuery('.jar_filter_btton').click();
     jQuery('#sub_order_order').click();
     
 }

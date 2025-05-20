@@ -561,7 +561,12 @@ class OAM_Helper{
         }
     
         $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id));
-    
+        $total_recipient = '';
+        if($jarsorder_count != 0){
+           $total_recipient = "<a id='".$jar_order_id."' onclick='jarfilter_trigger(\"$jar_order_id\", \"$year\")' class='filter-jar-order-by-wc-order ".$year."' href='javascript:;'>".$jarsorder_count."</a>";
+        }else{
+            $total_recipient = '-';
+        }
         return [
             'jar_no' => esc_html($order_data->id),
             'order_no' => ($order_data->parent_order_id == 0) ? $order_data->id : $order_data->parent_order_id,
@@ -570,7 +575,7 @@ class OAM_Helper{
             'shipping_name' => esc_html($shipping_name),
             'affiliate_code' => esc_html($referral_id),
             'total_jar' => esc_html($total_quantity),
-            'total_recipient' => "<a id='".$jar_order_id."' onclick='jarfilter_trigger(\"$jar_order_id\", \"$year\")' class='filter-jar-order-by-wc-order ".$year."' href='javascript:;'>".$jarsorder_count."</a>",
+            'total_recipient' => $total_recipient,
 
            // 'total_recipient' => "<a id=".$jar_order_id." onclick='jarfilter_trigger(\"$jar_order_id\")' class='filter-jar-order-by-wc-order' href='javascript:;'>".$jarsorder_count."</a>",
             //'type' => esc_html($order_type),
