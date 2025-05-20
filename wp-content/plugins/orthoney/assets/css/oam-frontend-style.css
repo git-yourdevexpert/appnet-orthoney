@@ -265,6 +265,7 @@
 .select2-container--default .selection .select2-selection--single .select2-selection__rendered {
   color: #333;
   line-height: 38px;
+  text-align: left;
   padding: 0;
 }
 .select2-container--default .selection .select2-selection--single .select2-selection__clear {
