@@ -209,9 +209,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-   
-
-    
+  
 
     document
       .querySelectorAll("#multiStepForm .next-with-ortHoney-affiliates")
@@ -219,6 +217,10 @@ document.addEventListener("DOMContentLoaded", function () {
         button.addEventListener("click", function (event) {
           event.preventDefault();
 
+          
+          const organization_data_show= document.querySelector('.organization_data_show .organization_value');
+          organization_data_show.innerHTML = 'Honey from the Heart';
+          
           // Find the selected value (assuming it comes from a radio or dropdown within the form)
           let selectedAffiliate = "Orthoney";
 
