@@ -511,7 +511,7 @@ document.addEventListener("DOMContentLoaded", function () {
             denyButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             confirmButtonText: "Proceed With All Recipients (" + (parseInt(verifiedCount) + parseInt(unverifiedCount)) + ")",
-            cancelButtonText: "No, I Want to Update/Fix Errors",
+            cancelButtonText: "I Want to Update/Fix Errors",
             denyButtonText: "Proceed With Only Verified Recipients (" + parseInt(unverifiedCount)  + ")",
             allowOutsideClick: false,
             allowEscapeKey: false,
@@ -910,7 +910,7 @@ document.addEventListener("DOMContentLoaded", function () {
             denyButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             confirmButtonText: "Proceed With Duplicate Recipients ("+ ((parseInt(totalCount) -  parseInt(failCount) - parseInt(duplicateFailCount))) + ")",
-            cancelButtonText: "No, I Want to Update/Fix Errors",
+            cancelButtonText: "I Want to Update/Fix Errors",
             denyButtonText: "Proceed Without Duplicate Recipients ("+ ((parseInt(totalCount) - parseInt(duplicateCount) - parseInt(failCount))) + ")",
             allowOutsideClick: false,
             allowEscapeKey: false,
@@ -1853,3 +1853,8 @@ function addRecipientManuallyPopup(reload) {
     });
   }
 }
+
+
+jQuery(document).ready(function($) {
+    $('.ur-frontend-form.login  .user-registration-Button').before('<a class="custom-signup-link" href="/registration/">Click Here to Create an Account</a>');
+});

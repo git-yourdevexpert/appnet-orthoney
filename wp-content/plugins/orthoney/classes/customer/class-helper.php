@@ -804,7 +804,7 @@ class OAM_Helper{
                         if($data->address_verified == 0){
                             // $html .= '<button class="reverifyAddress w-btn us-btn-style_1" style="padding:10px"><small>Reverify Address</small></button>';
                         }
-                        $html .= ($data->address_verified == 0 ? ' <button class="editRecipient far fa-edit" data-tippy="Edit Recipient Details" data-popup="#recipient-manage-popup" data-address_verified="1"></button>' : '') .'<button data-recipientname="'.$data->full_name.'" class="deleteRecipient far fa-trash" data-tippy="Remove Recipient"></button>';
+                        $html .=  ' <button class="editRecipient far fa-edit" data-tippy="update Recipient Details" data-popup="#recipient-manage-popup" data-address_verified="1"></button>' .'<button data-recipientname="'.$data->full_name.'" class="deleteRecipient far fa-trash" data-tippy="Remove Recipient"></button>';
                         $html .= '</td>';
                         
                     }else{
@@ -812,7 +812,7 @@ class OAM_Helper{
                         if($duplicate == 1){
                             $html .= '<button class="keep_this_and_delete_others" data-recipientname="'.$data->full_name.'"  data-popup="#recipient-manage-popup" data-tippy="Keep this and delete others">Keep this and delete others</button>';
                         }
-                        $html .= '<button class="viewRecipient far fa-eye" data-tippy="View Recipient Details" data-popup="#recipient-view-details-popup"></button><button class="editRecipient far fa-edit" data-tippy="Edit Recipient Details" data-popup="#recipient-manage-popup"></button><button data-recipientname="'.$data->full_name.'" data-tippy="Remove Recipient" class="deleteRecipient far fa-trash"></button>'.$AlreadyOrderHtml;
+                        $html .= '<button class="viewRecipient far fa-eye" data-tippy="View Recipient Details" data-popup="#recipient-view-details-popup"></button><button class="editRecipient far fa-edit" data-tippy="Update Recipient Details" data-popup="#recipient-manage-popup"></button><button data-recipientname="'.$data->full_name.'" data-tippy="Remove Recipient" class="deleteRecipient far fa-trash"></button>'.$AlreadyOrderHtml;
                         $html .= '</td>';
                     }
                 }
