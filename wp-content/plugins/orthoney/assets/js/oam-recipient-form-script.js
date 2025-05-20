@@ -1239,26 +1239,28 @@ document.addEventListener("DOMContentLoaded", function () {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
                   processDataSaveAjax(pid?.value || "0", currentStep);
-                  if (currentChunk === 0) {
-                    totalRows = response.data.total_rows;
-                    pid = response.data.pid;
+                  setTimeout(() => {
+                    if (currentChunk === 0) {
+                      totalRows = response.data.total_rows;
+                      pid = response.data.pid;
 
-                    // Show progress bar popup only after a successful start
-                    Swal.fire({
-                      title: "Uploading Recipient Data",
-                      text: "Please wait, the recipient data upload is in progress.",
-                      html: `
-                        <p>Please wait, the recipient data upload is in progress.</p><div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
-                          <div id="progress-bar" style="width: 0%; height: 10px; background-color: #3085d6;"></div>
-                        </div>
-                        <p id="progress-text">0%</p>
-                      `,
-                      showConfirmButton: false,
-                      allowOutsideClick: false,
-                      allowEscapeKey: false,
-                      allowEnterKey: false,
-                    });
-                  }
+                      // Show progress bar popup only after a successful start
+                      Swal.fire({
+                        title: "Uploading Recipient Data",
+                        text: "Please wait, the recipient data upload is in progress.",
+                        html: `
+                          <p>Please wait, the recipient data upload is in progress.</p><div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
+                            <div id="progress-bar" style="width: 0%; height: 10px; background-color: #3085d6;"></div>
+                          </div>
+                          <p id="progress-text">0%</p>
+                        `,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        allowEnterKey: false,
+                      });
+                    }
+                  }, 2000);
 
                   const progress = response.data.progress;
                   document.getElementById("progress-bar").style.width =
