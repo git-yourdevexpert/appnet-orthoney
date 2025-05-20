@@ -1239,7 +1239,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
                   processDataSaveAjax(pid?.value || "0", currentStep);
-                  setTimeout(() => {
+                 
                     if (currentChunk === 0) {
                       totalRows = response.data.total_rows;
                       pid = response.data.pid;
@@ -1260,7 +1260,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         allowEnterKey: false,
                       });
                     }
-                  }, 2000);
+                  
 
                   const progress = response.data.progress;
                   document.getElementById("progress-bar").style.width =
