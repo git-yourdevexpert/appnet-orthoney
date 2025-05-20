@@ -1282,10 +1282,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     }, 1000);
                   }
                 } else {
-                  Swal.fire({
+                 Swal.fire({
                     icon: "error",
                     title: "Upload Failed",
                     text: response.data.message,
+                  }).then(() => {
+                    // Clear inputs after Swal is dismissed
+                    document.querySelector('#multiStepForm .file-upload.field-block input[type="file"]').value = "";
+                    document.querySelector('#multiStepForm .rename-file input[name="csv_name"]').value = "";
                   });
                 }
               } else {
