@@ -3476,17 +3476,25 @@ class OAM_Ajax{
                 $download_button = '';
                 if (!empty($item->csv_name)) {
                     $download_url = esc_url(OAM_Helper::$process_recipients_csv_url . $item->csv_name);
-                    $download_button = "<a href='" . $download_url . "' class='w-btn us-btn-style_1 outline-btn round-btn' download data-tippy='Download Recipients File'><i class='far fa-download'></i></a>";
+                  $download_button = '<a href="' . esc_url( $download_url ) . '" class="button-icon-underline" download data-tippy="Download Recipients File"> <img src="' . esc_url( OH_PLUGIN_DIR_URL . 'assets/image/download.png' ) . '" alt="Download"> Download Recipients File</a>';
                 }
     
                 $display_name = ($item->process_by == 0) ? 'Self' : esc_html(get_userdata($item->process_by)->display_name);
     
+                $action = "<a href='$resume_url' class='button-icon-underline'>";
+                if($failed == 1){
+                    $action .= '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">View Recipients';
+                }else{
+                    $action .= '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume Order';
+                }
+                 $action .="</a>";
+                 
                 $data[] = [
                     'id' => esc_html($item->id),
                     'name' => esc_html($item->name),
                     'ordered_by' => esc_html($display_name),
                     'date' => esc_html($created_date),
-                    'action' => "<a href='$resume_url' class='w-btn us-btn-style_1 outline-btn sm-btn'>" . ($failed == 1 ? 'View Recipients' : 'Resume Order') . "</a> " . ($failed != 1 ? $download_button : '')
+                    'action' =>$action . ($failed != 1 ? $download_button : '')
                 ];
             }
         }
