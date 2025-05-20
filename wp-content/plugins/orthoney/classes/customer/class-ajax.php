@@ -906,6 +906,12 @@ class OAM_Ajax{
                     if ($update_result === false) {
                         error_log("Failed to update address verification for ID: $pid");
                     }
+                }else{
+                    $update_result = $wpdb->update(
+                        $order_process_recipient_table,
+                        ['address_verified' => 0],
+                        ['id' => $pid]
+                    );
                 }
                
                 // You can optionally log $message or store it elsewhere
