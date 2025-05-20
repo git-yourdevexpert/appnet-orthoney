@@ -1189,7 +1189,6 @@ class OAM_Ajax{
                 $quantity = 0;
                 if(!isset($data['quantity'] ) OR $data['quantity'] === 0 OR $data['quantity'] === ''){
                     $quantity = 0;
-                    $failure_reasons[] = "Invalid Quantity";
                 }else{
                     $quantity = $data['quantity'];
                 }
