@@ -1213,6 +1213,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Show processing popup first
         process_group_popup();
+        processDataSaveAjax(pid?.value || "0", currentStep);
 
         let currentChunk = 0;
         let totalRows = 0;
@@ -1238,7 +1239,7 @@ document.addEventListener("DOMContentLoaded", function () {
               if (xhr.status === 200) {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
-                  processDataSaveAjax(pid?.value || "0", currentStep);
+                  
                  
                     if (currentChunk === 0) {
                       totalRows = response.data.total_rows;

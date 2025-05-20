@@ -875,6 +875,8 @@ class OAM_Ajax{
                     "state"      => $recipient->state ?? '',
                     "zipcode"    => $recipient->zipcode ?? '',
                     "candidates" => 10,
+                    'match'      => 'invalid',
+                    'geocode'    => true,
                 ];
             }
             // Process addresses in chunks of 80
@@ -883,9 +885,11 @@ class OAM_Ajax{
             $delay_time = 2; // Adjustable delay time in seconds
     
             foreach ($address_chunks as $index => $chunk) {
+               
                 // Call API with the current chunk
                 $multi_validate_address = OAM_Helper::multi_validate_address($chunk);
     
+              
                 // Check if the API response is valid
                 if (empty($multi_validate_address) || !is_string($multi_validate_address)) {
                     error_log("Address validation API failed or returned an invalid response.");
@@ -894,22 +898,47 @@ class OAM_Ajax{
     
                 $multi_validate_address_result = json_decode($multi_validate_address, true);
     
+                 
                 if (!empty($multi_validate_address_result)) {
                     foreach ($multi_validate_address_result as $data) {
                         $pid = $data['input_id'];
+                        $success = false;
+                        $message = '';
                         $dpv_match_code = $data['analysis']['dpv_match_code'] ?? '';
-    
-                        if ($dpv_match_code !== 'N') {
-                            $update_result = $wpdb->update(
-                                $order_process_recipient_table,
-                                ['address_verified' => intval(1)],
-                                ['id' => $pid]
-                            );
-    
-                            if ($update_result === false) {
-                                error_log("Failed to update address verification for ID: $pid");
+
+                         if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {
+                                if(!empty($data[0]['components'])){
+                                    if ($city !== $data[0]['components']['city_name']) {
+                                        $message = 'Provided city is invalid. Vallid city is <span style="color: #6BBE56;">'.$data[0]['components']['city_name'].'</span>';
+                                    } elseif ($state !== $data[0]['components']['state_abbreviation']) {
+                                        $message = 'Provided state is invalid. Vallid state is <span style="color: #6BBE56;">'.$data[0]['components']['state_abbreviation'].'</span>';
+
+                                    } elseif ($zipcode !== $data[0]['components']['zipcode']) {
+                                        $message =  'Provided zipcode is invalid. Vallid zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'</span>';
+                                    }
+                                }
+                                $success = true;
+                                
+                            }else{
+                                $message = 'Invalid address format.';
+                                $dpv_footnotes = $data[0]['analysis']['footnotes'] ?? '';
+                                if ($dpv_footnotes !== '' && !empty($dpv_footnotes)) {
+                                    $message = self::addressCorrections($dpv_footnotes);
+                                }
                             }
-                        }
+                        
+                            if ($success === false) {
+                                $update_result = $wpdb->update(
+                                    $order_process_recipient_table,
+                                    ['address_verified' => intval(1)],
+                                    ['id' => $pid]
+                                );
+        
+                                if ($update_result === false) {
+                                    error_log("Failed to update address verification for ID: $pid");
+                                }
+                            }
+
                     }
                 }
     
@@ -919,7 +948,7 @@ class OAM_Ajax{
                 }
             }
         }
-    
+
         wp_send_json_success(['message' => 'Process completed successfully.']);
         wp_die();
     }
