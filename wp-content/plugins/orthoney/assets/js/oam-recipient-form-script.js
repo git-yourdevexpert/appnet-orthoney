@@ -1071,7 +1071,7 @@ document.addEventListener("DOMContentLoaded", function () {
           console.log("CSV 2");
           showStep(currentStep);
 
-          processDataSaveAjax(pid?.value || "0", currentStep);
+          
 
           const form = document.querySelector("#multiStepForm");
           csv_upload(form);
@@ -1238,6 +1238,7 @@ document.addEventListener("DOMContentLoaded", function () {
               if (xhr.status === 200) {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
+                  processDataSaveAjax(pid?.value || "0", currentStep);
                   if (currentChunk === 0) {
                     totalRows = response.data.total_rows;
                     pid = response.data.pid;
