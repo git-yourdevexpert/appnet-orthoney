@@ -1856,5 +1856,17 @@ function addRecipientManuallyPopup(reload) {
 
 
 jQuery(document).ready(function($) {
-    $('.ur-frontend-form.login  .user-registration-Button').before('<a class="custom-signup-link" href="/registration/">Click Here to Create an Account</a>');
+    var path = window.location.pathname;
+
+    var linkHtml = '';
+
+    if (path === '/login/') {
+        linkHtml = '<a class="custom-signup-link" href="/registration/">Click Here to Create an Account</a>';
+    } else if (path === '/organization-login/') {
+        linkHtml = '<a class="custom-signup-link" href="/organization-registration/">Click Here to Create an Organization Account</a>';
+    }
+
+    if (linkHtml) {
+        $('.ur-frontend-form.login .user-registration-Button').before(linkHtml);
+    }
 });
