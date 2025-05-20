@@ -293,7 +293,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         <div class="multiple-address-grid">
                                         <label >
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'add-manually' ? 'checked' : '' ?> value="add-manually" data-error-message="Please select a delivery preference."> <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/contract.png" alt="" class="address-icon">
-                                                Enter Details into an Online Form
+                                                Enter a new order
                                             </span>
                                         </label>
                                         <?php 
@@ -306,7 +306,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'select-order' ? 'checked' : '' ?> value="select-order" data-error-message="Please select a delivery preference.">
                                             <span>
                                                 <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/book.png" alt="" class="address-icon">
-                                               Reorder from Previous Year 
+                                               Reorder from a previous year
                                             </span>
                                         </label>
                                         
