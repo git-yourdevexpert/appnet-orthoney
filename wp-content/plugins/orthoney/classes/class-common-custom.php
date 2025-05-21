@@ -230,7 +230,9 @@ class OAM_COMMON_Custom {
                 $redirect_to = urlencode(self::redirect_user_based_on_role($old_user->roles));
                 $switch_back_url = user_switching::switch_back_url($old_user) . '&redirect_to=' . $redirect_to;
         
+                if($old_user->id  != get_current_user_id() ){
                  $html .='<a href="' . esc_url($switch_back_url) . '" class="btn-with-arrow">Switch Back to ' . esc_html($old_user->display_name) . '</a>';
+                }
             }
         }
         return $html;
