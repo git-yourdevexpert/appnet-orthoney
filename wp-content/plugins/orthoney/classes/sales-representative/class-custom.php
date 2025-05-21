@@ -13,8 +13,8 @@ class OAM_SALES_REPRESENTATIVE_Custom {
         add_action('init', array($this, 'sales_representative_dashboard_handler'));
         add_action('wp_head', array($this, 'remove_user_switching_footer_button'));
 
-        add_filter('acf/load_field/name=choose_customer', array($this, 'populate_choose_customer_acf_handler'));
-        add_filter('acf/load_field/name=choose_organization', [$this, 'populate_choose_organization_acf_handler']);
+        add_filter('acf/fields/select/query/key=field_67e12644ba5fe',array($this, 'populate_choose_customer_select_field'), 10, 2);
+        add_filter('acf/fields/select/query/key=field_67e12685ba5ff',array($this, 'populate_choose_organization_select_field'), 10, 2);
 
     }
 
@@ -41,83 +41,120 @@ class OAM_SALES_REPRESENTATIVE_Custom {
         }
     }
 
-   /**
-    * Populate choose customer dropdown with users having only the 'customer' role
-    */
-    public function populate_choose_customer_acf_handler($field) {
-        $screen = get_current_screen();
-        if ( isset($screen->id) && $screen->id === 'user-edit') {
-            $roles_to_check = ['sales_representative'];
-            if (user_has_role($_GET['user_id'], $roles_to_check)) {
+   
 
-            
-                if ($field['name'] !== 'choose_customer') {
-                    return $field;
-                }
+    
+public function populate_choose_customer_select_field($args, $field) {
+    $args['results'] = [];
 
-                // Fetch all users with 'customer' role
-                $args = [
-                    'role'    => 'customer',
-                    'orderby' => 'display_name',
-                    'order'   => 'ASC',
-                    
-                ];
-                $users = get_users($args);
+    // Get search term from request
+    $search = isset($_REQUEST['s']) ? sanitize_text_field($_REQUEST['s']) : '';
 
-                // Filter users with only the 'customer' role
-                $field['choices'] = [];
-                foreach ($users as $user) {
-                    $user_roles = $user->roles;
-                    if (count($user_roles) === 1 && in_array('customer', $user_roles)) {
-                        $field['choices'][$user->ID] = $user->display_name;
-                    }
-                }
+    // Fetch users with customer role (may include those with multiple roles)
+    $users = get_users([
+        'role'    => 'customer',
+        'orderby' => 'display_name',
+        'order'   => 'ASC',
+        'number'  => 50, // increase slightly so you can filter after
+        'meta_query' => [
+            'relation' => 'OR',
+            [
+                'key'     => 'first_name',
+                'value'   => $search,
+                'compare' => 'LIKE',
+            ],
+            [
+                'key'     => 'last_name',
+                'value'   => $search,
+                'compare' => 'LIKE',
+            ],
+        ],
+    ]);
 
-                // Check if no customers found
-                if (empty($field['choices'])) {
-                    $field['choices'] = ['' => 'No Customers Found'];
-                }
-            }
+    foreach ($users as $user) {
+        $roles = (array) $user->roles;
 
+        // Skip users with more than one role or if role isn't exactly 'customer'
+        if (count($roles) !== 1 || $roles[0] !== 'customer') {
+            continue;
         }
 
-        return $field;
-    }
+        $first_name = get_user_meta($user->ID, 'first_name', true);
+        $last_name  = get_user_meta($user->ID, 'last_name', true);
+        $full_name  = trim($first_name . ' ' . $last_name);
 
-
-    /**
-     * Populate choose organization dropdown with organization name, city, state, and code
-     */
-    public function populate_choose_organization_acf_handler($field) {
-        $screen = get_current_screen();
-        if ( isset($screen->id) && $screen->id === 'user-edit') {
-            $roles_to_check = ['sales_representative'];
-            if (user_has_role($_GET['user_id'], $roles_to_check)) {
-                if ($field['name'] !== 'choose_organization') return $field;
-            
-                $args = [
-                    'role'    => 'yith_affiliate',
-                    'orderby' => 'display_name',
-                    'order'   => 'ASC',
-                    'fields'  => ['ID'],
-                ];
-                $users = get_users($args);
-            
-                $field['choices'] = [];
-                foreach ($users as $user) {
-                    $organization_name = get_user_meta($user->ID, '_yith_wcaf_name_of_your_organization', true) ?: 'Unknown Organization';
-                    $city = get_user_meta($user->ID, '_yith_wcaf_city', true) ?: 'Unknown City';
-                    $state = get_user_meta($user->ID, '_yith_wcaf_state', true) ?: 'Unknown State';
-                    $code = get_user_meta($user->ID, '_yith_wcaf_zipcode', true) ?: 'N/A';
-            
-                    $field['choices'][$user->ID] = "$organization_name ($city, $state, $code)";
-                }
-            
-                return $field;
-            }
+        if (empty($full_name)) {
+            $full_name = $user->display_name;
         }
-        return $field;
+
+        $args['results'][] = [
+            'id'   => $user->ID,
+            'text' => $full_name,
+        ];
     }
+
+    return $args;
+}
+public function populate_choose_organization_select_field($args, $field) {
+    $args['results'] = [];
+
+    // Get search string from Select2 (passed as ?s=...)
+    $search = isset($_REQUEST['s']) ? sanitize_text_field($_REQUEST['s']) : '';
+
+    // Fetch users with role 'yith_affiliate'
+    $users = get_users([
+        'role'    => 'yith_affiliate',
+        'orderby' => 'display_name',
+        'order'   => 'ASC',
+        'number'  => 20,
+        'meta_query' => [
+            'relation' => 'OR',
+            [
+                'key'     => '_yith_wcaf_name_of_your_organization',
+                'value'   => $search,
+                'compare' => 'LIKE',
+            ],
+            [
+                'key'     => '_yith_wcaf_city',
+                'value'   => $search,
+                'compare' => 'LIKE',
+            ],
+            [
+                'key'     => '_yith_wcaf_state',
+                'value'   => $search,
+                'compare' => 'LIKE',
+            ],
+            [
+                'key'     => '_yith_wcaf_zipcode',
+                'value'   => $search,
+                'compare' => 'LIKE',
+            ],
+        ],
+    ]);
+
+foreach ($users as $user) {
+    $organization_name = trim(get_user_meta($user->ID, '_yith_wcaf_name_of_your_organization', true));
+    $city              = trim(get_user_meta($user->ID, '_yith_wcaf_city', true));
+    $state             = trim(get_user_meta($user->ID, '_yith_wcaf_state', true));
+    $code              = trim(get_user_meta($user->ID, '_yith_wcaf_zipcode', true));
+
+    // Build location string only if values exist
+    $location_parts = array_filter([$city, $state, $code]);
+    $location       = $location_parts ? ' (' . implode(', ', $location_parts) . ')' : '';
+
+    // Fallback if org name is missing
+    $label = $organization_name ?: 'Unnamed Organization';
+    $label .= $location;
+
+    $args['results'][] = [
+        'id'   => $user->ID,
+        'text' => $label,
+    ];
+}
+
+
+    return $args;
+}
 
     
 }
