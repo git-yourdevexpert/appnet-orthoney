@@ -1213,11 +1213,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Show processing popup first
         process_group_popup();
-        processDataSaveAjax(pid?.value || "0", currentStep);
 
         let currentChunk = 0;
         let totalRows = 0;
         let pid = getURLParam("pid");
+        processDataSaveAjax(pid?.value || "0", currentStep);
 
         // Start processing after a slight delay to ensure UI update
         setTimeout(() => {
