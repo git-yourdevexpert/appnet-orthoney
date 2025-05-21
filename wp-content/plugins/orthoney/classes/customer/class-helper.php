@@ -1747,8 +1747,8 @@ class OAM_Helper{
     
         // Fetch limited orders
         $query = $wpdb->prepare(
-            "SELECT * FROM {$order_process_table} WHERE user_id = %d AND step != %d ORDER BY created DESC LIMIT %d",
-            $user_id, 5, $limit
+            "SELECT * FROM {$order_process_table} WHERE user_id = %d AND step != %d AND visibility != %d ORDER BY created DESC LIMIT %d",
+            $user_id, 5, 1,$limit
         );
         $results = $wpdb->get_results($query);
 
