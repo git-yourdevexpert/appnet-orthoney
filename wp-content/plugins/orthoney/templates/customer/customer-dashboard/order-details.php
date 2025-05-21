@@ -8,6 +8,7 @@ defined('ABSPATH') || exit;
 $order_id = get_query_var('order-details');
 $order = wc_get_order($order_id);
 
+
 if (!$order) return;
 $order_date = $order->get_date_created();
 $editable = false;
@@ -130,7 +131,12 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
                 <strong>City: </strong><?php echo esc_html($order->get_billing_city()); ?><br>
                 <strong>State: </strong><?php echo esc_html($full_state); ?><br>
                 <strong>Zip Code: </strong><?php echo esc_html($order->get_billing_postcode()); ?><br>
-            
+                <?php 
+                if ($editable) {
+                    echo '<button class="w-btn us-btn-style_1 editBillingAddress" data-order="'.$order_id.'" data-popup="#edit-billing-address-popup">Edit Billing address </button>';
+                }
+                ?>
+                
             </div>
             <div class="woocommerce-customer-details">
             <h3 class="woocommerce-column__title">Jar Order Details</h3>
@@ -217,6 +223,12 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
             <div class="popup-show order-process-block orthoney-datatable-warraper">
                 <h3 class="popup-title"><span></span> Order Details</h3>
                 <?php echo OAM_Helper::get_recipient_order_form(); ?>
+            </div>
+        </div>
+        <div id="edit-billing-address-popup" class="lity-popup-normal lity-hide">
+            <div class="popup-show order-process-block orthoney-datatable-warraper">
+                <h3 class="popup-title">Edit Billing Address</h3>
+               <?php echo OAM_Helper::get_edit_billing_address_form(); ?>
             </div>
         </div>
 

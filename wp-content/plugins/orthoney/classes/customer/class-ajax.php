@@ -76,10 +76,85 @@ class OAM_Ajax{
 
         add_action( 'wp_ajax_orthoney_get_used_affiliate_codes', array( $this, 'orthoney_get_used_affiliate_codes') );
         add_action( 'wp_ajax_wc_re_order_customer_dashboard', array( $this, 'wc_re_order_customer_dashboard_handler') );
+        add_action( 'wp_ajax_get_billing_details_base_order_id', array( $this, 'get_billing_details_base_order_id_handler') );
+        add_action( 'wp_ajax_update_billing_details', array( $this, 'update_billing_details_handler') );
 
 
         // TODO
 
+    }
+
+    public function update_billing_details_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+
+        $order_id = isset($_POST['order_id']) ? (int) $_POST['order_id'] : 0;
+
+        if (!$order_id) {
+            wp_send_json_error(['message' => 'Invalid order ID.']);
+        }
+
+        $order = wc_get_order($order_id);
+
+        if (!$order) {
+            wp_send_json_error(['message' => 'Order not found.']);
+        }
+
+        // Sanitize and get the billing fields from $_POST
+        $billing_data = [
+            'first_name' => sanitize_text_field($_POST['first_name'] ?? ''),
+            'last_name'  => sanitize_text_field($_POST['last_name'] ?? ''),
+            'company'    => sanitize_text_field($_POST['company'] ?? ''),
+            'address_1'  => sanitize_text_field($_POST['address_1'] ?? ''),
+            'address_2'  => sanitize_text_field($_POST['address_2'] ?? ''),
+            'city'       => sanitize_text_field($_POST['city'] ?? ''),
+            'state'      => sanitize_text_field($_POST['state'] ?? ''),
+            'postcode'   => sanitize_text_field($_POST['zipcode'] ?? ''),
+        ];
+
+        // Update billing fields
+        $order->set_billing_first_name($billing_data['first_name']);
+        $order->set_billing_last_name($billing_data['last_name']);
+        $order->set_billing_company($billing_data['company']);
+        $order->set_billing_address_1($billing_data['address_1']);
+        $order->set_billing_address_2($billing_data['address_2']);
+        $order->set_billing_city($billing_data['city']);
+        $order->set_billing_state($billing_data['state']);
+        $order->set_billing_postcode($billing_data['postcode']);
+
+        $order->save();
+
+        wp_send_json_success(['message' => 'Billing address updated successfully.']);
+    }
+
+
+    public function get_billing_details_base_order_id_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+
+        $order_id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+
+        if (!$order_id) {
+            wp_send_json_error(['message' => 'Invalid order ID.']);
+        }
+
+        $order = wc_get_order($order_id);
+
+        if (!$order) {
+            wp_send_json_error(['message' => 'Order not found.']);
+        }
+
+        $billing_details = [
+            'order_id' =>  $order_id,
+            'first_name' => $order->get_billing_first_name(),
+            'last_name'  => $order->get_billing_last_name(),
+            'company'    => $order->get_billing_company(),
+            'address_1'  => $order->get_billing_address_1(),
+            'address_2'  => $order->get_billing_address_2(),
+            'city'       => $order->get_billing_city(),
+            'state'      => $order->get_billing_state(),
+            'zipcode'   => $order->get_billing_postcode(),
+        ];
+
+        wp_send_json_success($billing_details);
     }
 
     public function wc_re_order_customer_dashboard_handler() {
@@ -2103,60 +2178,62 @@ class OAM_Ajax{
         }
     }
     // Callback function edit recipient order
-    public function orthoney_manage_recipient_order_form_handler() {
-        global $wpdb;
-    
-        $orderID = isset($_POST['order_id']) ? $_POST['order_id'] : 0;
-        if (!$orderID) {
-            wp_send_json_error(['message' => 'Invalid Order ID']);
-        }
-    
-        $recipient_order_table = OAM_Helper::$recipient_order_table;
-    
-        $existing_recipient = $wpdb->get_var(
-            $wpdb->prepare("SELECT id FROM $recipient_order_table WHERE recipient_order_id = %s", $orderID)
-        );
+   public function orthoney_manage_recipient_order_form_handler() {
+    check_ajax_referer('oam_nonce', 'security');
 
-        if ($existing_recipient == '') {
-            wp_send_json_error(['message' => 'Something went wrong. Please try again.']);
-        }
-    
-        // Sanitize and prepare data
-        $data = [
-            'full_name'        => sanitize_text_field($_POST['full_name'] ?? ''),
-            'company_name'     => sanitize_text_field($_POST['company_name'] ?? ''),
-            'address_1'        => sanitize_textarea_field($_POST['address_1'] ?? ''),
-            'address_2'        => sanitize_textarea_field($_POST['address_2'] ?? ''),
-            'city'             => sanitize_text_field($_POST['city'] ?? ''),
-            'state'            => sanitize_text_field($_POST['state'] ?? ''),
-            'zipcode'          => sanitize_text_field($_POST['zipcode'] ?? ''),
-            'greeting'         => sanitize_textarea_field($_POST['greeting'] ?? ''),
-            'updated_date'     => current_time('mysql'),
-        ];
-    
-        // Validate address
-        $validation_result = json_decode(OAM_Helper::validate_address(
-            $data['address_1'],
-            $data['address_2'],
-            $data['city'],
-            $data['state'],
-            $data['zipcode']
-        ), true);
-    
-        if (is_array($validation_result)) {
-            $data['address_verified'] = !empty($validation_result['success']) ? 1 : 0;
-        }
-    
-        $result = $wpdb->update($recipient_order_table, $data, ['recipient_order_id' => $orderID]);
-    
-        if ($result !== false) {
-            OAM_Helper::order_process_recipient_activate_log($orderID, 'Edit Recipient Order', '', 'edit_order');
-            wp_send_json_success(['message' => 'Order updated successfully']);
-        }
-    
-        wp_send_json_error(['message' => 'Failed to update order']);
+    global $wpdb;
+
+    $orderID = isset($_POST['order_id']) ? $_POST['order_id'] : 0;
+    if (!$orderID) {
+        wp_send_json_error(['message' => 'Invalid Order ID']);
     }
-    
+
+    $recipient_order_table = OAM_Helper::$recipient_order_table;
+
+    $existing_recipient = $wpdb->get_var(
+        $wpdb->prepare("SELECT id FROM $recipient_order_table WHERE recipient_order_id = %d", $orderID)
+    );
+
+    if (!$existing_recipient) {
+        wp_send_json_error(['message' => 'Something went wrong. Please try again.']);
+    }
+
+    $data = [
+        'full_name'        => sanitize_text_field($_POST['full_name'] ?? ''),
+        'company_name'     => sanitize_text_field($_POST['company_name'] ?? ''),
+        'address_1'        => sanitize_textarea_field($_POST['address_1'] ?? ''),
+        'address_2'        => sanitize_textarea_field($_POST['address_2'] ?? ''),
+        'city'             => sanitize_text_field($_POST['city'] ?? ''),
+        'state'            => sanitize_text_field($_POST['state'] ?? ''),
+        'zipcode'          => sanitize_text_field($_POST['zipcode'] ?? ''),
+        'greeting'         => sanitize_textarea_field($_POST['greeting'] ?? ''),
+        'updated_date'     => current_time('mysql'),
+    ];
+
+    $validation_result = json_decode(OAM_Helper::validate_address(
+        $data['address_1'],
+        $data['address_2'],
+        $data['city'],
+        $data['state'],
+        $data['zipcode']
+    ), true);
+
+    if (isset($validation_result['success']) && $validation_result['success'] === false && empty($_POST['invalid_address'])) {
+        wp_send_json_error(['message' => $validation_result['message']]);
+    }
+
+    $result = $wpdb->update($recipient_order_table, $data, ['recipient_order_id' => $orderID]);
+
+    if ($result !== false) {
+        OAM_Helper::order_process_recipient_activate_log($orderID, 'Edit Recipient Order', '', 'edit_order');
+        wp_send_json_success(['message' => 'Recipient details updated successfully']);
+    }
+
+    wp_send_json_error(['message' => 'Failed to update order']);
+
+    wp_die(); // terminate execution properly
+}
+
     
     // Callback function for get recipient  order details base in id
     public function orthoney_get_recipient_order_base_id_handler() {

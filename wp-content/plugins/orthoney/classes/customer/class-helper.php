@@ -1311,6 +1311,63 @@ class OAM_Helper{
         </div>
         <?php
     }
+    public static function get_edit_billing_address_form(){ ?>
+        <div id="edit-billing-address-form" class="site-form" >
+            <form class="grid-two-col" novalidate>
+            <input type="hidden" id="order_id" name="order_id" value="">
+                <div class="form-row gfield--width-half">
+                    <label for="first_name">First Name <span class="required">*</span></label>
+                    <input type="text" id="first_name" name="first_name" required data-error-message="Please enter your first name.">
+                    <span class="error-message"></span>
+                </div>
+                <div class="form-row gfield--width-half">
+                    <label for="last_name">Last Name <span class="required">*</span></label>
+                    <input type="text" id="last_name" name="last_name" required data-error-message="Please enter your last name.">
+                    <span class="error-message"></span>
+                </div>
+
+                <div class="form-row gfield--width-half">
+                    <label for="address_1">Address line 1<span class="required">*</span></label>
+                    <input type="text" id="address_1" name="address_1" required data-error-message="Please enter a Address line 1">
+                    <span class="error-message"></span>
+                </div>
+
+                <div class="form-row gfield--width-half">
+                    <label for="address_2">Address line 2</label>
+                    <input type="text" id="address_2" name="address_2">
+                    <span class="error-message"></span>
+                </div>
+
+                <div class="form-row gfield--width-half">
+                    <label for="city">City<span class="required">*</span></label>
+                    <input type="text" id="city" name="city" required data-error-message="Please enter a city.">
+                    <span class="error-message"></span>
+                </div>
+
+                <div class="form-row gfield--width-half">
+                    <label for="state">State<span class="required">*</span></label>
+                    <select id="state" name="state" required data-error-message="Please select a state.">
+                        <option value="" disable>Select state</option>
+                        <?php echo self::get_us_states_list(isset($shipping_address['state']) ? $shipping_address['state'] : ""); ?>
+                    </select>
+                    <span class="error-message"></span>
+                </div>
+
+                <div class="form-row gfield--width-half">
+                    <label for="zipcode">Zipcode<span class="required">*</span></label>
+                    <input type="text" id="zipcode" name="zipcode" required data-error-message="Please enter a valid zipcode.">
+                    <span class="error-message"></span>
+                </div>
+                
+
+                <div class="footer-btn gfield--width-full">
+                <button type='button' class=" w-btn us-btn-style_4" data-lity-close>Cancel</button>
+                <button type="submit">Edit Billing Details</button>
+                </div>
+            </form>
+        </div>
+        <?php
+    }
 
     public static function verify_recipient_address_popup(){
         ?>

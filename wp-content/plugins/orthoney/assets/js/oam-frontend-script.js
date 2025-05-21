@@ -242,7 +242,7 @@ function process_group_popup(selectHtml = '') {
     return urlParams.get(param);
   }
 
-  jQuery('select').each(function ($) {
+jQuery('select').each(function ($) {
     var placeholderText = jQuery(this).data('error-message') || 'Select an option';
     
     jQuery(this).select2({
@@ -2052,6 +2052,10 @@ document.addEventListener('click', function (event) {
             }
 
             setTimeout(() => {
+                 jQuery('#state').select2({
+                    placeholder: 'Please select a state',
+                    allowClear: false
+                });
                 lity(target.getAttribute('data-popup'));
 
                 const submitButton = form.querySelector('button[type="submit"]');
@@ -2075,7 +2079,6 @@ document.addEventListener('click', function (event) {
             });
         });
 });
-
 
 const recipientOrderManageForm = document.querySelector("#recipient-manage-order-form form");
 
@@ -2117,15 +2120,217 @@ if (recipientOrderManageForm) {
 
         const formData = new FormData(this);
         formData.append('action', 'manage_recipient_order_form');
+        formData.append('security', oam_ajax.nonce); // Append nonce here
 
         fetch(oam_ajax.ajax_url, {
             method: 'POST',
             body: formData,
         })
+        .then((res) => res.json())
+        .then((data) => {
+            if (!data.success) {
+                // If invalid address, ask user confirmation
+                return Swal.fire({
+                    html: '<h2 class="swal2-title" style="padding-top: 0;">'+data.data.message+' <br><br>Would you like to fix it or continue with this address?</h2>',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, Proceed',
+                    cancelButtonText: 'Review & Edit Address',
+                    reverseButtons: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Create new FormData to avoid mutation issues
+                        const newFormData = new FormData(recipientOrderManageForm);
+                        newFormData.append('action', 'manage_recipient_order_form');
+                        newFormData.append('security', oam_ajax.nonce);
+                        newFormData.append('invalid_address', 1);
+
+                        process_group_popup();
+
+                        return sendFormData(newFormData)
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: data.data.message,
+                                        icon: 'success',
+                                        showConfirmButton: false,
+                                        timerProgressBar: false,
+                                        allowOutsideClick: false,
+                                        allowEscapeKey: false,
+                                        allowEnterKey: false,
+                                    });
+
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 1500);
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: data.data?.message || 'Failed to remove recipients.',
+                                        icon: 'error',
+                                    });
+                                }
+                            })
+                            .catch(() => {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'An error occurred while removing recipients.',
+                                    icon: 'error',
+                                });
+                            });
+                    }
+                    // If canceled, do nothing or maybe focus form for editing
+                });
+            }
+
+            // If success, show success and reload
+            Swal.fire({
+                title: data.data.message,
+                icon: 'success',
+                timer: 3500,
+                showConfirmButton: false,
+                timerProgressBar: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+            });
+
+            window.location.reload();
+
+            document.querySelector('[data-lity-close]')?.click();
+        })
+        .catch((error) => {
+            Swal.fire({
+                title: 'Error',
+                text: error.message || 'An error occurred while processing the request.',
+                icon: 'error',
+            });
+        });
+    });
+}
+
+// sendFormData helper function
+function sendFormData(formData) {
+    return fetch(oam_ajax.ajax_url, {
+        method: 'POST',
+        body: formData,
+    }).then(res => res.json());
+}
+
+
+/**
+ * Edit Billing Address Start
+ */
+
+document.addEventListener('click', function (event) {
+    const target = event.target;
+    const isEdit = target.classList.contains('editBillingAddress');
+
+    if (!isEdit ) return;
+
+    event.preventDefault();
+    process_group_popup();
+
+    const form = document.querySelector('#edit-billing-address-form form');
+    form.reset();
+
+    const orderID = target.getAttribute('data-order');
+
+    fetch(oam_ajax.ajax_url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            action: 'get_billing_details_base_order_id',
+            id: orderID,
+             security: oam_ajax.nonce
+        }),
+    })
+    .then((res) => res.json())
+    .then((data) => {
+        if (!data.success) {
+            throw new Error(data.data.message || 'Failed to get billing.');
+        }
+
+        const d = data.data;
+
+        const fields = ['order_id', 'first_name', 'last_name', 'address_1', 'address_2', 'city', 'state', 'zipcode'];
+        fields.forEach(field => {
+            const input = form.querySelector(`#${field}`);
+            if (input) input.value = d[field] || '';
+        });
+
+        setTimeout(() => {
+            lity(target.getAttribute('data-popup'));
+
+            jQuery(form).find('#state').val(d.state).trigger('change');
+        }, 250);
+
+        Swal.close();
+    })
+    .catch((error) => {
+        Swal.fire({
+            title: 'Error',
+            text: error.message || 'An error occurred while retrieving the recipient.',
+            icon: 'error',
+        });
+    });
+});
+
+
+
+function validateEditBillingAddressForm(form) {
+    let isValid = true;
+    const requiredFields = form.querySelectorAll("input[required], select[required], textarea[required]");
+
+    requiredFields.forEach((field) => {
+        const parentDiv = field.closest('.form-row');
+        const errorMessage = parentDiv?.querySelector(".error-message");
+
+        if (!field.value.trim()) {
+            field.style.border = "1px solid red";
+            if (errorMessage) {
+                errorMessage.textContent = field.getAttribute("data-error-message") || "This field is required.";
+                errorMessage.style.color = "red";
+                errorMessage.style.display = "block";
+            }
+            isValid = false;
+        } else {
+            field.style.border = "";
+            if (errorMessage) {
+                errorMessage.textContent = "";
+                errorMessage.style.display = "none";
+            }
+        }
+    });
+
+    return isValid;
+}
+const editBillingAddressForm = document.querySelector("#edit-billing-address-form form");
+if (editBillingAddressForm) {
+    editBillingAddressForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        if (!validateEditBillingAddressForm(this)) return;
+
+        process_group_popup();
+
+        const formData = new FormData(this);
+        formData.append('action', 'update_billing_details');
+        formData.append('security', oam_ajax.nonce);
+
+        fetch(oam_ajax.ajax_url, {
+            method: 'POST',
+            body: formData
+        })
             .then((res) => res.json())
             .then((data) => {
                 if (!data.success) {
-                    throw new Error(data.data.message || 'Failed to update recipient details.');
+                    throw new Error(data.data.message || 'Failed to update billing details.');
                 }
 
                 Swal.fire({
@@ -2153,9 +2358,9 @@ if (recipientOrderManageForm) {
     });
 }
 
-
-
-
+/**
+ * Edit Billing Address END
+ */
 
 /**
  * Recipient Jar order start 
