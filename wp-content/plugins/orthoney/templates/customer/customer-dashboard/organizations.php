@@ -58,6 +58,8 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                     $is_blocked = $result['data']['affiliates'][$key]['status'];
                     $token = $result['data']['affiliates'][$key]['token'];
                     $current_url = home_url(add_query_arg([], $_SERVER['REQUEST_URI']));
+
+                    print_r($affiliate);
                         ?>
                         <tr>
                             <td><div class="thead-data">Token</div><?php echo esc_html($affiliate['token']); ?></td>
@@ -67,7 +69,7 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                             if($is_blocked != 0){
                             ?>
                             <button class="affiliate-block-btn w-btn <?php echo ($is_blocked == 1) ? 'us-btn-style_1' : 'us-btn-style_2' ?>" 
-                                data-affiliate="<?php echo esc_attr($affiliate['ID']); ?>"
+                                data-affiliate="<?php echo esc_attr($affiliate['user_id']); ?>"
                                     data-blocked="<?php echo ($is_blocked == 1) ? '1' : '0'; ?>">
                                     <?php echo ($is_blocked == 1) ? 'Block' : 'Unblock'; ?>
                                 </button>
