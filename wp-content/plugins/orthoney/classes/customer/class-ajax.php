@@ -52,6 +52,7 @@ class OAM_Ajax{
         add_action( 'wp_ajax_orthoney_groups_ajax', array( $this, 'orthoney_groups_ajax_handler' ) );
         // Done
         
+		add_action( 'wp_ajax_delete_incompleted_order_button', array( $this, 'orthoney_delete_incompleted_order_button_handler' ) );
 		add_action( 'wp_ajax_deleted_group', array( $this, 'orthoney_deleted_group_handler' ) );
 		add_action( 'wp_ajax_orthoney_customer_order_process_ajax', array( $this, 'orthoney_customer_order_process_ajax_handler' ) );
         add_action('wp_ajax_remove_pdf_data',  array( $this,'remove_pdf_data_handler'));
@@ -2002,6 +2003,32 @@ class OAM_Ajax{
         }
     }
 
+    // Callback function for deleted Incomplete order
+    public function orthoney_delete_incompleted_order_button_handler() {
+        // Check if the Incomplete order name is provided
+        if (empty($_POST['id'])) {
+            wp_send_json_error(['message' => 'Incomplete order is required.']);
+        }
+    
+        $id = sanitize_text_field($_POST['id']);
+    
+        // Your logic to insert the Incomplete order into the database
+        global $wpdb;
+        $order_process_table = OAM_Helper::$order_process_table;
+    
+        $result = $wpdb->update(
+            $order_process_table,
+            ['visibility' => 0],
+            ['id' => $id]
+        );
+    
+        if ($result) {
+            wp_send_json_success(['message' => 'Incomplete order deleted successfully!']);
+        } else {
+            wp_send_json_error(['message' => 'Failed to delete incomplete order or incomplete order not found.']);
+        }
+    }
+
     // Callback function for bulk deleted recipient 
     public function orthoney_bulk_deleted_recipient_handler() {
         
@@ -3456,6 +3483,10 @@ class OAM_Ajax{
             $params[] = '%' . $wpdb->esc_like($search_value) . '%';
         }
         
+       
+        $where .= " AND visibility = %d";
+        $params[] = absint(1);
+        
         $where_sql = $wpdb->prepare($where, ...$params);
         
         // Total count
@@ -3463,10 +3494,10 @@ class OAM_Ajax{
         
         // Fetch paginated items
         $items = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM $order_process_table $where_sql ORDER BY $order_column $order_dir LIMIT %d, %d",
+            "SELECT * FROM $order_process_table $where_sql ORDER BY created DESC LIMIT %d, %d",
             $start, $length
         ));
-    
+            
         $data = [];
     
         if (!empty($items)) {
@@ -3479,6 +3510,7 @@ class OAM_Ajax{
                     : esc_url(ORDER_PROCESS_LINK . "?pid=" . $item->id);
     
                 $download_button = '';
+                $delete_action = '';
                 if (!empty($item->csv_name)) {
                     $download_url = esc_url(OAM_Helper::$process_recipients_csv_url . $item->csv_name);
                   $download_button = '<a href="' . esc_url( $download_url ) . '" class="button-icon-underline" download data-tippy="Download Recipients File"> <img src="' . esc_url( OH_PLUGIN_DIR_URL . 'assets/image/download.png' ) . '" alt="Download"> Download Recipients File</a>';
@@ -3487,9 +3519,11 @@ class OAM_Ajax{
                 $display_name = ($item->process_by == 0) ? 'Self' : esc_html(get_userdata($item->process_by)->display_name);
     
                 $action = "<a href='$resume_url' class='button-icon-underline'>";
+                
                 if($failed == 1){
                     $action .= '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">View Recipients';
                 }else{
+                    $delete_action = "<button data-id='".esc_html($item->id)."' data-name='".esc_html($item->name)."' data-tippy='Remove Incompleted List' class='deleteIncompletedOrderButton button-icon-underline'><i class='far fa-trash'></i>Remove</button>";
                     $action .= '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume Order';
                 }
                  $action .="</a>";
@@ -3499,7 +3533,7 @@ class OAM_Ajax{
                     'name' => esc_html($item->name),
                     'ordered_by' => esc_html($display_name),
                     'date' => esc_html($created_date),
-                    'action' =>$action . ($failed != 1 ? $download_button : '')
+                    'action' =>$action . ($failed != 1 ? $download_button : ''). $delete_action
                 ];
             }
         }

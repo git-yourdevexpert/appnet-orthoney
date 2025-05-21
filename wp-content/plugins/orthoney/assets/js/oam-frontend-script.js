@@ -644,6 +644,75 @@ document.addEventListener('click', function (event) {
             }
         });
     }
+
+
+    if (event.target.classList.contains('deleteIncompletedOrderButton')) {
+        console.log('sas');
+        event.preventDefault();
+        const target = event.target;
+        const groupID = target.getAttribute('data-id');
+        const groupName = target.getAttribute('data-name') || 'this Incomplete Order';
+
+        Swal.fire({
+            title: 'Are you sure?',
+            html: 'You are removing <strong>' + groupName + '</strong> incomplete order.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, I want',
+            cancelButtonText: 'Cancel',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                process_group_popup(); // Call the popup function before deleting
+
+                fetch(oam_ajax.ajax_url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'delete_incompleted_order_button',
+                        id: groupID,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: data.data.message,
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timerProgressBar: false,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            allowEnterKey: false,
+                        });
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.data.message,
+                            icon: 'error',
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'An error occurred while deleting the group.',
+                        icon: 'error',
+                    });
+                });
+            }
+        });
+    }
 });
 
 
