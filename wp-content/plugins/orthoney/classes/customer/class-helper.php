@@ -212,9 +212,14 @@ class OAM_Helper{
         $params[] = $max_qty;
 
         // Year filter
-        if (!empty($_REQUEST['selected_year'])) {
+        if (!isset($_REQUEST['selected_year'])) {
             $where_clauses[] = "YEAR(created_date) = %d";
-            $params[] = $selected_year;
+            $params[] = date("Y");
+        }else{
+            if (!empty($_REQUEST['selected_year'])) {
+                $where_clauses[] = "YEAR(created_date) = %d";
+                $params[] = $selected_year;
+            }
         }
 
         if (!empty($_REQUEST['search_by_organization'])) {
@@ -294,8 +299,11 @@ class OAM_Helper{
             ));
 
             $resume_url = '';
+           
             if ($wc_order_id && ($wc_order = wc_get_order($wc_order_id))) {
-                $order_date = $wc_order->get_date_created();
+                // echo $wc_order_id;
+                // echo "<br>";
+                 $order_date = $wc_order->get_date_created();
                 $editable = OAM_COMMON_Custom::check_order_editable($order_date);
 
                 $resume_url = '<a class="far fa-eye" href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id}?recipient-order={$recipient_order_id}") . '"></a>';

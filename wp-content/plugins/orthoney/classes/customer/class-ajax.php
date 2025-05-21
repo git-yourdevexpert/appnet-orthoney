@@ -2778,10 +2778,14 @@ class OAM_Ajax{
         $values[] = $min_qty;
         $values[] = $max_qty;
 
-
-        if (!empty($_REQUEST['selected_year'])) {
+        if (!isset($_REQUEST['selected_year'])) {
             $where[] = "YEAR(created_date) = %d";
-            $values[] = $year;
+            $values[] = date("Y");
+        }else{
+            if (!empty($_REQUEST['selected_year'])) {
+                $where[] = "YEAR(created_date) = %d";
+                $values[] = $year;
+            }
         }
 
         if (!empty($_REQUEST['search_by_organization'])) {
