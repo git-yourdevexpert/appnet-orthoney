@@ -1908,6 +1908,22 @@ jQuery(document).ready(function ($) {
         ? "No Failed Recipients list found"
         : "No incomplete orders found";
 
+    // Conditionally define columns
+    const columns = [
+        { data: 'id' },
+        { data: 'name' },
+        { data: 'ordered_by' }
+    ];
+
+    if (failedFlag !== 1) {
+        columns.push({ data: 'current_step'});
+    }
+
+    columns.push(
+        { data: 'date' },
+        { data: 'action', orderable: false, searchable: false }
+    );
+
     const dataTable = $table.DataTable({
         processing: true,
         serverSide: true,
@@ -1920,13 +1936,7 @@ jQuery(document).ready(function ($) {
                 d.failed = failedFlag;
             }
         },
-        columns: [
-            { data: 'id' },
-            { data: 'name' },
-            { data: 'ordered_by' },
-            { data: 'date' },
-            { data: 'action', orderable: false, searchable: false }
-        ],
+        columns: columns,
         drawCallback: function () {
             if (typeof initTippy === "function") {
                 initTippy();
@@ -1935,19 +1945,20 @@ jQuery(document).ready(function ($) {
         language: {
             emptyTable: emptyMessage
         },
-        dom: 'Bfrtip', // ✅ Important for buttons to show up
+        dom: 'Bfrtip',
         buttons: [
             {
                 extend: 'csvHtml5',
                 text: 'Export CSV',
                 filename: 'incomplete_orders_export',
                 exportOptions: {
-                    columns: ':not(:last-child)' // Exclude the last column (action)
+                    columns: ':not(:last-child)' // Exclude the action column
                 }
             }
         ]
     });
 });
+
 
 /**
  * Recipient Order Start

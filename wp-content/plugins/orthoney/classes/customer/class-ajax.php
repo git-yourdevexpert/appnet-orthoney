@@ -3477,10 +3477,33 @@ class OAM_Ajax{
             $where .= " AND step != 5";
         }
         
-        // Add search filter
-        if (!empty($search_value)) {
-            $where .= " AND name LIKE %s";
-            $params[] = '%' . $wpdb->esc_like($search_value) . '%';
+        $step_labels = [
+            1 => 'Step 2: Order Method',
+            2 => 'Step 3: Upload Recipients',
+            3 => 'Step 4: Add/Edit Recipients',
+            4 => 'Step 5: Verify Address',
+        ];
+                // Add search filter
+            if (!empty($search_value)) {
+            $search_term = '%' . $wpdb->esc_like($search_value) . '%';
+            $where .= " AND (name LIKE %s";
+
+            $params[] = $search_term;
+
+            // Attempt to find a step number that matches the label
+            $matching_step_keys = array_keys(array_filter($step_labels, function ($label) use ($search_value) {
+                return stripos($label, $search_value) !== false;
+            }));
+
+            if (!empty($matching_step_keys)) {
+                $placeholders = implode(',', array_fill(0, count($matching_step_keys), '%d'));
+                $where .= " OR step IN ($placeholders)";
+                foreach ($matching_step_keys as $step_key) {
+                    $params[] = $step_key;
+                }
+            }
+
+            $where .= ")";
         }
         
        
@@ -3528,13 +3551,20 @@ class OAM_Ajax{
                 }
                  $action .="</a>";
                  
-                $data[] = [
+                  $row = [
                     'id' => esc_html($item->id),
                     'name' => esc_html($item->name),
                     'ordered_by' => esc_html($display_name),
                     'date' => esc_html($created_date),
-                    'action' =>$action . ($failed != 1 ? $download_button : ''). $delete_action
+                    'action' => $action . ($failed != 1 ? $download_button : '') . $delete_action,
                 ];
+
+                if ($failed == 0) {
+                    $step = isset($step_labels[$item->step]) ? $step_labels[$item->step] : '';
+                    $row['current_step'] = esc_html($step);
+                }
+
+                $data[] = $row;
             }
         }
     
