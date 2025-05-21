@@ -1217,7 +1217,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let currentChunk = 0;
         let totalRows = 0;
         let pid = getURLParam("pid");
-        processDataSaveAjax(pid?.value || "0", currentStep);
+        // processDataSaveAjax(pid?.value || "0", currentStep + 1);
 
         // Start processing after a slight delay to ensure UI update
         setTimeout(() => {
