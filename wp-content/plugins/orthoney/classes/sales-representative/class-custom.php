@@ -55,7 +55,6 @@ public function populate_choose_customer_select_field($args, $field) {
         'role'    => 'customer',
         'orderby' => 'display_name',
         'order'   => 'ASC',
-        'number'  => 50, // increase slightly so you can filter after
         'meta_query' => [
             'relation' => 'OR',
             [
@@ -67,7 +66,7 @@ public function populate_choose_customer_select_field($args, $field) {
                 'key'     => 'last_name',
                 'value'   => $search,
                 'compare' => 'LIKE',
-            ],
+            ]
         ],
     ]);
 
