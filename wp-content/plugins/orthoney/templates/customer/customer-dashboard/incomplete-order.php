@@ -30,6 +30,7 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
                 <th>Sr No</th>
                 <th>Name</th>
                 <th>Ordered By</th>
+                <th>Current Step</th>
                 <th>Date</th>
                 <th>Action</th>
             </tr>
