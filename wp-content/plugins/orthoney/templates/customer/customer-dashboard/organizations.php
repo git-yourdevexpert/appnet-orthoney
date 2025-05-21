@@ -58,8 +58,6 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                     $is_blocked = $result['data']['affiliates'][$key]['status'];
                     $token = $result['data']['affiliates'][$key]['token'];
                     $current_url = home_url(add_query_arg([], $_SERVER['REQUEST_URI']));
-
-                    print_r($affiliate);
                         ?>
                         <tr>
                             <td><div class="thead-data">Token</div><?php echo esc_html($affiliate['token']); ?></td>
