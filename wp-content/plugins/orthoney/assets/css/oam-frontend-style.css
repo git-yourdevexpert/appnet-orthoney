@@ -2629,6 +2629,7 @@ body .woocommerce .order-process-block .button {
   width: 25px;
   height: 25px;
 }
+.button-icon-underline img[alt="Download"]{width:20px}
 .list-user-img {
   width: 20px;
   height: 20px;
