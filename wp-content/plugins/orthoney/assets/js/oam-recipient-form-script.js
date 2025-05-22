@@ -471,6 +471,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
           let unverifiedCount = 0;
           let verifiedCount = 0;
+          let dbtntext = 'I Want to Update/Fix Errors';
+
           if (unverifiedButton) {
              unverifiedCount = unverified_table.getAttribute("data-count");
           }
@@ -480,6 +482,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
           if (parseInt(unverifiedCount) == 0 && parseInt(verifiedCount) != 0) {
             html = `All submitted addresses are verified`;
+            dbtntext = `I Want to Update`;
+
           }
           if (parseInt(unverifiedCount) != 0 && parseInt(verifiedCount) == 0) {
             html = `All submitted addresses are Rejected`;
@@ -513,7 +517,7 @@ document.addEventListener("DOMContentLoaded", function () {
             denyButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             confirmButtonText: "Proceed With All Recipients (" + (parseInt(verifiedCount) + parseInt(unverifiedCount)) + ")",
-            cancelButtonText: "I Want to Update/Fix Errors",
+            cancelButtonText: dbtntext,
             denyButtonText: "Proceed With Only Verified Addresses (" + parseInt(unverifiedCount)  + ")",
             allowOutsideClick: false,
             allowEscapeKey: false,
