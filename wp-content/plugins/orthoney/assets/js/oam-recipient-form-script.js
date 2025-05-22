@@ -482,7 +482,7 @@ document.addEventListener("DOMContentLoaded", function () {
             html = `All submitted addresses are verified`;
           }
           if (parseInt(unverifiedCount) != 0 && parseInt(verifiedCount) == 0) {
-            html = `All submitted addresses are unverified`;
+            html = `All submitted addresses are Rejected`;
           }
          
           if (html == '') {
@@ -514,7 +514,7 @@ document.addEventListener("DOMContentLoaded", function () {
             cancelButtonColor: "#d33",
             confirmButtonText: "Proceed With All Recipients (" + (parseInt(verifiedCount) + parseInt(unverifiedCount)) + ")",
             cancelButtonText: "I Want to Update/Fix Errors",
-            denyButtonText: "Proceed With Only Verified Recipients (" + parseInt(unverifiedCount)  + ")",
+            denyButtonText: "Proceed With Only Verified Addresses (" + parseInt(unverifiedCount)  + ")",
             allowOutsideClick: false,
             allowEscapeKey: false,
             allowEnterKey: false,
