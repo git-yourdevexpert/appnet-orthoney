@@ -355,13 +355,17 @@ document.addEventListener("DOMContentLoaded", initTippy);
     });
   })();
   
-  const greetingTextareas = document.querySelectorAll("#multiStepForm textarea, #recipient-manage-form form textarea, #recipient-order-manage-popup textarea");
-  const maxChars = 250;
-  
+
+  const greetingTextareas = document.querySelectorAll("#multiStepForm textarea, #recipient-manage-form form textarea, #recipient-order-manage-popup textarea, #affiliate-mission-statement-form textarea");
+  let maxChars = 250;
+
   if (greetingTextareas.length) {
       greetingTextareas.forEach((textarea) => {
           const textareaDiv = textarea.closest(".textarea-div"); // Find closest parent
           if (textareaDiv) {
+             if (textarea.hasAttribute('data-limit')) {
+                maxChars = textarea.getAttribute('data-limit')
+                }
               const charCounter = textareaDiv.querySelector(".char-counter span");
               if (charCounter) { // Ensure charCounter exists
                   const updateCharCount = () => {
@@ -383,8 +387,8 @@ document.addEventListener("DOMContentLoaded", initTippy);
                   textarea.addEventListener("input", updateCharCount);
               }
           }
-      });
-  }
+    });
+}
 
 
 
@@ -1615,7 +1619,7 @@ document.addEventListener('click', function (event) {
     if (event.target.classList.contains('affiliate-block-btn')) {
         event.preventDefault();
         let isBlocked = event.target.getAttribute('data-blocked');
-        let action = isBlocked ? 'unblock' : 'block';
+        let action = isBlocked == 1 ? 'unblock' : 'block';
         let affiliateCode = event.target.getAttribute('data-affiliate');
 
         Swal.fire({

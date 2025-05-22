@@ -771,7 +771,7 @@ class OAM_Helper{
 						
                         $reasons = implode(", ", json_decode($data->reasons, true));
                         if($reasons != ''){
-							$reasonsHtml = '<div class="tooltip" data-tippy="'.$reasons.'">Data Failed</span></div>';
+							$reasonsHtml = '<div class="tooltip" data-tippy="'.$reasons.'">Failed to Add to Order</span></div>';
                         }
                     }
                     $reasonsHtml .= '</div>';
@@ -810,7 +810,7 @@ class OAM_Helper{
 
                 if($alreadyOrder == 0){
                     if($reverify != 1){
-                        $html .= '<td data-label="Status"><div class="thead-data">Status</div>'.(($data->verified == 0) ? $reasonsHtml: 'Data Validated').'</td>';
+                        $html .= '<td data-label="Status"><div class="thead-data">Status</div>'.(($data->verified == 0) ? $reasonsHtml: 'Added to Order').'</td>';
                     }
                     if($reverify == 1){
                         $html .= '<td data-label="Action"><div class="thead-data">Action</div>';
@@ -1584,19 +1584,19 @@ class OAM_Helper{
                 if ($city !== $data[0]['components']['city_name']) {
                     $response = [
                         'success' => false,
-                        'message' => 'Provided city is invalid. Vallid city is <span style="color: #6BBE56;">'.$data[0]['components']['city_name'].'</span>'
+                        'message' => 'Provided city is invalid. Valid city is <span style="color: #6BBE56;">'.$data[0]['components']['city_name'].'</span>'
                     ];
                     return json_encode($response);
                 } elseif ($state !== $data[0]['components']['state_abbreviation']) {
                     $response = [
                         'success' => false,
-                        'message' => 'Provided state is invalid. Vallid state is <span style="color: #6BBE56;">'.$data[0]['components']['state_abbreviation'].'</span>'
+                        'message' => 'Provided state is invalid. Valid state is <span style="color: #6BBE56;">'.$data[0]['components']['state_abbreviation'].'</span>'
                     ];
                     return json_encode($response);
                 } elseif ($zipcode !== $data[0]['components']['zipcode']) {
                     $response = [
                         'success' => false,
-                        'message' => 'Provided zipcode is invalid. Vallid zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'</span>'
+                        'message' => 'Provided zipcode is invalid. Valid zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'</span>'
                     ];
                     return json_encode($response);
                 }

@@ -9,12 +9,96 @@ class OAM_AFFILIATE_Custom {
      * Constructor to hook into Affiliate template loading.
      */
     public function __construct() {
+        add_action('init', array($this, 'affiliate_import_handler'));
         add_action('init', array($this, 'affiliate_dashboard_handler'));
         add_filter('yith_wcaf_registration_form_affiliate_pending_text', array($this, 'custom_affiliate_pending_message'));
 
         add_action('wp_footer', [$this, 'maybe_show_loader_and_redirect']);
         add_action('user_register', [$this, 'schedule_user_meta'], 10, 1);
         add_action('set_default_user_meta_after_register', [$this, 'handle_user_meta_and_email']);
+    }
+
+    public function affiliate_import_handler() {
+        if(isset($_GET['affiliate_data_import']) &&  $_GET['affiliate_data_import'] = 'import') {
+            global $wpdb;
+
+            $current_user = get_current_user_id();
+
+            $query = "
+                SELECT um1.user_id, um2.meta_value AS _userinfo
+                FROM {$wpdb->usermeta} um1
+                INNER JOIN {$wpdb->usermeta} um2 
+                    ON um1.user_id = um2.user_id
+                WHERE um1.meta_key = %s 
+                AND um2.meta_key = %s
+            ";
+
+            $results = $wpdb->get_results($wpdb->prepare($query, 'DJarPrice', '_userinfo'));
+
+            foreach ($results as $row) {
+                $userinfo = maybe_unserialize($row->_userinfo);
+                if (!is_array($userinfo) || empty($userinfo['Email'])) {
+                    continue;
+                }
+
+
+                $main_email = strtolower($userinfo['Email']);
+
+                // Optional meta updates for current user
+                $description = $userinfo['Distributor']['description'] ?? '';
+                $card_wording = $userinfo['Distributor']['card_wording'] ?? '';
+                update_user_meta($row->user_id, 'mission_statement', sanitize_text_field($description));
+                update_user_meta($row->user_id, 'gift_card', sanitize_text_field($card_wording));
+
+                // Contact roles to check
+                $contact_roles = [
+                    'Primary'   => 'primary-contact',
+                    'CoChair'   => 'co-chair',
+                    'Alternate' => 'alternative-contact',
+                ];
+
+                foreach ($contact_roles as $key => $role_meta_key) {
+
+                    $contact = $userinfo['Distributor'][$key] ?? null;
+                
+                    if (!$contact || empty($contact['Email'])) {
+                        continue;
+                    }
+
+                    $contact_email = strtolower(sanitize_email($contact['Email']));
+                    if ($contact_email === $main_email) {
+                        continue; // Same as main, skip
+                    }
+                    
+
+                    // Check if user already exists
+                    if (email_exists($contact_email)) {
+                        continue; // User already exists
+                    }
+
+                    $first_name     = sanitize_text_field($contact['FirstName'] ?? '');
+                    $last_name      = sanitize_text_field($contact['LastName'] ?? '');
+                    $phone          = sanitize_text_field($contact['Phone'] ?? '');
+                    $affiliate_type = sanitize_text_field($role_meta_key ?? '');
+
+                    // Create user
+                    $password = wp_generate_password();
+                    $user_id = wp_create_user($contact_email, $password, $contact_email);
+
+                    if (!is_wp_error($user_id)) {
+                        $user = get_user_by('id', $user_id);
+                        $user->set_role('affiliate_team_member');
+                        $user->add_role('customer');
+
+                        update_user_meta($user_id, 'first_name', $first_name);
+                        update_user_meta($user_id, 'last_name', $last_name);
+                        update_user_meta($user_id, 'phone', $phone);
+                        update_user_meta($user_id, 'user_field_type', $affiliate_type);
+                        update_user_meta($user_id, 'associated_affiliate_id', $row->user_id);
+                    }
+                }
+            }
+        }
     }
 
      /**

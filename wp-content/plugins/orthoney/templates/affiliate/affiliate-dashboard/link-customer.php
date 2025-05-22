@@ -47,6 +47,7 @@ $requests = $wpdb->get_results(
             </thead>
             <tbody>
                 <?php 
+                
                 if (!empty($requests)) {
                     foreach ($requests as $request) {
                         
@@ -54,21 +55,21 @@ $requests = $wpdb->get_results(
                         $customer = get_userdata($request->customer_id);
                         $customer_name = $customer ? esc_html($customer->display_name) : 'Unknown';
                         $customer_email = $customer ? esc_html($customer->user_email) : 'Unknown';
-                        $status_label = ($request->status == 1) ? '<span class="green-text">Approved</span>' :  '<span class="red-text"> Pending</span>';
+                        $status_label = ($request->status == 1) ? 'Approved' : 'Block';
                         
                         echo '<tr>
                                 <td><div class="thead-data">ID</div>' . esc_html($request->id) . '</td>
                                 <td><div class="thead-data">Customer Name</div>' . $customer_name . '</td>
                                 <td><div class="thead-data">Customer Email</div>' . $customer_email . '</td>
-                                <td><div class="thead-data">Status</div>' . ($status_label) . '</td>';
+                                <td><div class="thead-data">Status</div>' . esc_html($status_label) . '</td>';
                         
                         // Show resend button if status is pending
                         if ($request->status == 0) {
-                            echo '<td><div class="thead-data">Action</div><button class="resend-email-btn icon-txt-btn" data-customer-id="' . esc_attr($request->customer_id) . '"><img src="https://orthoney.appnet-projects.com/wp-content/plugins/orthoney/assets/image/re-order-icon.png">Resend Email</button></td>';
+                            echo '<td><div class="thead-data">Action</div><button class="resend-email-btn icon-txt-btn" data-customer-id="' . esc_attr($request->customer_id) . '"><img src="'.OH_PLUGIN_DIR_URL.'/assets/image/re-order-icon.png">Resend Email</button></td>';
                         } else {
                             if ($request->status == 1) {
                                 echo '<td><div class="thead-data">Action</div>';
-                                echo '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($request->customer_id) . '"><img src="https://orthoney.appnet-projects.com/wp-content/plugins/orthoney/assets/image/login-customer-icon.png">Login as Customer</button></td>';
+                                echo '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($request->customer_id) . '"><img src="'.OH_PLUGIN_DIR_URL.'/assets/image/login-customer-icon.png">Login as Customer</button></td>';
                             }else{
                                 echo '<td><div class="thead-data">Action</div>-</td>';
                             }

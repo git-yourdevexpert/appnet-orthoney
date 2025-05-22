@@ -471,6 +471,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
           let unverifiedCount = 0;
           let verifiedCount = 0;
+          let dbtntext = 'I Want to Update/Fix Errors';
+
           if (unverifiedButton) {
              unverifiedCount = unverified_table.getAttribute("data-count");
           }
@@ -480,9 +482,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
           if (parseInt(unverifiedCount) == 0 && parseInt(verifiedCount) != 0) {
             html = `All submitted addresses are verified`;
+            dbtntext = `I Want to Update`;
+
           }
           if (parseInt(unverifiedCount) != 0 && parseInt(verifiedCount) == 0) {
-            html = `All submitted addresses are unverified`;
+            html = `All submitted addresses are Rejected`;
           }
          
           if (html == '') {
@@ -513,8 +517,8 @@ document.addEventListener("DOMContentLoaded", function () {
             denyButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             confirmButtonText: "Proceed With All Recipients (" + (parseInt(verifiedCount) + parseInt(unverifiedCount)) + ")",
-            cancelButtonText: "I Want to Update/Fix Errors",
-            denyButtonText: "Proceed With Only Verified Recipients (" + parseInt(unverifiedCount)  + ")",
+            cancelButtonText: dbtntext,
+            denyButtonText: "Proceed With Only Verified Addresses (" + parseInt(unverifiedCount)  + ")",
             allowOutsideClick: false,
             allowEscapeKey: false,
             allowEnterKey: false,
@@ -523,7 +527,7 @@ document.addEventListener("DOMContentLoaded", function () {
             willOpen: () => {
               if (parseInt(unverifiedCount) != 0 && parseInt(verifiedCount) == 0) {
                 Swal.getConfirmButton().style.display = "inline-block";
-                Swal.getConfirmButton().textContent = "Yes, Proceed (" + parseInt(unverifiedCount)  + ")"; 
+                Swal.getConfirmButton().textContent = "Proceed With All (" + parseInt(unverifiedCount)  + ")"; 
               } else if (parseInt(unverifiedCount) == 0 && parseInt(verifiedCount) != 0) {
                 Swal.getDenyButton().style.display = "inline-block";
                 Swal.getDenyButton().textContent = "Yes, Proceed(" + (parseInt(verifiedCount) + parseInt(unverifiedCount)) + ")"; 

@@ -1785,7 +1785,7 @@ class OAM_Ajax{
                 // Generate Success HTML
                 if(!empty($successData)){
                     $successHtml .= '<div class="heading-title">
-                    <div><h5 class="table-title">Success Recipients</h5></div>
+                    <div><h5 class="table-title">Added Recipients</h5></div>
                     <div class="links-group">
                     <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove all recipients who have already placed an order this season.">Remove Already Ordered Recipients</button><div class="vline"></div>
                     <button class="viewSuccessRecipientsAlreadyOrder btn-underline" data-status="0" data-tippy="View all recipients who have already placed an order this season." style="display:none">View Already Ordered Recipients</button><div class="search-icon"> <div class="icon"></div></div>  
@@ -2595,6 +2595,12 @@ class OAM_Ajax{
     }
 
     public function orthoney_affiliate_status_toggle_block_handler() {
+
+        /**
+         * 1 : Unblock/Active
+         * 0 : Block/Deactivate
+         * -1 : Pending Request
+         */ 
         global $wpdb;
         $user_id = get_current_user_id();
         $oh_affiliate_customer_linker = OAM_Helper::$oh_affiliate_customer_linker;
@@ -2620,7 +2626,7 @@ class OAM_Ajax{
         );
 
         if ($update_status == 1) {
-            wp_send_json_error(['message' => 'The organization has been blocked.']);
+            wp_send_json_success(['message' => 'The organization has been blocked.']);
         }else{
             wp_send_json_success(['message' => 'The organization has been unblocked.']);
         }

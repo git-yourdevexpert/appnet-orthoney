@@ -11,11 +11,13 @@ $last_name = get_user_meta($user_id, 'last_name', true);
 $user = get_userdata($user_id);
 $email = $user->user_email;
 
-//TODO
+//TODO description
 $name_of_your_organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
 $your_organizations_website = get_user_meta($user_id, '_yith_wcaf_your_organizations_website', true);
 $phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true);
 $address = get_user_meta($user_id, '_yith_wcaf_address', true);
+$mission_statement = get_user_meta($user_id, 'mission_statement', true);
+$gift_card = get_user_meta($user_id, 'gift_card', true);
 $city = get_user_meta($user_id, '_yith_wcaf_city', true);
 $product_price = get_user_meta($user_id, 'DJarPrice', true);
 $state = get_user_meta($user_id, '_yith_wcaf_state', true);
@@ -97,7 +99,72 @@ $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
 </div>
 
 
-<br>
+<div class="two-col-grid">
+                    <div class="cl-left">
+<div class="order-process-block">
+  <div class="heading-title">
+    <h3 class="block-title">Mission Statement</h3>
+  </div>
+
+  <div class="affiliate-profile" id="update-price-affiliate-form">
+    <form id="affiliate-mission-statement-form">
+      <div class="form-row gfield--width-half">
+
+        <div class="textarea-div form-row gfield--width-full">
+          <textarea rows="10" name="mission_statement" id="mission_statement" data-error-message="Please enter a Mission Statement" data-limit="700" style="min-height: 300px;"><?php echo $mission_statement ?></textarea>
+          <span class="error-message"></span>
+          <div class="char-counter"><span>700</span> characters remaining</div>
+        </div>
+
+        <div class="form-row text-right">
+          <button type="button" class="add-user w-btn us-btn-style_1" id="affiliate-product-price-profile">Update Mission Statement</button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+</div>
+<div class="cl-right">
+
+
+<div class="order-process-block">
+  <div class="heading-title">
+    <div>
+      <h3 class="block-title">Gift Card</h3>
+      <br>
+      <p>
+        A personalized gift card will be included inside of every box of honey we send. The bottom of the gift card acknowledges a donation to your organization. <br>
+        Please indicate the exact (brief) name for your organization to be inserted into this sentence:
+      </p> 
+    </div>
+  </div>
+
+  <div class="affiliate-profile" id="update-price-affiliate-form">
+    <form id="affiliate-gift-card-form">
+      <div class="form-row gfield--width-half">
+
+        <div class="textarea-div form-row gfield--width-full">
+          <label for="gift_card">
+            "In celebration of the New Year, a donation has been made in your name to
+          </label>
+          <input type="text" name="gift_card" id="gift_card" value="<?php echo $gift_card ?>"  data-error-message="Please enter a gift card" >
+          <span class="error-message"></span>
+        </div>
+
+        <div class="form-row text-right">
+          <button type="button" class="add-user w-btn us-btn-style_1" id="affiliate-product-price-profile">Update Gift Card</button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="two-col-grid">
+<div class="cl-left">
 <div class="order-process-block  form-deisgn">
     <div class="heading-title">
         <h3 class="block-title">Update Product Price</h3>
@@ -122,6 +189,9 @@ $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
     </div>
 </div>
 
-<br>
+</div>
+<div class="cl-right">
 <div class="order-process-block  form-deisgn">
 <div class="heading-title"><h3 class="block-title">Change Password</h3><a href="<?php echo OAM_Helper::$customer_dashboard_link.'edit-account/'; ?>" class="add-user w-btn us-btn-style_1 active">Change Password</a></div></div>
+</div>
+</div>
