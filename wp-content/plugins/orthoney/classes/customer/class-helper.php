@@ -771,7 +771,7 @@ class OAM_Helper{
 						
                         $reasons = implode(", ", json_decode($data->reasons, true));
                         if($reasons != ''){
-							$reasonsHtml = '<div class="tooltip" data-tippy="'.$reasons.'">Data Failed</span></div>';
+							$reasonsHtml = '<div class="tooltip" data-tippy="'.$reasons.'">Failed to Add to Order</span></div>';
                         }
                     }
                     $reasonsHtml .= '</div>';
