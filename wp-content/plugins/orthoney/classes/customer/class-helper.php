@@ -810,7 +810,7 @@ class OAM_Helper{
 
                 if($alreadyOrder == 0){
                     if($reverify != 1){
-                        $html .= '<td data-label="Status"><div class="thead-data">Status</div>'.(($data->verified == 0) ? $reasonsHtml: 'Data Validated').'</td>';
+                        $html .= '<td data-label="Status"><div class="thead-data">Status</div>'.(($data->verified == 0) ? $reasonsHtml: 'Added to Order').'</td>';
                     }
                     if($reverify == 1){
                         $html .= '<td data-label="Action"><div class="thead-data">Action</div>';
