@@ -38,7 +38,7 @@ $requests = $wpdb->get_results(
 <!-- Search and filter options -->
 <!-- list -->
  <div class="affiliate-dashboard order-process-block">
-   <h3>Alreadey link customer /h3>
+   <h3>Alreadey link customer </h3>
     <div id="affiliate-results" class="orthoney-datatable-warraper table-with-search-block">
         <table>
             <thead>
