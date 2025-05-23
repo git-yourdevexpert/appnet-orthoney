@@ -980,7 +980,7 @@ document.addEventListener('click', function (event) {
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You are removing ' + recipientname,
+            text: 'You are removing a duplicate of ' + recipientname,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
