@@ -75,7 +75,8 @@ class OAM_Hooks {
                             'Change Admin' => ORGANIZATION_DASHBOARD_LINK . 'change-admin/',
                             'Linked Customers' => ORGANIZATION_DASHBOARD_LINK . 'link-customer/',
                             'Organization Users' => ORGANIZATION_DASHBOARD_LINK . 'user-list/',
-                            'My Profile' => ORGANIZATION_DASHBOARD_LINK . 'my-profile/',
+                            'Organization Profile' => ORGANIZATION_DASHBOARD_LINK . 'my-profile/',
+                            'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account/',
                         ]
                     ],
                     'customer-menu' => [ // Menu slug
