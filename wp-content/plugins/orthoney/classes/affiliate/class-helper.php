@@ -341,7 +341,7 @@ class OAM_AFFILIATE_Helper {
             $results = $wpdb->get_row($wpdb->prepare(
                 "SELECT 
                     SUM(c.amount) AS total_amount,
-                    GROUP_CONCAT(c.order_id ORDER BY o.date_created_gmt DESC) AS order_ids,
+                    GROUP_CONCAT( DISTINCT c.order_id ORDER BY o.date_created_gmt DESC) AS order_ids,
                     SUM(q.total_qty) AS total_quantity
                 FROM {$wpdb->prefix}yith_wcaf_commissions c
                 INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
