@@ -59,12 +59,12 @@ if ($first_segment == 'dashboard'){
     <div class="order-filter-tab">
         <label for="main_order">
                 <input type="radio" id="main_order" name="table_order_type" value="main_order" checked>
-                <span>Main Order</span>
+                <span>Order List by Number</span>
         </label>
             
         <label for="sub_order_order">
             <input type="radio" id="sub_order_order" name="table_order_type" value="sub_order_order">
-            <span>Jar Order</span>
+            <span>Order list by Recipient Number </span>
         </label>
     </div>
     <table id="customer-orders-table" data-tabletype="<?php echo $first_segment; ?>" class="display">
@@ -91,11 +91,12 @@ if ($first_segment == 'dashboard'){
     <thead>
         <tr>
             <!-- <th>Select</th> -->
-            <th>Jar No</th>
+            <th>Recipient No</th>
             <th>Date</th>
             <th>Recipient Name</th>
             <th>Organization Code</th>
             <th>Total Honey Jar</th>
+            <th>Jar Tracking</th>
             <th>Status</th>
             <!-- <th>Price</th> -->
             <th style="width:200px">Action</th>
@@ -120,4 +121,47 @@ if ($first_segment == 'dashboard'){
             <button type="button" class="w-btn us-btn-style_4" data-lity-close>Cancel</button>
         </div>
     </div>
+</div>
+
+<div id="view-order-tracking-popup" class="lity-hide black-mask full-popup popup-show">
+    <h3>Order Tracking Details</h3>
+    <div class=" orthoney-datatable-warraper">
+        <table >
+        <thead>
+            <tr>
+                <th>Jar Order No</th>
+                <th>Tracking No.</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>202504290004-1-1</td>
+                <td>202504290004-1-1</td>
+                <td>On the Way</td>
+            </tr>
+            <tr>
+                <td>202504290004-1-1</td>
+                <td>202504290004-1-1</td>
+                <td>On the Way</td>
+            </tr>
+            <tr>
+                <td>202504290004-1-1</td>
+                <td>202504290004-1-1</td>
+                <td>On the Way</td>
+            </tr>
+            <tr>
+                <td>202504290004-1-1</td>
+                <td>202504290004-1-1</td>
+                <td>On the Way</td>
+            </tr>
+            <tr>
+                <td>202504290004-1-1</td>
+                <td>202504290004-1-1</td>
+                <td>On the Way</td>
+            </tr>
+        </tbody>
+</table>
+</div>
+
 </div>

@@ -2895,6 +2895,7 @@ const tabletype =  $('#customer-orders-table').data('tabletype');
             { data: 'billing_name', orderable: false, searchable: false },
             { data: 'affiliate_code', orderable: false, searchable: false },
             { data: 'total_jar', orderable: false, searchable: false },
+            { data: 'jar_tracking', orderable: false, searchable: false },
             { data: 'status', orderable: false, searchable: false },
             { data: 'action', orderable: false, searchable: false }
         ],
