@@ -603,7 +603,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     if (!empty($_GET['pid']) && empty($result['data']['newCount'])) { 
                         ?>
                         <div class="heading-title">
-                            <div><h5 class="table-title">New Recipients</h5></div>
+                            <div><h5 class="table-title">Additional Recipients</h5></div>
                             <div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div>
                         </div>
                         <?php 

@@ -1777,7 +1777,7 @@ class OAM_Ajax{
             
                 // Generate new data HTML
                 if(!empty($newData)){
-                    $newDataHtml .= '<div class="heading-title"><h5 class="table-title">New Recipients</h5><div class="right-col"><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button><div class="search-icon"> <div class="icon"></div></div>  </div>';
+                    $newDataHtml .= '<div class="heading-title"><h5 class="table-title">Additional Recipients</h5><div class="right-col"><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button><div class="search-icon"> <div class="icon"></div></div>  </div>';
                     $newDataHtml .= OAM_Helper::get_table_recipient_content($newData, $customGreeting);
                     
                 }
