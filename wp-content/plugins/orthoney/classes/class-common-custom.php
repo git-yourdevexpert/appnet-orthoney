@@ -581,7 +581,8 @@ class OAM_COMMON_Custom {
         WHERE user_id = %d 
         AND name = %s 
         AND id != %d 
-        ", get_current_user_id(), $csv_name, $process_id);
+        AND visibility = %d 
+        ", get_current_user_id(), $csv_name, $process_id, 1);
         $processExistResult = $wpdb->get_var($processExistQuery);
 
         return !empty($processExistResult);

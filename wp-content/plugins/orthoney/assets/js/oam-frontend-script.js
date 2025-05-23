@@ -73,7 +73,8 @@ function affiliateDatatable(){
     });
     
     
-     ["affiliate-orderlist-table"].forEach((id) => {
+    ["affiliate-orderlist-table"].forEach((id) => {
+
     const div = document.getElementById(id);
     if (div && div.innerHTML.trim() !== "") {
       const tableEl = div.querySelector("table");
@@ -120,8 +121,8 @@ function affiliateDatatable(){
               });
 
             // Populate dropdown
-            Array.from(years).sort().forEach((year) => {
-              yearSelect.append(`<option value="${year}">${year}</option>`);
+           Array.from(years).sort((a, b) => b - a).forEach((year) => {
+                yearSelect.append(`<option value="${year}">${year}</option>`);
             });
 
             // Append dropdown next to search box
@@ -598,7 +599,7 @@ document.addEventListener('click', function (event) {
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, I want',
+            confirmButtonText: 'Yes',
             cancelButtonText: 'Cancel',
             allowOutsideClick: false,
             allowEscapeKey: false,
@@ -664,7 +665,7 @@ document.addEventListener('click', function (event) {
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, I want',
+            confirmButtonText: 'Yes',
             cancelButtonText: 'Cancel',
             allowOutsideClick: false,
             allowEscapeKey: false,

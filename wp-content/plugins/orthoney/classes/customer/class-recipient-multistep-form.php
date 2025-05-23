@@ -19,6 +19,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     public static function init() {}
 
     public function recipient_multistep_form_handler($atts) {
+        global $wpdb;
+        $order_process_table = OAM_Helper::$order_process_table;
         if (!is_user_logged_in()) {
             // return OAM_COMMON_Custom::message_design_block(
             //     'If you want to access this page, please',
@@ -28,6 +30,27 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             wp_redirect(home_url('/login/'));
             exit;
         }
+
+        
+         if (isset($_GET['pid']) && !empty($_GET['pid'])) {
+            $processExistQuery = $wpdb->prepare("
+            SELECT visibility
+            FROM {$order_process_table}
+            WHERE user_id = %d 
+            AND id = %d 
+            AND visibility = %d 
+            ", get_current_user_id(), $_GET['pid'], 0);
+
+            $processExistResult = $wpdb->get_var($processExistQuery);
+
+            if($processExistResult == 0){
+                return OAM_COMMON_Custom::message_design_block(
+                    'This order has been deleted. Please create a new order.',
+                    get_the_permalink(),
+                    'Create a New Order'
+                );
+            }
+         }
 
         ob_start();
     
@@ -55,8 +78,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 $currentStep = 0;
             
                 if (!empty($_GET['pid'])) {
-                    global $wpdb;
-                    $order_process_table = OAM_Helper::$order_process_table;
+                    
+                   
                     $user = self::$current_user_id;
                     $result = $wpdb->get_row($wpdb->prepare(
                         "SELECT * FROM {$order_process_table} WHERE user_id = %d AND id = %d",
@@ -206,7 +229,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     </div>
                     <h4 class="content-title">Don't Have An Organization? <a href="javascript:;" class="next-with-ortHoney-affiliates">Click Here</a></h4>
                 </div>
-                <div class="block-btn"><button type="button" class="next w-btn us-btn-style_1">Next</button></div>
+                <div class="block-btn"><button type="button" class="next w-btn us-btn-style_1">Select Order Method</button></div>
             </div>
         </div>
     <?php
@@ -389,7 +412,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     <button type="button" class="back w-btn us-btn-style_2">Back</button>
                     <button data-href="<?php echo CUSTOMER_DASHBOARD_LINK; ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
                 </div>
-                <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>" class="next w-btn us-btn-style_1" style="float:right">Next</button>
+                <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>" class="next w-btn us-btn-style_1" style="float:right">Proceed Order</button>
             </div>
         </div>
     <?php
@@ -484,7 +507,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     <button type="button" class="back w-btn us-btn-style_2">Back</button>
                     <button data-href="<?php echo CUSTOMER_DASHBOARD_LINK; ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
                 </div>
-                <button type="button" class="submit_csv_file w-btn next-step us-btn-style_1" style="float:right">Next </button>
+                <button type="button" class="submit_csv_file w-btn next-step us-btn-style_1" style="float:right">Add Recipients </button>
             </div>
         </div>
     <?php
@@ -623,7 +646,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             data-duplicateCount="<?php echo $result['data']['duplicateCount']; ?>"
                             data-duplicatePassCount="<?php echo $result['data']['duplicatePassCount'];?>"
                             data-duplicateFailCount="<?php echo $result['data']['duplicateFailCount']; ?>">
-                            Next
+                            Verify Recipient Addresses
                         </button>
                         <?php  } ?>
                     </div>
