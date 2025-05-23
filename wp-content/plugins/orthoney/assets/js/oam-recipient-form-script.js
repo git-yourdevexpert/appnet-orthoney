@@ -888,12 +888,12 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           // if (successCount != 0) {
-            html += `<li><span>Successful Recipients: </span> ${successCount}</li>`;
+            html += `<li><span>Uploaded Recipients: </span> ${successCount}</li>`;
           // }
           
          
           // if (parseInt(newCount) !== 0) {
-            html += `<li><span>New Recipient: </span> ${newCount}</li>`;
+            html += `<li><span>Additional Recipients: </span> ${newCount}</li>`;
           // }
           // if (duplicateCount !== 0 && duplicatePassCount !== 0) {
               html += `<li><span>Duplicate Recipients: </span> ${duplicatePassCount}</li>`;

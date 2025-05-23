@@ -561,10 +561,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         <?php
                         $sections = [
                             'fail'     => 'Failed',
-                            'success'  => 'Success',
+                            'success'  => 'Uploaded',
                             'duplicate' => 'Duplicate',
                             // 'alreadyOrder' => 'Already Ordered',
-                            'new'      => 'New'
+                            'new'      => 'Additional'
                         ];
                         if(self::$atts_process_id != 0){
                             $sections = [
