@@ -939,7 +939,7 @@ document.addEventListener("DOMContentLoaded", function () {
               }
 
               if((parseInt(failCount) + parseInt(duplicateFailCount)) == 0 ){
-                Swal.getCancelButton().textContent = 'I Want to Update Errors';
+                Swal.getCancelButton().textContent = 'I Want to Update';
               }
             },
           });
