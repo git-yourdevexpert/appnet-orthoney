@@ -23,11 +23,11 @@ $requests = $wpdb->get_results(
 );
 
 ?>
-<div class="affiliate-dashboard order-process-block mb-20">
+<div class="affiliate-dashboard order-process-block pb-40 mb-40">
     <h3>Search customer here to link</h3>
     <!-- Search and filter options -->
     <div class="filter-container orthoney-datatable-warraper">
-        <div class="customer-email-search">       <input type="text" id="customer-email-search" required placeholder="Enter Customer Email" data-error-message="Please enter a Email.">
+        <div class="customer-email-search linked-customer-search">       <input type="text" id="customer-email-search" required placeholder="Enter Customer Email" data-error-message="Please enter a Email.">
         
             <span class="error-message"></span>
     <button id="search-button" class="w-btn us-btn-style_2">Search</button>
@@ -38,7 +38,7 @@ $requests = $wpdb->get_results(
 <!-- Search and filter options -->
 <!-- list -->
  <div class="affiliate-dashboard order-process-block">
-   <h3>Alreadey link customer /h3>
+   <h3>Alreadey link customer </h3>
     <div id="affiliate-results" class="orthoney-datatable-warraper table-with-search-block">
         <table>
             <thead>

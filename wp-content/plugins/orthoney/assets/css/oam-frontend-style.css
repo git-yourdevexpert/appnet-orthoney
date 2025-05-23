@@ -5,9 +5,10 @@
    color:var(--color-content-primary);
 }
 .text-center{ text-align: center;}
-.mb-20{
-   margin-bottom: 20px;
+.mb-40{
+   margin-bottom: 40px;
 }
+
 /* Multi-Step Form Styling */
 .order-block-wrap {
   position: relative;
@@ -115,6 +116,8 @@
   position: relative;
   background: #f0f4f7;
 }
+.order-process-block.pb-40{ padding-bottom: 40px;}
+.order-process-block.pb-40 .filter-container{margin-bottom: 0;}
 /* .order-process-block:after {
   background-image: url(../images/footer-pattern.png);
   bottom: 0;
@@ -3435,6 +3438,7 @@ transition: all 0.3s ease;
  
 .table-with-search-block .dataTables_wrapper .dataTables_filter{margin-bottom: 20px; display: flex; gap:15px}
 .customer-email-search{display: flex; gap:5px}
+.customer-email-search.linked-customer-search{width: 100%;}
 .filter-container .customer-email-search input{    border-radius: 5px;
     border: 0;
 
