@@ -492,9 +492,9 @@ document.addEventListener("DOMContentLoaded", function () {
           if (html == '') {
             html = `Out of the ${(parseInt(verifiedCount) + parseInt(unverifiedCount))} submitted addresses`;
             if(verifiedButton == 1){
-              html +=`, ${(parseInt(verifiedCount))}  has been successfully verified.`;
+              html +=`, (${(parseInt(verifiedCount))})  has been successfully verified`;
             }else{
-              html +=`, ${(parseInt(verifiedCount))}  have been successfully verified.`;
+              html +=`, (${(parseInt(verifiedCount))}) have been successfully verified`;
             }
           }
 
@@ -874,9 +874,9 @@ document.addEventListener("DOMContentLoaded", function () {
           if(html == ''){
             html += `Out of ${totalCount} recipients, `;
             if(parseInt(successCount) + parseInt(newCount) + parseInt(duplicatePassCount) == 1){
-              html += `${parseInt(successCount) + parseInt(newCount) + parseInt(duplicatePassCount)} has been successfully added. `;
+              html += `${parseInt(successCount) + parseInt(newCount) + parseInt(duplicatePassCount)} has been successfully added`;
             }else{
-              html += `${parseInt(successCount) + parseInt(newCount) + parseInt(duplicatePassCount)} have been successfully added. `;
+              html += `${parseInt(successCount) + parseInt(newCount) + parseInt(duplicatePassCount)} have been successfully added`;
             }
             
           }
