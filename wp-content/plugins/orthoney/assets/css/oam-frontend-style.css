@@ -5,6 +5,9 @@
    color:var(--color-content-primary);
 }
 .text-center{ text-align: center;}
+.mb-20{
+   margin-bottom: 20px;
+}
 /* Multi-Step Form Styling */
 .order-block-wrap {
   position: relative;
