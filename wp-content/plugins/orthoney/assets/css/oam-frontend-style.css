@@ -2596,6 +2596,8 @@ body .woocommerce .order-process-block .button {
 .two-col-grid.two-column-block{
   margin: 20px 0;
 } 
+
+.two-col-grid.two-column-block .order-process-block{height: 100%;}
 .two-col-grid.two-column-block .cl-left, 
 .two-col-grid.two-column-block .cl-right{
    padding: 0;
