@@ -811,10 +811,13 @@ class OAM_Helper{
                 // $html .= '<td>'.$greetingHtml.'</td>';
 
                 if($alreadyOrder == 0){
-                    if($reverify != 1){
+                    if($reverify == 0){
                         $html .= '<td data-label="Status"><div class="thead-data">Status</div>'.(($data->verified == 0) ? $reasonsHtml: 'Added to Order').'</td>';
                     }
-                    if($reverify == 1){
+                    if($reverify == 1 OR $reverify == 2){
+                        if($reverify == 1){
+                             $html .= '<td data-label="Status"><div class="thead-data">Reason</div>'.$data->reasons.'</td>';
+                        }
                         $html .= '<td data-label="Action"><div class="thead-data">Action</div>';
                         if($data->address_verified == 0){
                             // $html .= '<button class="reverifyAddress w-btn us-btn-style_1" style="padding:10px"><small>Reverify Address</small></button>';
@@ -1044,7 +1047,7 @@ class OAM_Helper{
         $total_quantity = 0;
        
         
-        $unverifiedTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Action</th></tr></thead><tbody>';
+        $unverifiedTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Reason</th><th>Action</th></tr></thead><tbody>';
 
         $verifyTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Action</th></tr></thead><tbody>';
 
@@ -1099,7 +1102,7 @@ class OAM_Helper{
             
         }
         if (!empty($verifiedRecipients)) {
-            $verifyRecordHtml = self::get_table_recipient_content($verifiedRecipients, $customGreeting, 1);
+            $verifyRecordHtml = self::get_table_recipient_content($verifiedRecipients, $customGreeting, 2);
 
         }
 
@@ -1395,6 +1398,7 @@ class OAM_Helper{
         ?>
         <div id="recipient-manage-popup" class="lity-hide black-mask full-popup popup-show">
             <h3>Recipient Details</h3>
+            <p class="recipient-reasons" style="color:red;font-weight: 900;"></p>
             <?php 
             echo self::get_recipient_form();
             ?>
@@ -1583,28 +1587,25 @@ class OAM_Helper{
         // Check DPV match code for validity
         if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {
             if(!empty($data[0]['components'])){
+                $message = '';
                 if ($city !== $data[0]['components']['city_name']) {
-                    $response = [
-                        'success' => false,
-                        'message' => 'Provided city is invalid. Accepted city is <span style="color: #6BBE56;">'.$data[0]['components']['city_name'].'</span>'
-                    ];
-                    return json_encode($response);
-                } elseif ($state !== $data[0]['components']['state_abbreviation']) {
-                    $response = [
-                        'success' => false,
-                        'message' => 'Provided state is invalid. Accepted state is <span style="color: #6BBE56;">'.$data[0]['components']['state_abbreviation'].'</span>'
-                    ];
-                    return json_encode($response);
-                } elseif ($zipcode !== $data[0]['components']['zipcode']) {
-                    $response = [
-                        'success' => false,
-                        'message' => 'Provided zipcode is invalid. Accepted zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'</span>'
-                    ];
-                    return json_encode($response);
+                    $message .= 'Provided city is invalid. Accepted city is <span style="color: #6BBE56;">'.$data[0]['components']['city_name'].'</span>';
+                    
+                } 
+                if ($state !== $data[0]['components']['state_abbreviation']) {
+                    $message .= 'Provided state is invalid. Accepted state is <span style="color: #6BBE56;">'.$data[0]['components']['state_abbreviation'].'</span>';
+                } 
+                if ($zipcode !== $data[0]['components']['zipcode']) {
+                     $message .= 'Provided zipcode is invalid. Accepted zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'</span>';
                 }
             }
 
-            $response = ['success' => true, 'message' => 'Valid and deliverable address.'];
+            if($message != ''){
+                $response = ['success' => false, 'message' => $message];
+            }else{
+                $response = ['success' => true, 'message' => 'Valid and deliverable address.'];
+            }
+
         }else{
             $message = 'Invalid address format.';
             $dpv_footnotes = $data[0]['analysis']['footnotes'] ?? '';

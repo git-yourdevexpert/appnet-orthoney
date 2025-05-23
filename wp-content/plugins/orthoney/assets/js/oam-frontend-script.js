@@ -1235,6 +1235,7 @@ document.addEventListener('click', function (event) {
         const form = document.querySelector('#recipient-manage-form form');
         form.reset();
         if(recipientTr){
+            document.querySelector('#recipient-manage-popup .recipient-reasons').style.display = 'none';
             const recipientID = recipientTr.getAttribute('data-id');
 
             if (recipientTr.hasAttribute('data-address_verified')) {
@@ -1246,7 +1247,6 @@ document.addEventListener('click', function (event) {
             if(customer_dashboard_recipient_list){
                 method = 'group';
             }
-            
 
             fetch(oam_ajax.ajax_url, {
                 method: 'POST',
@@ -1275,7 +1275,10 @@ document.addEventListener('click', function (event) {
                     const zipcode    = data.data.zipcode;
                     const quantity    = data.data.quantity;
                     const greeting    = data.data.greeting;
+                    const reasons    = data.data.reasons;
                     
+                    console.log(reasons);
+                    console.log(address_verified);
                     if (event.target.classList.contains('editRecipient')){
                     
                         form.querySelector('#recipient_id').value = id;
@@ -1290,6 +1293,11 @@ document.addEventListener('click', function (event) {
                         form.querySelector('#greeting').value     = greeting;
                         form.querySelector('button[type="submit"]').innerHTML = 'Update Recipient Details';
                         form.querySelector('.textarea-div .char-counter span').innerHTML = 250 - form.querySelector('#greeting').value.length;
+                        if (document.querySelector('#unverified-block') || document.querySelector('#verified-block')) {
+
+                            document.querySelector('.recipient-reasons').style.display = 'block';
+                            document.querySelector('.recipient-reasons').innerHTML = reasons;
+                        }
                     }
                     
                     if (event.target.classList.contains('viewRecipient')) {

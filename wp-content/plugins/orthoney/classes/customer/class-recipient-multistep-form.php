@@ -461,7 +461,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     <input type="text" placeholder="Enter a recipient list name for easy future reference" name="csv_name" value="<?php echo $csvName ?>"
                                         data-error-message="Please add a name for the CSV.">
                                 </div>
-                                <div class="textarea-div textarea-field field-block">
+                                <div class="textarea-div textarea-field field-block" style="display:none">
                                     <label>
                                         <span class="title-block">Add a Universal Greeting for All Recipients</span>
                                         <textarea name="greeting"

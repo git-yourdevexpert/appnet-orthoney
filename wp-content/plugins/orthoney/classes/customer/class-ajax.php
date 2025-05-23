@@ -953,13 +953,15 @@ class OAM_Ajax{
                 if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {
                     if (!empty($components)) {
                         if (($original['city'] ?? '') !== ($components['city_name'] ?? '')) {
-                            $message = 'Provided city is invalid. Accepted city is <span style="color: #6BBE56;">' . esc_html($components['city_name']) . '</span>';
+                            $message .= 'Provided city is invalid. Accepted city is <span style="color: #6BBE56;">' . esc_html($components['city_name']) . '</span>';
                             $success = false;
-                        } elseif (($original['state'] ?? '') !== ($components['state_abbreviation'] ?? '')) {
-                            $message = 'Provided state is invalid. Accepted state is <span style="color: #6BBE56;">' . esc_html($components['state_abbreviation']) . '</span>';
+                        } 
+                        if (($original['state'] ?? '') !== ($components['state_abbreviation'] ?? '')) {
+                            $message .= 'Provided state is invalid. Accepted state is <span style="color: #6BBE56;">' . esc_html($components['state_abbreviation']) . '</span>';
                             $success = false;
-                        } elseif (($original['zipcode'] ?? '') !== ($components['zipcode'] ?? '')) {
-                            $message = 'Provided zipcode is invalid. Accepted zipcode is <span style="color: #6BBE56;">' . esc_html($components['zipcode']) . '</span>';
+                        } 
+                        if (($original['zipcode'] ?? '') !== ($components['zipcode'] ?? '')) {
+                            $message .= 'Provided zipcode is invalid. Accepted zipcode is <span style="color: #6BBE56;">' . esc_html($components['zipcode']) . '</span>';
                             $success = false;
                         }
                     }
@@ -985,7 +987,10 @@ class OAM_Ajax{
                 }else{
                     $update_result = $wpdb->update(
                         $order_process_recipient_table,
-                        ['address_verified' => 0],
+                        [
+                            'address_verified' => 0,
+                            'reasons' => $message
+                        ],
                         ['id' => $pid]
                     );
                 }
@@ -2381,6 +2386,12 @@ class OAM_Ajax{
             $process_id = isset($_POST['pid']) ? absint($_POST['pid']) : null;
 
             if($invalid_address == 1){
+                 $validation_result = json_decode(OAM_Helper::validate_address(
+                    $data['address_1'], $data['address_2'], $data['city'], $data['state'], $data['zipcode']
+                ), true);
+
+                $data['reasons'] = $validation_result['message'];
+                
                 $result = $wpdb->update(
                             $table,
                             $data,
@@ -2473,15 +2484,17 @@ class OAM_Ajax{
                     $data['address_1'], $data['address_2'], $data['city'], $data['state'], $data['zipcode']
                 ), true);
         
-                
                 if ($validation_result) {
                     $verified_status = $validation_result['success'] ? 1 : 0;
                     $data['address_verified'] = $verified_status;
+                    $data['reasons'] = $validation_result['message'];
                    
+                    
                     
                     if ($verified_status == 0) {
                         wp_send_json_error(['message' => $validation_result['message']]);
                     }else{
+                        
                         // wp_send_json_success(['message' => 'The address is correct.']);
                         $result = $wpdb->update(
                             $table,
@@ -2490,16 +2503,26 @@ class OAM_Ajax{
                         );
                     }
                 }
-            }else{
 
+            }else{
+                $validation_result = json_decode(OAM_Helper::validate_address(
+                    $data['address_1'], $data['address_2'], $data['city'], $data['state'], $data['zipcode']
+                ), true);
+
+                $data['reasons'] = $validation_result['message'];
+                
                 $result = $wpdb->update($table, $data, ['id' => $recipient_id]);
+
+
             }
             
+
             $status = 'update';
             
             OAM_Helper::order_process_recipient_activate_log($recipient_id, $status, wp_json_encode($changes), $method);
             $success_message = 'Recipient details updated.';
-            
+
+           
         } else {
             // Insert new recipient
             $data['user_id'] = get_current_user_id();
