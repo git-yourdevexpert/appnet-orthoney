@@ -342,36 +342,45 @@ class OAM_AFFILIATE_Helper {
                 "SELECT 
                     SUM(c.amount) AS total_amount,
                     GROUP_CONCAT(c.order_id ORDER BY o.date_created_gmt DESC) AS order_ids,
-                    SUM(CAST(om.meta_value AS UNSIGNED)) AS total_quantity
+                    SUM(q.total_qty) AS total_quantity
                 FROM {$wpdb->prefix}yith_wcaf_commissions c
                 INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
-                INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON c.order_id = oi.order_id AND oi.order_item_type = 'line_item'
-                INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
+                LEFT JOIN (
+                    SELECT 
+                        oi.order_id,
+                        SUM(CAST(om.meta_value AS UNSIGNED)) AS total_qty
+                    FROM {$wpdb->prefix}woocommerce_order_items oi
+                    INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om 
+                        ON oi.order_item_id = om.order_item_id 
+                        AND om.meta_key = '_qty'
+                    WHERE oi.order_item_type = 'line_item'
+                    GROUP BY oi.order_id
+                ) q ON q.order_id = c.order_id
                 WHERE c.affiliate_id = %d 
-                -- AND YEAR(o.date_created) = YEAR(CURDATE())
-                AND o.parent_order_id = 0",
-                $affiliate_id
-            ));
-            $current_year_results = $wpdb->get_row($wpdb->prepare(
-                "SELECT 
-                    SUM(c.amount) AS total_amount,
-                    GROUP_CONCAT(c.order_id ORDER BY o.date_created_gmt DESC) AS order_ids,
-                    SUM(CAST(om.meta_value AS UNSIGNED)) AS total_quantity
-                FROM {$wpdb->prefix}yith_wcaf_commissions c
-                INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
-                INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON c.order_id = oi.order_id AND oi.order_item_type = 'line_item'
-                INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
-                WHERE c.affiliate_id = %d 
-                AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
-                AND o.parent_order_id = 0",
+                AND o.parent_order_id = 0
+                GROUP BY c.affiliate_id",
                 $affiliate_id
             ));
 
+
+            $current_year_results = $wpdb->get_row( $wpdb->prepare(
+                "SELECT 
+                    SUM(DISTINCT c.amount) AS total_amount,
+                    GROUP_CONCAT(DISTINCT c.order_id ORDER BY o.date_created_gmt DESC) AS order_ids,
+                    SUM(CAST(om.meta_value AS UNSIGNED)) AS total_quantity
+                FROM {$wpdb->prefix}yith_wcaf_commissions c
+                INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+                INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id AND oi.order_item_type = 'line_item'
+                INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
+                WHERE c.affiliate_id = %d 
+                AND YEAR(o.date_created_gmt) = YEAR(CURDATE())",
+                $affiliate_id
+            ));
                 
             if ($results) {
                 $data['active_balance'] = $results->total_amount ?: 0;
                 $data['orders'] = $results->order_ids ? explode(',', $results->order_ids) : [];
-                $data['current_year_orders_ids'] = $current_year_results->current_year_orders_ids ? explode(',', $current_year_results->current_year_orders_ids) : [];
+                $data['current_year_orders_ids'] = $current_year_results->order_ids ? explode(',', $current_year_results->order_ids) : [];
                 $data['total_quantity'] = isset($results->total_quantity)  ?  $results->total_quantity : 0;
                 $data['current_year_total_quantity'] = isset($current_year_results->total_quantity)  ?  $current_year_results->total_quantity : 0;
             }
@@ -384,5 +393,4 @@ class OAM_AFFILIATE_Helper {
 // Initialize the class properly
 
 new OAM_AFFILIATE_Helper();
-
 OAM_AFFILIATE_Helper::init();
