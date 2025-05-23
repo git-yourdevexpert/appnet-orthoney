@@ -536,6 +536,7 @@ document.addEventListener("DOMContentLoaded", function () {
                  Swal.getConfirmButton().style.display = "inline-block";
                  Swal.getDenyButton().style.display = "inline-block";
               }
+              
             },
           });
 
@@ -935,6 +936,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (duplicateCount == 0) {
                   Swal.getDenyButton().textContent = "Yes, Proceed ("+ (parseInt(successCount) + parseInt(newCount)) +")"; 
                 }
+              }
+
+              if((parseInt(failCount) + parseInt(duplicateFailCount)) == 0 ){
+                Swal.getCancelButton().textContent = 'I Want to Update Errors';
               }
             },
           });

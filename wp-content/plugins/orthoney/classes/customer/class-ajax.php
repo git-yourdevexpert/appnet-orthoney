@@ -1280,7 +1280,7 @@ class OAM_Ajax{
                     'full_name'        => sanitize_text_field($data['full name']),
                     'company_name'     => sanitize_text_field($data['company name']),
                     'address_1'        => sanitize_textarea_field($data['mailing address']),
-                    'address_2'        => sanitize_textarea_field($data['suite/apt']),
+                    'address_2'        => sanitize_textarea_field($data['suite/apt#']),
                     'city'             => sanitize_text_field($data['city']),
                     'state'            => sanitize_text_field($data['state']),
                     'zipcode'          => sanitize_text_field($data['zipcode']),
