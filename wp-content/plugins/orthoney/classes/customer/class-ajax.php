@@ -1785,7 +1785,7 @@ class OAM_Ajax{
                 // Generate Success HTML
                 if(!empty($successData)){
                     $successHtml .= '<div class="heading-title">
-                    <div><h5 class="table-title">Uploaded Recipients</h5></div>
+                    <div><h5 class="table-title">Added Recipients</h5></div>
                     <div class="links-group">
                     <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove all recipients who have already placed an order this season.">Remove Already Ordered Recipients</button><div class="vline"></div>
                     <button class="viewSuccessRecipientsAlreadyOrder btn-underline" data-status="0" data-tippy="View all recipients who have already placed an order this season." style="display:none">View Already Ordered Recipients</button><div class="search-icon"> <div class="icon"></div></div>  
