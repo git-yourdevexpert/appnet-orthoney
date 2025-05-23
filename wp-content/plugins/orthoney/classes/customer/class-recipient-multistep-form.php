@@ -709,7 +709,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 echo '<button id="checkout_proceed_with_only_unverified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Continue With Unverified Addresses</button>';
                             }
                             if ($result['data']['verifiedRecordCount'] > 0) {
-                                echo '<button id="checkout_proceed_with_only_verified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Proceed With Only Verified Addresses</button>';
+                                echo '<button id="checkout_proceed_with_only_verified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Proceed With Verified Addresses</button>';
                             }
                             echo '</div>';
                         }
