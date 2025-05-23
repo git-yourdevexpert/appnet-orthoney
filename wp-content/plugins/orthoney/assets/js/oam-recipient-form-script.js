@@ -868,7 +868,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
           
           else if (parseInt(successCount) + parseInt(newCount) != totalCount && failCount == 0 && successCount == 0 && newCount == 0 && duplicateCount != 0) {
-            html = `All recipients have been duplicated!`;
+            html = `All recipients might be duplicated!`;
           }
 
           if(html == ''){

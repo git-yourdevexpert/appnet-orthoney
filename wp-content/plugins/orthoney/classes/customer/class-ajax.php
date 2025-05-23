@@ -3567,7 +3567,7 @@ class OAM_Ajax{
         $step_labels = [
             1 => 'Step 2: Order Method',
             2 => 'Step 3: Upload Recipients',
-            3 => 'Step 4: Add/Edit Recipients',
+            3 => 'Step 4: Add/Review Recipients',
             4 => 'Step 5: Verify Address',
         ];
                 // Add search filter
