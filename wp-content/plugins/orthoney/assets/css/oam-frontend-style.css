@@ -2576,6 +2576,7 @@ body .woocommerce .order-process-block .button {
   gap: 20px;
   margin-top: 30px;
 }
+
 .one-col-grid{
   margin-top: 30px;
   background: #fff;
@@ -2590,6 +2591,26 @@ body .woocommerce .order-process-block .button {
   padding: 20px;
   box-shadow: 0 0 15px 0 rgba(154, 161, 171, 0.05);
   border-radius: 10px;
+}
+
+.two-col-grid.two-column-block{
+  margin: 20px 0;
+
+} 
+
+.two-col-grid.two-column-block .order-process-block{height: 100%;}
+.two-col-grid.two-column-block .cl-left, 
+.two-col-grid.two-column-block .cl-right{
+   padding: 0;
+}
+
+.two-col-grid.two-column-block  .update-price{
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: end;
+}
+.two-col-grid.two-column-block  .update-price input#product_price{
+width: 100%;
 }
 .row-block {
   display: flex;
