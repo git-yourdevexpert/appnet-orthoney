@@ -888,7 +888,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           // if (successCount != 0) {
-            html += `<li><span>Uploaded Recipients: </span> ${successCount}</li>`;
+            html += `<li><span>Added Recipients: </span> ${successCount}</li>`;
           // }
           
          

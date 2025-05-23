@@ -561,7 +561,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         <?php
                         $sections = [
                             'fail'     => 'Failed',
-                            'success'  => 'Uploaded',
+                            'success'  => 'Added',
                             'duplicate' => 'Duplicate',
                             // 'alreadyOrder' => 'Already Ordered',
                             'new'      => 'Additional'
