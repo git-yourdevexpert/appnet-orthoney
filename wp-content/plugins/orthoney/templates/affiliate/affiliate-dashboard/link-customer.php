@@ -34,6 +34,8 @@ $requests = $wpdb->get_results(
     <ul id="customer-email-results"></ul></div>
  
     </div>
+<!-- Search and filter options -->
+<!-- list -->
     <div id="affiliate-results" class="orthoney-datatable-warraper table-with-search-block">
         <table>
             <thead>
@@ -86,4 +88,5 @@ $requests = $wpdb->get_results(
             </tbody>
         </table>
     </div>
+    <!-- list -->
 </div>
