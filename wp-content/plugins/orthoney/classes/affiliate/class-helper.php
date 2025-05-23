@@ -140,8 +140,60 @@ class OAM_AFFILIATE_Helper {
             return '';
         }
         $html = '';
-        rsort($details['orders']);
+        // rsort($details['orders']);
         $orders = $details['orders'];
+        $current_url = OAM_Helper::$organization_dashboard_link . '/order-list/';
+        $html .= '<div>
+                    <div class="">
+                        <div class="recipient-lists-block custom-table orthoney-datatable-warraper table-with-search-block" id="affiliate-orderlist-table">';
+                           
+        $html .=    '
+                    <table >
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Billing Name</th>
+                                <th>Number of Jars</th>
+                                <th>Total</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>';
+        $count = 0;
+        foreach ($orders as $order_id) {
+            if (++$count > $limit) break;
+            $order = wc_get_order($order_id);
+            if (!$order) continue;
+            $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
+            $quantity = 0;
+            foreach ($order->get_items() as $item) {
+                $quantity += (int) $item->get_quantity();
+            }
+            $html .= '<tr>
+                        <td><div class="thead-data">Order ID</div>#' . esc_html($custom_order_id) . '</td>
+                        <td><div class="thead-data">Billing Name</div>' . esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()) . '</td>
+                        <td><div class="thead-data">Number of Jars</div>' . esc_html($quantity) . '</td>
+                        <td><div class="thead-data">Total</div>' . wc_price($order->get_total()) . '</td>
+                        <td><div class="thead-data">Date</div>' . wc_format_datetime( $order->get_date_created() ). '</td>
+                    </tr>';
+        }
+        if ($count === 0) {
+            $html .= '<tr><td colspan="4" class="no-available-msg">Order not found!</td></tr>';
+        }
+        $html .=    '</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>';
+        return $html;
+    }
+    public static function affiliate_current_year_order_list($details, $limit = 9999999) {
+        if (empty($details['current_year_orders_ids'])) {
+            return '<p>Current year customer order is not found?</p>';
+        }
+        $html = '';
+        //rsort($details['current_year_orders_ids']);
+        $orders = $details['current_year_orders_ids'];
         $current_url = OAM_Helper::$organization_dashboard_link . '/order-list/';
         $html .= '<div>
                     <div class="">
@@ -204,21 +256,27 @@ class OAM_AFFILIATE_Helper {
                     
                     <div class="place-order item">
                         <div class="row-block">
-                            <h4 class="block-title">Total Orders</h4>
+                            <h4 class="block-title">Total Customer Orders</h4>
                             <div class="see-all">
                                 <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/jar-icon.png" width="30"  height="30" /></div>
                             </div>
                         </div>
-                        <div class="sub-heading">'.(!empty($details['orders']) ? count( $details['orders']) : '0').'</div>
+                        <div class="sub-heading">
+                            <div>Total Orders : '.(!empty($details['orders']) ? count( $details['orders']) : '0').'</div>
+                            <div> Current Year Orders: '.(!empty($details['current_year_orders_ids']) ? count( $details['current_year_orders_ids']) : '0').'</div>
+                        </div>
                     </div>
                     <div class="place-order item">
                         <div class="row-block">
-                            <h4 class="block-title">Total Jar Sell</h4>
+                            <h4 class="block-title">Total Sold Jar</h4>
                             <div class="see-all">
                                 <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/jar-icon.png" width="30" height="30" /></div>
                             </div>
                         </div>
-                        <div class="sub-heading">'.(!empty($details['total_quantity']) ? esc_html($details['total_quantity']) : '0').'</div>
+                        <div class="sub-heading">
+                        <div>Total Jars: '.(!empty($details['total_quantity']) ? esc_html($details['total_quantity']) : '0').'</div>
+                        <div>Current Year Jars: '.(!empty($details['current_year_total_quantity']) ? esc_html($details['current_year_total_quantity']) : '0').'</div>
+                        </div>
                     </div>
                     <div class="place-order item">
                         <div class="row-block">
@@ -283,7 +341,7 @@ class OAM_AFFILIATE_Helper {
             $results = $wpdb->get_row($wpdb->prepare(
                 "SELECT 
                     SUM(c.amount) AS total_amount,
-                    GROUP_CONCAT(c.order_id) AS order_ids,
+                    GROUP_CONCAT(c.order_id ORDER BY o.date_created_gmt DESC) AS order_ids,
                     SUM(CAST(om.meta_value AS UNSIGNED)) AS total_quantity
                 FROM {$wpdb->prefix}yith_wcaf_commissions c
                 INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
@@ -294,11 +352,28 @@ class OAM_AFFILIATE_Helper {
                 AND o.parent_order_id = 0",
                 $affiliate_id
             ));
+            $current_year_results = $wpdb->get_row($wpdb->prepare(
+                "SELECT 
+                    SUM(c.amount) AS total_amount,
+                    GROUP_CONCAT(c.order_id ORDER BY o.date_created_gmt DESC) AS order_ids,
+                    SUM(CAST(om.meta_value AS UNSIGNED)) AS total_quantity
+                FROM {$wpdb->prefix}yith_wcaf_commissions c
+                INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+                INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON c.order_id = oi.order_id AND oi.order_item_type = 'line_item'
+                INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
+                WHERE c.affiliate_id = %d 
+                AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
+                AND o.parent_order_id = 0",
+                $affiliate_id
+            ));
+
                 
             if ($results) {
                 $data['active_balance'] = $results->total_amount ?: 0;
                 $data['orders'] = $results->order_ids ? explode(',', $results->order_ids) : [];
+                $data['current_year_orders_ids'] = $current_year_results->current_year_orders_ids ? explode(',', $current_year_results->current_year_orders_ids) : [];
                 $data['total_quantity'] = isset($results->total_quantity)  ?  $results->total_quantity : 0;
+                $data['current_year_total_quantity'] = isset($current_year_results->total_quantity)  ?  $current_year_results->total_quantity : 0;
             }
         }
         

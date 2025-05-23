@@ -8,14 +8,13 @@ if (!defined('ABSPATH')) {
 <div class="order-block-wrap">
     <div class="order-process-dashboard">
         <div class="dashboard-block">
-        <div class="heading-title"><h3 class="block-title">Claimable Orders</h3></div>
+        <div class="heading-title"><h3 class="block-title">Recent Customer Orders</h3></div>
             <?php
-
             $details = OAM_AFFILIATE_Helper::get_affiliate_details($affiliate_id);
             if( !empty($details['orders']) ){
-            echo OAM_AFFILIATE_Helper::affiliate_order_list($details);
+                echo OAM_AFFILIATE_Helper::affiliate_order_list($details);
             }else{
-                echo "<p style='padding-top: 15px;'>Claimable orders not found!</p>";
+                echo "<p style='padding-top: 15px;'>Customer Orders not found!</p>";
             }
             ?>
         </div>

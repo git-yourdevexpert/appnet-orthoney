@@ -13,6 +13,7 @@ if(in_array('affiliate_team_member', $user_roles)){
 OAM_COMMON_Custom::switch_back_user();
 $details = OAM_AFFILIATE_Helper::get_affiliate_details($affiliate_id);
 
+
 // Hide the subheader if the token is empty
 if (empty($details['token'])) {
     echo '<style>#page-header .l-subheader.at_bottom{display:none !important}</style>';
@@ -32,13 +33,14 @@ if (empty($details['token'])) {
 
             // Display claimable orders if token exists and there are orders
             if (!empty($details['token']) && !empty($details['orders'])) {
+                $current_url = OAM_Helper::$organization_dashboard_link . 'order-list/';
                 echo '<div class="recent-commissions">
                         <div class="dashboard-card">
                             <div class="row-block">
-                                <h4>Claimable Orders</h4>
-                                
+                                <h4>Recent Customer Orders</h4>
+                                <a href="'.$current_url.'" class="w-btn us-btn-style_1">View order all</a>
                             </div>';
-                echo OAM_AFFILIATE_Helper::affiliate_order_list($details);
+                echo OAM_AFFILIATE_Helper::affiliate_current_year_order_list($details);
                 echo '</div></div>';
             }
             ?>

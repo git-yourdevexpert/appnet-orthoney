@@ -26,176 +26,154 @@
    //TODO
    ?>
 <div class="order-process-block form-deisgn">
-    <div class="heading-title">
-        <h3 class="block-title">My Profile</h3>
-    </div>
-    <div class="affiliate-profile" id="update-affiliate-form">
-        <form id="affiliate-profile-form">
-            <div class="profile-fields site-form grid-two-col">
-                <div class="form-row gfield--width-half">
-                    <label for="first_name">First Name</label>
-                    <input type="text" name="first_name" id="first_name" value="<?php echo esc_attr($first_name); ?>"
-                        required data-error-message="Please enter a First Name.">
-                    <span class="error-message"></span>
-                </div>
-                <div class="form-row gfield--width-half">
-                    <label for="last_name">Last Name</label>
-                    <input type="text" name="last_name" id="last_name" value="<?php echo esc_attr($last_name); ?>"
-                        required data-error-message="Please enter a Last Name.">
-                    <span class="error-message"></span>
-                </div>
-                <div class="form-row gfield--width-half">
-                    <label for="billing_phone">Phone Number</label>
-                    <input type="text" name="billing_phone" id="billing_phone" class="phone-input"
-                        value="<?php echo esc_attr($phone_number); ?>" required
-                        data-error-message="Please enter a Phone Number.">
-                    <span class="error-message"></span>
-                </div>
-                <div class="form-row gfield--width-half">
-                    <label for="email">Email ID</label>
-                    <input type="email" name="email" id="email" value="<?php echo esc_attr($email); ?>" required
-                        data-error-message="Please enter a Email.">
-                    <span class="error-message"></span>
-                </div>
-                <div class="form-row gfield--width-half">
-                    <label for="organization_name">Organization Name</label>
-                    <input type="text" name="organization_name" id="organization_name"
-                        value="<?php echo esc_attr($name_of_your_organization); ?>"
-                        data-error-message="Please enter a Organization Name.">
-                    <span class="error-message"></span>
-                </div>
-                <div class="form-row gfield--width-half">
-                    <label for="organization_website">Organization Website</label>
-                    <input type="url" name="organization_website" id="organization_website"
-                        value="<?php echo esc_attr($your_organizations_website); ?>"
-                        data-error-message="Please enter a Organization Website.">
-                    <span class="error-message"></span>
-                </div>
-                <div class="form-row gfield--width-half">
-                    <label for="address">Address</label>
-                    <input type="text" name="address" id="address" value="<?php echo esc_attr($address); ?>"
-                        data-error-message="Please enter a Address">
-                    <span class="error-message"></span>
-                </div>
-                <div class="form-row gfield--width-half">
-                    <label for="city">City</label>
-                    <input type="text" name="city" id="city" value="<?php echo esc_attr($city); ?>"
-                        data-error-message="Please enter a City">
-                    <span class="error-message"></span>
-                </div>
-                <div class="form-row gfield--width-half">
-                    <label for="state">State</label>
-                    <input type="text" name="state" id="state" value="<?php echo esc_attr($state); ?>"
-                        data-error-message="Please enter a State">
-                    <span class="error-message"></span>
-                </div>
-                <div class="form-row gfield--width-half">
-                    <label for="zipcode">Zipcode</label>
-                    <input type="text" name="zipcode" id="zipcode" value="<?php echo esc_attr($zipcode); ?>"
-                        data-error-message="Please enter a Zip">
-                    <span class="error-message"></span>
-                </div>
-                <div class="form-row gfield--width-half">
-                    <label for="tax_id">Tax ID</label>
-                    <input type="text" name="tax_id" id="tax_id" value="<?php echo esc_attr($tax_id); ?>"
-                        data-error-message="Please enter a Tax ID">
-                    <span class="error-message"></span>
-                </div>
-                <div class="form-row text-right">
-                    <button type="button" class="add-user w-btn us-btn-style_1" id="save-profile">Save</button>
-                </div>
+   <div class="heading-title">
+      <h3 class="block-title">My Profile</h3>
+   </div>
+   <div class="affiliate-profile" id="update-affiliate-form">
+      <form id="affiliate-profile-form">
+         <div class="profile-fields site-form grid-two-col">
+            <div class="form-row gfield--width-half">
+               <label for="first_name">First Name</label>
+               <input type="text" name="first_name" id="first_name" value="<?php echo esc_attr($first_name); ?>" required data-error-message="Please enter a First Name.">
+               <span class="error-message"></span>
             </div>
-        </form>
-        <div id="profile-message"></div>
-    </div>
+            <div class="form-row gfield--width-half">
+               <label for="last_name">Last Name</label>
+               <input type="text" name="last_name" id="last_name" value="<?php echo esc_attr($last_name); ?>" required data-error-message="Please enter a Last Name.">
+               <span class="error-message"></span>
+            </div>
+            <div class="form-row gfield--width-half">
+               <label for="billing_phone">Phone Number</label>
+               <input type="text" name="billing_phone" id="billing_phone" class="phone-input" value="<?php echo esc_attr($phone_number); ?>" required data-error-message="Please enter a Phone Number.">
+               <span class="error-message"></span>
+            </div>
+            <div class="form-row gfield--width-half">
+               <label for="email">Email ID</label>
+               <input type="email" name="email" id="email" value="<?php echo esc_attr($email); ?>" required data-error-message="Please enter a Email.">
+               <span class="error-message"></span>
+            </div>
+            <div class="form-row gfield--width-half">
+               <label for="organization_name">Organization Name</label>
+               <input type="text" name="organization_name" id="organization_name" value="<?php echo esc_attr($name_of_your_organization); ?>" data-error-message="Please enter a Organization Name.">
+               <span class="error-message"></span>
+            </div>
+            <div class="form-row gfield--width-half">
+               <label for="organization_website">Organization Website</label>
+               <input type="url" name="organization_website" id="organization_website" value="<?php echo esc_attr($your_organizations_website); ?>" data-error-message="Please enter a Organization Website.">
+               <span class="error-message"></span>
+            </div>
+            <div class="form-row gfield--width-half">
+               <label for="address">Address</label>
+               <input type="text" name="address" id="address" value="<?php echo esc_attr($address); ?>" data-error-message="Please enter a Address">
+               <span class="error-message"></span>
+            </div>
+            <div class="form-row gfield--width-half">
+               <label for="city">City</label>
+               <input type="text" name="city" id="city" value="<?php echo esc_attr($city); ?>" data-error-message="Please enter a City">
+               <span class="error-message"></span>
+            </div>
+            <div class="form-row gfield--width-half">
+               <label for="state">State</label>
+               <input type="text" name="state" id="state" value="<?php echo esc_attr($state); ?>" data-error-message="Please enter a State">
+               <span class="error-message"></span>
+            </div>
+            <div class="form-row gfield--width-half">
+               <label for="zipcode">Zipcode</label>
+               <input type="text" name="zipcode" id="zipcode" value="<?php echo esc_attr($zipcode); ?>" data-error-message="Please enter a Zip">
+               <span class="error-message"></span>
+            </div>
+            <div class="form-row gfield--width-half">
+               <label for="tax_id">Tax ID</label>
+               <input type="text" name="tax_id" id="tax_id" value="<?php echo esc_attr($tax_id); ?>" data-error-message="Please enter a Tax ID">
+               <span class="error-message"></span>
+            </div>
+            <div class="form-row text-right">
+               <button type="button" class="add-user w-btn us-btn-style_1" id="save-profile">Save</button>
+            </div>
+         </div>
+      </form>
+      <div id="profile-message"></div>
+   </div>
 </div>
 
 
 
-<div class="two-col-grid two-column-block">
-    <div class="cl-left">
+<div class="two-col-grid">
+   <div class="cl-left">
+    
+
+<div class="order-process-block  form-deisgn">
+         <div class="heading-title">
+            <h3 class="block-title">Update Product Price</h3>
+         </div>
+         <div class="affiliate-profile" id="update-price-affiliate-form">
+            <form id="affiliate-update-price-form">
+               <div class="form-row gfield--width-half">
+                  <label for="city">Product Price</label>
+                  
+                  <div class="product-price-box textarea-div form-row gfield--width-full">
+                     <div>   
+                        <input type="text" name="product_price" id="product_price" value="<?php echo esc_attr($product_price); ?>" data-error-message="Please enter a product price">
+                        <span class="error-message"></span>   
+                     </div>
+                     <div>
+                        <button type="button" class="add-user w-btn us-btn-style_1" id="affiliate-product-price-profile">Update Price</button>
+                     </div>
+                  </div>
+               </div>
+            </form>
+         </div>
+      </div>
 
 
-        <div class="order-process-block  form-deisgn">
-            <div class="heading-title">
-                <h3 class="block-title">Update Product Price</h3>
+   </div>
+   <div class="cl-right">
+      <div class="order-process-block">
+         <div class="heading-title">
+            <div>
+               <h3 class="block-title">Gift Card</h3>
+               <br>
+               <p>
+                  A personalized gift card will be included inside of every box of honey we send. The bottom of the gift card acknowledges a donation to your organization. <br>
+                  Please indicate the exact (brief) name for your organization to be inserted into this sentence:
+               </p>
             </div>
-            <div class="affiliate-profile" id="update-price-affiliate-form">
-                <form id="affiliate-update-price-form">
-                    <div class="form-row gfield--width-half">
-                        <label for="city">Product Price</label>
-
-                        <div class="product-price-box textarea-div form-row gfield--width-full update-price">
-                           
-                                <input type="text" name="product_price" id="product_price"
-                                    value="<?php echo esc_attr($product_price); ?>"
-                                    data-error-message="Please enter a product price">
-                                <span class="error-message"></span>
-                         
-                                <button type="button" class="add-user w-btn us-btn-style_1"
-                                    id="affiliate-product-price-profile">Update Price</button>
-                        
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-
-    </div>
-    <div class="cl-right">
-        <div class="order-process-block">
-            <div class="heading-title">
-                <div>
-                    <h3 class="block-title">Gift Card</h3>
-                    <br>
-                    <p>
-                        A personalized gift card will be included inside of every box of honey we send. The bottom of
-                        the gift card acknowledges a donation to your organization. <br>
-                        Please indicate the exact (brief) name for your organization to be inserted into this sentence:
-                    </p>
-                </div>
-            </div>
-            <div class="affiliate-profile" id="update-price-affiliate-form">
-                <form id="affiliate-gift-card-form">
-                    <div class="form-row gfield--width-half">
-                        <div class="textarea-div form-row gfield--width-full">
-                            <label for="gift_card">
-                                "In celebration of the New Year, a donation has been made in your name to
-                            </label>
-                            <input type="text" name="gift_card" id="gift_card" value="<?php echo $gift_card ?>"
-                                data-error-message="Please enter a gift card">
-                            <span class="error-message"></span>
-                        </div>
-                        <div class="form-row text-right">
-                            <button type="button" class="add-user w-btn us-btn-style_1"
-                                id="affiliate-product-price-profile">Update Gift Card</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+         </div>
+         <div class="affiliate-profile" id="update-price-affiliate-form">
+            <form id="affiliate-gift-card-form">
+               <div class="form-row gfield--width-half">
+                  <div class="textarea-div form-row gfield--width-full">
+                     <label for="gift_card">
+                     "In celebration of the New Year, a donation has been made in your name to
+                     </label>
+                     <input type="text" name="gift_card" id="gift_card" value="<?php echo $gift_card ?>"  data-error-message="Please enter a gift card" >
+                     <span class="error-message"></span>
+                  </div>
+                  <div class="form-row text-right">
+                     <button type="button" class="add-user w-btn us-btn-style_1" id="affiliate-product-price-profile">Update Gift Card</button>
+                  </div>
+               </div>
+            </form>
+         </div>
+      </div>
+   </div>
 </div>
 <div class="order-process-block">
-    <div class="heading-title">
-        <h3 class="block-title">Mission Statement</h3>
-    </div>
-    <div class="affiliate-profile" id="update-price-affiliate-form">
-        <form id="affiliate-mission-statement-form">
-            <div class="form-row gfield--width-half">
-                <div class="textarea-div form-row gfield--width-full">
-                    <textarea rows="10" name="mission_statement" id="mission_statement"
-                        data-error-message="Please enter a Mission Statement" data-limit="700"
-                        style="min-height: 300px;"><?php echo $mission_statement ?></textarea>
-                    <span class="error-message"></span>
-                    <div class="char-counter"><span>700</span> characters remaining</div>
-                </div>
-                <div class="form-row text-right">
-                    <button type="button" class="add-user w-btn us-btn-style_1"
-                        id="affiliate-product-price-profile">Update Mission Statement</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
+         <div class="heading-title">
+            <h3 class="block-title">Mission Statement</h3>
+         </div>
+         <div class="affiliate-profile" id="update-price-affiliate-form">
+            <form id="affiliate-mission-statement-form">
+               <div class="form-row gfield--width-half">
+                  <div class="textarea-div form-row gfield--width-full">
+                     <textarea rows="10" name="mission_statement" id="mission_statement" data-error-message="Please enter a Mission Statement" data-limit="700" style="min-height: 300px;"><?php echo $mission_statement ?></textarea>
+                     <span class="error-message"></span>
+                     <div class="char-counter"><span>700</span> characters remaining</div>
+                  </div>
+                  <div class="form-row text-right">
+                     <button type="button" class="add-user w-btn us-btn-style_1" id="affiliate-product-price-profile">Update Mission Statement</button>
+                  </div>
+               </div>
+            </form>
+         </div>
+      </div>
