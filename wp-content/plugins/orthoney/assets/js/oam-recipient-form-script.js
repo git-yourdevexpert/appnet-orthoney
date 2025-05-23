@@ -530,7 +530,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 Swal.getConfirmButton().textContent = "Proceed With All (" + parseInt(unverifiedCount)  + ")"; 
               } else if (parseInt(unverifiedCount) == 0 && parseInt(verifiedCount) != 0) {
                 Swal.getDenyButton().style.display = "inline-block";
-                Swal.getDenyButton().textContent = "Yes, Proceed(" + (parseInt(verifiedCount) + parseInt(unverifiedCount)) + ")"; 
+                Swal.getDenyButton().textContent = "Yes, Proceed (" + (parseInt(verifiedCount) + parseInt(unverifiedCount)) + ")"; 
                 
               }else{
                  Swal.getConfirmButton().style.display = "inline-block";
