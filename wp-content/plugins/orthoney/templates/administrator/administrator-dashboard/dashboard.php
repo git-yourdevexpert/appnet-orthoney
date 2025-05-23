@@ -18,7 +18,7 @@ if ($redirect_back_user_id) {
         <div class="order-process-dashboard">
             <div class="dashboard-block">
                 <h3 class="block-title">Welcome to the Administrator Dashboard</h3>
-                <div class="block-row">
+                <div class="block-row" style="display:none">
                     <?php 
 
                     // echo OAM_COMMON_Custom::switch_back_user();
