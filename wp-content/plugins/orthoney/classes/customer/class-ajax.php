@@ -3633,7 +3633,7 @@ class OAM_Ajax{
                 if($failed == 1){
                     $action .= '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">View Recipients';
                 }else{
-                    $delete_action = "<button data-id='".esc_html($item->id)."' data-name='".esc_html($item->name)."' data-tippy='Remove Incompleted List' class='deleteIncompletedOrderButton button-icon-underline'><i class='far fa-trash'></i>Remove</button>";
+                    $delete_action = "<button data-id='".esc_html($item->id)."' data-name='".esc_html($item->name)."' data-tippy='Remove Incompleted List' class='deleteIncompletedOrderButton button-icon-underline'><img src='" . esc_url( OH_PLUGIN_DIR_URL . 'assets/image/delete-icon.png' ) . "' alt='Delete'>Remove</button>";
                     $action .= '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume Order';
                 }
                  $action .="</a>";
