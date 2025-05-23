@@ -950,7 +950,11 @@ Deleted Recipient in table Js Start
 document.addEventListener('click', function (event) {
     if (event.target.classList.contains('deleteRecipient')) {
         event.preventDefault();
-
+        popup_text = 'You are removing a';
+         if (event.target.classList.contains('deleteRecipient')) {
+            popup_text = 'You are removing a duplicate of';
+         }
+        event.preventDefault();
         let method = 'process';
         const customer_dashboard_recipient_list = document.querySelector("#customer-dashboard-recipient-list");
         if(customer_dashboard_recipient_list){
@@ -980,7 +984,7 @@ document.addEventListener('click', function (event) {
 
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You are removing a duplicate of ' + recipientname,
+            text: popup_text + recipientname,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
