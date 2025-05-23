@@ -953,13 +953,13 @@ class OAM_Ajax{
                 if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {
                     if (!empty($components)) {
                         if (($original['city'] ?? '') !== ($components['city_name'] ?? '')) {
-                            $message = 'Provided city is invalid. Valid city is <span style="color: #6BBE56;">' . esc_html($components['city_name']) . '</span>';
+                            $message = 'Provided city is invalid. Accepted city is <span style="color: #6BBE56;">' . esc_html($components['city_name']) . '</span>';
                             $success = false;
                         } elseif (($original['state'] ?? '') !== ($components['state_abbreviation'] ?? '')) {
-                            $message = 'Provided state is invalid. Valid state is <span style="color: #6BBE56;">' . esc_html($components['state_abbreviation']) . '</span>';
+                            $message = 'Provided state is invalid. Accepted state is <span style="color: #6BBE56;">' . esc_html($components['state_abbreviation']) . '</span>';
                             $success = false;
                         } elseif (($original['zipcode'] ?? '') !== ($components['zipcode'] ?? '')) {
-                            $message = 'Provided zipcode is invalid. Valid zipcode is <span style="color: #6BBE56;">' . esc_html($components['zipcode']) . '</span>';
+                            $message = 'Provided zipcode is invalid. Accepted zipcode is <span style="color: #6BBE56;">' . esc_html($components['zipcode']) . '</span>';
                             $success = false;
                         }
                     }
