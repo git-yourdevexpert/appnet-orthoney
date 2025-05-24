@@ -7,6 +7,36 @@ if (!defined('ABSPATH')) {
 ?>
 
 <div class="order-block-wrap">
+        <div class="order-process-dashboard">
+            <div class="dashboard-block">
+                <h3 class="block-title">Welcome to the Sales Representative Dashboard</h3>
+                <div class="two-col-grid">
+                    <div class="cl-left">
+                        <div class="recipient-lists-block custom-table">
+                            <div class="row-block">
+                                <h4>Manage Customer</h4>
+                                <div class="see-all">
+                                    <a class="w-btn us-btn-style_1" href="<?php echo esc_url(OAM_Helper::$sales_representative_dashboard_link.'manage-customer/'); ?>">See All</a> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cl-right">
+                        <div class="recipient-lists-block custom-table">
+                            <div class="row-block">
+                                <h4>Manage Organizations</h4>
+                                <div class="see-all">
+                                    <a class="w-btn us-btn-style_1" href="<?php echo esc_url(OAM_Helper::$sales_representative_dashboard_link.'manage-organization/'); ?>">See All</a> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- 
+<div class="order-block-wrap">
     <div class="order-process-dashboard heading-open-sans sales-representative-dashbaord">
         <div class="dashboard-block">
             <h3 class="block-title">Welcome to the Sales Representative Dashboard</h3>
@@ -28,4 +58,4 @@ if (!defined('ABSPATH')) {
             </div>
         </div>
     </div>
-</div>
+</div> -->

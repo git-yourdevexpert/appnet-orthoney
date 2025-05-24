@@ -1919,6 +1919,61 @@ jQuery(document).ready(function($) {
     });
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    new DataTable('#sales-representative-customer-table', {
+        serverSide: true,
+        processing: true,
+        paging: true,
+        searching: true,
+        responsive: true,
+        lengthMenu: [10, 25, 50, 100],
+
+        ajax: function (data, callback) {
+            const postData = {
+                action: 'get_filtered_customers',
+                nonce: oam_ajax.nonce,
+                draw: data.draw,
+                start: data.start,
+                length: data.length,
+                search: { value: data.search.value }
+            };
+
+            fetch(oam_ajax.ajax_url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(postData)
+            })
+            .then(res => res.json())
+            .then(callback)
+            .catch(error => {
+                console.error('DataTables fetch error:', error);
+            });
+        },
+
+        columns: [
+            { data: 'name' },
+            { data: 'email' },
+            { data: 'action' }
+        ],
+        columnDefs: [
+            { targets: -1, orderable: false }
+        ],
+        language: {
+            processing: `
+                <div class="loader multiStepForm" style="display:block">
+                    <div>
+                        <h2 class="swal2-title">Processing...</h2>
+                        <div class="swal2-html-container">Please wait while we process your request.</div>
+                        <div class="loader-5"></div>
+                    </div>
+                </div>
+            `
+        }
+    });
+});
+
+
+
 //incomplete order process code
 jQuery(document).ready(function ($) {
     const $table = $('#incomplete-order-table');
