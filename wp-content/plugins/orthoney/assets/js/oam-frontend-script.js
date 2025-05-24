@@ -1870,14 +1870,7 @@ jQuery(document).ready(function($) {
         paging: true,
         searching: true,
     });
-    table.on('draw', function () {
-        const info = table.page.info(); // Get pagination info
-        if (info.page === 0) {
-            table.column(3).visible(false); // Hide column index 3
-        } else {
-            table.column(3).visible(true); // Show it otherwise
-        }
-    });
+    
 });
 
 jQuery(document).ready(function($) {

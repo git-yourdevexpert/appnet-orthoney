@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 }
 ?>
 <div class="affiliate-dashboard order-process-block">
-    <h3>Manage Organizations</h3>
+    <h3>Manage Sales Representative</h3>
     <!-- Search and filter options -->
     <div class="orthoney-datatable-warraper">
         <div id="admin-sales-representative-results" class="orthoney-datatable-warraper table-with-search-block">
