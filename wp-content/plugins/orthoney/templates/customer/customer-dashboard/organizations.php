@@ -39,7 +39,7 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
         <div class="filter-container">
             <input type="text" id="search-affiliates" placeholder="Search Organization">
             <select id="filter-block-status">
-                <option value="all">All status</option>
+                <option value="all">All organization</option>
                 <option value="1">Blocked</option>
                 <option value="0">Unblocked</option>
                 <option value="-1">Pending Request</option>
@@ -81,16 +81,14 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                                 <a href="<?php echo $current_url.'?action=organization-link&token='.$token; ?>" class="w-btn us-btn-style_1">Accept Linking Request</a>
                                 <?php
                             }else{
-                            if($is_blocked != 0){
+                            
                             ?>
                             <button class="affiliate-block-btn w-btn <?php echo ($is_blocked == 1) ? 'us-btn-style_1' : 'us-btn-style_2' ?>" 
                                 data-affiliate="<?php echo esc_attr($affiliate['user_id']); ?>"
                                     data-blocked="<?php echo ($is_blocked == 1) ? '1' : '0'; ?>">
                                     <?php echo ($is_blocked == 1) ? 'Block' : 'Unblock'; ?>
                                 </button>
-                                <?php }else{ ?>
-                                    <a href="<?php echo $current_url.'?action=organization-link&token='.$token; ?>" class="w-btn us-btn-style_1">Link to Organization</a>
-                                <?php } } ?>
+                               <?php } ?>
                             </td>
                         </tr>
                     <?php } }else{ ?>

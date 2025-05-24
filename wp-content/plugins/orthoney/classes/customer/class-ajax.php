@@ -2700,16 +2700,15 @@ class OAM_Ajax{
                                 <a href="<?php echo $current_url.'?action=organization-link&token='.$token; ?>" class="w-btn us-btn-style_1">Accept Linking Request</a>
                                 <?php
                             }else{
-                                if($is_blocked != 0){
+                               
                                 ?>
                                 <button class="affiliate-block-btn w-btn <?php echo ($is_blocked == 1) ? 'us-btn-style_1' : 'us-btn-style_2' ?>" 
                                     data-affiliate="<?php echo esc_attr($affiliate['user_id']); ?>"
                                         data-blocked="<?php echo ($is_blocked == 1) ? '1' : '0'; ?>">
                                         <?php echo ($is_blocked == 1) ? 'Block' : 'Unblock'; ?>
                                     </button>
-                                    <?php }else{ ?>
-                                        <a href="<?php echo $current_url.'?action=organization-link&token='.$token; ?>" class="w-btn us-btn-style_1">Link to Organization</a>
-                                    <?php } } ?>
+                                   
+                                    <?php  } ?>
                                 </td>
                             </tr>
                         <?php 
