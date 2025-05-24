@@ -43,7 +43,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
 
             $processExistResult = $wpdb->get_var($processExistQuery);
 
-            if($processExistResult == 0){
+            if($processExistResult){
                 return OAM_COMMON_Custom::message_design_block(
                     'This order has been deleted. Please create a new order.',
                     get_the_permalink(),
