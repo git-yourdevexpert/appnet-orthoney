@@ -183,7 +183,20 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
 
     // Step 4: Pagination
     $recordsFiltered = count($final_users);
-    $recordsTotal = count($all_users); // total affiliates regardless of enabled or search
+    $all_user_ids = wp_list_pluck($all_users, 'ID');
+
+$enabled_all_user_ids = [];
+if (!empty($all_user_ids)) {
+    $placeholders_all = implode(',', array_fill(0, count($all_user_ids), '%d'));
+    $sql_all = "
+        SELECT user_id
+        FROM {$wpdb->prefix}yith_wcaf_affiliates
+        WHERE enabled = 1 AND user_id IN ($placeholders_all)
+    ";
+    $enabled_all_user_ids = $wpdb->get_col($wpdb->prepare($sql_all, ...$all_user_ids));
+}
+
+$recordsTotal = count($enabled_all_user_ids);
 
     $paged_users = array_slice(array_values($final_users), $start, $length);
 
