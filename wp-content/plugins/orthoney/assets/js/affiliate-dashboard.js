@@ -600,7 +600,7 @@ document.getElementById('search-button').addEventListener('click', async functio
         if (data.success && data.customers.length > 0) {
             $exist_status = 0;
             let  title = 'Customer has been found';
-            let html = `Can you send a Request?`;
+            let html = `Send Request to Customer?`
             html += "<div class='exceptions'><strong>Customer Details: </strong><ul>";
 
             let user_id = 0;
@@ -619,8 +619,7 @@ document.getElementById('search-button').addEventListener('click', async functio
             }
 
             const result = await Swal.fire({
-                title: title,
-               
+                title: html,
                 html: html,
                 showCancelButton: true,
                 showConfirmButton: false,
@@ -629,8 +628,8 @@ document.getElementById('search-button').addEventListener('click', async functio
                 cancelButtonColor: "#d33",
                 denyButtonColor: "#3085d6",
                 confirmButtonText: "Yes, I do",
-                cancelButtonText: "No, I do not",
-                denyButtonText: "Yes, I do",
+                cancelButtonText: "Cancel",
+                denyButtonText: "Send Request",
                 allowOutsideClick: false,
                 allowEscapeKey: false,
                 allowEnterKey: false,
