@@ -46,14 +46,6 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         // Clean search for SQL LIKE
         $like_search = '%' . $wpdb->esc_like($search) . '%';
 
-        /*
-        * Query logic:
-        * 1) Join wp_users with wp_usermeta for first_name, last_name, and role
-        * 2) Filter role = 'customer' ONLY (exactly)
-        * 3) Search in first_name OR last_name OR user_email
-        * 4) Paginate with LIMIT $start, $length
-        */
-
         // Prepare SQL for counting total 'customer' users with possible inclusion filter (no search)
         $sql_total = "
             SELECT COUNT(DISTINCT u.ID) FROM {$wpdb->users} u
@@ -132,115 +124,99 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         ]);
     }
 
-
     public function get_affiliates_list_ajax_handler() {
-        if (!defined('DOING_AJAX') || !DOING_AJAX) {
-            wp_die();
-        }
+    global $wpdb;
 
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'oam_nonce')) {
-            wp_send_json_error(['message' => 'Invalid nonce']);
-        }
+    $start  = intval($_POST['start'] ?? 0);
+    $length = intval($_POST['length'] ?? 10);
+    $draw   = intval($_POST['draw'] ?? 1);
+    $search = sanitize_text_field($_POST['search']['value'] ?? '');
 
-        global $wpdb;
+    // Step 1: Get all users with role 'yith_affiliate' (no filtering yet)
+    $user_query = new WP_User_Query([
+        'role'   => 'yith_affiliate',
+        'fields' => ['ID', 'user_email'],
+        'number' => -1,  // get all for manual filtering
+    ]);
+    $all_users = $user_query->get_results();
 
-        $start  = intval($_POST['start'] ?? 0);
-        $length = intval($_POST['length'] ?? 10);
-        $draw   = intval($_POST['draw'] ?? 1);
-        $search = sanitize_text_field($_POST['search']['value'] ?? '');
+    // Step 2: Manual filtering by search term on email and meta fields
+    if (!empty($search)) {
+        $search_lc = strtolower($search);
+        $filtered_users = array_filter($all_users, function($user) use ($search_lc) {
+            $organization = strtolower(get_user_meta($user->ID, '_yith_wcaf_name_of_your_organization', true) ?: '');
+            $city         = strtolower(get_user_meta($user->ID, '_yith_wcaf_city', true) ?: '');
+            $state        = strtolower(get_user_meta($user->ID, '_yith_wcaf_state', true) ?: '');
+            $code         = strtolower(get_user_meta($user->ID, '_orgCode', true) ?: '');
+            $email        = strtolower($user->user_email);
 
-        // Step 1: Query all user IDs with yith_affiliate role
-        $user_args = [
-            'role'    => 'yith_affiliate',
-            'fields'  => ['ID', 'user_email'],
-            'number'  => -1, // get all to filter later
-            'meta_query' => [],
-            'search_columns' => ['user_email'],
-        ];
-
-        if (!empty($search)) {
-            $user_args['search'] = '*' . $search . '*';
-            $user_args['meta_query'][] = [
-                'relation' => 'OR',
-                [
-                    'key'     => '_yith_wcaf_name_of_your_organization',
-                    'value'   => $search,
-                    'compare' => 'LIKE'
-                ],
-                [
-                    'key'     => '_yith_wcaf_city',
-                    'value'   => $search,
-                    'compare' => 'LIKE'
-                ],
-                [
-                    'key'     => '_yith_wcaf_state',
-                    'value'   => $search,
-                    'compare' => 'LIKE'
-                ],
-                [
-                    'key'     => '_orgCode',
-                    'value'   => $search,
-                    'compare' => 'LIKE'
-                ]
-            ];
-        }
-
-        $user_query = new WP_User_Query($user_args);
-        $all_users = $user_query->get_results(); // all matching users
-        $all_user_ids = wp_list_pluck($all_users, 'ID');
-
-        // Step 2: Filter those by enabled = 1 in yith_wcaf_affiliates
-        $enabled_user_ids = [];
-
-        if (!empty($all_user_ids)) {
-            $placeholders = implode(',', array_fill(0, count($all_user_ids), '%d'));
-            $sql = "
-                SELECT user_id
-                FROM {$wpdb->prefix}yith_wcaf_affiliates
-                WHERE enabled = 1 AND user_id IN ($placeholders)
-            ";
-            $enabled_user_ids = $wpdb->get_col($wpdb->prepare($sql, ...$all_user_ids));
-        }
-
-        // Step 3: Filter and paginate final result
-        $enabled_users = array_filter($all_users, function ($user) use ($enabled_user_ids) {
-            return in_array($user->ID, $enabled_user_ids);
+            return (
+                strpos($organization, $search_lc) !== false ||
+                strpos($city, $search_lc) !== false ||
+                strpos($state, $search_lc) !== false ||
+                strpos($code, $search_lc) !== false ||
+                strpos($email, $search_lc) !== false
+            );
         });
+    } else {
+        $filtered_users = $all_users;
+    }
 
-        $recordsTotal = count($enabled_user_ids);
-        $recordsFiltered = count($enabled_users);
+    $filtered_user_ids = wp_list_pluck($filtered_users, 'ID');
 
-        $paginated_users = array_slice(array_values($enabled_users), $start, $length);
+    // Step 3: Filter only enabled users from your yith_wcaf_affiliates table
+    $enabled_user_ids = [];
+    if (!empty($filtered_user_ids)) {
+        $placeholders = implode(',', array_fill(0, count($filtered_user_ids), '%d'));
+        $sql = "
+            SELECT user_id
+            FROM {$wpdb->prefix}yith_wcaf_affiliates
+            WHERE enabled = 1 AND user_id IN ($placeholders)
+        ";
+        $enabled_user_ids = $wpdb->get_col($wpdb->prepare($sql, ...$filtered_user_ids));
+    }
 
-        $data = [];
+    // Final filtered users enabled and matching search
+    $final_users = array_filter($filtered_users, function($user) use ($enabled_user_ids) {
+        return in_array($user->ID, $enabled_user_ids);
+    });
 
-        foreach ($paginated_users as $user) {
-            $user_id = $user->ID;
-            $organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
-            $city         = get_user_meta($user_id, '_yith_wcaf_city', true);
-            $state        = get_user_meta($user_id, '_yith_wcaf_state', true);
-            $code         = get_user_meta($user_id, '_orgCode', true);
-            $login_link   = wp_login_url() . '?user=' . urlencode($user->user_email);
-            $nonce = wp_create_nonce('switch_to_user_' . $user->ID);
-            $data[] = [
-                'code'         => $code,
-                'organization' => $organization,
-                'city'         => $city,
-                'state'        => $state,
-                'login'        => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '" data-nonce="' . esc_attr($nonce) . '">
+    // Step 4: Pagination
+    $recordsFiltered = count($final_users);
+    $recordsTotal = count($all_users); // total affiliates regardless of enabled or search
+
+    $paged_users = array_slice(array_values($final_users), $start, $length);
+
+    // Step 5: Prepare data for DataTables
+    $data = [];
+    foreach ($paged_users as $user) {
+        $user_id = $user->ID;
+        $organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+        $city = get_user_meta($user_id, '_yith_wcaf_city', true);
+        $state = get_user_meta($user_id, '_yith_wcaf_state', true);
+        $org_code = get_user_meta($user_id, '_orgCode', true);
+        $login_link = wp_login_url() . '?user=' . urlencode($user->user_email);
+
+        $data[] = [
+            'code'         => $org_code,
+            'organization' => $organization,
+            'city'         => $city,
+            'state'        => $state,
+            'login'        => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '" data-nonce="' . esc_attr($nonce) . '">
                                 <img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login as Organization
                             </button>'
-            ];
-        }
-
-        ob_clean(); // Prevent any whitespace
-        wp_send_json([
-            'draw'            => $draw,
-            'recordsTotal'    => $recordsTotal,
-            'recordsFiltered' => $recordsFiltered,
-            'data'            => $data,
-        ]);
+        ];
     }
+
+    wp_send_json([
+        'draw'            => $draw,
+        'recordsTotal'    => $recordsTotal,
+        'recordsFiltered' => $recordsFiltered,
+        'data'            => $data,
+    ]);
+}
+
+    
 
 
     public function update_sales_representative_handler() {
