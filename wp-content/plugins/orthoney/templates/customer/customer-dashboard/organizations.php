@@ -39,9 +39,10 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
         <div class="filter-container">
             <input type="text" id="search-affiliates" placeholder="Search Organization">
             <select id="filter-block-status">
-                <option value="all">All organization</option>
+                <option value="all">All status</option>
                 <option value="1">Blocked</option>
                 <option value="0">Unblocked</option>
+                <option value="-1">Pending Request</option>
             </select>
                 <button id="affiliate-filter-button" class="w-btn us-btn-style_2">Filter</button>
         </div>
