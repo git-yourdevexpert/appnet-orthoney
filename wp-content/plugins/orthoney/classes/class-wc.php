@@ -430,7 +430,7 @@ class OAM_WC_Customizer {
                 $recipients = OAM_Helper::get_recipient_by_pid($pid);
     
                 foreach ($recipients as $recipient) {
-                    $address = implode(' ', array_filter([
+                    $address = implode(', ', array_filter([
                         $recipient->address_1,
                         $recipient->address_2,
                         $recipient->city,

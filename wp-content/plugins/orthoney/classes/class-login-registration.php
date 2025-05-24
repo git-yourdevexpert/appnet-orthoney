@@ -372,6 +372,14 @@ class OAM_Auth {
      * send email verification to admin created user
      */
     public function send_email_verification_to_admin_created_user($user_id) {
+
+        $user = get_userdata($user_id);
+
+        // Check if the user has only the 'sales_representative' role
+        if (in_array('sales_representative', $user->roles) && count($user->roles) === 1) {
+            // Add 'customer' role without removing existing roles
+            $user->add_role('customer');
+        }
         if (!is_admin()) {
             return; // Ensure this runs only in the WordPress admin dashboard
         }
