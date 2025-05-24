@@ -13,6 +13,233 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         add_action('wp_ajax_update_sales_representative', array($this, 'update_sales_representative_handler'));
         add_action('wp_ajax_auto_login_request_to_sales_rep', array($this, 'auto_login_request_to_sales_rep_handler'));
 
+        add_action('wp_ajax_get_affiliates_list', array($this, 'get_affiliates_list_ajax_handler'));
+        add_action('wp_ajax_get_filtered_customers', array($this, 'orthoney_get_filtered_customers'));
+    }
+
+    
+    public function orthoney_get_filtered_customers() {
+        // check_ajax_referer('get_customers_nonce', 'nonce');
+
+        global $wpdb;
+
+        $user_id = get_current_user_id();
+        $select_customer = get_user_meta($user_id, 'select_customer', true);
+        $choose_customer = get_user_meta($user_id, 'choose_customer', true);
+
+        $start  = intval($_POST['start'] ?? 0);
+        $length = intval($_POST['length'] ?? 10);
+        $draw   = intval($_POST['draw'] ?? 1);
+        $search = sanitize_text_field($_POST['search']['value'] ?? '');
+
+        // Prepare "include" filter if needed
+        $include_clause = '';
+        $include_ids = [];
+        if ($select_customer === 'choose_customer' && !empty($choose_customer)) {
+            $choose_customer_int = array_map('intval', (array)$choose_customer);
+            if (!empty($choose_customer_int)) {
+                $include_ids = $choose_customer_int;
+                $include_clause = 'AND u.ID IN (' . implode(',', $include_ids) . ')';
+            }
+        }
+
+        // Clean search for SQL LIKE
+        $like_search = '%' . $wpdb->esc_like($search) . '%';
+
+        /*
+        * Query logic:
+        * 1) Join wp_users with wp_usermeta for first_name, last_name, and role
+        * 2) Filter role = 'customer' ONLY (exactly)
+        * 3) Search in first_name OR last_name OR user_email
+        * 4) Paginate with LIMIT $start, $length
+        */
+
+        // Prepare SQL for counting total 'customer' users with possible inclusion filter (no search)
+        $sql_total = "
+            SELECT COUNT(DISTINCT u.ID) FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID AND um_role.meta_key = '{$wpdb->prefix}capabilities'
+            WHERE um_role.meta_value = 'a:1:{s:8:\"customer\";b:1;}'
+            {$include_clause}
+        ";
+
+        // Total count without search
+        $total_count = $wpdb->get_var($sql_total);
+
+        // Prepare SQL for filtered count with search
+        $sql_filtered = "
+            SELECT COUNT(DISTINCT u.ID) FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID AND um_role.meta_key = '{$wpdb->prefix}capabilities'
+            LEFT JOIN {$wpdb->usermeta} um_first ON (um_first.user_id = u.ID AND um_first.meta_key = 'first_name')
+            LEFT JOIN {$wpdb->usermeta} um_last ON (um_last.user_id = u.ID AND um_last.meta_key = 'last_name')
+            WHERE um_role.meta_value = 'a:1:{s:8:\"customer\";b:1;}'
+            AND (
+                u.user_email LIKE %s
+                OR um_first.meta_value LIKE %s
+                OR um_last.meta_value LIKE %s
+            )
+            {$include_clause}
+        ";
+
+        $filtered_count = $wpdb->get_var($wpdb->prepare($sql_filtered, $like_search, $like_search, $like_search));
+
+        // Prepare SQL to get user data with limit and search
+        $sql_data = "
+            SELECT u.ID, u.user_email, um_first.meta_value AS first_name, um_last.meta_value AS last_name
+            FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID AND um_role.meta_key = '{$wpdb->prefix}capabilities'
+            LEFT JOIN {$wpdb->usermeta} um_first ON (um_first.user_id = u.ID AND um_first.meta_key = 'first_name')
+            LEFT JOIN {$wpdb->usermeta} um_last ON (um_last.user_id = u.ID AND um_last.meta_key = 'last_name')
+            WHERE um_role.meta_value = 'a:1:{s:8:\"customer\";b:1;}'
+            AND (
+                u.user_email LIKE %s
+                OR um_first.meta_value LIKE %s
+                OR um_last.meta_value LIKE %s
+            )
+            {$include_clause}
+            ORDER BY um_first.meta_value ASC, um_last.meta_value ASC
+            LIMIT %d, %d
+        ";
+
+        $results = $wpdb->get_results($wpdb->prepare(
+            $sql_data,
+            $like_search,
+            $like_search,
+            $like_search,
+            $start,
+            $length
+        ));
+
+        // Prepare data for DataTables
+        $data = [];
+        foreach ($results as $user) {
+            $nonce = wp_create_nonce('switch_to_user_' . $user->ID);
+            $name = trim($user->first_name . ' ' . $user->last_name);
+
+            $data[] = [
+                'name' => esc_html($name ?: '—'),
+                'email' => esc_html($user->user_email),
+                'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '" data-nonce="' . esc_attr($nonce) . '">
+                                <img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login as Customer
+                            </button>',
+            ];
+        }
+
+        wp_send_json([
+            'draw' => $draw,
+            'recordsTotal' => intval($total_count),
+            'recordsFiltered' => intval($filtered_count),
+            'data' => $data,
+        ]);
+    }
+
+
+    public function get_affiliates_list_ajax_handler() {
+        if (!defined('DOING_AJAX') || !DOING_AJAX) {
+            wp_die();
+        }
+
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'oam_nonce')) {
+            wp_send_json_error(['message' => 'Invalid nonce']);
+        }
+
+        global $wpdb;
+
+        $start  = intval($_POST['start'] ?? 0);
+        $length = intval($_POST['length'] ?? 10);
+        $draw   = intval($_POST['draw'] ?? 1);
+        $search = sanitize_text_field($_POST['search']['value'] ?? '');
+
+        // Step 1: Query all user IDs with yith_affiliate role
+        $user_args = [
+            'role'    => 'yith_affiliate',
+            'fields'  => ['ID', 'user_email'],
+            'number'  => -1, // get all to filter later
+            'meta_query' => [],
+            'search_columns' => ['user_email'],
+        ];
+
+        if (!empty($search)) {
+            $user_args['search'] = '*' . $search . '*';
+            $user_args['meta_query'][] = [
+                'relation' => 'OR',
+                [
+                    'key'     => '_yith_wcaf_name_of_your_organization',
+                    'value'   => $search,
+                    'compare' => 'LIKE'
+                ],
+                [
+                    'key'     => '_yith_wcaf_city',
+                    'value'   => $search,
+                    'compare' => 'LIKE'
+                ],
+                [
+                    'key'     => '_yith_wcaf_state',
+                    'value'   => $search,
+                    'compare' => 'LIKE'
+                ],
+                [
+                    'key'     => '_orgCode',
+                    'value'   => $search,
+                    'compare' => 'LIKE'
+                ]
+            ];
+        }
+
+        $user_query = new WP_User_Query($user_args);
+        $all_users = $user_query->get_results(); // all matching users
+        $all_user_ids = wp_list_pluck($all_users, 'ID');
+
+        // Step 2: Filter those by enabled = 1 in yith_wcaf_affiliates
+        $enabled_user_ids = [];
+
+        if (!empty($all_user_ids)) {
+            $placeholders = implode(',', array_fill(0, count($all_user_ids), '%d'));
+            $sql = "
+                SELECT user_id
+                FROM {$wpdb->prefix}yith_wcaf_affiliates
+                WHERE enabled = 1 AND user_id IN ($placeholders)
+            ";
+            $enabled_user_ids = $wpdb->get_col($wpdb->prepare($sql, ...$all_user_ids));
+        }
+
+        // Step 3: Filter and paginate final result
+        $enabled_users = array_filter($all_users, function ($user) use ($enabled_user_ids) {
+            return in_array($user->ID, $enabled_user_ids);
+        });
+
+        $recordsTotal = count($enabled_user_ids);
+        $recordsFiltered = count($enabled_users);
+
+        $paginated_users = array_slice(array_values($enabled_users), $start, $length);
+
+        $data = [];
+
+        foreach ($paginated_users as $user) {
+            $user_id = $user->ID;
+            $organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+            $city         = get_user_meta($user_id, '_yith_wcaf_city', true);
+            $state        = get_user_meta($user_id, '_yith_wcaf_state', true);
+            $code         = get_user_meta($user_id, '_orgCode', true);
+            $login_link   = wp_login_url() . '?user=' . urlencode($user->user_email);
+            $nonce = wp_create_nonce('switch_to_user_' . $user->ID);
+            $data[] = [
+                'code'         => $code,
+                'organization' => $organization,
+                'city'         => $city,
+                'state'        => $state,
+                'login'        => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '" data-nonce="' . esc_attr($nonce) . '">
+                                <img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login as Organization
+                            </button>'
+            ];
+        }
+
+        ob_clean(); // Prevent any whitespace
+        wp_send_json([
+            'draw'            => $draw,
+            'recordsTotal'    => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data'            => $data,
+        ]);
     }
 
 

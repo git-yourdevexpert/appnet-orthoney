@@ -1912,6 +1912,43 @@ jQuery(document).ready(function($) {
     });
 });
 
+jQuery(document).ready(function ($) {
+    const table = new DataTable('#sales-representative-affiliate-table', {
+        ajax: {
+            url: oam_ajax.ajax_url,
+            type: 'POST',
+            data: function (d) {
+                d.action = 'get_affiliates_list';
+                d.nonce = oam_ajax.nonce;
+            }
+        },
+        columns: [
+            { data: 'code' },
+            { data: 'organization' },
+            { data: 'city' },
+            { data: 'state' },
+            { data: 'login' }
+        ],
+        columnDefs: [
+            { targets: -1, orderable: false }
+        ],
+        language: {
+            processing: `<div class="loader multiStepForm" style="display:block">
+                <div>
+                    <h2 class="swal2-title">Processing...</h2>
+                    <div class="swal2-html-container">Please wait while we process your request.</div>
+                    <div class="loader-5"></div>
+                </div>
+            </div>`
+        },
+        processing: true,
+        serverSide: true,
+        paging: true,
+        searching: true
+    });
+});
+
+
 document.addEventListener('DOMContentLoaded', function () {
     new DataTable('#sales-representative-customer-table', {
         serverSide: true,
