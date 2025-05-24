@@ -166,7 +166,7 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 add_action('wp_ajax_get_filtered_customers', 'orthoney_get_filtered_customers');
 
 function orthoney_get_filtered_customers() {
-    check_ajax_referer('get_customers_nonce', 'nonce');
+    // check_ajax_referer('get_customers_nonce', 'nonce');
 
     global $wpdb;
 
