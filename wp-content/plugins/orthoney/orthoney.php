@@ -25,6 +25,14 @@ function custom_disable_shipping_fields_validation( $fields ) {
     return $fields;
 }
 
+function custom_rename_coupon_to_voucher( $translated, $text, $domain ) {
+    $text = str_ireplace('coupon', 'Voucher', $text);
+    $text = str_ireplace('Coupon', 'Voucher', $text);
+    return $text;
+}
+add_filter( 'gettext', 'custom_rename_coupon_to_voucher', 10, 3 );
+add_filter( 'ngettext', 'custom_rename_coupon_to_voucher', 10, 3 );
+
 
 // add_action( 'init', 'createDB' );
 // function createDB(){
