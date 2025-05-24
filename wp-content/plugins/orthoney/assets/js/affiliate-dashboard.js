@@ -620,7 +620,6 @@ document.getElementById('search-button').addEventListener('click', async functio
 
             const result = await Swal.fire({
                 title: html,
-                html: html,
                 showCancelButton: true,
                 showConfirmButton: false,
                 showDenyButton: false,
