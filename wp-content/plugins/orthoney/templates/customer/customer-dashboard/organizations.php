@@ -30,6 +30,9 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
     $affiliates = $result['data']['user_info'];
     $blocked_affiliates = $result['data']['affiliates'];    
     ?>
+    <style>
+        #DataTables_Table_0_filter{display:none}
+    </style>
     <div class="affiliate-dashboard order-process-block">
         <h3>All Organizations</h3>
         <!-- Search and filter options -->
