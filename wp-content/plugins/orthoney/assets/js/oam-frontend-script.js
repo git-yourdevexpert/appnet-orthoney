@@ -2605,7 +2605,7 @@ function order_filter_main_order(){
                Order Status:
                 <select id="order_status" name="order_status" class="" tabindex="-1" aria-hidden="true">
                     <option value="all">All</option><option value="wc-processing">Processing</option>
-                    <option value="wc-pending">Pending payment</option><option value="wc-processing">Processing</option><option value="wc-on-hold">On hold</option><option value="wc-completed">Completed</option><option value="wc-cancelled">Cancelled</option><option value="wc-refunded">Refunded</option><option value="wc-failed">Failed</option><option value="wc-checkout-draft">Draft</option></select>
+                    <option value="wc-pending">Pending payment</option><option value="wc-on-hold">On hold</option><option value="wc-completed">Completed</option><option value="wc-cancelled">Cancelled</option><option value="wc-refunded">Refunded</option><option value="wc-failed">Failed</option><option value="wc-checkout-draft">Draft</option></select>
              </label>
                 <label>
                     Shipping Type:
