@@ -2681,6 +2681,13 @@ class OAM_Ajax{
                         if($is_blocked == $filter OR  $filter == 'all'){
                         $token = $result['data']['affiliates'][$key]['token'];
                         $current_url = home_url(add_query_arg([], $_SERVER['REQUEST_URI']));
+                        $user_id = $affiliate['user_id'];
+
+                        $orgName = get_user_meta($user_id, '_orgName', true);
+                    if (empty($orgName)) {
+                        $orgName = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+                    }
+
                         $html = 1;
                             ?>
                             <tr>
@@ -2688,6 +2695,11 @@ class OAM_Ajax{
                                 <td><div class="thead-data">Name</div><?php echo esc_html($affiliate['display_name']); ?></td>
                                 <td><div class="thead-data">Action</div>
                                 <?php 
+                                if($is_blocked == -1){
+                                ?>
+                                <a href="<?php echo $current_url.'?action=organization-link&token='.$token; ?>" class="w-btn us-btn-style_1">Accept Linking Request</a>
+                                <?php
+                            }else{
                                 if($is_blocked != 0){
                                 ?>
                                 <button class="affiliate-block-btn w-btn <?php echo ($is_blocked == 1) ? 'us-btn-style_1' : 'us-btn-style_2' ?>" 
@@ -2697,7 +2709,7 @@ class OAM_Ajax{
                                     </button>
                                     <?php }else{ ?>
                                         <a href="<?php echo $current_url.'?action=organization-link&token='.$token; ?>" class="w-btn us-btn-style_1">Link to Organization</a>
-                                    <?php } ?>
+                                    <?php } } ?>
                                 </td>
                             </tr>
                         <?php 

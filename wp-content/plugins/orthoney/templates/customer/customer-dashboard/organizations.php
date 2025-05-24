@@ -56,17 +56,30 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                 </thead>
                 <tbody>
                 <?php 
+                
                 if(!empty($affiliates)){
                 foreach ($affiliates as $key => $affiliate){
                     $is_blocked = $result['data']['affiliates'][$key]['status'];
                     $token = $result['data']['affiliates'][$key]['token'];
+                    $user_id = $affiliate['user_id'];
                     $current_url = home_url(add_query_arg([], $_SERVER['REQUEST_URI']));
+
+                    $orgName = get_user_meta($user_id, '_orgName', true);
+                    if (empty($orgName)) {
+                        $orgName = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+                    }
                         ?>
+                         
                         <tr>
                             <td><div class="thead-data">Token</div><?php echo esc_html($affiliate['token']); ?></td>
-                            <td><div class="thead-data">Name</div><?php echo esc_html($affiliate['display_name']); ?></td>
+                            <td><div class="thead-data">Name</div><?php echo esc_html($orgName); ?></td>
                             <td><div class="thead-data">Action</div>
                             <?php 
+                            if($is_blocked == -1){
+                                ?>
+                                <a href="<?php echo $current_url.'?action=organization-link&token='.$token; ?>" class="w-btn us-btn-style_1">Accept Linking Request</a>
+                                <?php
+                            }else{
                             if($is_blocked != 0){
                             ?>
                             <button class="affiliate-block-btn w-btn <?php echo ($is_blocked == 1) ? 'us-btn-style_1' : 'us-btn-style_2' ?>" 
@@ -76,7 +89,7 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                                 </button>
                                 <?php }else{ ?>
                                     <a href="<?php echo $current_url.'?action=organization-link&token='.$token; ?>" class="w-btn us-btn-style_1">Link to Organization</a>
-                                <?php } ?>
+                                <?php } } ?>
                             </td>
                         </tr>
                     <?php } }else{ ?>
