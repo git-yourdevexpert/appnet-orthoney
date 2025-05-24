@@ -64,7 +64,7 @@ class OAM_Hooks {
                             'Dashboard' => SALES_REPRESENTATIVE_DASHBOARD_LINK,
                             'Manage Customer' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-customer/',
                             'Manage Organization' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-organization/',
-                            'My Profile' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'my-profile/',
+                            'My Profile' => CUSTOMER_DASHBOARD_LINK . 'my-profile/',
                         ]
                     ],
                     'organization-menu' => [ // Menu slug
