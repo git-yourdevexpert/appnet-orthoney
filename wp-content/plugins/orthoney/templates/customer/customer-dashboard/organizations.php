@@ -40,8 +40,8 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
             <input type="text" id="search-affiliates" placeholder="Search Organization">
             <select id="filter-block-status">
                 <option value="all">All organization</option>
-                <option value="blocked">Blocked</option>
-                <option value="unblocked">Unblocked</option>
+                <option value="0">Blocked</option>
+                <option value="1">Unblocked</option>
             </select>
                 <button id="affiliate-filter-button" class="w-btn us-btn-style_2">Filter</button>
         </div>
