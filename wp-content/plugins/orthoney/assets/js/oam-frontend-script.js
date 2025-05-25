@@ -21,24 +21,25 @@ function setCookie(name, value, days) {
 function affiliateDatatable(){
     ["affiliate-results"].forEach((id) => {
   const div = document.getElementById(id);
-  if (div && div.innerHTML.trim() !== "") {
+  if (div) {
     const tableEl = div.querySelector("table");
 
-    // If table exists
     if (tableEl) {
-      const tbodyRows = tableEl.querySelectorAll("tbody tr");
-      const rowCount = Array.from(tbodyRows).filter(
-        (tr) => tr.innerText.trim() !== ""
-      ).length;
+      const tbody = tableEl.querySelector("tbody");
+      const tbodyRows = tbody ? Array.from(tbody.querySelectorAll("tr")) : [];
+      const hasData = tbodyRows.some((tr) => {
+        const cells = Array.from(tr.querySelectorAll("td"));
+        return cells.length === 3 && tr.innerText.trim() !== "";
+      });
 
-      // If no rows in tbody, show error
-      if (rowCount === 0) {
+      if (!hasData) {
+        // No valid data rows, show error
         div.innerHTML = `<div class="no-data-message" style="padding: 10px; color: red;">Associated Organizations is not found</div>`;
         return;
       }
 
       // Initialize DataTable only if not already initialized
-      if (!jQuery(tableEl).hasClass('dataTable')) {
+      if (!jQuery(tableEl).hasClass("dataTable")) {
         const $table = jQuery(tableEl);
 
         const dataTable = $table.DataTable({
@@ -52,21 +53,21 @@ function affiliateDatatable(){
           lengthChange: false,
           language: {
             search: "",
-            searchPlaceholder: "Search..."
+            searchPlaceholder: "Search...",
           },
           columnDefs: [
             {
               targets: -1,
-              orderable: false
-            }
-          ]
+              orderable: false,
+            },
+          ],
         });
 
-        dataTable.on('draw', function () {
+        dataTable.on("draw", function () {
           const pageInfo = dataTable.page.info();
-          const wrapper = $table.closest('.dataTables_wrapper');
-          const pagination = wrapper.find('.dataTables_paginate');
-          const infoText = wrapper.find('.dataTables_info');
+          const wrapper = $table.closest(".dataTables_wrapper");
+          const pagination = wrapper.find(".dataTables_paginate");
+          const infoText = wrapper.find(".dataTables_info");
 
           if (pageInfo.pages <= 1) {
             pagination.hide();
@@ -77,11 +78,13 @@ function affiliateDatatable(){
           }
         });
 
+        // Trigger initial draw
         dataTable.draw();
       }
     }
   }
 });
+
 
     
     ["affiliate-orderlist-table"].forEach((id) => {
