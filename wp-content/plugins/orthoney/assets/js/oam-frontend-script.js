@@ -19,7 +19,7 @@ function setCookie(name, value, days) {
 
 
 function affiliateDatatable(){
-    ["affiliate-results"].forEach((id) => {
+   ["affiliate-results"].forEach((id) => {
   const div = document.getElementById(id);
   if (div) {
     const tableEl = div.querySelector("table");
@@ -27,18 +27,23 @@ function affiliateDatatable(){
     if (tableEl) {
       const tbody = tableEl.querySelector("tbody");
       const tbodyRows = tbody ? Array.from(tbody.querySelectorAll("tr")) : [];
-      const hasData = tbodyRows.some((tr) => {
-        const cells = Array.from(tr.querySelectorAll("td"));
-        return cells.length === 3 && tr.innerText.trim() !== "";
+
+      const hasValidData = tbodyRows.some((tr) => {
+        const tds = tr.querySelectorAll("td");
+        return tds.length === 3 && tr.innerText.trim() !== "";
       });
 
-      if (!hasData) {
-        // No valid data rows, show error
-        div.innerHTML = `<div class="no-data-message" style="padding: 10px; color: red;">Associated Organizations is not found</div>`;
-        return;
+      if (!hasValidData) {
+        // Clear tbody and show message
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="3" style="text-align: center; color: red;">Associated Organizations is not found</td>
+          </tr>
+        `;
+        return; // Do not initialize DataTable
       }
 
-      // Initialize DataTable only if not already initialized
+      // Initialize DataTable if not already initialized
       if (!jQuery(tableEl).hasClass("dataTable")) {
         const $table = jQuery(tableEl);
 
@@ -78,12 +83,12 @@ function affiliateDatatable(){
           }
         });
 
-        // Trigger initial draw
         dataTable.draw();
       }
     }
   }
 });
+
 
 
     
