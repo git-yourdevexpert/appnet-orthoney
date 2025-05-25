@@ -2661,8 +2661,8 @@ function order_filter_main_order(){
          
             $('#customer-orders-table_filter').append('');
  
-            const tableType = `entries`;
-            $('#customer-orders-table_length').before( tableType );
+            // const tableType = ``;
+            // $('#customer-orders-table_length').before('<div>' + tableType + '</div>');
 
  
             jQuery('#customer-orders-table_filter input[type=search]').off();
