@@ -46,7 +46,7 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
             </select>
                 <button id="affiliate-filter-button" class="w-btn us-btn-style_2">Filter</button>
         </div>
-        <div id="affiliate-results">
+        <div id="affiliate-organizations-results">
             <table>
                 <thead>
                     <tr>
