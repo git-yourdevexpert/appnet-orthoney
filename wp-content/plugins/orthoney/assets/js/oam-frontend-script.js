@@ -37,7 +37,7 @@ function affiliateDatatable(){
         // Clear tbody and show message
         tbody.innerHTML = `
           <tr>
-            <td colspan="3" style="text-align: center; color: red;">Associated Organizations is not found</td>
+            <td colspan="3" style="text-align: center;">Associated Organizations is not found</td>
           </tr>
         `;
         return; // Do not initialize DataTable
