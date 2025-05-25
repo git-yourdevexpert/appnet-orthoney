@@ -384,15 +384,7 @@ class OAM_Auth {
             return; // Ensure this runs only in the WordPress admin dashboard
         }
 
-        if (is_user_logged_in()) {
-            $user = wp_get_current_user(); // Get the current user object
         
-            if (!in_array('administrator', (array) $user->roles)) {
-               return;
-            }
-        } else {
-            return;
-        }
     
         // Get user data
         $user = get_userdata($user_id);

@@ -84,7 +84,7 @@ $requests = $wpdb->get_results(
                         
                     }
                 }else{
-                    echo '<tr><td colspan="5">customer is not found!</td></tr>;'
+                    echo '<tr><td colspan="5">customer is not found!</td></tr>';
                 }
                 ?>
 
