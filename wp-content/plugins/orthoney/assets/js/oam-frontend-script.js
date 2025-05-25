@@ -92,6 +92,7 @@ function affiliateDatatable(){
             deferRender: false,
             lengthChange: false,
             language: {
+                emptyTable: "No Organizations found!",
                 search: "",
                 searchPlaceholder: "Search..." 
               },
