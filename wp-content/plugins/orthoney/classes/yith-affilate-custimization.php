@@ -71,8 +71,8 @@ class OAM_YITH_Affilate {
         $token = str_replace("-1", "", $token);
     
         $existing = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE token = %s",
-            $token
+            "SELECT COUNT(*) FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE token = %s AND user_id != %d",
+            $token, $user_id
         ));
     
         if ($existing > 0 || (strlen($token) !== 3)) {
