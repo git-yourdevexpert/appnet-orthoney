@@ -3595,7 +3595,7 @@ class OAM_Ajax{
                 return;
             }
         } else {
-            $where .= " AND step != 5";
+            $where .= " AND order_id = 0";
         }
         
         $step_labels = [
