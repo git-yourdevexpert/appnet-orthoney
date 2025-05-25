@@ -19,78 +19,59 @@ function setCookie(name, value, days) {
 
 
 function affiliateDatatable(){
-   ["affiliate-results"].forEach((id) => {
-  const div = document.getElementById(id);
-  if (div) {
-    const tableEl = div.querySelector("table");
-
-    if (tableEl) {
-      const tbody = tableEl.querySelector("tbody");
-      const tbodyRows = tbody ? Array.from(tbody.querySelectorAll("tr")) : [];
-
-      const hasValidData = tbodyRows.some((tr) => {
-        const tds = tr.querySelectorAll("td");
-        return tds.length === 3 && tr.innerText.trim() !== "";
-      });
-
-      if (!hasValidData) {
-        // Clear tbody and show message
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="3" style="text-align: center;">Associated Organizations is not found</td>
-          </tr>
-        `;
-        return; // Do not initialize DataTable
+    [ "affiliate-results"].forEach((id) => {
+      const div = document.getElementById(id);
+      if (div && div.innerHTML.trim() !== "") {
+        const tableEl = div.querySelector("table");
+        if (tableEl && !jQuery(tableEl).hasClass('dataTable')) {
+          const $table = jQuery(tableEl);
+    
+          // Initialize DataTable
+          const dataTable = $table.DataTable({
+            paging: false,
+           
+            paging: true,
+            fixedHeader: true,
+            scrollCollapse: false,
+            info: true,
+            searching: true,
+            responsive: true,
+            deferRender: false,
+            lengthChange: false,
+            language: {
+                search: "",
+                searchPlaceholder: "Search..." 
+              },
+              columnDefs: [
+                {
+                  targets: -1,        // -1 means "last column"
+                  orderable: false    // disables sorting
+                }
+              ]
+          });
+    
+          // Hide pagination & info if only 1 page
+          dataTable.on('draw', function () {
+            const pageInfo = dataTable.page.info();
+            const wrapper = $table.closest('.dataTables_wrapper');
+            const pagination = wrapper.find('.dataTables_paginate');
+            const infoText = wrapper.find('.dataTables_info');
+    
+            if (pageInfo.pages <= 1) {
+              pagination.hide();
+              infoText.hide();
+            } else {
+              pagination.show();
+              infoText.show();
+            }
+          });
+    
+          // Trigger initial check
+          dataTable.draw();
+        }
       }
-
-      // Initialize DataTable if not already initialized
-      if (!jQuery(tableEl).hasClass("dataTable")) {
-        const $table = jQuery(tableEl);
-
-        const dataTable = $table.DataTable({
-          paging: true,
-          fixedHeader: true,
-          scrollCollapse: false,
-          info: true,
-          searching: true,
-          responsive: true,
-          deferRender: false,
-          lengthChange: false,
-          language: {
-            search: "",
-            searchPlaceholder: "Search...",
-          },
-          columnDefs: [
-            {
-              targets: -1,
-              orderable: false,
-            },
-          ],
-        });
-
-        dataTable.on("draw", function () {
-          const pageInfo = dataTable.page.info();
-          const wrapper = $table.closest(".dataTables_wrapper");
-          const pagination = wrapper.find(".dataTables_paginate");
-          const infoText = wrapper.find(".dataTables_info");
-
-          if (pageInfo.pages <= 1) {
-            pagination.hide();
-            infoText.hide();
-          } else {
-            pagination.show();
-            infoText.show();
-          }
-        });
-
-        dataTable.draw();
-      }
-    }
-  }
-});
-
-
-
+    });
+    
     
     ["affiliate-orderlist-table"].forEach((id) => {
 
