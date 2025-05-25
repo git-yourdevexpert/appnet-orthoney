@@ -43,7 +43,7 @@ class OAM_AFFILIATE_Helper {
                 
                 return json_encode([
                     'success' => false, 
-                    'message'=> 'You will be able to access the Organization Area once your account is approved by the admin.',
+                    'message'=> 'Your application is pending approval. Thank you for reaching out!',
                     'reason'=> ''
                 ]);
             } elseif ($affiliate->enabled == -1) {
