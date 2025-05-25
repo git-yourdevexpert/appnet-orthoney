@@ -1,20 +1,5 @@
 function setCookie(name, value, days) {
-    const domain = window.location.hostname;
-    const maxAge = days * 86400;
-    const cookie = `${name}=${encodeURIComponent(value)}; path=/; domain=${domain}; max-age=${maxAge}; secure; samesite=strict`;
-
-    // Check if cookie exists by looking for exact name=
-    const cookieExists = document.cookie
-        .split('; ')
-        .some(row => row.startsWith(`${name}=`));
-
-    if (cookieExists) {
-        // Update the cookie
-        document.cookie = cookie;
-    } else {
-        // Set the cookie
-        document.cookie = cookie;
-    }
+    document.cookie = `${name}=${value}; path=/; max-age=${days * 86400}; secure; samesite=strict`;
 }
 
 

@@ -243,29 +243,33 @@ class OAM_COMMON_Custom {
 
         if ($remove == 1) {
             // Remove the cookies
-            setcookie('yith_wcaf_referral_token', '', time() - 3600, "/", "", true, true);
-            setcookie('yith_wcaf_referral_history', '', time() - 3600, "/", "", true, true);
+
+            yith_wcaf_delete_cookie('yith_wcaf_referral_token');
+            yith_wcaf_delete_cookie('yith_wcaf_referral_history');
+           
             return;
         }
 
+        
         if ($token !== 'Orthoney') {
+         
             $yith_wcaf_affiliates_table = OAM_helper::$yith_wcaf_affiliates_table;
 
             // Correct query execution
             $processExistResult = $wpdb->get_var($wpdb->prepare("
-                SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d
+                SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d
             ", $token));
 
             if (!$processExistResult) {
                 return;
             }
 
-            setcookie('yith_wcaf_referral_token', $processExistResult, time() - 3600, "/", "", true, true);
-            setcookie('yith_wcaf_referral_history', $processExistResult, time() - 3600, "/", "", true, true);
-        } else {
+            yith_wcaf_set_cookie( 'yith_wcaf_referral_token', $processExistResult, WEEK_IN_SECONDS );
+            yith_wcaf_set_cookie( 'yith_wcaf_referral_history', $processExistResult, WEEK_IN_SECONDS );
             
-            setcookie('yith_wcaf_referral_token', $token , time() - 3600, "/", "", true, true);
-            setcookie('yith_wcaf_referral_history', $token, time() - 3600, "/", "", true, true);
+        } else {
+            yith_wcaf_set_cookie( 'yith_wcaf_referral_token', $token, WEEK_IN_SECONDS );
+            yith_wcaf_set_cookie( 'yith_wcaf_referral_history', $token, WEEK_IN_SECONDS );
         }
     }
 

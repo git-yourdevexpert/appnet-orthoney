@@ -1480,6 +1480,7 @@ class OAM_Ajax{
     
         $order_process_table = OAM_Helper::$order_process_table;
         
+        
         if(isset($_POST['affiliate_select'])){
             OAM_COMMON_Custom::set_affiliate_cookie($_POST['affiliate_select']);
         }
@@ -1566,8 +1567,6 @@ class OAM_Ajax{
         $data = [
             'step'    => sanitize_text_field($currentStep),
         ];
-
-
 
         $result = $wpdb->update(
             $order_process_table,

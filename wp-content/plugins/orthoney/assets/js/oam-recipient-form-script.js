@@ -367,8 +367,8 @@ document.addEventListener("DOMContentLoaded", function () {
           if(currentStep == 1){
             
             if (dataToken) {
-              setCookie('yith_wcaf_referral_token', dataToken, 1);
-              setCookie('yith_wcaf_referral_history', dataToken, 1);
+              // setCookie('yith_wcaf_referral_token', dataToken, 1);
+              // setCookie('yith_wcaf_referral_history', dataToken, 1);
             }
           
           }
