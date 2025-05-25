@@ -40,6 +40,9 @@ $requests = $wpdb->get_results(
  <div class="affiliate-dashboard order-process-block">
    <h3>Already link customer </h3>
     <div id="affiliate-results" class="orthoney-datatable-warraper table-with-search-block">
+        <?php 
+if (!empty($requests)) {
+        ?>
         <table>
             <thead>
                 <tr>
@@ -52,10 +55,7 @@ $requests = $wpdb->get_results(
             </thead>
             <tbody>
                 <?php 
-                
-                if (!empty($requests)) {
-                    foreach ($requests as $request) {
-                        
+                    foreach ($requests as $request) {        
                         // Get customer data
                         $customer = get_userdata($request->customer_id);
                         $customer_name = $customer ? esc_html($customer->display_name) : 'Unknown';
@@ -79,17 +79,12 @@ $requests = $wpdb->get_results(
                                 echo '<td><div class="thead-data">Action</div>-</td>';
                             }
                         }
-                        
                         echo '</tr>';
-                        
                     }
-                }else{
-                    echo '<tr><td colspan="5">customer is not found!</td></tr>';
-                }
                 ?>
-
             </tbody>
         </table>
+       <?php } else {echo '<p>customer is not found!</p>'; }?>
     </div>
     <!-- list -->
 </div>
