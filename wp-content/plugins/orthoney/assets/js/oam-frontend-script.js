@@ -2,6 +2,23 @@ function setCookie(name, value, days) {
     document.cookie = `${name}=${value}; path=/; max-age=${days * 86400}; secure; samesite=strict`;
 }
 
+jQuery(document).ready(function($) {
+  if ($('#profile_state').length) {
+    // Step 1: Modify option text
+    $('#profile_state option').each(function() {
+      var val = $(this).val();
+      var text = $(this).text();
+
+      if (val && text.indexOf('[' + val + ']') === -1) {
+        $(this).text(text + ' [' + val + ']');
+      }
+    });
+
+    // Step 2: Initialize Select2
+    $('#profile_state').select2();
+  }
+});
+
 
 function affiliateDatatable(){
     [ "affiliate-results"].forEach((id) => {
