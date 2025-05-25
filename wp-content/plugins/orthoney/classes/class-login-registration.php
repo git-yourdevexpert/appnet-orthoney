@@ -387,12 +387,12 @@ class OAM_Auth {
         
     
         // // Get user data
-        // $user = get_userdata($user_id);
-        // $email = $user->user_email;
-        // $first_name = get_user_meta($user_id, 'first_name', true);
+        $user = get_userdata($user_id);
+        $email = $user->user_email;
+        $first_name = get_user_meta($user_id, 'first_name', true);
     
         // // Set user as unverified
-        // update_user_meta($user_id, 'email_verified', 'false');
+        update_user_meta($user_id, 'email_verified', 'true');
     
         // // Generate a verification token
         // $verification_token = wp_generate_password(32, false);
