@@ -386,49 +386,49 @@ class OAM_Auth {
 
         
     
-        // Get user data
-        $user = get_userdata($user_id);
-        $email = $user->user_email;
-        $first_name = get_user_meta($user_id, 'first_name', true);
+        // // Get user data
+        // $user = get_userdata($user_id);
+        // $email = $user->user_email;
+        // $first_name = get_user_meta($user_id, 'first_name', true);
     
-        // Set user as unverified
-        update_user_meta($user_id, 'email_verified', 'false');
+        // // Set user as unverified
+        // update_user_meta($user_id, 'email_verified', 'false');
     
-        // Generate a verification token
-        $verification_token = wp_generate_password(32, false);
-        update_user_meta($user_id, 'email_verification_token', $verification_token);
+        // // Generate a verification token
+        // $verification_token = wp_generate_password(32, false);
+        // update_user_meta($user_id, 'email_verification_token', $verification_token);
     
-        // Create verification link
-        $verification_link = add_query_arg(
-            array(
-                'action'  => 'verify_email',
-                'token'   => $verification_token,
-                'user_id' => $user_id
-            ),
-            home_url('/')
-        );
+        // // Create verification link
+        // $verification_link = add_query_arg(
+        //     array(
+        //         'action'  => 'verify_email',
+        //         'token'   => $verification_token,
+        //         'user_id' => $user_id
+        //     ),
+        //     home_url('/')
+        // );
     
-        // Email settings
-        $from_name = get_bloginfo('name');
-        $from_email = get_option('admin_email');
-        $headers = array(
-            'Content-Type: text/html; charset=UTF-8',
-            'From: ' . $from_name . ' <' . $from_email . '>'
-        );
+        // // Email settings
+        // $from_name = get_bloginfo('name');
+        // $from_email = get_option('admin_email');
+        // $headers = array(
+        //     'Content-Type: text/html; charset=UTF-8',
+        //     'From: ' . $from_name . ' <' . $from_email . '>'
+        // );
     
-        // Email message
-        $subject = 'Email Verification Required';
-        $message = sprintf(
-            'Hello %s,<br><br>
-            Thank you for registering. Please click the button below to verify your email:<br><br>
-            <a href="%s" style="background-color: #4CAF50; border-radius: 5px; color: #ffffff; display: inline-block; font-size: 16px; font-weight: bold; padding: 12px 25px; text-decoration: none; text-transform: uppercase;">Verify Email Address</a><br><br>
-            If you did not create this account, please ignore this email.',
-            esc_html($first_name),
-            esc_url($verification_link)
-        );
+        // // Email message
+        // $subject = 'Email Verification Required';
+        // $message = sprintf(
+        //     'Hello %s,<br><br>
+        //     Thank you for registering. Please click the button below to verify your email:<br><br>
+        //     <a href="%s" style="background-color: #4CAF50; border-radius: 5px; color: #ffffff; display: inline-block; font-size: 16px; font-weight: bold; padding: 12px 25px; text-decoration: none; text-transform: uppercase;">Verify Email Address</a><br><br>
+        //     If you did not create this account, please ignore this email.',
+        //     esc_html($first_name),
+        //     esc_url($verification_link)
+        // );
     
-        // Send the email
-        wp_mail($email, $subject, $message, $headers);
+        // // Send the email
+        // wp_mail($email, $subject, $message, $headers);
     }
 
     public function add_existing_customer_login_message() {

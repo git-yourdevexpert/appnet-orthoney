@@ -25,7 +25,7 @@ class OAM_COMMON_Custom {
         add_filter( 'user_registration_reset_password_redirect', array($this, 'reset_password_redirection'), 10, 2);
         add_filter( 'user_registration_modify_field_validation_response',  array($this, 'custom_user_registration_email_exists_message'), 10, 2 );
 
-        add_filter( 'woocommerce_registration_auth_new_customer', '__return_false' );
+        // add_filter( 'woocommerce_registration_auth_new_customer', '__return_false' );
         // add_action( 'woocommerce_created_customer', array($this,'custom_redirect_after_registration_based_on_role' ));
         add_shortcode( 'registration_success_msg', array($this, 'show_success_message_on_login') );
         add_action( 'wp_ajax_oam_ajax_logout',array($this, 'oam_ajax_logout') );

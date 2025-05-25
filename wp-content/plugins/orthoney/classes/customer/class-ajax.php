@@ -3176,8 +3176,8 @@ class OAM_Ajax{
                     //if (!$title) continue;
                     $quantity = $suborderdata['suborder_data_quantity'];
                     $address_parts = [
-                        $suborderdata['suborder_data_address_2'],
                         $suborderdata['suborder_data_address_1'],
+                        $suborderdata['suborder_data_address_2'],
                         $suborderdata['suborder_data_company_name'],
                         $suborderdata['suborder_data_city'],
                         $suborderdata['suborder_data_state'],
