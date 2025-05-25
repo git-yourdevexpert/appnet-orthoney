@@ -2671,7 +2671,7 @@ class OAM_Ajax{
         $html = 0;
         ?>
         <table>
-            <thead><tr><th>Affiliate Code</th><th>Affiliate Name</th><th>Block/Unblock</th></tr></thead>
+            <thead><tr><th>Token</th><th>Name</th><th>Action</th></tr></thead>
             <tbody>
                 <?php 
                 if(!empty($affiliates)){
