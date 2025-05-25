@@ -3603,6 +3603,7 @@ class OAM_Ajax{
             2 => 'Step 3: Upload Recipients',
             3 => 'Step 4: Add/Review Recipients',
             4 => 'Step 5: Verify Address',
+            5 => 'Step 6: Pending Checkout',
         ];
                 // Add search filter
             if (!empty($search_value)) {
