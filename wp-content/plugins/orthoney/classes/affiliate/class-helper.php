@@ -205,9 +205,9 @@ class OAM_AFFILIATE_Helper {
                             <tr>
                                 <th>Order ID</th>
                                 <th>Billing Name</th>
-                                <th>Number of Jars</th>
-                                <th>Total</th>
-                                <th>Date</th>
+                                <th>Total Honey Jar</th>
+                                <th>Price</th>
+                                <th>Order Date</th>
                             </tr>
                         </thead>
                         <tbody>';
