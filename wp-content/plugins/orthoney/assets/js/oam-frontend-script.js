@@ -2663,11 +2663,10 @@ function order_filter_main_order(){
  
             // const tableType = ``;
             // $('#customer-orders-table_length').before('<div>' + tableType + '</div>');
+
  
             jQuery('#customer-orders-table_filter input[type=search]').off();
             toggleRecipientColumn();
- 
-    
  
             $(document).on('click', 'input[name="table_order_type"]', function (e) {
                 // e.preventDefault();
