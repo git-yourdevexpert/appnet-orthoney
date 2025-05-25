@@ -65,7 +65,15 @@
       transform: rotate(360deg);
     }
   } */
-
+#customer-jar-orders-table_length.dataTables_length label,
+#customer-orders-table_length.dataTables_length label{
+  font-size: 0;
+}
+#customer-jar-orders-table_length.dataTables_length label::before,
+#customer-orders-table_length.dataTables_length label::before{
+content: 'Show';
+font-size: 15px;
+}
   .multiple-address-order #multiple-address-output{ 
     order:1;
   }
