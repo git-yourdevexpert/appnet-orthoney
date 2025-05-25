@@ -174,7 +174,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 WHERE a.user_id NOT IN (
                                     SELECT affiliate_id 
                                     FROM {$oh_affiliate_customer_linker} 
-                                    WHERE customer_id = %d AND status != %d
+                                    WHERE customer_id = %d AND status = %d 
                                 )",
                                 self::$current_user_id, 1
                             );
