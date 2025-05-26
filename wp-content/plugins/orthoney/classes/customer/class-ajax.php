@@ -3183,7 +3183,7 @@ class OAM_Ajax{
                         $suborderdata['suborder_data_zipcode'],
                         $suborderdata['suborder_data_country']
                     ];
-                    $full_address = implode(' ', array_filter($address_parts));
+                    $full_address = implode(', ', array_filter($address_parts));
     
                     $html .= '
                     <div class="address-block">
