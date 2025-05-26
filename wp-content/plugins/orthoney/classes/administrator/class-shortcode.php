@@ -28,7 +28,7 @@ class OAM_ADMINISTRATOR_Shortcode
         $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
 
         if (in_array('administrator', $user_roles)) {
-           
+
             echo OAM_ADMINISTRATOR_Helper::administrator_dashboard_navbar($user_roles);
 
             $endpoint = get_query_var('administrator');
@@ -39,12 +39,12 @@ class OAM_ADMINISTRATOR_Shortcode
             if (file_exists($file)) {
                 include_once $file;
             } else {
-                 $file = $template_path . 'dashboard.php';
-                 include_once $file;
-                    break;
+                $file = $template_path . 'dashboard.php';
+                include_once $file;
+                return; // ← Replaces the incorrect `break`
             }
 
-        } 
+        }
 
         return ob_get_clean();
     }
