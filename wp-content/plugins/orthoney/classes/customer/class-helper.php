@@ -448,6 +448,7 @@ class OAM_Helper{
             FROM $orders_table AS orders
             $join
             WHERE " . implode(' AND ', $where_conditions) . "
+            AND orders.status NOT IN ('wc-cancelled', 'wc-failed', 'wc-on-hold', 'wc-refunded')
             GROUP BY orders.id 
             ORDER BY orders.date_updated_gmt DESC
             LIMIT %d OFFSET %d",

@@ -121,6 +121,7 @@ class OAM_Shortcode
                 GROUP BY orders.id
             ) AS qty_table ON qty_table.order_id = orders.id
             WHERE orders.customer_id = %d
+            AND orders.status NOT IN ('wc-cancelled', 'wc-failed', 'wc-on-hold', 'wc-refunded')
             ORDER BY orders.date_created_gmt DESC
             LIMIT %d
         ", $user_id, $limit);
