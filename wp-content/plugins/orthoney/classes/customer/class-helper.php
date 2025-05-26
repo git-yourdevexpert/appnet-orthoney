@@ -80,9 +80,13 @@ class OAM_Helper{
         ));
 
         $states = WC()->countries->get_states('US');
-        $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
-        $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
-        $orgName = get_user_meta($user_id, '_orgName', true) ?: get_user_meta($user_id, '_orgName', true);
+        $state = get_user_meta($user_id, '_yith_wcaf_state', true) ?: get_user_meta($user_id, 'billing_state', true);
+        $city = get_user_meta($user_id, '_yith_wcaf_city', true) ?: get_user_meta($user_id, 'billing_state', true);
+       $orgName = get_user_meta($user_id, '_orgName', true);
+        if (empty($orgName)) {
+            $orgName = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+        }
+
         $state_name = isset($states[$state]) ? $states[$state] : $state;
         $details = '[' . $token . '] ' . $orgName ?:$data->display_name;
         if (!empty($city)) {
@@ -490,7 +494,7 @@ class OAM_Helper{
     public static function build_order_row($order_data, $order_obj, $order_type, $total_quantity, $parent_order = null) {
         global $wpdb;
         $jar_order_id = $order_data->rel_oid;
-        $year = !empty($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
+        $year = isset($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
 
         $user_id = get_current_user_id();
 
