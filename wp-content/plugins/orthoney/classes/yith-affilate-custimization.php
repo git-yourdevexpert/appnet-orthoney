@@ -100,7 +100,9 @@ class OAM_YITH_Affilate {
                 ['%d', '%d'],  
                 ['%d']  
             );
-            setcookie('token_error', $token_error);
+            // setcookie('token_error', $token_error);
+            setcookie('token_error', '', time() - 3600, '/');
+            unset($_COOKIE['token_error']);
 
         }
     
