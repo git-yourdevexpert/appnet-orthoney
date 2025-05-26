@@ -89,13 +89,15 @@ class OAM_YITH_Affilate {
             $token = $existing_user;
             global $wpdb;
             $table_name = $wpdb->prefix . 'yith_wcaf_affiliates';
-            
-            $wpdb->update(
+           $wpdb->update(
                 $table_name,
-                ['banned' => 1],
+                [
+                    'banned' => 0,
+                    'enabled' => 0
+                ],
                 ['user_id' => $user_id],
-                ['%d'],
-                ['%d']
+                ['%d', '%d'],  
+                ['%d']  
             );
 
         }
