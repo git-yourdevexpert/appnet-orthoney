@@ -47,7 +47,7 @@ class OAM_AFFILIATE_Shortcode
                 $endpoint = get_query_var('affiliate_endpoint');
                 $template_path = OH_PLUGIN_DIR_PATH . '/templates/affiliate/affiliate-dashboard/';
     
-                if (in_array($endpoint, ['my-profile', 'order-list']) && file_exists($template_path . $endpoint . '.php')) {
+                if (in_array($endpoint, ['my-profile', 'orders-list']) && file_exists($template_path . $endpoint . '.php')) {
                     include_once $template_path . $endpoint . '.php';
                 } else {
                     echo '<div class="oam-access-denied-message">You do not have access to this page.</div>';

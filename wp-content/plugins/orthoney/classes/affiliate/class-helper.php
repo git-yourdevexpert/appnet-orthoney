@@ -151,7 +151,7 @@ class OAM_AFFILIATE_Helper {
         $html = '';
         // rsort($details['orders']);
         $orders = $details['orders'];
-        $current_url = OAM_Helper::$organization_dashboard_link . '/order-list/';
+        $current_url = OAM_Helper::$organization_dashboard_link . '/orders-list/';
         $html .= '<div>
                     <div class="">
                         <div class="recipient-lists-block custom-table orthoney-datatable-warraper table-with-search-block" id="affiliate-orderlist-table">';
@@ -203,7 +203,7 @@ class OAM_AFFILIATE_Helper {
         $html = '';
         //rsort($details['current_year_orders_ids']);
         $orders = $details['current_year_orders_ids'];
-        $current_url = OAM_Helper::$organization_dashboard_link . '/order-list/';
+        $current_url = OAM_Helper::$organization_dashboard_link . '/orders-list/';
         $html .= '<div>
                     <div class="">
                         <div class="recipient-lists-block custom-table orthoney-datatable-warraper table-with-search-block" id="affiliate-orderlist-table">';

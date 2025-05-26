@@ -33,7 +33,7 @@ if (empty($details['token'])) {
 
             // Display claimable orders if token exists and there are orders
             if (!empty($details['token']) && !empty($details['orders'])) {
-                $current_url = OAM_Helper::$organization_dashboard_link . 'order-list/';
+                $current_url = OAM_Helper::$organization_dashboard_link . 'orders-list/';
                 echo '<div class="recent-commissions">
                         <div class="dashboard-card">
                             <div class="row-block">
