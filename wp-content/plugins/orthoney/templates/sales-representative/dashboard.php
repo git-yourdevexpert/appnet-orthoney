@@ -14,9 +14,9 @@ if (!defined('ABSPATH')) {
                     <div class="cl-left">
                         <div class="recipient-lists-block custom-table">
                             <div class="row-block">
-                                <h4>Manage Customers</h4>
+                                <h4>Manage Customer</h4>
                                 <div class="see-all">
-                                    <a class="w-btn us-btn-style_1" href="<?php echo esc_url(OAM_Helper::$sales_representative_dashboard_link.'manage-customers/'); ?>">See All</a> 
+                                    <a class="w-btn us-btn-style_1" href="<?php echo esc_url(OAM_Helper::$sales_representative_dashboard_link.'manage-customer/'); ?>">See All</a> 
                                 </div>
                             </div>
                         </div>
@@ -26,7 +26,7 @@ if (!defined('ABSPATH')) {
                             <div class="row-block">
                                 <h4>Manage Organizations</h4>
                                 <div class="see-all">
-                                    <a class="w-btn us-btn-style_1" href="<?php echo esc_url(OAM_Helper::$sales_representative_dashboard_link.'manage-organizations/'); ?>">See All</a> 
+                                    <a class="w-btn us-btn-style_1" href="<?php echo esc_url(OAM_Helper::$sales_representative_dashboard_link.'manage-organization/'); ?>">See All</a> 
                                 </div>
                             </div>
                         </div>

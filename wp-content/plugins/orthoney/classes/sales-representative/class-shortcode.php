@@ -37,9 +37,9 @@ class OAM_SALES_REPRESENTATIVE_Shortcode
                  $template_path = OH_PLUGIN_DIR_PATH . '/templates/sales-representative/';
                 if ($endpoint === 'my-profile' && file_exists($template_path . 'my-profile.php')) {
                     include_once $template_path . 'my-profile.php';
-                } elseif ($endpoint === 'manage-customers' && file_exists($template_path . 'manage-customer.php')) {
+                } elseif ($endpoint === 'manage-customer' && file_exists($template_path . 'manage-customer.php')) {
                     include_once $template_path . 'manage-customer.php';
-                } elseif ($endpoint === 'manage-organizations' && file_exists($template_path . 'manage-organization.php')) {
+                } elseif ($endpoint === 'manage-organization' && file_exists($template_path . 'manage-organization.php')) {
                     include_once $template_path . 'manage-organization.php';
                 } 
                 else {
@@ -100,7 +100,7 @@ class OAM_SALES_REPRESENTATIVE_Shortcode
     
         // Adjust view all button visibility
         if (count($customers) > $limit) {
-            $output .= '<a href="'.SALES_REPRESENTATIVE_DASHBOARD_LINK.'/manage-customers/" class="view-all-button w-btn us-btn-style_1 outline-btn">See All</a>';
+            $output .= '<a href="'.SALES_REPRESENTATIVE_DASHBOARD_LINK.'/manage-customer/" class="view-all-button w-btn us-btn-style_1 outline-btn">See All</a>';
         }
     
         $output .= '</div>';
@@ -159,7 +159,7 @@ class OAM_SALES_REPRESENTATIVE_Shortcode
     
         // Adjust view all button visibility
         if (count($organizations) > $limit) {
-            $output .= '<a href="'.SALES_REPRESENTATIVE_DASHBOARD_LINK.'/manage-organizations/" class="view-all-button w-btn us-btn-style_1 outline-btn">See All</a>';
+            $output .= '<a href="'.SALES_REPRESENTATIVE_DASHBOARD_LINK.'/manage-organization/" class="view-all-button w-btn us-btn-style_1 outline-btn">See All</a>';
         }
     
         $output .= '</div>';

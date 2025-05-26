@@ -62,8 +62,8 @@ class OAM_Hooks {
                         'id' => 21, // Menu ID
                         'items' => [
                             'Dashboard' => SALES_REPRESENTATIVE_DASHBOARD_LINK,
-                            'Manage Customers' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-customers/',
-                            'Manage Organizations' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-organizations/',
+                            'Manage Customer' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-customer/',
+                            'Manage Organization' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-organization/',
                             'My Profile' => CUSTOMER_DASHBOARD_LINK . 'my-profile/',
                         ]
                     ],
@@ -96,9 +96,9 @@ class OAM_Hooks {
                         'items' => [
                             'Dashboard' => ADMINISTRATOR_DASHBOARD_LINK,
                             'Orders' => ADMINISTRATOR_DASHBOARD_LINK . 'orders/',
-                            'Manage Customers' => ADMINISTRATOR_DASHBOARD_LINK . 'customers/',
+                            'Manage Customer' => ADMINISTRATOR_DASHBOARD_LINK . 'customer/',
                             'Manage Organizations' => ADMINISTRATOR_DASHBOARD_LINK . 'organizations/',
-                            'Manage Sales Representatives' => ADMINISTRATOR_DASHBOARD_LINK . 'sales-representatives/',
+                            'Manage Sales Representative' => ADMINISTRATOR_DASHBOARD_LINK . 'salesrepresentative/',
                             'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account/',
                             
                         ]
