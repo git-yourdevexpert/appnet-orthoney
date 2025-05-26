@@ -76,7 +76,7 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                             <td><div class="thead-data">Name</div><?php echo esc_html($orgName); ?></td>
                             <td><div class="thead-data">Action</div>
                             <?php 
-                            if($is_blocked === -1){
+                            if($is_blocked == 0){
                                 ?>
                                 <a href="<?php echo $current_url.'?action=organization-link&token='.$token; ?>" class="w-btn us-btn-style_1">Accept Linking Request</a>
                                 <?php
