@@ -62,10 +62,10 @@ $requests = $wpdb->get_results(
                         $customer_email = $customer ? esc_html($customer->user_email) : 'Unknown';
                         $status_label = 'Blocked';
                         if($request->status == 0){
-                            $status_label : 'Pending Approval';
+                            $status_label = 'Pending Approval';
                         }
                         if($request->status == 1){
-                            $status_label : 'Approved';
+                            $status_label = 'Approved';
                         }
                         
                         echo '<tr>
