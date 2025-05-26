@@ -144,6 +144,23 @@ if(isset($_GET['database_refresh']) && ($_GET['database_refresh'] == 'okay' OR $
     add_action('init', 'orthoney_create_custom_tables');
 }
 
+add_action( 'init', 'add_customer_role_to_affiliates' );
+
+function add_customer_role_to_affiliates() {
+
+    if( isset($_GET['add_customer_role_to_affiliates']) && $_GET['add_customer_role_to_affiliates'] == 'yes'){
+        $affiliates = get_users( array(
+            'role' => 'yith_affiliate'
+        ) );
+
+        foreach ( $affiliates as $user ) {
+            if ( ! in_array( 'customer', (array) $user->roles ) ) {
+                $user->add_role( 'customer' );
+            }
+        }
+    }
+}
+
 if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
     function user_registration_pro_generate_magic_login_link( $email, $nonce, $redirect_url ) {
         $user  = get_user_by( 'email', $email );
