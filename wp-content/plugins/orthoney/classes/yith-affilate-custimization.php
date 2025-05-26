@@ -75,7 +75,7 @@ class OAM_YITH_Affilate {
             $token, $user_id
         ));
     
-        if ($existing > 0 || (strlen($token) !== 3)) {
+        if ($existing > 1 || (strlen($token) !== 3)) {
             $existing_user = $wpdb->get_var($wpdb->prepare(
                 "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id = %d",
                 $user_id
