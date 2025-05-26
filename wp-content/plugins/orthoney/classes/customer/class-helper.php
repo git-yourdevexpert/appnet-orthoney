@@ -515,7 +515,7 @@ class OAM_Helper{
         }
 
         $shipping_name = $order_obj->get_shipping_first_name() . ' ' . $order_obj->get_shipping_last_name();
-        $referral_id = $order_obj->get_meta('_yith_wcaf_referral', true) ?: 'Orthoney';
+        // $referral_id = $order_obj->get_meta('_yith_wcaf_referral', true) ?: 'Orthoney';
         $order_total = wc_price($order_obj->get_total());
         $sub_order_id =  OAM_COMMON_Custom::get_order_meta($order_data->id, '_orthoney_OrderID');
         $jarsorder_count = 1;
@@ -530,6 +530,12 @@ class OAM_Helper{
                 $sub_order_id
             )
         );
+        $referral_id = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT affiliate_token FROM {$wpdb->prefix}oh_recipient_order WHERE order_id = %d LIMIT 1",
+                $sub_order_id
+            )
+        ) ?: 'Honey from the Heart';
     }
 
 
