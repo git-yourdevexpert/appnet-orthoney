@@ -584,10 +584,23 @@ class OAM_Helper{
     
         $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id));
         $total_recipient = '';
-        if($jarsorder_count != 0){
-           $total_recipient = "<a id='".$jar_order_id."' onclick='jarfilter_trigger(\"$jar_order_id\", \"$year\")' class='filter-jar-order-by-wc-order ".$year."' href='javascript:;'>".$jarsorder_count."</a>";
-        }else{
-            $total_recipient = '-';
+        if ($jarsorder_count == 0) {
+            $total_recipient = '1';
+        } else {
+            $should_show_link = ($year > 2024) || ($jarsorder_count > 1);
+
+            if ($should_show_link) {
+                $total_recipient = sprintf(
+                    '<a id="%s" onclick="jarfilter_trigger(\'%s\', \'%s\')" class="filter-jar-order-by-wc-order %s" href="javascript:;">%s</a>',
+                    $jar_order_id,
+                    $jar_order_id,
+                    $year,
+                    $year,
+                    $jarsorder_count
+                );
+            } else {
+                $total_recipient = $jarsorder_count;
+            }
         }
         return [
             'jar_no' => esc_html($order_data->id),
