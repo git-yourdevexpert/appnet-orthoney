@@ -13,7 +13,7 @@ class OAM_AFFILIATE_Custom {
         add_action('init', array($this, 'affiliate_dashboard_handler'));
         add_filter('yith_wcaf_registration_form_affiliate_pending_text', array($this, 'custom_affiliate_pending_message'));
 
-        add_action('wp_footer', [$this, 'maybe_show_loader_and_redirect']);
+        // add_action('wp_footer', [$this, 'maybe_show_loader_and_redirect']);
         // add_action('user_register', [$this, 'schedule_user_meta'], 10, 1);
         add_action('set_default_user_meta_after_register', [$this, 'handle_user_meta_and_email']);
     }

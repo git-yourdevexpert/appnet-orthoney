@@ -93,47 +93,44 @@ class OAM_Shortcode
         ob_start(); 
          global $wpdb;
         $user_id = get_current_user_id();
-           $user_id = get_current_user_id();
-            $query = $wpdb->prepare("
+          
+        $query = $wpdb->prepare("
+            SELECT DISTINCT
+                orders.id AS order_id,
+                orders.date_created_gmt AS order_date,
+                om_total.meta_value AS total_price,
+                ba.first_name AS billing_first_name,
+                ba.last_name AS billing_last_name,
+                om_aff.meta_value AS affiliate_code,
+                IFNULL(qty_table.total_quantity, 0) AS total_quantity
+            FROM {$wpdb->prefix}wc_orders AS orders
+            INNER JOIN {$wpdb->prefix}oh_wc_order_relation AS rel 
+                ON rel.wc_order_id = orders.id
+            LEFT JOIN {$wpdb->prefix}oh_recipient_order AS rec 
+                ON rec.order_id = rel.order_id
+            LEFT JOIN {$wpdb->prefix}wc_orders_meta AS om_total 
+                ON om_total.order_id = orders.id AND om_total.meta_key = '_order_total'
+            LEFT JOIN {$wpdb->prefix}wc_orders_meta AS om_aff 
+                ON om_aff.order_id = orders.id AND om_aff.meta_key = '_yith_wcaf_referral'
+            LEFT JOIN {$wpdb->prefix}wc_order_addresses AS ba 
+                ON ba.order_id = orders.id AND ba.address_type = 'billing'
+            LEFT JOIN (
                 SELECT 
                     orders.id AS order_id,
-                    orders.date_created_gmt AS order_date,
-                    om_total.meta_value AS total_price,
-                    ba.first_name AS billing_first_name,
-                    ba.last_name AS billing_last_name,
-                    om_aff.meta_value AS affiliate_code,
-                    IFNULL(qty_table.total_quantity, 0) AS total_quantity
+                    SUM(CAST(oim.meta_value AS UNSIGNED)) AS total_quantity
                 FROM {$wpdb->prefix}wc_orders AS orders
-                INNER JOIN {$wpdb->prefix}oh_wc_order_relation AS rel 
-                    ON rel.wc_order_id = orders.id
-                LEFT JOIN {$wpdb->prefix}oh_recipient_order AS rec 
-                    ON rec.order_id = rel.order_id
-                LEFT JOIN {$wpdb->prefix}wc_orders_meta AS om_total 
-                    ON om_total.order_id = orders.id AND om_total.meta_key = '_order_total'
-                LEFT JOIN {$wpdb->prefix}wc_orders_meta AS om_aff 
-                    ON om_aff.order_id = orders.id AND om_aff.meta_key = '_yith_wcaf_referral'
-                LEFT JOIN {$wpdb->prefix}wc_order_addresses AS ba 
-                    ON ba.order_id = orders.id AND ba.address_type = 'billing'
-                LEFT JOIN (
-                    SELECT 
-                        orders.id AS order_id,
-                        SUM(CAST(oim.meta_value AS UNSIGNED)) AS total_quantity
-                    FROM {$wpdb->prefix}wc_orders AS orders
-                    INNER JOIN {$wpdb->prefix}woocommerce_order_items AS oi 
-                        ON oi.order_id = orders.id AND oi.order_item_type = 'line_item'
-                    INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS oim 
-                        ON oim.order_item_id = oi.order_item_id AND oim.meta_key = '_qty'
-                    GROUP BY orders.id
-                ) AS qty_table ON qty_table.order_id = orders.id
-                WHERE orders.customer_id = %d
-                ORDER BY orders.date_created_gmt DESC
-                LIMIT %d
-            ", $user_id, $limit);
-
-
-            $row_data = $wpdb->get_results($query);
+                INNER JOIN {$wpdb->prefix}woocommerce_order_items AS oi 
+                    ON oi.order_id = orders.id AND oi.order_item_type = 'line_item'
+                INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS oim 
+                    ON oim.order_item_id = oi.order_item_id AND oim.meta_key = '_qty'
+                GROUP BY orders.id
+            ) AS qty_table ON qty_table.order_id = orders.id
+            WHERE orders.customer_id = %d
+            ORDER BY orders.date_created_gmt DESC
+            LIMIT %d
+        ", $user_id, $limit);
+        $row_data = $wpdb->get_results($query);
           
-
         ?>
             <table>
                 <thead>
