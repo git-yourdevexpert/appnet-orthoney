@@ -52,6 +52,7 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                     <tr>
                         <th>Token</th>
                         <th>Name</th>
+                        <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -65,6 +66,14 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                     $user_id = $affiliate['user_id'];
                     $current_url = home_url(add_query_arg([], $_SERVER['REQUEST_URI']));
 
+                    $status_label = 'Blocked';
+                        if($is_blocked == 0){
+                            $status_label = 'Pending Approval';
+                        }
+                        if($is_blocked == 1){
+                            $status_label = 'Approved';
+                        }
+                        
                     $orgName = get_user_meta($user_id, '_orgName', true);
                     if (empty($orgName)) {
                         $orgName = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
@@ -74,6 +83,7 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                         <tr>
                             <td><div class="thead-data">Token</div><?php echo esc_html($affiliate['token']); ?></td>
                             <td><div class="thead-data">Name</div><?php echo esc_html($orgName); ?></td>
+                            <td><div class="thead-data">Status</div><?php echo esc_html($status_label) ?> </td>
                             <td><div class="thead-data">Action</div>
                             <?php 
                             if($is_blocked == 0){

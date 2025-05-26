@@ -1691,7 +1691,7 @@ document.addEventListener('click', function (event) {
     if (event.target.classList.contains('affiliate-block-btn')) {
         event.preventDefault();
         let isBlocked = event.target.getAttribute('data-blocked');
-        let action = isBlocked == 1 ? 'unblock' : 'block';
+        let action = isBlocked == 1 ? 'block' : 'unblock';
         let affiliateCode = event.target.getAttribute('data-affiliate');
 
         Swal.fire({
