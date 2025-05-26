@@ -81,11 +81,23 @@ class OAM_YITH_Affilate {
                 $user_id
             ));
             $token_error = 'Error: The affiliate token is already in use. Please choose a unique token.';
+
     
             if (strlen($token) !== 3) {
                 $token_error = 'Error: The affiliate token must be exactly 3 characters long.';
             }
             $token = $existing_user;
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'yith_wcaf_affiliates';
+            
+            $wpdb->update(
+                $table_name,
+                ['token' => $token],
+                ['banned' => 1],
+                ['%s'],
+                ['%d']
+            );
+
         }
     
         $_POST['yith_wcaf_affiliate_meta']['token'] = $token;
