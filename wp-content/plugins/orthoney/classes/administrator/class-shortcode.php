@@ -34,32 +34,22 @@ class OAM_ADMINISTRATOR_Shortcode
             $endpoint = get_query_var('administrator');
             $template_path = OH_PLUGIN_DIR_PATH . '/templates/administrator/administrator-dashboard/';
 
-            switch ($endpoint) {
-                case 'orders':
-                    $file = $template_path . 'orders.php';
-                    break;
-                case 'sales-representative':
-                    $file = $template_path . 'sales-representative.php';
-                    break;
-                case 'customer':
-                    $file = $template_path . 'customer.php';
-                    break;
-                case 'organizations':
-                    $file = $template_path . 'organizations.php';
-                    break;
-                default:
-                    $file = $template_path . 'dashboard.php';
-                    break;
-            }
+            $file = $template_path . $endpoint . '.php';
 
             if (file_exists($file)) {
                 include_once $file;
             } else {
-                echo '<p>Template not found: ' . esc_html($file) . '</p>';
+                $message = 'You do not have access to this page.';
+                $url = home_url('/administrator-dashboard');
+                $btn_name = 'Go TO Administrator Dashboard';
+                return OAM_COMMON_Custom::message_design_block($message, $url, $btn_name);
             }
 
         } else {
-            echo "<p>You do not have access to this page.</p>";
+            $message = 'You do not have access to this page.';
+                $url = home_url('/administrator-dashboard');
+                $btn_name = 'Go TO Administrator Dashboard';
+                return OAM_COMMON_Custom::message_design_block($message, $url, $btn_name);
         }
 
         return ob_get_clean();
