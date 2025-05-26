@@ -39,10 +39,8 @@ class OAM_ADMINISTRATOR_Shortcode
             if (file_exists($file)) {
                 include_once $file;
             } else {
-                $message = 'This page does not exist.';
-                $url = home_url('/administrator-dashboard');
-                $btn_name = 'Go TO Administrator Dashboard';
-                return OAM_COMMON_Custom::message_design_block($message, $url, $btn_name);
+                 $file = $template_path . 'dashboard.php';
+                    break;
             }
 
         } 
