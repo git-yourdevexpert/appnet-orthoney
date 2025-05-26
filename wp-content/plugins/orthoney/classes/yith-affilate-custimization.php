@@ -11,7 +11,7 @@ class OAM_YITH_Affilate {
     public function __construct() {        
         add_filter('yith_wcaf_affiliate_token', array($this, 'custom_affiliate_token'), 10, 2);
         add_action('yith_wcaf_before_save_profile_fields', array($this, 'custom_token_validation'), 10, 1);
-        add_action('admin_footer', array($this, 'custom_token_validation_script'), 10, 1);
+        // add_action('admin_footer', array($this, 'custom_token_validation_script'), 10, 1);
     }
     
     public function custom_affiliate_token($token, $user_id) {
@@ -64,7 +64,7 @@ class OAM_YITH_Affilate {
         return $new_token;
     }
 
-    public  function custom_token_validation($user_id) {
+   public  function custom_token_validation($user_id) {
         global $wpdb;
         $token = $_POST['yith_wcaf_affiliate_meta']['token'];
         $token_error = '';
@@ -74,17 +74,18 @@ class OAM_YITH_Affilate {
             "SELECT COUNT(*) FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE token = %s AND user_id != %d",
             $token, $user_id
         ));
+          
     
         if ($existing != 0 || (strlen($token) !== 3)) {
             $existing_user = $wpdb->get_var($wpdb->prepare(
                 "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id = %d",
                 $user_id
             ));
-            $token_error = 'Error: The affiliate token is already in use. Please choose a unique token.';
+            $token_error .= 'Error: The affiliate token is already in use. Please choose a unique token.';
 
     
             if (strlen($token) !== 3) {
-                $token_error = 'Error: The affiliate token must be exactly 3 characters long.';
+                $token_error .= 'Error: The affiliate token must be exactly 3 characters long.';
             }
             $token = $existing_user;
             global $wpdb;
@@ -99,12 +100,38 @@ class OAM_YITH_Affilate {
                 ['%d', '%d'],  
                 ['%d']  
             );
+            setcookie('token_error', $token_error);
 
         }
     
         $_POST['yith_wcaf_affiliate_meta']['token'] = $token;
         
-        setcookie('token_error', $token_error);
+        if ($token_error != '') {
+            ?>
+            <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            setTimeout(function() {
+                // Function to get and decode a cookie value by name
+                function getCookie(name) {
+                    let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+                    return match ? decodeURIComponent(match[2]) : null; // Decode the cookie value
+                }
+
+                
+                    var targetElement = document.querySelector('#yith_wcaf_affiliate_meta_token-container');
+
+                    if (targetElement) {
+                        var noticeDiv = document.createElement('div');
+                        noticeDiv.className = 'notice notice-error 111';
+                        noticeDiv.innerHTML = '<p><?php echo $token_error ?></p>';
+                        targetElement.appendChild(noticeDiv);
+                    }
+                
+            }, 1000); // Delay execution by 1 second
+        });
+        </script>
+            <?php
+        }
     }
     
 
