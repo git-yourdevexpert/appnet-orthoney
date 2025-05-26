@@ -617,7 +617,7 @@ document.getElementById('search-button').addEventListener('click', async functio
             if ($exist_status != 2) {
                 html = "";
             }
-            if ($exist_status = -1) {
+            if ($exist_status == -1) {
                 html = 'Customer has already blocked.';
             }
 
