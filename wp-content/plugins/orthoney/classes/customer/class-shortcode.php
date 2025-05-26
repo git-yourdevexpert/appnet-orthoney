@@ -98,20 +98,15 @@ class OAM_Shortcode
             SELECT DISTINCT
                 orders.id AS order_id,
                 orders.date_created_gmt AS order_date,
-                om_total.meta_value AS total_price,
                 ba.first_name AS billing_first_name,
                 ba.last_name AS billing_last_name,
-                om_aff.meta_value AS affiliate_code,
+                rec.affiliate_token AS affiliate_code,
                 IFNULL(qty_table.total_quantity, 0) AS total_quantity
             FROM {$wpdb->prefix}wc_orders AS orders
             INNER JOIN {$wpdb->prefix}oh_wc_order_relation AS rel 
                 ON rel.wc_order_id = orders.id
             LEFT JOIN {$wpdb->prefix}oh_recipient_order AS rec 
                 ON rec.order_id = rel.order_id
-            LEFT JOIN {$wpdb->prefix}wc_orders_meta AS om_total 
-                ON om_total.order_id = orders.id AND om_total.meta_key = '_order_total'
-            LEFT JOIN {$wpdb->prefix}wc_orders_meta AS om_aff 
-                ON om_aff.order_id = orders.id AND om_aff.meta_key = '_yith_wcaf_referral'
             LEFT JOIN {$wpdb->prefix}wc_order_addresses AS ba 
                 ON ba.order_id = orders.id AND ba.address_type = 'billing'
             LEFT JOIN (
