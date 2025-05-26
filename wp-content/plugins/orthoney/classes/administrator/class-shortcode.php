@@ -38,12 +38,11 @@ class OAM_ADMINISTRATOR_Shortcode
 
             if (file_exists($file)) {
                 include_once $file;
-            } 
-            // else {
-            //     $file = $template_path . 'dashboard.php';
-            //     include_once $file;
-            //     return; // ← Replaces the incorrect `break`
-            // }
+            } else {
+                $file = $template_path . 'dashboard.php';
+                include_once $file;
+                return; // ← Replaces the incorrect `break`
+            }
 
         }
 

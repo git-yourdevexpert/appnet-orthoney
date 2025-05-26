@@ -13,6 +13,27 @@ if ($redirect_back_user_id) {
     echo '<a href="' . esc_url($back_url) . '" class="button">Back to Previous User</a>';
 }
 
+$user = wp_get_current_user();
+if ( in_array( 'yith_affiliate', (array) $user->roles ) ) {
+    global $wpdb;
+
+    $current_user_id = get_current_user_id();
+
+    echo $current_user_id;
+
+    $yith_wcaf_affiliates_table = OAM_helper::$yith_wcaf_affiliates_table;
+
+    // Correct query execution
+    $processExistResult = $wpdb->get_var($wpdb->prepare("
+        SELECT enabled FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d
+    ", $current_user_id));
+    
+    if($processExistResult == 0){
+        wp_safe_redirect( ORGANIZATION_DASHBOARD_LINK );
+        exit; 
+    }
+}
+
 ?>
 <div class="order-block-wrap">
         <div class="order-process-dashboard">

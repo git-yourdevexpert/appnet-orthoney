@@ -40,7 +40,14 @@ class OAM_AFFILIATE_Helper {
             
         } elseif (isset($affiliate->enabled)) {
             if ($affiliate->enabled == 0) {
-                
+                ?>
+                <style>
+                    .top-bar-menu .customer-dashboard,
+                    .l-subheader.at_bottom{
+                        display:none;
+                    }
+                </style>
+                <?php
                 return json_encode([
                     'success' => false, 
                     'message'=> 'Your application is pending approval. Thank you for reaching out!',
