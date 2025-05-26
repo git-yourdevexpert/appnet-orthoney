@@ -620,6 +620,9 @@ document.getElementById('search-button').addEventListener('click', async functio
             if ($exist_status == -1) {
                 html = 'Customer has already blocked.';
             }
+            if ($exist_status == 1) {
+                html = 'Customer has already linked.';
+            }
 
             const result = await Swal.fire({
                 title: html,
