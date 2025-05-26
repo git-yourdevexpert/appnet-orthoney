@@ -42,6 +42,7 @@ class OAM_AFFILIATE_Helper {
             if ($affiliate->enabled == 0) {
                 ?>
                 <style>
+                    .login-container > a,
                     .top-bar-menu .customer-dashboard,
                     .l-subheader.at_bottom{
                         display:none;
