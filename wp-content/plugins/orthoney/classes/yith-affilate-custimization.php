@@ -92,9 +92,9 @@ class OAM_YITH_Affilate {
             
             $wpdb->update(
                 $table_name,
-                ['token' => $token],
                 ['banned' => 1],
-                ['%s'],
+                ['user_id' => $user_id],
+                ['%d'],
                 ['%d']
             );
 
