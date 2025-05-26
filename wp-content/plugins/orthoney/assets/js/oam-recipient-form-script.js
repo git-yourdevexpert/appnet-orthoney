@@ -518,7 +518,7 @@ document.addEventListener("DOMContentLoaded", function () {
             cancelButtonColor: "#d33",
             confirmButtonText: "Proceed With All Recipients (" + (parseInt(verifiedCount) + parseInt(unverifiedCount)) + ")",
             cancelButtonText: dbtntext,
-            denyButtonText: "Proceed With Verified Addresses (" + parseInt(unverifiedCount)  + ")",
+            denyButtonText: "Proceed With Verified Addresses (" + parseInt(verifiedCount)  + ")",
             allowOutsideClick: false,
             allowEscapeKey: false,
             allowEnterKey: false,
