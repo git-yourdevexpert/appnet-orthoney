@@ -26,8 +26,8 @@ class OAM_SALES_REPRESENTATIVE_Helper {
             $output = '<div class="sales-representative-dashboard">';
 
             $output .= '<div class="btn"><a href="' . esc_url(SALES_REPRESENTATIVE_DASHBOARD_LINK) . '">Dashboard</a></div>';
-            $output .= '<div class="btn"><a href="' . esc_url(SALES_REPRESENTATIVE_DASHBOARD_LINK.'manage-customer/') . '">Manage Customer</a></div>';
-            $output .= '<div class="btn"><a href="' . esc_url(SALES_REPRESENTATIVE_DASHBOARD_LINK.'manage-organization/') . '">Manage Organization</a></div>';
+            $output .= '<div class="btn"><a href="' . esc_url(SALES_REPRESENTATIVE_DASHBOARD_LINK.'manage-customers/') . '">Manage Customer</a></div>';
+            $output .= '<div class="btn"><a href="' . esc_url(SALES_REPRESENTATIVE_DASHBOARD_LINK.'manage-organizations/') . '">Manage Organization</a></div>';
             $output .= '<div class="btn"><a href="' . esc_url(SALES_REPRESENTATIVE_DASHBOARD_LINK.'my-profile/') . '">My Profile</a></div>';
             $output .= '<div class="btn"><a href="' . esc_url(wp_logout_url(home_url())) . '">Logout</a></div>';
 
