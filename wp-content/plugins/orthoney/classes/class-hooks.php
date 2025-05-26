@@ -96,9 +96,9 @@ class OAM_Hooks {
                         'items' => [
                             'Dashboard' => ADMINISTRATOR_DASHBOARD_LINK,
                             'Orders' => ADMINISTRATOR_DASHBOARD_LINK . 'orders/',
-                            'Manage Customer' => ADMINISTRATOR_DASHBOARD_LINK . 'customer/',
+                            'Manage Customers' => ADMINISTRATOR_DASHBOARD_LINK . 'customer/',
                             'Manage Organizations' => ADMINISTRATOR_DASHBOARD_LINK . 'organizations/',
-                            'Manage Sales Representative' => ADMINISTRATOR_DASHBOARD_LINK . 'salesrepresentative/',
+                            'Manage Sales Representatives' => ADMINISTRATOR_DASHBOARD_LINK . 'sales-representative/',
                             'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account/',
                             
                         ]
