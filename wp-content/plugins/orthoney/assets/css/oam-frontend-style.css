@@ -4509,14 +4509,17 @@ body.woocommerce-account .woocommerce-change-password-wrapper textarea {
 
   #multiStepForm .recipient-group-section .heading-title {
     flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   #multiStepForm .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter {
-    right: 0;
+    left: 48px;
+    margin-top: 0
   }
 
   #multiStepForm .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter.open {
-    width: 250px;
+    width: 80% !important;
   }
 
   #customer-jar-orders-table_wrapper .dataTables_length,
