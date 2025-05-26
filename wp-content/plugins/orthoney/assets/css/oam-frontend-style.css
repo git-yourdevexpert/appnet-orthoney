@@ -3739,8 +3739,9 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   text-transform: capitalize;
   box-shadow: none !important;
   padding: 0.6rem 1rem !important;
-
 }
+
+.orthoney-datatable-warraper table td[data-label="Status"].error-message { color: #dd1a1a; font-weight: 600; }
 
 .orthoney-datatable-warraper #group-recipient-table td,
 .orthoney-datatable-warraper #incomplete-order-table tbody td {
