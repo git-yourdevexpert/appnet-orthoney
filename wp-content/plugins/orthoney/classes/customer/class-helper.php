@@ -828,7 +828,7 @@ class OAM_Helper{
                     }
                     if($reverify == 1 OR $reverify == 2){
                         if($reverify == 1){
-                             $html .= '<td data-label="Status"><div class="thead-data">Reason</div>'.$data->reasons.'</td>';
+                             $html .= '<td data-label="Status"><div class="thead-data">Reason</div><span style="color:red">'.$data->reasons.'</span></td>';
                         }
                         $html .= '<td data-label="Action"><div class="thead-data">Action</div>';
                         if($data->address_verified == 0){
