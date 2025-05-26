@@ -40,6 +40,7 @@ class OAM_ADMINISTRATOR_Shortcode
                 include_once $file;
             } else {
                  $file = $template_path . 'dashboard.php';
+                 include_once $file;
                     break;
             }
 
