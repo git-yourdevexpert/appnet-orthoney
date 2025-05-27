@@ -3135,6 +3135,7 @@ body .woocommerce .order-process-block .button {
   align-items: center;
   gap: 5px;
   white-space: nowrap;
+  color:#000;
 }
 
 .button-icon-underline img,
