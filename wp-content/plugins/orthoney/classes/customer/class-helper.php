@@ -81,7 +81,7 @@ class OAM_Helper{
 
         $states = WC()->countries->get_states('US');
         $state = get_user_meta($user_id, '_yith_wcaf_state', true) ?: get_user_meta($user_id, 'billing_state', true);
-        $city = get_user_meta($user_id, '_yith_wcaf_city', true) ?: get_user_meta($user_id, 'billing_state', true);
+        $city = get_user_meta($user_id, '_yith_wcaf_city', true) ?: get_user_meta($user_id, 'billing_city', true);
        $orgName = get_user_meta($user_id, '_orgName', true);
         if (empty($orgName)) {
             $orgName = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);

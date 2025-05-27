@@ -2044,6 +2044,7 @@ jQuery(document).ready(function ($) {
   });
 });
 
+
 jQuery(document).ready(function ($) {
   const table = new DataTable("#admin-organizations-table", {
     pageLength: 50,
@@ -2059,11 +2060,13 @@ jQuery(document).ready(function ($) {
       }
     },
     columns: [
-      { data: "id" },
-      { data: "name" },
-      { data: "token" },
+      { data: "code" },
+      { data: "email" },
+      { data: "organization" },
+      { data: "city" },
+      { data: "state" },
       { data: "status" },
-      { data: "action" }
+      { data: "login" }
     ],
     columnDefs: [
       {
@@ -2082,8 +2085,8 @@ jQuery(document).ready(function ($) {
                 </div>
             `
     },
-    responsive: true,
-    processing: true,
+     processing: true,
+    serverSide: true,
     paging: true,
     searching: true
   });
@@ -2106,9 +2109,11 @@ jQuery(document).ready(function ($) {
     },
     columns: [
       { data: "code" },
+      { data: "email" },
       { data: "organization" },
       { data: "city" },
       { data: "state" },
+      { data: "status" },
       { data: "login" }
     ],
     columnDefs: [{ targets: -1, orderable: false }],
