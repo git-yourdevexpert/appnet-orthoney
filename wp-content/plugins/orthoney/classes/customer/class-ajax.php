@@ -2656,7 +2656,7 @@ class OAM_Ajax{
         wp_send_json_success();
     }
     
-    public function search_affiliates_handler() {
+       public function search_affiliates_handler() {
         $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
         $filter = isset($_POST['filter']) ? sanitize_text_field($_POST['filter']) : 'all';
 
@@ -2728,7 +2728,7 @@ class OAM_Ajax{
         wp_die();
     }
 
-
+     
     //code update by db
     // Shared helper method to avoid repeating logic
     // AJAX: Load orders for display
@@ -2796,7 +2796,7 @@ class OAM_Ajax{
 
         if (!empty($search)) {
             if ($tabletype == 'administrator-dashboard') {
-                 $join .= " LEFT JOIN {$wpdb->users} AS u ON u.ID = orders.customer_id OR rec.order_id = %d OR rel.wc_order_id = %d";
+                 $join .= " LEFT JOIN {$wpdb->users} AS u ON u.ID = orders.customer_id OR addr.order_id = %d OR addr.wc_order_id = %d";
                 $where[] = "u.display_name LIKE %s";
                 $values[] = '%' . $wpdb->esc_like($search) . '%';
                 $where_values[] = absint( $search_term ); 
@@ -2850,7 +2850,6 @@ class OAM_Ajax{
             $where[] = "orders.customer_id = %d";
             $values[] = $user_id;
         }
-        // $where[] = "orders.status NOT IN ('wc-cancelled', 'wc-failed', 'wc-on-hold', 'wc-refunded')";
 
         $sql = $wpdb->prepare(
             "SELECT  COUNT( DISTINCT orders.id) FROM {$orders_table} AS orders
@@ -3603,6 +3602,7 @@ class OAM_Ajax{
         }
         
         $step_labels = [
+            0 => 'Step 1: Select an Organization',
             1 => 'Step 2: Order Method',
             2 => 'Step 3: Upload Recipients',
             3 => 'Step 4: Add/Review Recipients',

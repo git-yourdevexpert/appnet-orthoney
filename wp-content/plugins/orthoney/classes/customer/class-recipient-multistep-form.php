@@ -711,16 +711,16 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         <?php
                         echo '<div class="recipient-group-nav">';
                         if ($result['data']['unverifiedRecordCount'] > 0) {
-                            echo '<button class="scroll-section-btn" data-section="unverified-block">Unverified Addresses (' . $result['data']['unverifiedRecordCount'] . ')</button>';
+                            echo '<button class="scroll-section-btn" data-section="unverified-block">Rejected Address(es) (' . $result['data']['unverifiedRecordCount'] . ')</button>';
                         }
                         if ($result['data']['verifiedRecordCount'] > 0) {
-                            echo '<button class="scroll-section-btn" data-section="verified-block">Verified Addresses (' . $result['data']['verifiedRecordCount'] . ')</button>';
+                            echo '<button class="scroll-section-btn" data-section="verified-block">Verified Address(es) (' . $result['data']['verifiedRecordCount'] . ')</button>';
                         }
                         echo '</div>';
 
                         echo '<div class="recipient-group-section orthoney-datatable-warraper">';
-                        self::render_recipient_block('Unverified Addresses', 'unverified-block', 'unverifiedRecord', $result['data']['unverifiedRecordCount'], $result['data']['totalCount'], $result['data']['unverifiedData']);
-                        self::render_recipient_block('Verified Addresses', 'verified-block', 'verifyRecord', $result['data']['verifiedRecordCount'], $result['data']['totalCount'], $result['data']['verifiedData']);
+                        self::render_recipient_block('Rejected Address(es)', 'unverified-block', 'unverifiedRecord', $result['data']['unverifiedRecordCount'], $result['data']['totalCount'], $result['data']['unverifiedData']);
+                        self::render_recipient_block('Verified Address(es)', 'verified-block', 'verifyRecord', $result['data']['verifiedRecordCount'], $result['data']['totalCount'], $result['data']['verifiedData']);
                         echo '</div>';
                         if($result['data']['totalCount'] != 0){
                             echo '<div class="button-block">';
@@ -729,10 +729,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
                             echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';
                             if ($result['data']['unverifiedRecordCount'] > 0) {
-                                echo '<button id="checkout_proceed_with_only_unverified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Continue With Unverified Addresses</button>';
+                                echo '<button id="checkout_proceed_with_only_unverified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Continue With Rejected Address(es)</button>';
                             }
                             if ($result['data']['verifiedRecordCount'] > 0) {
-                                echo '<button id="checkout_proceed_with_only_verified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Proceed With Verified Addresses</button>';
+                                echo '<button id="checkout_proceed_with_only_verified_addresses" style="display:none" class="w-btn us-btn-style_1 outline-btn">Proceed With Verified Address(es)</button>';
                             }
                             echo '</div>';
                         }
@@ -751,7 +751,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             echo '<div class="' . $block_id . ' table-data" id="' . $block_id . '" data-count="'.$recordCount.'">';
             echo '<div class="">';
             echo '<div class="block-inner heading-title"><div><h3 class="title">' . $title . '</h3>';
-            echo '<p>Out of ' . $totalCount . ' Recipients, ' . $recordCount . ' are ' . strtolower($title) . '.</p></div><div class="search-icon"> <div class="icon"></div></div> </div>';
+            echo '<p>Out of ' . $totalCount . ' Recipient(s), ' . $recordCount . ' are ' . $title . '.</p></div><div class="search-icon"> <div class="icon"></div></div> </div>';
             echo '</div>';
             echo '<div id="' . $record_id . '">' . $data . $viewAllBtn . '</div>';
             echo '</div>';

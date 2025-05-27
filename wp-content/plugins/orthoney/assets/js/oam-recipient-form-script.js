@@ -547,7 +547,7 @@ document.addEventListener("DOMContentLoaded", function () {
             dbtntext = `I Want to Update`;
           }
           if (parseInt(unverifiedCount) != 0 && parseInt(verifiedCount) == 0) {
-            html = `All submitted addresses are Rejected`;
+            html = `All submitted addresses are rejected`;
           }
 
           if (html == "") {
@@ -565,10 +565,10 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           }
 
-          html += `<div class='exceptions'><strong>Exceptions: </strong><ul>`;
+          html += `<div class='exceptions'><ul>`;
 
           html += `<li><span>Verified Addresses: </span> ${verifiedCount}</li>`;
-          html += `<li><span>Unverified Addresses: </span> ${unverifiedCount}</li>`;
+          html += `<li><span>Rejected Addresses: </span> ${unverifiedCount}</li>`;
 
           // html += `<li class="total-recipients"><span>Total Recipients: </span> ${(parseInt(verifiedCount) + parseInt(unverifiedCount))}</li></ul>`;
 
@@ -973,7 +973,7 @@ document.addEventListener("DOMContentLoaded", function () {
             failCount == 0 &&
             duplicateFailCount == 0
           ) {
-            html = `All (${totalCount}) recipients have been successfully added!`;
+            html = `All (${totalCount}) recipients have been successfully added`;
           } else if (
             parseInt(successCount) +
               parseInt(newCount) +
@@ -984,7 +984,7 @@ document.addEventListener("DOMContentLoaded", function () {
             newCount == 0 &&
             duplicatePassCount == 0
           ) {
-            html = `All (${totalCount}) recipients have been failed!`;
+            html = `All (${totalCount}) recipients have been failed`;
           } else if (
             parseInt(successCount) + parseInt(newCount) != totalCount &&
             failCount == 0 &&
@@ -992,7 +992,7 @@ document.addEventListener("DOMContentLoaded", function () {
             newCount == 0 &&
             duplicateCount != 0
           ) {
-            html = `All recipients might be duplicated!`;
+            html = `All recipients might be duplicated`;
           }
 
           if (html == "") {
@@ -1024,7 +1024,7 @@ document.addEventListener("DOMContentLoaded", function () {
             successCount != 0
           ) {
             html +=
-              "<div class='exceptions'><strong>Exceptions: </strong><div class='exceptions-wrapper'><div class='sub-exceptions'><strong>Passed Recipients: </strong><ul>";
+              "<div class='exceptions'><div class='exceptions-wrapper'><div class='sub-exceptions'><strong>Passed Recipients: </strong><ul>";
           }
 
           // if (successCount != 0) {
