@@ -1837,7 +1837,7 @@ class OAM_Ajax{
 
             
             if($failHtml != ''){
-                $failHtml = '<div class="download-csv"><div class="heading-title"><div><h5 class="table-title">Failed Recipients</h5><p>To fix the failed data, edit the row and make the necessary changes OR upload a new CSV for failed recipients.</p></div><div><div class="right-col"><button data-tippy="Failed records can be downloaded" id="download-failed-recipient-csv" class="btn-underline" ><i class="far fa-download"></i> Download Failed Recipients</button><div class="search-icon"> <div class="icon"></div></div>  </div></div></div> </div>'.$tableStart.$failHtml.$tableEnd;
+                $failHtml = '<div class="download-csv"><div class="heading-title"><div><h5 class="table-title">Failed Recipient(s)</h5><p>To fix the failed data, edit the row and make the necessary changes OR upload a new CSV for failed recipients.</p></div><div><div class="right-col"><button data-tippy="Failed records can be downloaded" id="download-failed-recipient-csv" class="btn-underline" ><i class="far fa-download"></i> Download Failed Recipients</button><div class="search-icon"> <div class="icon"></div></div>  </div></div></div> </div>'.$tableStart.$failHtml.$tableEnd;
             }
             
             
