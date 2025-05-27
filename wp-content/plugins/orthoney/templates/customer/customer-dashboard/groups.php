@@ -25,7 +25,7 @@ $current_url = home_url( $_SERVER['REQUEST_URI'] );
 ?>
 <div class="groups-block order-process-block orthoney-datatable-warraper table-with-search-block">
     <div class="heading-title">
-        <h3 class="block-title">All Recipient List</h3>
+        <h3 class="block-title">All Recipient Lists</h3>
     </div>
 
     <table id="group-recipient-table" class="display">
