@@ -64,6 +64,7 @@ $recipientResult = $wpdb->get_results($wpdb->prepare(
 
 // Determine organization
 $organization = 'Orthoney';
+$organization_data = '';
 if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affiliate_token !== 'Orthoney') {
     $token = $recipientResult[0]->affiliate_token;
     $meta_key = '_yith_wcaf_name_of_your_organization';
@@ -75,8 +76,44 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
          WHERE aff.token = %s AND um.meta_key = %s",
         $token, $meta_key
     ));
-}
 
+    if($organization != 'Orthoney'){
+        $organization_data_query = $wpdb->get_row($wpdb->prepare(
+            "SELECT 
+                aff.*,
+                MAX(CASE WHEN um.meta_key = '_yith_wcaf_city' THEN um.meta_value END) AS _yith_wcaf_city,
+                MAX(CASE WHEN um.meta_key = '_yith_wcaf_state' THEN um.meta_value END) AS _yith_wcaf_state,
+                MAX(CASE WHEN um.meta_key = 'billing_city' THEN um.meta_value END) AS billing_city,
+                MAX(CASE WHEN um.meta_key = 'billing_state' THEN um.meta_value END) AS billing_state,
+                MAX(CASE WHEN um.meta_key = 'shipping_city' THEN um.meta_value END) AS shipping_city,
+                MAX(CASE WHEN um.meta_key = 'shipping_state' THEN um.meta_value END) AS shipping_state
+            FROM {$wpdb->prefix}yith_wcaf_affiliates AS aff
+            LEFT JOIN {$wpdb->usermeta} AS um ON um.user_id = aff.user_id
+            WHERE aff.token = %s
+            GROUP BY aff.user_id
+            ",
+            $token
+        ));
+
+        // Choose the first available city from multiple sources
+        $city = $organization_data_query->_yith_wcaf_city 
+            ?: $organization_data_query->billing_city 
+            ?: $organization_data_query->shipping_city;
+        $state = $organization_data_query->_yith_wcaf_state 
+            ?: $organization_data_query->billing_state 
+            ?: $organization_data_query->shipping_state;
+
+        // Combine with $organization name (assuming it's defined)
+        // echo $organization_data = $organization . ' , ' . $city. ', '.$state;
+
+
+        $merged_address = implode(', ', array_filter(['['.$token.']',$organization,$city, $state ]));
+                  
+          $organization_data = trim($merged_address);
+    }
+
+
+}
 ?>
 
 <div class='loader multiStepForm'>
@@ -91,7 +128,7 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
 
         <div class="heading-title">
         <div class="order-number">
-            <h3>#<?php echo esc_html($sub_order_id); ?> Recipient Order </h3>
+            <h3>#<?php echo esc_html($sub_order_id); ?> Order Details </h3>
             <p>
                 <?php
                 printf(
@@ -104,11 +141,10 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
             </p>
             <p>
                 <?php
-                if($organization != 'Orthoney'):
+                if($organization_data != ''):
                 printf(
-                    esc_html__('The organization %1$s has the code %2$s%3$s.', 'woocommerce'),
-                    '<mark class="order-number">' . esc_html($organization) . '</mark>',
-                    '<mark class="order-number">' . esc_html($recipientResult[0]->affiliate_token ?? '') . '</mark>',
+                    esc_html__('This order will support %1$s .', 'woocommerce'),
+                    '<mark class="order-number">' . esc_html($organization_data) . '</mark>',
                     $order_process_by
                 );
                 
