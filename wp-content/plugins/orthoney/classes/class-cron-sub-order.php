@@ -36,6 +36,11 @@ class OAM_WC_CRON_Suborder {
 
         $order = wc_get_order($order_id);
         if (!$order) return;
+
+        $formatted_count = OAM_COMMON_Custom::get_current_month_count();
+        $order->update_meta_data('_orthoney_OrderID', $formatted_count);
+        $order->update_meta_data('order_process_by', OAM_COMMON_Custom::old_user_id());
+        $order->save();
     
         // Only schedule if order is NOT 'draft' or 'failed'
         if (in_array($order->get_status(), ['draft', 'failed'])) {
