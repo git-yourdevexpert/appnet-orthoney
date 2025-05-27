@@ -70,23 +70,44 @@ class OAM_ADMINISTRATOR_AJAX {
         global $wpdb;
         $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
 
-        $query = "SELECT a.user_id, u.display_name, u.user_email, a.token
+        $query = "SELECT *
             FROM {$yith_wcaf_affiliates_table} AS a
-            LEFT JOIN {$wpdb->users} AS u ON a.user_id = u.ID
-            WHERE a.enabled = 1 AND  a.banned = 0";
+            LEFT JOIN {$wpdb->users} AS u ON a.user_id = u.ID";
 
         $affiliateList = $wpdb->get_results($query);
         $data = [];
 
-        foreach ($affiliateList as $user) {
+// WHERE a.enabled = 1 AND  a.banned = 0"
+
+
+
+foreach ($affiliateList as $user) {
+    $status = 'New request';
+    if($user->banned == 1){
+        $status = 'Banned';
+    }else{
+         if($user->enabled == 1){
+            $status = 'Accepted and enabled';
+         }
+         if($user->enabled == -1){
+            $status = 'Rejected';
+         }
+    }
+
+    $admin_url = admin_url().'/admin.php?page=yith_wcaf_panel&affiliate_id='.$user->ID.'&tab=affiliates';
+    
+   
             $data[] = [
                 'id' => $user->user_id,
                 'name' => esc_html($user->display_name),
                 'token' => esc_html($user->token), 
+                'status' => esc_html($status), 
                
                 'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->user_id) . '">
-                                <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Organizations
-                            </button>'
+                                <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as A Organizations
+                            </button><a href="'. $admin_url.'" class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->user_id) . '">
+                                <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Organizations Profile
+                            </a>'
             ];
         }
 

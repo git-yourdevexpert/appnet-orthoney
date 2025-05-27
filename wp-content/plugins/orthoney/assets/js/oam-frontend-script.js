@@ -2063,6 +2063,7 @@ jQuery(document).ready(function ($) {
       { data: "id" },
       { data: "name" },
       { data: "token" },
+      { data: "status" },
       { data: "action" }
     ],
     columnDefs: [
@@ -2088,6 +2089,7 @@ jQuery(document).ready(function ($) {
     searching: true
   });
 });
+
 
 jQuery(document).ready(function ($) {
   const table = new DataTable("#sales-representative-affiliate-table", {

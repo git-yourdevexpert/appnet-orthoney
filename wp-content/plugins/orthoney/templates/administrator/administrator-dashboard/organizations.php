@@ -17,6 +17,7 @@ if (!defined('ABSPATH')) {
                         <th>ID</th>
                         <th>Organizations Name</th>
                         <th>Token</th>
+                        <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </thead>
