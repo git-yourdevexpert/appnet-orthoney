@@ -555,7 +555,9 @@ document.addEventListener("DOMContentLoaded", function () {
               parseInt(verifiedCount) + parseInt(unverifiedCount)
             }) submitted address(es)`;
             const count = parseInt(verifiedCount);
-            html += `, (${count}) ${count === 1 ? 'has' : 'have'} been verified`;
+            html += `, (${count}) ${
+              count === 1 ? "has" : "have"
+            } been verified`;
           }
           console.log(verifiedButton);
 
@@ -960,17 +962,35 @@ document.addEventListener("DOMContentLoaded", function () {
           failedhtml += "</ul></div>";
 
           if (
-            parseInt(successCount) + parseInt(newCount) + parseInt(duplicatePassCount) == totalCount && failCount == 0 && duplicateFailCount == 0
+            parseInt(successCount) +
+              parseInt(newCount) +
+              parseInt(duplicatePassCount) ==
+              totalCount &&
+            failCount == 0 &&
+            duplicateFailCount == 0
           ) {
-              html = `All (${totalCount}) recipient(s) ${totalCount === 1 ? 'has' : 'have'} been successfully added`;
+            html = `All (${totalCount}) recipient(s) ${
+              totalCount === 1 ? "has" : "have"
+            } been successfully added`;
           } else if (
-            parseInt(successCount) + parseInt(newCount) + parseInt(duplicatePassCount) != totalCount && parseInt(duplicateFailCount) + parseInt(failCount) != 0 && successCount == 0 && newCount == 0 && duplicatePassCount == 0
+            parseInt(successCount) +
+              parseInt(newCount) +
+              parseInt(duplicatePassCount) !=
+              totalCount &&
+            parseInt(duplicateFailCount) + parseInt(failCount) != 0 &&
+            successCount == 0 &&
+            newCount == 0 &&
+            duplicatePassCount == 0
           ) {
-
-            html = `All (${totalCount}) recipient(s) ${totalCount === 1 ? 'has' : 'have'} been failed`;
-
+            html = `All (${totalCount}) recipient(s) ${
+              totalCount === 1 ? "has" : "have"
+            } been failed`;
           } else if (
-            parseInt(successCount) + parseInt(newCount) != totalCount && failCount == 0 && successCount == 0 && newCount == 0 && duplicateCount != 0
+            parseInt(successCount) + parseInt(newCount) != totalCount &&
+            failCount == 0 &&
+            successCount == 0 &&
+            newCount == 0 &&
+            duplicateCount != 0
           ) {
             html = `All recipient(s) might be duplicated`;
           }
@@ -978,13 +998,23 @@ document.addEventListener("DOMContentLoaded", function () {
           if (html == "") {
             html += `Out of (${totalCount}) recipient(s), `;
             if (
-              parseInt(successCount) + parseInt(newCount) + parseInt(duplicatePassCount) ==  1
+              parseInt(successCount) +
+                parseInt(newCount) +
+                parseInt(duplicatePassCount) ==
+              1
             ) {
-              html += `(${  parseInt(successCount) + parseInt(newCount) + parseInt(duplicatePassCount) }) has been added`;
+              html += `(${
+                parseInt(successCount) +
+                parseInt(newCount) +
+                parseInt(duplicatePassCount)
+              }) has been added`;
             } else {
-              html += `(${ parseInt(successCount) + parseInt(newCount) + parseInt(duplicatePassCount) }) have been added`;
+              html += `(${
+                parseInt(successCount) +
+                parseInt(newCount) +
+                parseInt(duplicatePassCount)
+              }) have been added`;
             }
-
           }
 
           if (

@@ -130,3 +130,13 @@ Thumbs.db
 # Allow only the orthoney plugin
 !wp-content/plugins/orthoney
 !wp-content/plugins/orthoney/*
+wp-content/database.sql
+wp-content/db.php
+wp-content/debug.log
+wp-content/--uploads-webpc/*
+wp-content/all-uploaded-files/*
+wp-content/download_recipient_list/*
+wp-content/logs/*
+wp-content/process-recipients-files/*
+wp-content/themes/*
+wp-content/package.json
