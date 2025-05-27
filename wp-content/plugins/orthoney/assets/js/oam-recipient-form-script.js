@@ -547,7 +547,7 @@ document.addEventListener("DOMContentLoaded", function () {
             dbtntext = `I Want to Update`;
           }
           if (parseInt(unverifiedCount) != 0 && parseInt(verifiedCount) == 0) {
-            const count = parseInt(verifiunverifiedCountedCount);
+            const count = parseInt(unverifiedCount);
             html = `All submitted address(es) ${count === 1 ? 'is' : 'are'} Rejected`;
           }
 
