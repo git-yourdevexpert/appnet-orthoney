@@ -373,18 +373,18 @@ class OAM_Helper{
         if (!empty($search_term)) {
             if ($tabletype == 'administrator-dashboard') {
                 $join .= " LEFT JOIN {$wpdb->users} AS u ON u.ID = orders.customer_id";
-                $where_conditions[] = "(orders.id = %d OR rec.order_id = %d OR rec.wc_order_id = %d OR u.display_name LIKE %s )";
-                $where_values[] = absint( $search_term ); 
-                $where_values[] = absint( $search_term ); 
-                $where_values[] = absint( $search_term ); 
+                $where_conditions[] = "(orders.id = %d OR rec.order_id = %d OR rel.wc_order_id = %d OR u.display_name LIKE %s )";
+                $where_values[] = (int) $search;
+                $where_values[] = (int) $search;
+                $where_values[] = (int) $search;
                 $where_values[] = '%' . $wpdb->esc_like($search_term) . '%';
             }else{
                 
                 $join .= " LEFT JOIN $order_addresses AS addr ON addr.order_id = orders.id AND addr.address_type = 'billing'";
-                $where_conditions[] = "(orders.id = %d OR rec.order_id = %d OR rec.wc_order_id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s)";
-                $where_values[] = absint( $search_term ); 
-                $where_values[] = absint( $search_term );
-                $where_values[] = absint( $search_term );
+                $where_conditions[] = "(orders.id = %d OR rec.order_id = %d OR rel.wc_order_id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s)";
+                $where_values[] = (int) $search;
+                $where_values[] = (int) $search;
+                $where_values[] = (int) $search;
                 $where_values[] = '%' . $wpdb->esc_like($search_term) . '%';
             }
         }

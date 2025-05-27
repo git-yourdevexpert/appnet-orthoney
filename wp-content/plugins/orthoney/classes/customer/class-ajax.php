@@ -2796,18 +2796,18 @@ class OAM_Ajax{
 
         if (!empty($search)) {
             if ($tabletype == 'administrator-dashboard') {
-                 $join .= " LEFT JOIN {$wpdb->users} AS u ON u.ID = orders.customer_id OR addr.order_id = %d OR addr.wc_order_id = %d";
+                 $join .= " LEFT JOIN {$wpdb->users} AS u ON u.ID = orders.customer_id OR addr.order_id = %d OR rel.wc_order_id = %d";
                 $where[] = "u.display_name LIKE %s";
                 $values[] = '%' . $wpdb->esc_like($search) . '%';
-                $where_values[] = absint( $search_term ); 
-                $where_values[] = absint( $search_term ); 
+                $where_values[] = (int) $search; 
+                $where_values[] = (int) $search; 
             }else{
                 $join .= " LEFT JOIN $order_addresses AS addr ON addr.order_id = orders.id AND addr.address_type = 'billing'";
-                $where[] = "(orders.id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s OR addr.order_id = %d OR addr.wc_order_id = %d)";
+                $where[] = "(orders.id = %d OR CONCAT(addr.first_name, ' ', addr.last_name) LIKE %s OR addr.order_id = %d OR rel.wc_order_id = %d)";
                 $values[] = (int) $search;
                 $values[] = '%' . $wpdb->esc_like($search) . '%';
-                $where_values[] = absint( $search_term ); 
-                $where_values[] = absint( $search_term ); 
+                $where_values[] = (int) $search; 
+                $where_values[] = (int) $search; 
             }
         }
 
@@ -2857,7 +2857,6 @@ class OAM_Ajax{
             WHERE " . implode(' AND ', $where),
             ...$values
         );
-       
 
         $total_orders = $wpdb->get_var($sql);
 
