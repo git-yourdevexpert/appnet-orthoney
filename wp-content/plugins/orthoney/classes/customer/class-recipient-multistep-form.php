@@ -828,7 +828,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/cart-icon.png" alt="cart icon" class="cart-icon">
                 <span class="badge-number"><?php echo $recipient; ?></span>
             </div>
-            <div class="badge">
+            <div class="badge" data-tippy="Total Number Of Jars For This Order">
             <img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/jar-icon.png" alt="jar icon" class="jar-icon">
                 <span class="badge-number"><?php echo $jar ; ?></span>
             </div>
