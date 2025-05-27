@@ -62,8 +62,8 @@ class OAM_Hooks {
                         'id' => 21, // Menu ID
                         'items' => [
                             'Dashboard' => SALES_REPRESENTATIVE_DASHBOARD_LINK,
-                            'Manage Customers' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-customers/',
-                            'Manage Organizations' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-organizations/',
+                            'Assigned Customers' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-customers/',
+                            'Assigned Organizations' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-organizations/',
                             'My Profile' => CUSTOMER_DASHBOARD_LINK . 'my-profile/',
                         ]
                     ],
