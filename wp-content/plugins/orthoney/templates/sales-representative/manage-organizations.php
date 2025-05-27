@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
 
 ?>
  <div class="affiliate-dashboard order-process-block">
-     <h3>Manage Organizations</h3>
+     <h3>Assigned Organizations</h3>
 <div class="orthoney-datatable-warraper">
     <table id="sales-representative-affiliate-table" class="display">
         <thead>
