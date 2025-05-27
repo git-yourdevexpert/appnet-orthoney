@@ -2656,74 +2656,62 @@ class OAM_Ajax{
         wp_send_json_success();
     }
     
-    public function search_affiliates_handler() {
-        $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
-        $filter = isset($_POST['filter']) ? sanitize_text_field($_POST['filter']) : 'all';
+     document.addEventListener("DOMContentLoaded", function () {
+    const affiliateFilterButton = document.getElementById("affiliate-filter-button");
+    const searchInput = document.getElementById("search-affiliates");
+    const filterSelect = document.getElementById("filter-block-status");
 
-        $affiliates_content = OAM_Helper::manage_affiliates_content($search);
+    if (affiliateFilterButton && searchInput && filterSelect) {
 
-        $result = json_decode($affiliates_content, true);
+        function fetchAffiliates() {
+            process_group_popup(); // If you're using a popup loader
 
-        $affiliates = $result['data']['user_info'];
-        $blocked_affiliates = $result['data']['affiliates'];
-        
-        $html = 0;
-        ?>
-        <table>
-            <thead><tr><th>Token</th><th>Name</th><th>Action</th></tr></thead>
-            <tbody>
-                <?php 
-                if(!empty($affiliates)){
-                    foreach ($affiliates as $key => $affiliate): 
-                        $is_blocked = $result['data']['affiliates'][$key]['status'];
-                       
-                        if($is_blocked == $filter OR  $filter == 'all'){
-                        $token = $result['data']['affiliates'][$key]['token'];
-                        $current_url = home_url(add_query_arg([], $_SERVER['REQUEST_URI']));
-                        $user_id = $affiliate['user_id'];
+            const searchValue = searchInput.value.trim();
+            const filterValue = filterSelect.value;
 
-                        $orgName = get_user_meta($user_id, '_orgName', true);
-                    if (empty($orgName)) {
-                        $orgName = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
-                    }
+            const requestData = new URLSearchParams();
+            requestData.append("action", "search_affiliates");
+            requestData.append("search", searchValue);
+            requestData.append("filter", filterValue);
 
-                        $html = 1;
-                            ?>
-                            <tr>
-                                <td><div class="thead-data">Token</div><?php echo esc_html($affiliate['token']); ?></td>
-                                <td><div class="thead-data">Name</div><?php echo esc_html($affiliate['display_name']); ?></td>
-                                <td><div class="thead-data">Action</div>
-                                <?php 
-                                if($is_blocked == -1){
-                                ?>
-                                <a href="<?php echo $current_url.'?action=organization-link&token='.$token; ?>" class="w-btn us-btn-style_1">Accept Linking Request</a>
-                                <?php
-                            }else{
-                               
-                                ?>
-                                <button class="affiliate-block-btn w-btn <?php echo ($is_blocked == 1) ? 'us-btn-style_1' : 'us-btn-style_2' ?>" 
-                                    data-affiliate="<?php echo esc_attr($affiliate['user_id']); ?>"
-                                        data-blocked="<?php echo ($is_blocked == 1) ? '1' : '0'; ?>">
-                                        <?php echo ($is_blocked == 1) ? 'Block' : 'Unblock'; ?>
-                                    </button>
-                                   
-                                    <?php  } ?>
-                                </td>
-                            </tr>
-                        <?php 
-                        }
-                        endforeach; 
-                }else{
-                    echo '<tr><td colspan="3" class="no-available-msg">No organization found!</td></tr>';
-                } 
-               
-                ?>
-            </tbody>
-        </table>
-        <?php 
+            fetch(oam_ajax.ajax_url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: requestData.toString(),
+            })
+            .then(response => response.text())
+            .then(data => {
+                // Look for the container again after fetch
+                const wrapper = document.getElementById("affiliate-results");
+                if (wrapper) {
+                    wrapper.outerHTML = data; // Replace the full block
+                } else {
+                    console.warn("Element with id 'affiliate-results' not found.");
+                    Swal.fire({
+                        icon: "error",
+                        title: "Rendering Error",
+                        text: "Could not find the container to display affiliates.",
+                    });
+                }
+                setTimeout(() => Swal.close(), 1500);
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Error fetching affiliates: " + error.message,
+                });
+            });
+        }
 
-        wp_die();
+        affiliateFilterButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            fetchAffiliates();
+        });
     }
+});
 
     //code update by db
     // Shared helper method to avoid repeating logic
