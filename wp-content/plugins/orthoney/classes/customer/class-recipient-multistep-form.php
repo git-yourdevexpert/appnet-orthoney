@@ -129,7 +129,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         
         <div id="stepNav" class="tab-selections" <?php echo ((self::$atts_process_id != 0) ? 'style="display:none"' : '' ) ?>>
             <span class="step-nav-item <?php echo ($currentStep == 0  AND self::$atts_process_id == 0) ? 'active' : '' ?>" data-step="0">Step 1: Select an Organization</span>
-            <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Proceed With Order</span>
+            <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Order Method</span>
             <span class="step-nav-item <?php echo $currentStep == 2 ? 'active' : '' ?>" data-step="2">Step 3: Upload Recipients</span>
             <span class="step-nav-item <?php echo (($currentStep == 3 OR self::$atts_process_id != 0) ? 'active' : '') ?>" data-step="3">Step 4: Add/Review Recipients</span>
             <span class="step-nav-item <?php echo ($currentStep == 4 OR $currentStep == 5) ? 'active' : '' ?>" data-step="4">Step 5: Verify Addresses</span>
@@ -412,7 +412,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     <button type="button" class="back w-btn us-btn-style_2">Back</button>
                     <button data-href="<?php echo CUSTOMER_DASHBOARD_LINK; ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
                 </div>
-                <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>" class="next w-btn us-btn-style_1" style="float:right">Proceed Order</button>
+                <button type="button" value="<?php echo  $delivery_preference == 'single_address'  ? 'single-address' : '' ?>" class="next w-btn us-btn-style_1" style="float:right">Proceed With Order</button>
             </div>
         </div>
     <?php
