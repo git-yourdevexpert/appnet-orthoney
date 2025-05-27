@@ -1781,7 +1781,7 @@ class OAM_Ajax{
             
                 // Generate new data HTML
                 if(!empty($newData)){
-                    $newDataHtml .= '<div class="heading-title"><h5 class="table-title">Additional Recipients</h5><div class="right-col"><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button><div class="search-icon"> <div class="icon"></div></div>  </div>';
+                    $newDataHtml .= '<div class="heading-title"><h5 class="table-title">Added Recipient(s) Manually</h5><div class="right-col"><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button><div class="search-icon"> <div class="icon"></div></div>  </div>';
                     $newDataHtml .= OAM_Helper::get_table_recipient_content($newData, $customGreeting);
                     
                 }
@@ -1789,7 +1789,7 @@ class OAM_Ajax{
                 // Generate Success HTML
                 if(!empty($successData)){
                     $successHtml .= '<div class="heading-title">
-                    <div><h5 class="table-title">Added Recipients</h5></div>
+                    <div><h5 class="table-title">Added Recipient(s) From List</h5></div>
                     <div class="links-group">
                     <button class="removeRecipientsAlreadyOrder btn-underline" data-tippy="Remove all recipients who have already placed an order this season.">Remove Already Ordered Recipients</button><div class="vline"></div>
                     <button class="viewSuccessRecipientsAlreadyOrder btn-underline" data-status="0" data-tippy="View all recipients who have already placed an order this season." style="display:none">View Already Ordered Recipients</button><div class="search-icon"> <div class="icon"></div></div>  
@@ -3606,7 +3606,7 @@ class OAM_Ajax{
             1 => 'Step 2: Order Method',
             2 => 'Step 3: Upload Recipients',
             3 => 'Step 4: Add/Review Recipients',
-            4 => 'Step 5: Verify Address',
+            4 => 'Step 5: Verify Addresses',
             5 => 'Step 6: Pending Checkout',
         ];
                 // Add search filter

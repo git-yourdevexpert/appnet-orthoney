@@ -998,11 +998,11 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           // if (successCount != 0) {
-          html += `<li><span>Added Recipient(s): </span> ${successCount}</li>`;
+          html += `<li><span>Added Recipient(s) From List: </span> ${successCount}</li>`;
           // }
 
           // if (parseInt(newCount) !== 0) {
-          html += `<li><span>Additional Recipient(s): </span> ${newCount}</li>`;
+          html += `<li><span>Added Recipient(s) Manually: </span> ${newCount}</li>`;
           // }
           // if (duplicateCount !== 0 && duplicatePassCount !== 0) {
           html += `<li><span>Duplicate Recipient(s): </span> ${duplicatePassCount}</li>`;

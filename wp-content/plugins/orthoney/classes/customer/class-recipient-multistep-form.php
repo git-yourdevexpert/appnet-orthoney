@@ -132,7 +132,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             <span class="step-nav-item <?php echo $currentStep == 1 ? 'active' : '' ?>" data-step="1">Step 2: Order Method</span>
             <span class="step-nav-item <?php echo $currentStep == 2 ? 'active' : '' ?>" data-step="2">Step 3: Upload Recipients</span>
             <span class="step-nav-item <?php echo (($currentStep == 3 OR self::$atts_process_id != 0) ? 'active' : '') ?>" data-step="3">Step 4: Add/Review Recipients</span>
-            <span class="step-nav-item <?php echo ($currentStep == 4 OR $currentStep == 5) ? 'active' : '' ?>" data-step="4">Step 5: Verify Address</span>
+            <span class="step-nav-item <?php echo ($currentStep == 4 OR $currentStep == 5) ? 'active' : '' ?>" data-step="4">Step 5: Verify Addresses</span>
             <span class="step-nav-item" data-step="5">Step 6: Checkout</span>
         </div>
         <?php
@@ -596,9 +596,17 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         }
                         foreach ($sections as $key => $label) {
                             $countKey = $key . 'Count';
+                            if( $label == 'Added'){
+                                $label = 'Added Recipient(s) From List';
+                            }elseif($label == 'Additional' ){
+                                $label = 'Added Recipient(s) Manually';
+                            }
+                            else{
+                                $label .= $label . ' Recipients';
+                            }
                             if (!empty($result['data'][$countKey])) {
                                 echo '<button class="scroll-section-btn" data-section="' . $key . 'CSVData">' 
-                                    . $label . ' Recipients (' . $result['data'][$countKey] . ')</button>';
+                                    . $label . ' (' . $result['data'][$countKey] . ')</button>';
                             }
                         }
                         ?>
@@ -626,7 +634,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     if (!empty($_GET['pid']) && empty($result['data']['newCount'])) { 
                         ?>
                         <div class="heading-title">
-                            <div><h5 class="table-title">Additional Recipients</h5></div>
+                            <div><h5 class="table-title">Added Recipient(s) Manually</h5></div>
                             <div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div>
                         </div>
                         <?php 
