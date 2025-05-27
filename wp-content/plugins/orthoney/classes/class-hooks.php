@@ -85,7 +85,7 @@ class OAM_Hooks {
                             'Dashboard' => CUSTOMER_DASHBOARD_LINK,
                             'Orders' => CUSTOMER_DASHBOARD_LINK . 'orders/',
                             'Incomplete Orders' => CUSTOMER_DASHBOARD_LINK . 'incomplete-order/',
-                            'Failed Recipients from Prv. Orders' => CUSTOMER_DASHBOARD_LINK . 'failed-recipients/',
+                            'Failed Recipients' => CUSTOMER_DASHBOARD_LINK . 'failed-recipients/',
                             'Recipients List' => CUSTOMER_DASHBOARD_LINK . 'groups/',
                             'Associated Organizations' => CUSTOMER_DASHBOARD_LINK . 'organizations/',
                             'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account/',
