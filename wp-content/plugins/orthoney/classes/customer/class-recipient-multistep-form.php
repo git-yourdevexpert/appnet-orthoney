@@ -602,7 +602,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 $label = 'Added Recipient(s) Manually';
                             }
                             else{
-                                $label .= $label . ' Recipients';
+                                $label = $label . ' Recipient(s)';
                             }
                             if (!empty($result['data'][$countKey])) {
                                 echo '<button class="scroll-section-btn" data-section="' . $key . 'CSVData">' 

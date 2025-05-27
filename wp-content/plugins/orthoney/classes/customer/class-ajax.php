@@ -1762,7 +1762,7 @@ class OAM_Ajax{
                         $bulkMargeButtonHtml = '<div class="tooltip" data-tippy="Keep 1 Entry and Delete Other Duplicate Entries"><button id="bulkMargeRecipient" class="btn-underline">Bulk Marge</button></div>';
                     }
                     
-                    $duplicateHtml .= '<div class="heading-title"><div><h5 class="table-title">Duplicate Recipients</h5> </div><div class="right-col">'.$bulkMargeButtonHtml.'<div class="search-icon"> <div class="icon"></div></div></div></div>';
+                    $duplicateHtml .= '<div class="heading-title"><div><h5 class="table-title">Duplicate Recipient(s)</h5> </div><div class="right-col">'.$bulkMargeButtonHtml.'<div class="search-icon"> <div class="icon"></div></div></div></div>';
                     
                     foreach ($duplicateGroups as $groupIndex => $group) {
                         foreach($group as $data){
