@@ -36,7 +36,7 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
     <div class="affiliate-dashboard order-process-block">
         <h3>All Organizations</h3>
         <!-- Search and filter options -->
-        <div class="filter-container">
+        <div class="filter-container" style="display:none">
             <input type="text" id="search-affiliates" placeholder="Search Organization">
             <select id="filter-block-status">
                 <option value="all">All status</option>
