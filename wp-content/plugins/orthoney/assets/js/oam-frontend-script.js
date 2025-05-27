@@ -1851,60 +1851,61 @@ document.addEventListener("click", function (event) {
 
 // affiliates manage
 document.addEventListener("DOMContentLoaded", function () {
-    const affiliateFilterButton = document.getElementById("affiliate-filter-button");
-    const searchInput = document.getElementById("search-affiliates");
-    const filterSelect = document.getElementById("filter-block-status");
+  const affiliateFilterButton = document.getElementById(
+    "affiliate-filter-button"
+  );
+  const searchInput = document.getElementById("search-affiliates");
+  const filterSelect = document.getElementById("filter-block-status");
 
-    if (affiliateFilterButton && searchInput && filterSelect) {
+  if (affiliateFilterButton && searchInput && filterSelect) {
+    function fetchAffiliates() {
+      process_group_popup(); // If you're using a popup loader
 
-        function fetchAffiliates() {
-            process_group_popup(); // If you're using a popup loader
+      const searchValue = searchInput.value.trim();
+      const filterValue = filterSelect.value;
 
-            const searchValue = searchInput.value.trim();
-            const filterValue = filterSelect.value;
+      const requestData = new URLSearchParams();
+      requestData.append("action", "search_affiliates");
+      requestData.append("search", searchValue);
+      requestData.append("filter", filterValue);
 
-            const requestData = new URLSearchParams();
-            requestData.append("action", "search_affiliates");
-            requestData.append("search", searchValue);
-            requestData.append("filter", filterValue);
-
-            fetch(oam_ajax.ajax_url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: requestData.toString(),
-            })
-            .then(response => response.text())
-            .then(data => {
-                // Look for the container again after fetch
-                const wrapper = document.getElementById("affiliate-results");
-                if (wrapper) {
-                    wrapper.outerHTML = data; // Replace the full block
-                } else {
-                    console.warn("Element with id 'affiliate-results' not found.");
-                    Swal.fire({
-                        icon: "error",
-                        title: "Rendering Error",
-                        text: "Could not find the container to display affiliates.",
-                    });
-                }
-                setTimeout(() => Swal.close(), 500);
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Error fetching affiliates: " + error.message,
-                });
+      fetch(oam_ajax.ajax_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: requestData.toString()
+      })
+        .then((response) => response.text())
+        .then((data) => {
+          // Look for the container again after fetch
+          const wrapper = document.getElementById("affiliate-results");
+          if (wrapper) {
+            wrapper.outerHTML = data; // Replace the full block
+          } else {
+            console.warn("Element with id 'affiliate-results' not found.");
+            Swal.fire({
+              icon: "error",
+              title: "Rendering Error",
+              text: "Could not find the container to display affiliates."
             });
-        }
-
-        affiliateFilterButton.addEventListener("click", function (event) {
-            event.preventDefault();
-            fetchAffiliates();
+          }
+          setTimeout(() => Swal.close(), 500);
+        })
+        .catch((error) => {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Error fetching affiliates: " + error.message
+          });
         });
     }
+
+    affiliateFilterButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      fetchAffiliates();
+    });
+  }
 });
 
 //Group Listing code

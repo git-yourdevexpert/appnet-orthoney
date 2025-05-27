@@ -65,38 +65,33 @@
       transform: rotate(360deg);
     }
   } */
-#customer-jar-orders-table_length.dataTables_length label{
-      margin-right: -8px !important;
-}
-#customer-jar-orders-table_length.dataTables_length label,
-#customer-orders-table_length.dataTables_length label{
-  font-size: 0;
-}
-#customer-jar-orders-table_length.dataTables_length label::before,
-#customer-orders-table_length.dataTables_length label::before{
-content: 'Show';
-font-size: 15px;
-}
-  .multiple-address-order #multiple-address-output{ 
-    order:1;
-  }
-  .multiple-address-order .multiple-address-grid{ 
-    order:2;
-  }
-  .multiple-address-order .error-message{ 
-    order:3;
-  }
-
-  #customer-jar-orders-table_filter button.order-pdf-export,
-  #customer-jar-orders-table_filter button.order-export-data.w-btn.us-btn-style_1 {
-    display: none;
+#customer-jar-orders-table_length.dataTables_length label {
+  margin-right: -8px !important;
 }
 
-#customer-jar-orders-table .deleteRecipient ,
-#recipient-order-data .deleteRecipient  {
+.multiple-address-order #multiple-address-output {
+  order: 1;
+}
+
+.multiple-address-order .multiple-address-grid {
+  order: 2;
+}
+
+.multiple-address-order .error-message {
+  order: 3;
+}
+
+#customer-jar-orders-table_filter button.order-pdf-export,
+#customer-jar-orders-table_filter button.order-export-data.w-btn.us-btn-style_1 {
   display: none;
 }
-#customer-jar-orders-table .editRecipientOrder ,
-#recipient-order-data .editRecipientOrder  {
+
+#customer-jar-orders-table .deleteRecipient,
+#recipient-order-data .deleteRecipient {
+  display: none;
+}
+
+#customer-jar-orders-table .editRecipientOrder,
+#recipient-order-data .editRecipientOrder {
   display: none;
 }
