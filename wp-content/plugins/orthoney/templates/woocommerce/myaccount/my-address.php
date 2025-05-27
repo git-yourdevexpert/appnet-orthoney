@@ -43,14 +43,12 @@ $oldcol = 1;
 $col    = 1;
 ?>
 
-<p>
-	<?php echo apply_filters( 'woocommerce_my_account_my_address_description', esc_html__( 'The following addresses will be used on the checkout page by default.', 'woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-</p>
+
 <div>
 <?php if ( ! wc_ship_to_billing_address_only() && wc_shipping_enabled() ) : ?>
 	<div class="u-columns woocommerce-Addresses col2-set addresses">
-<?php endif; ?>
-
+		<?php endif; ?>
+		
 <?php foreach ( $get_addresses as $name => $address_title ) : ?>
 	<?php
 		$address = wc_get_account_formatted_address( $name );
@@ -59,6 +57,15 @@ $col    = 1;
 	?>
 
 	<div class="u-column<?php echo $col < 0 ? 1 : 2; ?> col-<?php echo $oldcol < 0 ? 1 : 2; ?> woocommerce-Address">
+		<?php 
+		if($address_title == 'Billing address'){
+?>
+<p>
+	<?php echo apply_filters( 'woocommerce_my_account_my_address_description', esc_html__( 'This Billing Address will be filled in automatically on the checkout page, but you can change it before you place the order.', 'woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+</p>
+<?php
+		}
+		?>
 		<header class="woocommerce-Address-title title">
 			<h3 class="block-title"><?php echo esc_html( $address_title ); ?></h3>
 			<a href="<?php echo esc_url( wc_get_endpoint_url( 'edit-address', $name ) ); ?>" class="edit">
