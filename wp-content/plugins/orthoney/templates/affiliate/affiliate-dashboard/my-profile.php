@@ -3,6 +3,7 @@
    if (!defined('ABSPATH')) {
        exit;
    }
+   $user_id = get_current_user_id();
    
    // Fetch user meta fields
    $first_name = get_user_meta($user_id, '_yith_wcaf_first_name', true) ?: get_user_meta($user_id, 'first_name', true);
