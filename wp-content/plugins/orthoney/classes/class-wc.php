@@ -498,7 +498,7 @@ class OAM_WC_Customizer {
     */ 
     public function custom_thankyou_order_received_text( $text, $order ) {
         // Customize the thank you text
-        return 'Thanks for placing the order with us. Your order has been processed.';
+        return "Thanks for your order! <br> You'll receive another email when each recipient's honey is shipped.";
     }
 
     public function add_labels_to_order_overview($order_id) {
