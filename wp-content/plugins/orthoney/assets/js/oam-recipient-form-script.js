@@ -1060,7 +1060,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 parseInt(failCount) -
                 parseInt(duplicateFailCount)) +
               ")",
-            cancelButtonText: "I Want to Update/Fix Errors",
+            cancelButtonText: "I Want to Update/Fix Error(s)",
             denyButtonText:
               "Proceed Without Duplicate Recipient(s) (" +
               (parseInt(totalCount) -
