@@ -604,7 +604,7 @@ document.addEventListener("DOMContentLoaded", function () {
               ) {
                 Swal.getDenyButton().style.display = "inline-block";
                 Swal.getDenyButton().textContent =
-                  "Yes, Proceed (" +
+                  "Proceed (" +
                   (parseInt(verifiedCount) + parseInt(unverifiedCount)) +
                   ")";
               } else {
@@ -723,7 +723,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //       showCancelButton: true,
     //       confirmButtonColor: "#3085d6",
     //       cancelButtonColor: "#d33",
-    //       confirmButtonText: "Yes, Proceed",
+    //       confirmButtonText: "Proceed",
     //       cancelButtonText: "No, I Want to Add/Edit Records.",
     //       allowOutsideClick: false,
     //       allowEscapeKey: false,
@@ -1047,7 +1047,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 Swal.getConfirmButton().style.display = "inline-block";
                 if (successCount == 0 && duplicatePassCount == 0) {
                   Swal.getConfirmButton().textContent =
-                    "Yes, Proceed (" +
+                    "Proceed (" +
                     (parseInt(successCount) +
                       parseInt(newCount) +
                       parseInt(duplicatePassCount)) +
@@ -1058,7 +1058,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 Swal.getDenyButton().style.display = "inline-block";
                 if (duplicateCount == 0) {
                   Swal.getDenyButton().textContent =
-                    "Yes, Proceed (" +
+                    "Proceed (" +
                     (parseInt(successCount) + parseInt(newCount)) +
                     ")";
                 }
@@ -1560,7 +1560,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   showConfirmButton: true,
                   confirmButtonColor: "#3085d6",
                   cancelButtonColor: "#d33",
-                  confirmButtonText: "Yes, proceed",
+                  confirmButtonText: "proceed",
                   cancelButtonText: "No, I don't want to",
 
                   allowOutsideClick: false,
