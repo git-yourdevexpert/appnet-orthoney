@@ -5,8 +5,8 @@
    }
    
    // Fetch user meta fields
-   $first_name = get_user_meta($user_id, 'first_name', true);
-   $last_name = get_user_meta($user_id, 'last_name', true);
+   $first_name = get_user_meta($user_id, '_yith_wcaf_first_name', true) ?: get_user_meta($user_id, 'first_name', true);
+   $last_name = get_user_meta($user_id, '_yith_wcaf_last_name', true) ?: get_user_meta($user_id, 'last_name', true)
    $user = get_userdata($user_id);
    $email = $user->user_email;
    

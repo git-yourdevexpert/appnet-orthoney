@@ -139,9 +139,30 @@ class OAM_AFFILIATE_Custom {
     }
 
     public function schedule_user_meta($user_id) {
-        if (!as_next_scheduled_action('set_default_user_meta_after_register', [$user_id])) {
-            as_schedule_single_action(time() + 60, 'set_default_user_meta_after_register', [$user_id]);
+       $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
+
+        if (in_array('yith_affiliate', $user_roles)) {
+            // Check if 'first_name' is empty
+            $first_name = get_user_meta($user_id, 'first_name', true);
+            if (empty($first_name)) {
+                $wcaf_first_name = get_user_meta($user_id, '_yith_wcaf_first_name', true);
+                if (!empty($wcaf_first_name)) {
+                    update_user_meta($user_id, 'first_name', $wcaf_first_name);
+                }
+            }
+
+            // Check if 'last_name' is empty
+            $last_name = get_user_meta($user_id, 'last_name', true);
+            if (empty($last_name)) {
+                $wcaf_last_name = get_user_meta($user_id, '_yith_wcaf_last_name', true);
+                if (!empty($wcaf_last_name)) {
+                    update_user_meta($user_id, 'last_name', $wcaf_last_name);
+                }
+            }
         }
+        // if (!as_next_scheduled_action('set_default_user_meta_after_register', [$user_id])) {
+        //     as_schedule_single_action(time() + 60, 'set_default_user_meta_after_register', [$user_id]);
+        // }
     }
 
     public function handle_user_meta_and_email($user_id) {

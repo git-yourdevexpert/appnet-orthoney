@@ -323,8 +323,8 @@ class OAM_AFFILIATE_Ajax{
         // Update user profile data (including email)
         $update_data = [
             'ID'         => $user_id,
-            'first_name' => $first_name,
-            'last_name'  => $last_name,
+            '_yith_wcaf_first_name' => $first_name,
+            '_yith_wcaf_last_name'  => $last_name,
             'user_email' => $email, 
         ];
 
@@ -336,13 +336,13 @@ class OAM_AFFILIATE_Ajax{
         }
 
         // Update user meta
-        update_user_meta($user_id, 'first_name', $first_name);
-        update_user_meta($user_id, 'last_name', $last_name);
+        update_user_meta($user_id, '_yith_wcaf_first_name', $first_name);
+        update_user_meta($user_id, '_yith_wcaf_last_name', $last_name);
         update_user_meta($user_id, 'billing_phone', $billing_phone);
 
         //affiliate Fields data update
-        update_user_meta($user_id, '_yith_wcaf_first_name', $organization_name);
-        update_user_meta($user_id, '_yith_wcaf_last_name', '');
+        // update_user_meta($user_id, '_yith_wcaf_first_name', $organization_name);
+        // update_user_meta($user_id, '_yith_wcaf_last_name', '');
         update_user_meta($user_id, '_yith_wcaf_phone_number', $billing_phone);
         update_user_meta($user_id, '_yith_wcaf_name_of_your_organization', $organization_name);
         update_user_meta($user_id, '_yith_wcaf_your_organizations_website', $organization_website);

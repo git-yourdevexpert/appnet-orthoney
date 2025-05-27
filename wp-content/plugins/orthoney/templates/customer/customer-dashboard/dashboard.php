@@ -19,8 +19,6 @@ if ( in_array( 'yith_affiliate', (array) $user->roles ) ) {
 
     $current_user_id = get_current_user_id();
 
-    echo $current_user_id;
-
     $yith_wcaf_affiliates_table = OAM_helper::$yith_wcaf_affiliates_table;
 
     // Correct query execution
