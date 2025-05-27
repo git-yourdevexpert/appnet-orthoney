@@ -34,7 +34,7 @@ class OAM_WC_CRON_Suborder {
     public function queue_sub_order_creation($order_id) {
         if (!$order_id) return;
 
-        $order = wc_get_order($order_id);
+       $order = wc_get_order($order_id);
         if (!$order) return;
 
         $formatted_count = OAM_COMMON_Custom::get_current_month_count();
@@ -73,10 +73,10 @@ class OAM_WC_CRON_Suborder {
         if (!$main_order) return;
 
         // Update Order Meta
-        $formatted_count = OAM_COMMON_Custom::get_current_month_count();
-        $main_order->update_meta_data('_orthoney_OrderID', $formatted_count);
-        $main_order->update_meta_data('order_process_by', OAM_COMMON_Custom::old_user_id());
-        $main_order->save();
+        // $formatted_count = OAM_COMMON_Custom::get_current_month_count();
+        // $main_order->update_meta_data('_orthoney_OrderID', $formatted_count);
+        // $main_order->update_meta_data('order_process_by', OAM_COMMON_Custom::old_user_id());
+        // $main_order->save();
 
         // Identify order type
         $order_items = $main_order->get_items();
