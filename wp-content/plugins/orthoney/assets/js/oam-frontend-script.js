@@ -1042,7 +1042,7 @@ Deleted Recipient in table Js Start
 document.addEventListener("click", function (event) {
   if (event.target.classList.contains("deleteRecipient")) {
     event.preventDefault();
-    popup_text = "You are removing a ";
+    popup_text = "You are removing ";
 
     const duplicateCSVDataCheck = event.target.closest("#duplicateCSVData");
     if (duplicateCSVDataCheck) {
@@ -1084,7 +1084,7 @@ document.addEventListener("click", function (event) {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, remove the recipient!",
+      confirmButtonText: "Yes, remove the recipient",
       cancelButtonText: "Cancel",
       reverseButtons: true,
       allowOutsideClick: false,
