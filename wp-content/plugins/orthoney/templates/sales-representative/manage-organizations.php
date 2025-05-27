@@ -12,9 +12,11 @@ if (!defined('ABSPATH')) {
         <thead>
             <tr>
                 <th>Code</th>  
+                <th>Email</th>
                 <th>Organization Name</th>
                 <th>City</th>
                 <th>State</th>
+                <th>Status</th>
                 <th>Login</th>
             </tr>
         </thead>
