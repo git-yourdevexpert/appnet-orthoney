@@ -533,7 +533,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
           let unverifiedCount = 0;
           let verifiedCount = 0;
-          let dbtntext = "I Want to Update/Fix Errors";
+          let dbtntext = "I Want to Update/Fix Error(s)";
 
           if (unverifiedButton) {
             unverifiedCount = unverified_table.getAttribute("data-count");
@@ -543,17 +543,17 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           if (parseInt(unverifiedCount) == 0 && parseInt(verifiedCount) != 0) {
-            html = `All submitted addresses are verified`;
+            html = `All submitted address(es) are verified`;
             dbtntext = `I Want to Update`;
           }
           if (parseInt(unverifiedCount) != 0 && parseInt(verifiedCount) == 0) {
-            html = `All submitted addresses are rejected`;
+            html = `All submitted address(es) are rejected`;
           }
 
           if (html == "") {
             html = `Out of (${
               parseInt(verifiedCount) + parseInt(unverifiedCount)
-            }) submitted addresses`;
+            }) submitted address(es)`;
             if (verifiedButton == 1) {
               html += `, (${parseInt(
                 verifiedCount
@@ -567,8 +567,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
           html += `<div class='exceptions'><ul>`;
 
-          html += `<li><span>Verified Addresses: </span> ${verifiedCount}</li>`;
-          html += `<li><span>Rejected Addresses: </span> ${unverifiedCount}</li>`;
+          html += `<li><span>Verified Address(es): </span> ${verifiedCount}</li>`;
+          html += `<li><span>Rejected Address(es): </span> ${unverifiedCount}</li>`;
 
           // html += `<li class="total-recipients"><span>Total Recipients: </span> ${(parseInt(verifiedCount) + parseInt(unverifiedCount))}</li></ul>`;
 
@@ -583,12 +583,12 @@ document.addEventListener("DOMContentLoaded", function () {
             denyButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             confirmButtonText:
-              "Proceed With All Recipients (" +
+              "Proceed With All Recipient(s) (" +
               (parseInt(verifiedCount) + parseInt(unverifiedCount)) +
               ")",
             cancelButtonText: dbtntext,
             denyButtonText:
-              "Proceed With Verified Addresses (" +
+              "Proceed With Verified Address(es) (" +
               parseInt(verifiedCount) +
               ")",
             allowOutsideClick: false,
@@ -960,9 +960,9 @@ document.addEventListener("DOMContentLoaded", function () {
           let html = ``;
           let failedhtml = ``;
           failedhtml =
-            "<div class='sub-exceptions'><strong>Failed Recipients: </strong><ul>";
-          failedhtml += `<li><span>Failed Recipients: </span> ${failCount}</li>`;
-          failedhtml += `<li><span>Duplicate Recipients: </span> ${duplicateFailCount}</li>`;
+            "<div class='sub-exceptions'><strong>Failed Recipient(s): </strong><ul>";
+          failedhtml += `<li><span>Failed Recipient(s): </span> ${failCount}</li>`;
+          failedhtml += `<li><span>Duplicate Recipient(s): </span> ${duplicateFailCount}</li>`;
           failedhtml += "</ul></div>";
 
           if (
@@ -973,7 +973,7 @@ document.addEventListener("DOMContentLoaded", function () {
             failCount == 0 &&
             duplicateFailCount == 0
           ) {
-            html = `All (${totalCount}) recipients have been successfully added`;
+            html = `All (${totalCount}) recipient(s) have been successfully added`;
           } else if (
             parseInt(successCount) +
               parseInt(newCount) +
@@ -984,7 +984,7 @@ document.addEventListener("DOMContentLoaded", function () {
             newCount == 0 &&
             duplicatePassCount == 0
           ) {
-            html = `All (${totalCount}) recipients have been failed`;
+            html = `All (${totalCount}) recipient(s) have been failed`;
           } else if (
             parseInt(successCount) + parseInt(newCount) != totalCount &&
             failCount == 0 &&
@@ -992,11 +992,11 @@ document.addEventListener("DOMContentLoaded", function () {
             newCount == 0 &&
             duplicateCount != 0
           ) {
-            html = `All recipients might be duplicated`;
+            html = `All recipient(s) might be duplicated`;
           }
 
           if (html == "") {
-            html += `Out of (${totalCount}) recipients, `;
+            html += `Out of (${totalCount}) recipient(s), `;
             if (
               parseInt(successCount) +
                 parseInt(newCount) +
@@ -1024,18 +1024,18 @@ document.addEventListener("DOMContentLoaded", function () {
             successCount != 0
           ) {
             html +=
-              "<div class='exceptions'><div class='exceptions-wrapper'><div class='sub-exceptions'><strong>Passed Recipients: </strong><ul>";
+              "<div class='exceptions'><div class='exceptions-wrapper'><div class='sub-exceptions'><strong>Passed Recipient(s): </strong><ul>";
           }
 
           // if (successCount != 0) {
-          html += `<li><span>Added Recipients: </span> ${successCount}</li>`;
+          html += `<li><span>Added Recipient(s): </span> ${successCount}</li>`;
           // }
 
           // if (parseInt(newCount) !== 0) {
-          html += `<li><span>Additional Recipients: </span> ${newCount}</li>`;
+          html += `<li><span>Additional Recipient(s): </span> ${newCount}</li>`;
           // }
           // if (duplicateCount !== 0 && duplicatePassCount !== 0) {
-          html += `<li><span>Duplicate Recipients: </span> ${duplicatePassCount}</li>`;
+          html += `<li><span>Duplicate Recipient(s): </span> ${duplicatePassCount}</li>`;
           // }
 
           // html += `<li class="total-recipients"><span>Total Passed Recipients: </span> ${totalCount - (parseInt(duplicateFailCount) + parseInt(failCount))}</li>`;
@@ -1055,14 +1055,14 @@ document.addEventListener("DOMContentLoaded", function () {
             denyButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             confirmButtonText:
-              "Proceed With Duplicate Recipients (" +
+              "Proceed With Duplicate Recipient(s) (" +
               (parseInt(totalCount) -
                 parseInt(failCount) -
                 parseInt(duplicateFailCount)) +
               ")",
             cancelButtonText: "I Want to Update/Fix Errors",
             denyButtonText:
-              "Proceed Without Duplicate Recipients (" +
+              "Proceed Without Duplicate Recipient(s) (" +
               (parseInt(totalCount) -
                 parseInt(duplicateCount) -
                 parseInt(failCount)) +
