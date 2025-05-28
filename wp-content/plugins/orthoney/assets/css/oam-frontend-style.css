@@ -187,7 +187,7 @@
 }
 
 
-.order-process-block form .step#step1 .block-btn{
+.order-process-block form #step1 .block-btn{
       position: absolute;
     right: 0;
     bottom: 0;
@@ -4308,7 +4308,7 @@ body.woocommerce-account .woocommerce-change-password-wrapper textarea {
     font-size: 13px;
   }
   
-.order-process-block form .step#step1 .block-btn{
+.order-process-block form #step1 .block-btn{
       position: relative;
     right: 0;
     bottom: 0;
