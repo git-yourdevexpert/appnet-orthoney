@@ -33,6 +33,8 @@ global $wpdb;
         $affiliate_token = $wpdb->get_var($wpdb->prepare("
             SELECT token FROM {$table} WHERE user_id = %d
         ", $user_id));
+
+$admin_email     = get_option('admin_email');
 ?>
 
 <?php do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
@@ -51,7 +53,7 @@ global $wpdb;
 
 Welcome aboard!  
 <?php echo get_bloginfo('name') ?><br>
-Support Team [<a href="mailto:<?php echo esc_attr( $admin_email ); ?>"><?php echo esc_html( $admin_email ); ?></a>]
+Support Team <a href="mailto:<?php echo esc_attr( $admin_email ); ?>"><?php echo esc_html( $admin_email ); ?></a>
 </p>
 
 
