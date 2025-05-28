@@ -27,6 +27,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
         foreach ($all_users as $user) {
             if (count($user->roles) === 1 && in_array('customer', $user->roles)) {
+                if($user->user_email != ''){
                 $data[] = [
                     'id' => $user->ID,
                     'name' => esc_html($user->display_name ?: $user->first_name .' '.$user->first_name),
@@ -35,6 +36,7 @@ class OAM_ADMINISTRATOR_AJAX {
                                     <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
                                 </button>'
                 ];
+            }
             }
         }
 
