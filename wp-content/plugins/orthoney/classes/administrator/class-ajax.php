@@ -161,7 +161,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $meta   = $user_meta_cache[$user_id];
             $status = $user_status_map[$user_id]['label'];
 
-            $admin_url = admin_url().'/admin.php?page=yith_wcaf_panel&affiliate_id='.$user->ID.'&tab=affiliates';
+            $admin_url = admin_url().'/admin.php?page=yith_wcaf_panel&affiliate_id='.$user_id.'&tab=affiliates';
 
             $data[] = [
                 'code'         => esc_html($meta['code']),
