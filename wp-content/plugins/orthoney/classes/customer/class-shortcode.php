@@ -95,36 +95,41 @@ class OAM_Shortcode
         $user_id = get_current_user_id();
           
        $query = $wpdb->prepare("
-        SELECT DISTINCT
-            rec.affiliate_token AS affiliate_code,
+    SELECT 
+        orders.id AS order_id,
+        orders.date_created_gmt AS order_date,
+        ba.first_name AS billing_first_name,
+        ba.last_name AS billing_last_name,
+        (
+            SELECT rec1.affiliate_token
+            FROM {$wpdb->prefix}oh_recipient_order AS rec1
+            WHERE rec1.order_id = rel.order_id
+            ORDER BY rec1.id ASC
+            LIMIT 1
+        ) AS affiliate_token,
+        IFNULL(qty_table.total_quantity, 0) AS total_quantity
+    FROM {$wpdb->prefix}wc_orders AS orders
+    INNER JOIN {$wpdb->prefix}oh_wc_order_relation AS rel 
+        ON rel.wc_order_id = orders.id
+    LEFT JOIN {$wpdb->prefix}wc_order_addresses AS ba 
+        ON ba.order_id = orders.id AND ba.address_type = 'billing'
+    LEFT JOIN (
+        SELECT 
             orders.id AS order_id,
-            orders.date_created_gmt AS order_date,
-            ba.first_name AS billing_first_name,
-            ba.last_name AS billing_last_name,
-            IFNULL(qty_table.total_quantity, 0) AS total_quantity
+            SUM(CAST(oim.meta_value AS UNSIGNED)) AS total_quantity
         FROM {$wpdb->prefix}wc_orders AS orders
-        INNER JOIN {$wpdb->prefix}oh_wc_order_relation AS rel 
-            ON rel.wc_order_id = orders.id
-        LEFT JOIN {$wpdb->prefix}oh_recipient_order AS rec 
-            ON rec.order_id = rel.order_id
-        LEFT JOIN {$wpdb->prefix}wc_order_addresses AS ba 
-            ON ba.order_id = orders.id AND ba.address_type = 'billing'
-        LEFT JOIN (
-            SELECT 
-                orders.id AS order_id,
-                SUM(CAST(oim.meta_value AS UNSIGNED)) AS total_quantity
-            FROM {$wpdb->prefix}wc_orders AS orders
-            INNER JOIN {$wpdb->prefix}woocommerce_order_items AS oi 
-                ON oi.order_id = orders.id AND oi.order_item_type = 'line_item'
-            INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS oim 
-                ON oim.order_item_id = oi.order_item_id AND oim.meta_key = '_qty'
-            GROUP BY orders.id
-        ) AS qty_table ON qty_table.order_id = orders.id
-        WHERE orders.customer_id = %d
-        AND orders.status NOT IN ('wc-cancelled', 'wc-failed', 'wc-on-hold', 'wc-refunded')
-        ORDER BY orders.date_created_gmt DESC
-        LIMIT %d
-    ", $user_id, $limit);
+        INNER JOIN {$wpdb->prefix}woocommerce_order_items AS oi 
+            ON oi.order_id = orders.id AND oi.order_item_type = 'line_item'
+        INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS oim 
+            ON oim.order_item_id = oi.order_item_id AND oim.meta_key = '_qty'
+        GROUP BY orders.id
+    ) AS qty_table ON qty_table.order_id = orders.id
+    WHERE orders.customer_id = %d
+    AND orders.status NOT IN ('wc-cancelled', 'wc-failed', 'wc-on-hold', 'wc-refunded')
+    GROUP BY orders.id
+    ORDER BY orders.date_created_gmt DESC
+    LIMIT %d
+", $user_id, $limit);
 
         $row_data = $wpdb->get_results($query);
           
