@@ -1039,31 +1039,29 @@ Bulk Deleted Recipient in table Js End
 /*
 Deleted Recipient in table Js Start
  */
+
 document.addEventListener("click", function (event) {
   if (event.target.classList.contains("deleteRecipient")) {
     event.preventDefault();
-    popup_text = "You are removing ";
+
+    let popup_text = "You are removing ";
+    let confirm_button_text = "Yes, remove the recipient";
 
     const duplicateCSVDataCheck = event.target.closest("#duplicateCSVData");
     if (duplicateCSVDataCheck) {
       popup_text = "You are removing a duplicate of ";
+      confirm_button_text = "Yes, remove the duplicate";
     }
 
-    event.preventDefault();
     let method = "process";
-    const customer_dashboard_recipient_list = document.querySelector(
-      "#customer-dashboard-recipient-list"
-    );
+    const customer_dashboard_recipient_list = document.querySelector("#customer-dashboard-recipient-list");
+    let group_id = 0;
     if (customer_dashboard_recipient_list) {
       method = "group";
       group_id = customer_dashboard_recipient_list.getAttribute("data-groupid");
     }
 
-    let groupId = 0;
-    let count = 0;
-    let groupHeader = "";
     const target = event.target;
-
     const recipientTr = target.closest("tr");
     const recipientID = recipientTr?.getAttribute("data-id");
     const recipientname = target.getAttribute("data-recipientname");
@@ -1084,7 +1082,7 @@ document.addEventListener("click", function (event) {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, remove the recipient",
+      confirmButtonText: confirm_button_text,
       cancelButtonText: "Cancel",
       reverseButtons: true,
       allowOutsideClick: false,
@@ -1117,6 +1115,7 @@ document.addEventListener("click", function (event) {
                 window.location.reload();
               }, 1500);
 
+              // Optionally, you can remove the row directly:
               // recipientTr.remove();
             } else {
               Swal.fire({
