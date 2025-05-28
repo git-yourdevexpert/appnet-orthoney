@@ -119,8 +119,8 @@ class OAM_ADMINISTRATOR_AJAX {
 
             $user_obj = get_userdata($user_id);
 
-            $city  = get_user_meta($user_id, '_yith_wcaf_city', true) ?: get_user_meta($user_id, 'billing_city', true) ?: '';
-            $state = get_user_meta($user_id, '_yith_wcaf_state', true) ?: get_user_meta($user_id, 'billing_state', true) ?: '';
+               $city  = get_user_meta($user_id, '_yith_wcaf_city', true) ?: '';
+            $state = get_user_meta($user_id, '_yith_wcaf_state', true) ?: '';
 
             $user_meta_cache[$user_id] = [
                 'organization' => get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true),
