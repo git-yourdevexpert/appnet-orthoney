@@ -507,14 +507,14 @@ class OAM_WC_Customizer {
         $order = wc_get_order($order_id);
     
         if (!$order) return;
-    
+        $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
         ?>
         <div class="order-process-wrapp">
             <ul class="woocommerce-order-overview woocommerce-thankyou-order-details order_details">
     
                 <li class="woocommerce-order-overview__order order">
                     <label><?php esc_html_e( 'Order number:', 'woocommerce' ); ?></label>
-                    <strong><?php echo $order->get_order_number(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
+                    <strong><?php echo $custom_order_id; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
                 </li>
     
                 <li class="woocommerce-order-overview__date date">
