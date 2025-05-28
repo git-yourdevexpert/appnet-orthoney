@@ -2889,7 +2889,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
   text-align: left;
 }
 
-.order-process-block .w-btn.us-btn-style_1,
+
 .dashboard-block .w-btn.us-btn-style_1 {
   font-size: 12px;
   padding: 12px 30px;
@@ -2903,11 +2903,18 @@ html body .w-btn.outline-btn.round-btn:hover i {
   cursor: pointer;
   background-color: var(--color-header-middle-text-hover);
 }
-.order-process-block .w-btn.us-btn-style_1:hover,
+
+.order-process-block .w-btn.us-btn-style_5{
+    background-color: var(--color-header-middle-text-hover);
+}
+
+
+.order-process-block .w-btn.us-btn-style_5:hover,
 .dashboard-block .w-btn.us-btn-style_1:hover {
   background-color: var(--color-content-secondary);
   color: #fff !important;
 }
+
 
 .order-block-wrap {
   position: relative;
