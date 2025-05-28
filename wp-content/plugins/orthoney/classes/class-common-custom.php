@@ -155,6 +155,7 @@ class OAM_COMMON_Custom {
         }
     }
     
+       
     public static function get_product_custom_price($product_id, $affiliate_id) {
         global $wpdb; // Add this line to access $wpdb
 
@@ -162,25 +163,25 @@ class OAM_COMMON_Custom {
         $price = 14;
 
         if($affiliate_id !=0 ){
+            // Get the affiliate ID from yith_wcaf_affiliates table
+            $affiliate_id_result = $wpdb->get_var( $wpdb->prepare(
+                "SELECT ID FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id = %d",
+                $affiliate_id
+            ) );
 
-        
-        // Get the affiliate ID from yith_wcaf_affiliates table
-        $affiliate_id_result = $wpdb->get_var( $wpdb->prepare(
-            "SELECT ID FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id = %d",
-            $affiliate_id
-        ) );
-
-        if ( $affiliate_id_result ) {
-            // Use the provided affiliate ID to get user-specific price
-            $custom_price = get_user_meta($affiliate_id, 'DJarPrice', true);
-            if ( $custom_price !== '' ) {
-                $price = $custom_price;
+            if ( $affiliate_id_result ) {
+                // Use the provided affiliate ID to get user-specific price
+                $custom_price = get_user_meta($affiliate_id, 'DJarPrice', true);
+                if ( $custom_price !== '' ) {
+                    $price = $custom_price;
+                }
+            } else {
+                $price = $product->get_price();
             }
-        } else {
-            $price = $product->get_price();
-        }
 
-    }
+        }else{
+             $price = $product->get_price();
+        }
         return $price;
     }
 

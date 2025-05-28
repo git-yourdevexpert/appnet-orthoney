@@ -485,7 +485,7 @@ class OAM_Ajax{
         if (class_exists('WC_Cart')) {
             WC()->cart->empty_cart(); // First, clear the cart
         
-            $custom_price = OAM_COMMON_Custom::get_product_custom_price($product_id, $affiliate_id);
+            $custom_price = OAM_COMMON_Custom::get_product_custom_price((int)$product_id, (int)$affiliate_id);
 
             $custom_data = array(
                 'custom_data' => array(
@@ -1419,7 +1419,7 @@ class OAM_Ajax{
             
             $product_id = OAM_COMMON_Custom::get_product_id();
 
-            $custom_price = OAM_COMMON_Custom::get_product_custom_price($product_id, $affiliate_id);
+            $custom_price = OAM_COMMON_Custom::get_product_custom_price((int)$product_id, (int)$affiliate_id);
 
             $custom_data = array(
                 'custom_data' => array(
