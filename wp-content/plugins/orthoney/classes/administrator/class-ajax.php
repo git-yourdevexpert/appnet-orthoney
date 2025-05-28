@@ -29,7 +29,7 @@ class OAM_ADMINISTRATOR_AJAX {
             if (count($user->roles) === 1 && in_array('customer', $user->roles)) {
                 $data[] = [
                     'id' => $user->ID,
-                    'name' => esc_html($user->display_name),
+                    'name' => esc_html($user->display_name ?: $user->first_name .' '.$user->first_name),
                     'email' => esc_html($user->user_email),
                     'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
                                     <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
