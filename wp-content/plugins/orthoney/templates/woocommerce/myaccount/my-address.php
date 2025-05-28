@@ -64,6 +64,8 @@ $col    = 1;
 	<?php echo apply_filters( 'woocommerce_my_account_my_address_description', esc_html__( 'This Billing Address will be filled in automatically on the checkout page, but you can change it before you place the order.', 'woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 </p>
 <?php
+		}else{
+			echo "<p><br><br></p>";
 		}
 		?>
 		<header class="woocommerce-Address-title title">
