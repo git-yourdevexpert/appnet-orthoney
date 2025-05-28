@@ -41,7 +41,7 @@ if ( ! $user ) {
 <p>
 	<strong>Organization Details:</strong><br/><br/>
 	
-	<strong>OrganizationName: </strong> <span><?php echo get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true) ?></span>
+	<strong>Organization Name: </strong> <span><?php echo get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true) ?></span>
 	
 	<br/>
 	
