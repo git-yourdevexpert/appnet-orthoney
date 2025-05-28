@@ -183,6 +183,14 @@
 .order-process-block .step {
   margin-top: 0;
   display: none;
+  position: relative;
+}
+
+
+.order-process-block form #step1 .block-btn{
+      position: absolute;
+    right: 0;
+    bottom: 0;
 }
 
 .order-block-wrap .animate-bee {
@@ -4299,6 +4307,12 @@ body.woocommerce-account .woocommerce-change-password-wrapper textarea {
   .order-process-block .tab-selections .step-nav-item {
     font-size: 13px;
   }
+  
+.order-process-block form #step1 .block-btn{
+      position: relative;
+    right: 0;
+    bottom: 0;
+}
 }
 
 @media (max-width: 1200px) {
