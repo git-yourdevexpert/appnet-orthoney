@@ -78,9 +78,24 @@
   border: 0 !important;
 }
 
+.order-process-block .w-btn.us-btn-style_5{
+    background-color: var(--color-header-middle-text-hover);
+}
+
+
 .order-process-block .w-btn:hover {
   background: var(--color-content-link) !important;
 }
+
+
+
+.order-process-block .w-btn.us-btn-style_5:hover {
+  background-color: var(--color-content-secondary) !important;
+}
+
+
+
+
 
 .order-process-block .w-btn.outline-btn {
   background: transparent;
@@ -2904,12 +2919,7 @@ html body .w-btn.outline-btn.round-btn:hover i {
   background-color: var(--color-header-middle-text-hover);
 }
 
-.order-process-block .w-btn.us-btn-style_5{
-    background-color: var(--color-header-middle-text-hover);
-}
 
-
-.order-process-block .w-btn.us-btn-style_5:hover,
 .dashboard-block .w-btn.us-btn-style_1:hover {
   background-color: var(--color-content-secondary);
   color: #fff !important;
