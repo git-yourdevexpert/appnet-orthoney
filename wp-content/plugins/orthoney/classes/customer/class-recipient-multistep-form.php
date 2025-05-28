@@ -643,6 +643,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     ?>
                     <div class="button-block">
                     <button data-href="<?php echo CUSTOMER_DASHBOARD_LINK; ?>" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>
+                    <div>
+                        <button class="editRecipient w-btn us-btn-style_5" data-popup="#recipient-manage-popup">Add New Recipient</button>
                         <?php
                         if ($result['data']['totalCount'] != 0) { 
                         ?>
@@ -657,6 +659,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             Verify Recipient Addresses
                         </button>
                         <?php  } ?>
+                    </div>
                     </div>
                     <?php 
                     
