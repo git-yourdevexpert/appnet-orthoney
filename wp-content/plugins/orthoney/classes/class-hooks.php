@@ -13,7 +13,67 @@ class OAM_Hooks {
         add_action('init', array($this,'grant_switch_users_capability'));
         add_action('current_screen', array($this, 'add_dynamic_menu_items'));
         add_shortcode( 'confirm_link', array($this,'orthoney_confirm_link_shortcode') );
+
+        add_filter('woocommerce_email', array($this,'register_custom_email_placeholders_with_user_id'));
+        add_filter('woocommerce_email_enabled_customer_new_account', array($this,'disable_new_account_email_for_affiliate'), 10, 2);
     }
+
+ /**
+     * Disable "New Account" email for users with the 'yith_affiliate' role
+     */
+    public function disable_new_account_email_for_affiliate($enabled, $user) {
+        if (!$user || is_wp_error($user)) {
+            return $enabled;
+        }
+
+        if (is_numeric($user)) {
+            $user = get_user_by('id', $user);
+        }
+
+        if ($user instanceof WP_User && in_array('yith_affiliate', (array) $user->roles)) {
+            return false; // Disable email
+        }
+
+        return $enabled;
+    }
+
+    /**
+     * Register custom email placeholders in WooCommerce emails
+     */
+    public function register_custom_email_placeholders_with_user_id($email) {
+
+        // Replace placeholders in subject and heading
+        add_filter('woocommerce_email_format_string', function ($string) use ($email) {
+            $replacements = $this->get_custom_placeholders($email);
+            return strtr($string, $replacements);
+        }, 10, 1);
+
+        // Replace placeholders in email body content
+        add_filter('woocommerce_mail_content', function ($content) use ($email) {
+            $replacements = $this->get_custom_placeholders($email);
+            return strtr($content, $replacements);
+        }, 10, 1);
+
+        return $email;
+    }
+
+    /**
+     * Helper function to define placeholder replacements
+     */
+    public function get_custom_placeholders($email) {
+        $admin_email     = get_option('admin_email');
+        $support_email   = get_option('admin_email'); // Modify if separate support email exists
+        $site_title      = get_bloginfo('name');
+        $affiliate_token = 'N/A'; // You can modify this to pull from actual user meta if available
+
+        return [
+            '{admin_email}'     => $admin_email,
+            '{support_email}'   => $support_email,
+            '{site_title}'      => $site_title,
+            '{affiliate_token}' => $affiliate_token,
+        ];
+    }
+
 
     public function orthoney_confirm_link_shortcode( $atts ) {
         ob_start();
