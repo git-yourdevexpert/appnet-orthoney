@@ -977,7 +977,10 @@ class OAM_Ajax{
                 if ($success === true) {
                     $update_result = $wpdb->update(
                         $order_process_recipient_table,
-                        ['address_verified' => 1],
+                        [
+                            'address_verified' => 1,
+                            'reasons' => '',
+                        ],
                         ['id' => $pid]
                     );
 
