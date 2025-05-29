@@ -287,10 +287,7 @@ class OAM_Helper{
         // Process each order
         $filtered_orders = array_map(function($order) use ($wpdb) {
             $order['status'] = '';
-            $order['date'] = date_i18n(
-                OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format,
-                strtotime($order['date'])
-            );
+            
 
             $recipient_order_id = esc_attr($order['jar_no']);
             $order_no = esc_attr($order['order_no']);
@@ -305,25 +302,43 @@ class OAM_Helper{
             ));
 
             $resume_url = '';
-           
-            if ($wc_order_id && ($wc_order = wc_get_order($wc_order_id))) {
-                // echo $wc_order_id;
-                // echo "<br>";
-                 $order_date = $wc_order->get_date_created();
-                $editable = OAM_COMMON_Custom::check_order_editable($order_date);
+            $order_created_date = $order['date'];
 
-                $resume_url = '<a class="far fa-eye" href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id}?recipient-order={$recipient_order_id}") . '"></a>';
-                $editLink = '';
-                if ($editable) {
-                    $editLink = '<button class="far fa-edit editRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>';
-                }
+            if (is_string($order_created_date)) {
+                [$date_part, $time_part] = explode(' ', $order_created_date);
+                [$year, $month, $day] = explode('-', $date_part);
+                [$hour, $minute, $second] = explode(':', $time_part);
+                $formatted_string = sprintf('%04d-%02d-%02d %02d:%02d:%02d', $year, $month, $day, $hour, $minute, $second);
+                $order_created_date = DateTime::createFromFormat('Y-m-d H:i:s', $formatted_string);
+                
+
             }
+            
+            $resume_url = '';
+            $editLink = '';
+            $deleteLink = '';
+            $editable = false;
+
+            $editable = OAM_COMMON_Custom::check_order_editable($order_created_date);
+            
+               
+                // Pass WC_DateTime object to the checker
+                // $order['date'] = $order_timestamp = $order_date->getTimestamp();
+
+                if ($editable === true) {
+                    $editLink = '<button class="far fa-edit editRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>';
+                    $deleteLink = '<button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>';
+                }
+            
 
             $order['jar_tracking'] = '<a href="#view-order-tracking-popup" data-lity data-tippy="View Tracking">Tracking Numbers</a>';
 
-            $order['action'] = $resume_url . $editLink . '
-                <button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>';
+            $order['action'] = '<a class="far fa-eye" href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id}?recipient-order={$recipient_order_id}") . '"></a>' . $editLink . $deleteLink;
 
+            $order['date'] = date_i18n(
+                OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format,
+                strtotime($order['date'])
+            );
             return $order;
         }, $jarsorder);
 

@@ -72,22 +72,25 @@ class OAM_COMMON_Custom {
 
     public static function check_order_editable($order_date) {
         $editable = false;
-        if ($order_date instanceof WC_DateTime) {
-            $order_timestamp = $order_date->getTimestamp();
-        
-            $start_date = get_field('free_shipping_start_date', 'option'); 
-            $end_date   = get_field('free_shipping_end_date', 'option');
-        
-            // Validate date strings
-            $start_timestamp = strtotime($start_date);
-            $end_timestamp   = strtotime($end_date);
-        
-            if ($start_timestamp !== false && $end_timestamp !== false) {
-                if ($order_timestamp >= $start_timestamp && $order_timestamp <= $end_timestamp) {
-                    $editable = true;
-                }
-            }
-        }
+          // Get current WordPress timestamp and current year
+        $current_time  = current_time('timestamp');
+        $current_year  = date('Y', $current_time);
+
+        // Get order timestamp and year
+        $order_timestamp = $order_date->getTimestamp();
+        $order_year      = date('Y', $order_timestamp);
+
+    
+        // Get fulfilment window dates from ACF options
+        $start_date = get_field('fulfilment_start_date', 'option'); 
+        $end_date   = get_field('fulfilment_end_date', 'option');
+        $start_timestamp = strtotime($start_date);
+         if ($order_year != $current_year) {
+            return false;
+         }else{
+            return true;
+         }
+
         return $editable;
         
     }
