@@ -71,7 +71,7 @@ if ($first_segment == 'dashboard'){
     <thead>
         <tr>
             <th>Select</th>
-            <th>Jar No</th>
+            <th>Recipient No</th>
             <th>Order No</th>
             <th>Date</th>
             <th><?php echo ($first_segment == 'dashboard') ? 'Billing Name': 'Customer Name'  ?></th>

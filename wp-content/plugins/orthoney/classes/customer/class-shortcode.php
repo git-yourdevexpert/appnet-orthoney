@@ -170,7 +170,7 @@ class OAM_Shortcode
 
                     ?>
                         <tr>
-                            <td><?php echo esc_html($order_id); ?></td>
+                            <td><?php echo esc_html(OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID')); ?></td>
                             <td><?php echo esc_html($order_date); ?></td>
                             <td><?php echo esc_html($order->billing_first_name . ' ' . $order->billing_last_name ); ?></td>
                             <td><?php echo esc_html($affiliate_code); ?></td>

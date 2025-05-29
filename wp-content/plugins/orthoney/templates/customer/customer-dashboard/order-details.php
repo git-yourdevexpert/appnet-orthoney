@@ -199,7 +199,7 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
         <table>
             <thead>
                 <tr>
-                    <th>Jar No</th>
+                    <th>Recipient No</th>
                     <th>Recipient Name</th>
                     <th>Company Name</th>
                     <th>Address</th>
