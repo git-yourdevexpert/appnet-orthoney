@@ -88,7 +88,15 @@ class OAM_COMMON_Custom {
          if ($order_year != $current_year) {
             return false;
          }else{
-            return true;
+             if ($current_time <= $start_timestamp) {
+                return true;
+             }else{
+                // Allow editing within 4 hours of order time
+                $editable_until = $order_timestamp + (4 * HOUR_IN_SECONDS);
+                if ($current_time <= $editable_until) {
+                    return true;
+                }
+             }
          }
 
         return $editable;
