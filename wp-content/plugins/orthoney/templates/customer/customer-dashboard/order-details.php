@@ -12,6 +12,17 @@ $order = wc_get_order($order_id);
 if (!$order) return;
 $order_date = $order->get_date_created();
 
+
+if (is_string($order_date)) {
+    [$date_part, $time_part] = explode(' ', $order_date);
+    [$year, $month, $day] = explode('-', $date_part);
+    [$hour, $minute, $second] = explode(':', $time_part);
+    $formatted_string = sprintf('%04d-%02d-%02d %02d:%02d:%02d', $year, $month, $day, $hour, $minute, $second);
+    $order_date = DateTime::createFromFormat('Y-m-d H:i:s', $formatted_string);
+    
+
+}
+
 $editable = OAM_COMMON_Custom::check_order_editable($order_date);
 
 $order_items = $order->get_items();
