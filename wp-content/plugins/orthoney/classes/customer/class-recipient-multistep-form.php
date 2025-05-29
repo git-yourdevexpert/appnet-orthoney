@@ -635,7 +635,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         ?>
                         <div class="heading-title">
                             <div><h5 class="table-title">Added Recipient(s) Manually</h5></div>
-                            <div><button class="editRecipient btn-underline" data-popup="#recipient-manage-popup">Add New Recipient</button></div>
+                            <div><button class="editRecipient btn-underline" style="display:none" data-popup="#recipient-manage-popup">Add New Recipient</button></div>
                         </div>
                         <?php 
                     }
