@@ -117,11 +117,34 @@ class OAM_ADMINISTRATOR_AJAX {
 
             $user_obj = get_userdata($user_id);
 
-            $city  = get_user_meta($user_id, '_yith_wcaf_city', true) ?: '';
-            $state = get_user_meta($user_id, '_yith_wcaf_state', true) ?: '';
+            $city = get_user_meta($user_id, '_yith_wcaf_city', true);
+            if (!$city) {
+                $city = get_user_meta($user_id, 'billing_city', true);
+                if (!$city) {
+                    $city = get_user_meta($user_id, 'shipping_city', true);
+                }
+            }
+
+            // Retrieve state with fallback: _yith_wcaf_state → billing_state → shipping_state
+            $state = get_user_meta($user_id, '_yith_wcaf_state', true);
+            if (!$state) {
+                $state = get_user_meta($user_id, 'billing_state', true);
+                if (!$state) {
+                    $state = get_user_meta($user_id, 'shipping_state', true);
+                }
+            }
+
+            // Ensure empty strings if no values found
+            $city  = $city ?: '';
+            $state = $state ?: '';
+
+             $organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+            if (!$organization) {
+                $organization = get_user_meta($user_id, 'first_name', true). ' ' .get_user_meta($user_id, 'last_name', true);
+            }
 
             $user_meta_cache[$user_id] = [
-                'organization' => get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true),
+                'organization' => $organization,
                 'city'         => $city,
                 'state'        => $state,
                 'code'         => $row->token,
