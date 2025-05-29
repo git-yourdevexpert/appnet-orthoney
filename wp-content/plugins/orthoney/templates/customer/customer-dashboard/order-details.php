@@ -10,17 +10,26 @@ $order = wc_get_order($order_id);
 
 
 if (!$order) return;
-$order_date = $order->get_date_created();
+$order_date = $order->get_date_created(); // May be WC_DateTime or null
 
 
+// If it's a WC_DateTime object, convert to native DateTime
+if (is_object($order_date) && method_exists($order_date, 'date')) {
+    $order_date = new DateTime($order_date->date('Y-m-d H:i:s'));
+}
+
+// If it's still a string (fallback case), parse it manually
 if (is_string($order_date)) {
+
     [$date_part, $time_part] = explode(' ', $order_date);
     [$year, $month, $day] = explode('-', $date_part);
     [$hour, $minute, $second] = explode(':', $time_part);
-    $formatted_string = sprintf('%04d-%02d-%02d %02d:%02d:%02d', $year, $month, $day, $hour, $minute, $second);
-    $order_date = DateTime::createFromFormat('Y-m-d H:i:s', $formatted_string);
-    
 
+    $formatted_string = sprintf('%04d-%02d-%02d %02d:%02d:%02d',
+        $year, $month, $day, $hour, $minute, $second
+    );
+
+    $order_date = DateTime::createFromFormat('Y-m-d H:i:s', $formatted_string);
 }
 
 $editable = OAM_COMMON_Custom::check_order_editable($order_date);
@@ -165,7 +174,7 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
                 <strong>State: </strong><?php echo esc_html($full_state); ?><br>
                 <strong>Zip Code: </strong><?php echo esc_html($order->get_billing_postcode()); ?><br>
                 <?php 
-                if ($editable) {
+                 if($editable === true){
                     echo '<button class="w-btn us-btn-style_1 editBillingAddress" data-order="'.$order_id.'" data-popup="#edit-billing-address-popup">Edit Billing address </button>';
                 }
                 ?>
