@@ -86,7 +86,7 @@
   display: none;
 }
 
-#customer-jar-orders-table .deleteRecipient,
+/* #customer-jar-orders-table .deleteRecipient,
 #recipient-order-data .deleteRecipient {
   display: none;
 }
@@ -94,4 +94,4 @@
 #customer-jar-orders-table .editRecipientOrder,
 #recipient-order-data .editRecipientOrder {
   display: none;
-}
+} */
