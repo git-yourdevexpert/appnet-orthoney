@@ -46,7 +46,7 @@ if ($redirect_back_user_id) {
                     <div class="cl-right">
                         <div class="recipient-lists-block custom-table">
                             <div class="row-block">
-                                <h4>Manage Sales Representative</h4>
+                                <h4>Manage Sales Representatives</h4>
                                 <div class="see-all">
                                     <a class="w-btn us-btn-style_1" href="<?php echo esc_url(OAM_Helper::$administrator_dashboard_link.'sales-representatives/'); ?>">See All</a> 
                                 </div>
@@ -58,7 +58,7 @@ if ($redirect_back_user_id) {
                     <div class="cl-left">
                         <div class="recipient-lists-block custom-table">
                             <div class="row-block">
-                                <h4>Manage Customer</h4>
+                                <h4>Manage Customers</h4>
                                 <div class="see-all">
                                     <a class="w-btn us-btn-style_1" href="<?php echo esc_url(OAM_Helper::$administrator_dashboard_link.'customers/'); ?>">See All</a> 
                                 </div>

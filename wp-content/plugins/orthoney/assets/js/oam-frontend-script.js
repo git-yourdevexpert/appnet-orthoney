@@ -2043,7 +2043,6 @@ jQuery(document).ready(function ($) {
   });
 });
 
-
 jQuery(document).ready(function ($) {
   const table = new DataTable("#admin-organizations-table", {
     pageLength: 50,
