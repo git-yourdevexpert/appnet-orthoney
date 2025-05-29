@@ -28,13 +28,16 @@ class OAM_ADMINISTRATOR_AJAX {
         foreach ($all_users as $user) {
             if (count($user->roles) === 1 && in_array('customer', $user->roles)) {
                 if($user->user_email != ''){
+
+                    
+                $admin_url = admin_url("user-edit.php?user_id={$user->ID}&wp_http_referer=%2Fwp-admin%2Fusers.php");
                 $data[] = [
                     'id' => $user->ID,
                     'name' => esc_html($user->display_name ?: $user->first_name .' '.$user->first_name),
                     'email' => esc_html($user->user_email),
                     'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
                                     <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
-                                </button>'
+                                </button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile</a>'
                 ];
             }
             }
@@ -53,14 +56,17 @@ class OAM_ADMINISTRATOR_AJAX {
 
         foreach ($all_users as $user) {
             if (in_array('sales_representative', $user->roles)) {
-                $data[] = [
-                    'id' => $user->ID,
-                    'name' => esc_html($user->display_name),
-                    'email' => esc_html($user->user_email),
-                    'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
-                                    <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Sales Representative
-                                </button>'
-                ];
+                if($user->user_email != ''){
+                    $admin_url = admin_url("user-edit.php?user_id={$user->ID}&wp_http_referer=%2Fwp-admin%2Fusers.php");
+                    $data[] = [
+                        'id' => $user->ID,
+                        'name' => esc_html($user->display_name),
+                        'email' => esc_html($user->user_email),
+                        'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
+                                        <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Sales Representative
+                                    </button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Sales Representative Profile</a>'
+                    ];
+                }
             }
         }
 
@@ -68,7 +74,7 @@ class OAM_ADMINISTRATOR_AJAX {
             'data' => $data
         ]);
     }
-
+    
     public function orthoney_admin_get_organizations_data_handler() {
         global $wpdb;
 
@@ -138,11 +144,10 @@ class OAM_ADMINISTRATOR_AJAX {
             $city  = $city ?: '';
             $state = $state ?: '';
 
-             $organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+            $organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
             if (!$organization) {
                 $organization = get_user_meta($user_id, 'first_name', true). ' ' .get_user_meta($user_id, 'last_name', true);
             }
-
             $user_meta_cache[$user_id] = [
                 'organization' => $organization,
                 'city'         => $city,
@@ -214,7 +219,7 @@ class OAM_ADMINISTRATOR_AJAX {
                     'state'        => esc_html($meta['state']),
                     'email'        => esc_html($meta['email']),
                     'status'       => esc_html($status),
-                    'login'        => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As An Organization</button><a href="' . $admin_url . '" class="icon-txt-btn" data-user-id="' . esc_attr($user_id) . '"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Organizations Profile</a>'
+                    'login'        => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As An Organization</button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Organizations Profile</a>'
                     ];
             }
         }
@@ -226,6 +231,7 @@ class OAM_ADMINISTRATOR_AJAX {
             'data'            => $data,
         ]);
     }
+
 
 }
 
