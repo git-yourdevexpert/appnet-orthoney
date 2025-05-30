@@ -3647,7 +3647,7 @@ class OAM_Ajax{
             if (!empty($failed_rows)) {
                 // Sanitize and implode for SQL IN clause
                 $pid_placeholders = implode(',', array_fill(0, count($failed_rows), '%d'));
-                $where .= " AND step = 5 AND order_id != 0 AND order_type = 'multi-recipient-order' AND id IN ($pid_placeholders)";
+                $where .= " AND step = 5 AND order_id != 0  AND id IN ($pid_placeholders)";
                 $params = array_merge($params, $failed_rows);
             } else {
                 // No matching recipients, return empty results
