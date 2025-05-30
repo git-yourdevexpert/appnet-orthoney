@@ -3612,53 +3612,10 @@ class OAM_Ajax{
         ]);
     }
 
-    public function orthoney_incomplete_order_process_ajax_handler() {
+   public function orthoney_incomplete_order_process_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
-    
-        $user_id = get_current_user_id();
-        $failed = isset($_POST['failed']) ? intval($_POST['failed']) : 0;
-    
-        $draw = intval($_POST['draw']);
-        $start = intval($_POST['start']);
-        $length = intval($_POST['length']);
-        $search_value = sanitize_text_field($_POST['search']['value']);
-    
-        $order_column_index = $_POST['order'][0]['column'];
-        $order_column = sanitize_sql_orderby($_POST['columns'][$order_column_index]['data']);
-        $order_dir = in_array(strtoupper($_POST['order'][0]['dir']), ['ASC', 'DESC']) ? $_POST['order'][0]['dir'] : 'ASC';
-    
-        $order_process_table = OAM_Helper::$order_process_table;
-        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
-    
-        $where = "WHERE user_id = %d";
-        $params = [$user_id];
-    
-        
-        if ($failed == 1) {
-            // Get failed recipient pids
-            $failed_rows = $wpdb->get_col(
-                $wpdb->prepare(
-                    "SELECT DISTINCT pid FROM $order_process_recipient_table WHERE verified = %d AND user_id = %d",
-                    0, $user_id
-                )
-            );
-            
-            if (!empty($failed_rows)) {
-                // Sanitize and implode for SQL IN clause
-                $pid_placeholders = implode(',', array_fill(0, count($failed_rows), '%d'));
-                $where .= " AND step = 5 AND order_id != 0  AND id IN ($pid_placeholders)";
-                $params = array_merge($params, $failed_rows);
-            } else {
-                // No matching recipients, return empty results
-                $total_items = 0;
-                $items = [];
-                return;
-            }
-        } else {
-            $where .= " AND order_id = 0";
-        }
-        
+
         $step_labels = [
             0 => 'Step 1: Select an Organization',
             1 => 'Step 2: Order Method',
@@ -3667,14 +3624,57 @@ class OAM_Ajax{
             4 => 'Step 5: Verify Addresses',
             5 => 'Step 6: Pending Checkout',
         ];
-                // Add search filter
-            if (!empty($search_value)) {
+
+        $user_id = get_current_user_id();
+        $failed = isset($_POST['failed']) ? intval($_POST['failed']) : 0;
+
+        $draw = intval($_POST['draw']);
+        $start = intval($_POST['start']);
+        $length = intval($_POST['length']);
+        $search_value = sanitize_text_field($_POST['search']['value']);
+
+        $order_column_index = $_POST['order'][0]['column'];
+        $order_column = sanitize_sql_orderby($_POST['columns'][$order_column_index]['data']);
+        $order_dir = in_array(strtoupper($_POST['order'][0]['dir']), ['ASC', 'DESC']) ? $_POST['order'][0]['dir'] : 'ASC';
+
+        $order_process_table = OAM_Helper::$order_process_table;
+        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
+
+        $where = "WHERE user_id = %d";
+        $params = [$user_id];
+
+        if ($failed == 1) {
+            $failed_rows = $wpdb->get_col(
+                $wpdb->prepare(
+                    "SELECT DISTINCT pid FROM $order_process_recipient_table WHERE verified = %d AND user_id = %d",
+                    0, $user_id
+                )
+            );
+
+            if (!empty($failed_rows)) {
+                $pid_placeholders = implode(',', array_fill(0, count($failed_rows), '%d'));
+                $where .= " AND step = 5 AND order_id != 0 AND id IN ($pid_placeholders)";
+                $params = array_merge($params, $failed_rows);
+            } else {
+                // ✅ Always send an empty response if no failed rows
+                wp_send_json([
+                    'draw' => $draw,
+                    'recordsTotal' => 0,
+                    'recordsFiltered' => 0,
+                    'data' => []
+                ]);
+                wp_die();
+            }
+        } else {
+            $where .= " AND order_id = 0";
+        }
+
+        // Add search filter
+        if (!empty($search_value)) {
             $search_term = '%' . $wpdb->esc_like($search_value) . '%';
             $where .= " AND (name LIKE %s";
-
             $params[] = $search_term;
 
-            // Attempt to find a step number that matches the label
             $matching_step_keys = array_keys(array_filter($step_labels, function ($label) use ($search_value) {
                 return stripos($label, $search_value) !== false;
             }));
@@ -3689,77 +3689,72 @@ class OAM_Ajax{
 
             $where .= ")";
         }
-        
-       
+
         $where .= " AND visibility = %d";
-        $params[] = absint(1);
-        
+        $params[] = 1;
+
         $where_sql = $wpdb->prepare($where, ...$params);
-        
-        // Total count
+
+        // Get total filtered items
         $total_items = (int) $wpdb->get_var("SELECT COUNT(*) FROM $order_process_table $where_sql");
-        
-        // Fetch paginated items
+
+        // Get paginated data
         $items = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM $order_process_table $where_sql ORDER BY created DESC LIMIT %d, %d",
             $start, $length
         ));
-            
+
         $data = [];
-    
-        if (!empty($items)) {
-            foreach ($items as $item) {
-                
-                $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($item->created));
-    
-                $resume_url = ($failed == 1)
-                    ? esc_url(CUSTOMER_DASHBOARD_LINK . "failed-recipients/details/" . $item->id)
-                    : esc_url(ORDER_PROCESS_LINK . "?pid=" . $item->id);
-    
-                $download_button = '';
-                $delete_action = '';
-                if (!empty($item->csv_name)) {
-                    $download_url = esc_url(OAM_Helper::$process_recipients_csv_url . $item->csv_name);
-                  $download_button = '<a href="' . esc_url( $download_url ) . '" class="button-icon-underline" download data-tippy="Download Recipients File"> <img src="' . esc_url( OH_PLUGIN_DIR_URL . 'assets/image/download.png' ) . '" alt="Download"> Download Recipients File</a>';
-                }
-    
-                $display_name = ($item->process_by == 0) ? 'Self' : esc_html(get_userdata($item->process_by)->display_name);
-    
-                $action = "<a href='$resume_url' class='button-icon-underline'>";
-                
-                if($failed == 1){
-                    $action .= '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">View Recipients';
-                }else{
-                    $delete_action = "<button data-id='".esc_html($item->id)."' data-name='".esc_html($item->name)."' data-tippy='Remove Incompleted List' class='deleteIncompletedOrderButton button-icon-underline'><img src='" . esc_url( OH_PLUGIN_DIR_URL . 'assets/image/delete-icon.png' ) . "' alt='Delete'>Remove</button>";
-                    $action .= '<img src="'.OH_PLUGIN_DIR_URL .'assets/image/resume.png" alt="">Resume Order';
-                }
-                 $action .="</a>";
-                 
-                  $row = [
-                    'id' => esc_html($item->id),
-                    'name' => esc_html($item->name),
-                    'ordered_by' => esc_html($display_name),
-                    'date' => esc_html($created_date),
-                    'action' => $action . ($failed != 1 ? $download_button : '') . $delete_action,
-                ];
 
-                if ($failed == 0) {
-                    $step = isset($step_labels[$item->step]) ? $step_labels[$item->step] : '';
-                    $row['current_step'] = esc_html($step);
-                }
+        foreach ($items as $item) {
+            $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($item->created));
 
-                $data[] = $row;
+            $resume_url = ($failed == 1)
+                ? esc_url(CUSTOMER_DASHBOARD_LINK . "failed-recipients/details/" . $item->id)
+                : esc_url(ORDER_PROCESS_LINK . "?pid=" . $item->id);
+
+            $download_button = '';
+            $delete_action = '';
+            if (!empty($item->csv_name)) {
+                $download_url = esc_url(OAM_Helper::$process_recipients_csv_url . $item->csv_name);
+                $download_button = '<a href="' . esc_url($download_url) . '" class="button-icon-underline" download data-tippy="Download Recipients File"> <img src="' . esc_url(OH_PLUGIN_DIR_URL . 'assets/image/download.png') . '" alt="Download"> Download Recipients File</a>';
             }
+
+            $display_name = ($item->process_by == 0) ? 'Self' : esc_html(get_userdata($item->process_by)->display_name);
+
+            $action = "<a href='$resume_url' class='button-icon-underline'>";
+            if ($failed == 1) {
+                $action .= '<img src="' . OH_PLUGIN_DIR_URL . 'assets/image/resume.png" alt="">View Recipients';
+            } else {
+                $delete_action = "<button data-id='" . esc_html($item->id) . "' data-name='" . esc_html($item->name) . "' data-tippy='Remove Incompleted List' class='deleteIncompletedOrderButton button-icon-underline'><img src='" . esc_url(OH_PLUGIN_DIR_URL . 'assets/image/delete-icon.png') . "' alt='Delete'>Remove</button>";
+                $action .= '<img src="' . OH_PLUGIN_DIR_URL . 'assets/image/resume.png" alt="">Resume Order';
+            }
+            $action .= "</a>";
+
+            $row = [
+                'id' => esc_html($item->id),
+                'name' => esc_html($item->name),
+                'ordered_by' => esc_html($display_name),
+                'date' => esc_html($created_date),
+                'action' => $action . ($failed != 1 ? $download_button : '') . $delete_action,
+            ];
+
+            if ($failed == 0) {
+                $step = isset($step_labels[$item->step]) ? $step_labels[$item->step] : '';
+                $row['current_step'] = esc_html($step);
+            }
+
+            $data[] = $row;
         }
-    
-        // Always send a valid JSON response
+
+        // ✅ Always return proper structure
         wp_send_json([
             'draw' => $draw,
             'recordsTotal' => $total_items,
             'recordsFiltered' => $total_items,
             'data' => $data
         ]);
-    
+
         wp_die();
     }
     
