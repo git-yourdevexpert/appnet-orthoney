@@ -766,7 +766,6 @@ class OAM_Helper{
                 $result = $wpdb->get_results($wpdb->prepare(
                     "SELECT id, address_1, address_2 ,city, state, zipcode FROM {$group_recipient_table} 
                     WHERE full_name = %s 
-                    
                     AND user_id = %d
                     AND `timestamp` BETWEEN %s AND %s",
                     $data->full_name, get_current_user_id(),$start_date, $end_date
