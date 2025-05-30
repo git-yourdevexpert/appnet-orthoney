@@ -138,7 +138,7 @@ if (!empty($order_process_user_id)) {
                                 <div class="thead-data">Action</div>
                                 <button class="far fa-eye viewRecipientOrder" data-order="<?php echo esc_attr($recipient_order_id); ?>" data-tippy="View Details" data-popup="#recipient-order-edit-popup"></button>
                                 <button class="far fa-edit editRecipientOrder" data-order="<?php echo esc_attr($recipient_order_id); ?>" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>
-                                <button class="deleteRecipient far fa-times" data-order="<?php echo esc_attr($recipient_order_id); ?>" data-tippy="Cancel Recipient Order" data-recipientname="<?php echo esc_attr($first_name); ?>"></button>
+                                <!-- <button class="deleteRecipient far fa-times" data-order="<?php echo esc_attr($recipient_order_id); ?>" data-tippy="Cancel Recipient Order" data-recipientname="<?php echo esc_attr($first_name); ?>"></button> -->
                             </td>
                         </tr>
                     <?php 

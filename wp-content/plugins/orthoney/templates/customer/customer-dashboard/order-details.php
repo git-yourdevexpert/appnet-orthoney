@@ -205,7 +205,7 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
                     <th>Address</th>
                     <th>Total Honey Jar</th>
                     <th>Status</th>
-                    <th>Action</th>
+                    <th style="width:200px">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -253,7 +253,7 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
                             }
                             ?>
                             
-                            <button class="deleteRecipient far fa-times" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-recipientname="<?php echo esc_attr($sub_order->full_name); ?>"></button>
+                            <!-- <button class="deleteRecipient far fa-times" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-recipientname="<?php echo esc_attr($sub_order->full_name); ?>"></button> -->
                         </td>
                     </tr>
                 <?php } ?>

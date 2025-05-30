@@ -327,7 +327,7 @@ class OAM_Helper{
 
                 if ($editable === true) {
                     $editLink = '<button class="far fa-edit editRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>';
-                    $deleteLink = '<button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>';
+                    // $deleteLink = '<button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>';
                 }
             
 
