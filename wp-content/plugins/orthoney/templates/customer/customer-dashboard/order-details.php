@@ -120,6 +120,14 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
 
 
 }
+
+
+$dashboard_link = CUSTOMER_DASHBOARD_LINK;
+if(isset($_GET['return_url']) && $_GET['return_url']=='admin'){
+    $dashboard_link = ADMINISTRATOR_DASHBOARD_LINK;
+}
+
+$dashboard_link_label = 'Return to Dashboard';
 ?>
 
 <div class='loader multiStepForm'>
@@ -133,30 +141,33 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
 <div class="order-process-block customer-order-details-section">
 
         <div class="heading-title">
-        <div class="order-number">
-            <h3>#<?php echo esc_html($sub_order_id); ?> Order Details </h3>
-            <p>
-                <?php
-                printf(
-                    esc_html__('Order #%1$s was placed on %2$s%3$s.', 'woocommerce'),
-                    '<mark class="order-number">' . esc_html($sub_order_id) . '</mark>',
-                    '<mark class="order-date">' . esc_html(wc_format_datetime($order->get_date_created())) . '</mark>',
-                    $order_process_by
-                );
-                ?>
-            </p>
-            <p>
-                <?php
-                if($organization_data != ''):
-                printf(
-                    esc_html__('This order will support %1$s .', 'woocommerce'),
-                    '<mark class="order-number">' . esc_html($organization_data) . '</mark>',
-                    $order_process_by
-                );
-                
-            endif;
-                ?>
-            </p>
+            <div class="order-number">
+                <h3>#<?php echo esc_html($sub_order_id); ?> Order Details </h3>
+                <p>
+                    <?php
+                    printf(
+                        esc_html__('Order #%1$s was placed on %2$s%3$s.', 'woocommerce'),
+                        '<mark class="order-number">' . esc_html($sub_order_id) . '</mark>',
+                        '<mark class="order-date">' . esc_html(wc_format_datetime($order->get_date_created())) . '</mark>',
+                        $order_process_by
+                    );
+                    ?>
+                </p>
+                <p>
+                    <?php
+                    if($organization_data != ''):
+                    printf(
+                        esc_html__('This order will support %1$s .', 'woocommerce'),
+                        '<mark class="order-number">' . esc_html($organization_data) . '</mark>',
+                        $order_process_by
+                    );
+                    
+                endif;
+                    ?>
+                </p>
+            </div>
+            <div>
+                <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
             </div>
         </div>
         <div class="customer-order-details">
