@@ -951,7 +951,7 @@ class OAM_Ajax{
         $address_list[] = [
             "input_id"   => $recipient->id,
             "street"     => $street,
-            "city"       => $recipient->city ?? '',
+            "city"       => ucwords($recipient->city ?? ''),
             "state"      => $recipient->state ?? '',
             "zipcode"    => $recipient->zipcode ?? '',
             "candidates" => 10,

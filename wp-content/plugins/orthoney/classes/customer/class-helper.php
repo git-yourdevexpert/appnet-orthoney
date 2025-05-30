@@ -1586,7 +1586,7 @@ class OAM_Helper{
                  'auth-id'    => $auth_id,
                  'auth-token' => $auth_token,
                  'street'     => trim($delivery_line_1 . ' ' . $delivery_line_2),
-                 'city'       => $city,
+                 'city'       => ucwords($city),
                  'state'      => $state,
                  'zipcode'    => $zipcode,
                  'match'      => 'invalid',
