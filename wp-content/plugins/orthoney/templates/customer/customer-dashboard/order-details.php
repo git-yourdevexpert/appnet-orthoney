@@ -122,9 +122,9 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
 }
 
 
-$dashboard_link = CUSTOMER_DASHBOARD_LINK;
+$dashboard_link = CUSTOMER_DASHBOARD_LINK.'orders/';
 if(isset($_GET['return_url']) && $_GET['return_url']=='admin'){
-    $dashboard_link = ADMINISTRATOR_DASHBOARD_LINK;
+    $dashboard_link = ADMINISTRATOR_DASHBOARD_LINK.'orders/';
 }
 
 $dashboard_link_label = 'Return to Dashboard';
