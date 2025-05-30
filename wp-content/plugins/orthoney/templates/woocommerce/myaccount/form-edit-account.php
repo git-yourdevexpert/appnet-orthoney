@@ -18,8 +18,9 @@
 defined( 'ABSPATH' ) || exit;
 
 do_action( 'woocommerce_before_edit_account_form' ); 
- $dashboard_link = CUSTOMER_DASHBOARD_LINK.'failed-recipients/';
-                    $dashboard_link_label = 'Return to Dashboard';
+
+$dashboard_link = CUSTOMER_DASHBOARD_LINK;
+$dashboard_link_label = 'Return to Dashboard';
 ?>
 <div class="order-process-block">
 <div class="heading-title">
