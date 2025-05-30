@@ -76,7 +76,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     $dashboard_link_label = 'Return to Dashboard';
                     ?>
                      <div class="heading-title">
-                        <h3 class="block-title">#<?php echo intval($failed_recipients_details) ?> Order's Failed Recipient(s) Lits</h3>
+                        <h3 class="block-title">#<?php echo intval($failed_recipients_details) ?> Order's Failed Recipient(s) Lists</h3>
                         <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
                     </div>
                     <?php 
