@@ -72,11 +72,11 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 </div>
                 <div class='order-process-block heading-open-sans'>";
                 if (!empty($failed_recipients_details)) {
-                    $dashboard_link = CUSTOMER_DASHBOARD_LINK;
+                    $dashboard_link = CUSTOMER_DASHBOARD_LINK.'failed-recipients/';
                     $dashboard_link_label = 'Return to Dashboard';
                     ?>
                      <div class="heading-title">
-                        <h3 class="block-title">#<?php echo intval($failed_recipients_details) ?> Order's Failed Recipient(s)</h3>
+                        <h3 class="block-title">#<?php echo intval($failed_recipients_details) ?> Order's Failed Recipient(s) Lits</h3>
                         <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
                     </div>
                     <?php 
