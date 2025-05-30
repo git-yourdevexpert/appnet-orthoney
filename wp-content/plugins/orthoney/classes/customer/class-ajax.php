@@ -3003,7 +3003,7 @@ class OAM_Ajax{
 
     }
     // AJAX: Order Export PDF generate 
-    public function orthoney_customer_order_export_ajax_pdf_handler() {
+   public function orthoney_customer_order_export_ajax_pdf_handler() {
 
         $shipDate = get_field('shipping_date', 'options');
 
@@ -3057,13 +3057,23 @@ class OAM_Ajax{
         </head>
         <body>';
     
+        global $wpdb;
         foreach ($order_id_array as $order_id) {
-            $order = wc_get_order($order_id);
-            if (!$order) continue;
+            // if (!$order) continue;
     
             // $orderdata = OAM_COMMON_Custom::orthoney_get_order_data($order_id);
             // $sub_order_id =  OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID')?: $order_id;
-             $sub_order_id =  $order_id;
+            $sub_order_id =  $order_id;
+
+            $order_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT order_id
+                FROM {$wpdb->prefix}wc_orders_meta
+                WHERE meta_key = %s AND meta_value = %s",
+                '_orthoney_OrderID',
+                $sub_order_id
+            ));
+            $order = wc_get_order($order_id);
+
             $name = esc_html($orderdata['customer_name']);
             $email = esc_html($orderdata['email']);
             $address = esc_html($orderdata['address']);
