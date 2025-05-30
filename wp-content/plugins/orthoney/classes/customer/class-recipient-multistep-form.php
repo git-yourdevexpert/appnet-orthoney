@@ -336,7 +336,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     <div class="order-wrapper input-wrapp" style="<?php echo $upload_type_output == 'select-order' ? '' : 'display:none' ?>">
                                         <!-- <h4>Choose from existing recipient list</h4> -->
                                         <div class="bg-card">
-                                            <select name="orders[]" data-error-message="Please select a order." <?php echo $upload_type_output == 'select-order' ? 'required' : '' ?>>
+                                            <select name="orders[]" data-error-message="Please select a order." <?php echo $upload_type_output == 'select-order' ? 'required' : '' ?> multiple>
                                                 <?php 
                                                  echo '<option></option>';
                                                 foreach ($getLastYearOrderList as $key => $order) {
