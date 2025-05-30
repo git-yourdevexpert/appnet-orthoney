@@ -647,6 +647,15 @@ class OAM_Ajax{
                 }
             }else{
                 $wc_order = wc_get_order($orderid);
+               
+                $total_quantity = 1;
+                foreach ($wc_order->get_items() as $item) {
+                    $quantity = (int)$item->get_quantity();
+                    $greeting = $item->get_meta('greeting', true) ?: '';
+                    $total_quantity += $quantity;
+                    if ($order_type === 'single_order') break;
+                }
+                
                 $wpdb->insert($process_recipient_table, [
                     'user_id'          => $userID,
                     'pid'              => $process_id,
