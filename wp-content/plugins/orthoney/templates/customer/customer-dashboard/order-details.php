@@ -205,7 +205,7 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
                     <th>Address</th>
                     <th>Total Honey Jar</th>
                     <th>Status</th>
-                    <th>Action</th>
+                    <th style="width:200px">Action</th>
                 </tr>
             </thead>
             <tbody>
