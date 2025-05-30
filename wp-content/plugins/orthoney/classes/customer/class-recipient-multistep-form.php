@@ -177,7 +177,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
                             $oh_affiliate_customer_linker = OAM_Helper::$oh_affiliate_customer_linker;
                             $users_table = OAM_Helper::$users_table;
-                            $query = $wpdb->prepare(
+                           $query = $wpdb->prepare(
                                 "SELECT a.ID, a.token, u.display_name, a.user_id
                                 FROM {$yith_wcaf_affiliates_table} AS a 
                                 JOIN {$users_table} AS u ON a.user_id = u.ID 
@@ -185,7 +185,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     SELECT affiliate_id 
                                     FROM {$oh_affiliate_customer_linker} 
                                     WHERE customer_id = %d AND status = %d 
-                                )",
+                                )
+                                AND a.enabled = 1 AND a.banned = 0",
                                 self::$current_user_id, 1
                             );
 
