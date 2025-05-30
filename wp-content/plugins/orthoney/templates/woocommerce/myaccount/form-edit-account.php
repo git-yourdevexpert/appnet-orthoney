@@ -17,9 +17,15 @@
 
 defined( 'ABSPATH' ) || exit;
 
-do_action( 'woocommerce_before_edit_account_form' ); ?>
+do_action( 'woocommerce_before_edit_account_form' ); 
+ $dashboard_link = CUSTOMER_DASHBOARD_LINK.'failed-recipients/';
+                    $dashboard_link_label = 'Return to Dashboard';
+?>
 <div class="order-process-block">
-<div class="heading-title"><h3 class="block-title">My Profile</h3></div>
+<div class="heading-title">
+	<h3 class="block-title">My Profile</h3>
+	<a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
+</div>
 <form class="woocommerce-EditAccountForm edit-account" action="" method="post" <?php do_action( 'woocommerce_edit_account_form_tag' ); ?> >
 
 	<?php do_action( 'woocommerce_edit_account_form_start' ); ?>
