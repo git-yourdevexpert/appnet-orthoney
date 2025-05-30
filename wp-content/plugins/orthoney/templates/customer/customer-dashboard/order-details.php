@@ -182,9 +182,11 @@ $dashboard_link_label = 'Return to Dashboard';
                 <strong>Email: </strong><?php echo esc_html($order->get_billing_email()); ?><br>
                 <strong>Address: </strong><?php echo esc_html(trim($order->get_billing_address_1() . ' ' . $order->get_billing_address_2())); ?><br>
                 <strong>City: </strong><?php echo esc_html($order->get_billing_city()); ?><br>
-                <strong>Phone: </strong><?php echo esc_html($order->get_billing_phone()); ?><br>
                 <strong>State: </strong><?php echo esc_html($full_state); ?><br>
                 <strong>Zip Code: </strong><?php echo esc_html($order->get_billing_postcode()); ?><br>
+                <?php if ( $order->get_billing_phone() ) : ?>
+                    <strong>Phone Number: </strong><?php echo esc_html( $order->get_billing_phone() ); ?><br>
+                <?php endif; ?>
                 <?php 
                  if($editable === true){
                     echo '<button class="w-btn us-btn-style_1 editBillingAddress" data-order="'.$order_id.'" data-popup="#edit-billing-address-popup">Edit Billing address </button>';
