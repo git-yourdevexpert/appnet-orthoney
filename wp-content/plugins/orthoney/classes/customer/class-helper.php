@@ -597,7 +597,9 @@ class OAM_Helper{
             );
         }
     
-        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id));
+
+
+        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id).''.(($tabletype == 'administrator-dashboard') ? 'return_url=admin' : 'return_url=customer'));
         $total_recipient = '';
         if($jarsorder_count != 0){
            $total_recipient = "<a id='".$jar_order_id."' onclick='jarfilter_trigger(\"$jar_order_id\", \"$year\")' class='filter-jar-order-by-wc-order ".$year."' href='javascript:;'>".$jarsorder_count."</a>";
