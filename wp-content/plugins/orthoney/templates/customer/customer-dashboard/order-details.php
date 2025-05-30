@@ -182,6 +182,7 @@ $dashboard_link_label = 'Return to Dashboard';
                 <strong>Email: </strong><?php echo esc_html($order->get_billing_email()); ?><br>
                 <strong>Address: </strong><?php echo esc_html(trim($order->get_billing_address_1() . ' ' . $order->get_billing_address_2())); ?><br>
                 <strong>City: </strong><?php echo esc_html($order->get_billing_city()); ?><br>
+                <strong>Phone: </strong><?php echo esc_html($order->get_billing_phone()); ?><br>
                 <strong>State: </strong><?php echo esc_html($full_state); ?><br>
                 <strong>Zip Code: </strong><?php echo esc_html($order->get_billing_postcode()); ?><br>
                 <?php 
