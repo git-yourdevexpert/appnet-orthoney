@@ -2560,9 +2560,12 @@ class OAM_Ajax{
                 ), true);
 
                 $data['reasons'] = $validation_result['message'];
+                    if($data['reasons'] == '' OR $data['reasons'] == 'Valid and deliverable address.' ){
+                        $data['reasons'] = '';
+                        $data['address_verified'] = 0;
+                    }
                 
                 $result = $wpdb->update($table, $data, ['id' => $recipient_id]);
-
 
             }
             
