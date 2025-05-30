@@ -77,7 +77,9 @@
   color: #fff !important;
   border: 0 !important;
 }
-
+.order-process-block .w-btn.editBillingAddress{
+   margin-top: 30px;
+}
 .order-process-block .w-btn.us-btn-style_5{
     background-color: var(--color-header-middle-text-hover);
 }
@@ -4290,7 +4292,7 @@ body.woocommerce-account .woocommerce-change-password-wrapper textarea {
 }
 table#customer-orders-table thead tr th:last-child,
 table#customer-jar-orders-table thead tr th:last-child{
-   width:110px
+   width:110px !important
 }
 
 /* responsive */
