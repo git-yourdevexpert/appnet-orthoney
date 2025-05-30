@@ -1381,6 +1381,7 @@ body.woocommerce .quantity input.input-box:focus {
   margin-bottom: 10px;
 }
 
+.customer-order-details-section .orthoney-datatable-warraper#recipient-order-data  .dataTables_wrapper .dataTables_filter{ margin-bottom: 20px;}
 .order-process-block .customer-order-details {
   margin-bottom: 18px;
   display: flex;
