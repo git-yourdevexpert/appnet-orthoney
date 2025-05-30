@@ -4288,6 +4288,10 @@ body.woocommerce-account .woocommerce-change-password-wrapper textarea {
 #multiStepForm .orthoney-datatable-warraper .dataTables_wrapper .dataTables_filter.open label input {
   width: 100%;
 }
+table#customer-orders-table thead tr th:last-child,
+table#customer-jar-orders-table thead tr th:last-child{
+   width:110px
+}
 
 /* responsive */
 @media (min-width: 993px) {
