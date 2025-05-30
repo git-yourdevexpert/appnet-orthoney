@@ -333,7 +333,7 @@ class OAM_Helper{
 
             $order['jar_tracking'] = '<a href="#view-order-tracking-popup" data-lity data-tippy="View Tracking">Tracking Numbers</a>';
 
-            $order['action'] = '<a class="far fa-eye" href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id}?recipient-order={$recipient_order_id}") . '"></a>' . $editLink . $deleteLink;
+            $order['action'] = '<a class="far fa-eye" href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id}?recipient-order={$recipient_order_id}") . ''.(($tabletype == 'administrator-dashboard')  ? '&return_url=admin' : '&return_url=customer').'"></a>' . $editLink . $deleteLink;
 
             $order['date'] = date_i18n(
                 OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format,
