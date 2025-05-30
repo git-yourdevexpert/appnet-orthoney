@@ -80,7 +80,6 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
                     </div>
                     <?php 
-
                 }
     
                 $setData = [];
