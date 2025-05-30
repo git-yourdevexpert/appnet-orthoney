@@ -1325,7 +1325,7 @@ class OAM_Helper{
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-half">
-                    <label for="quantity">Quantity<span class="required">* <small>No editable</small></span></label>
+                    <label for="quantity">Quantity<span class="required">* <br><small>Quantity cannot be changed after the order is placed.</small></span></label>
                     <input type="number" id="quantity" name="quantity" readonly>
                     <span class="error-message"></span>
                 </div>
