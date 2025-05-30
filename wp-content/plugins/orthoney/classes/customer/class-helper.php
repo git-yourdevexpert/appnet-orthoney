@@ -1580,7 +1580,7 @@ class OAM_Helper{
         $auth_id = '0fdfc34a-4087-0f9d-ae9c-afb52f987e78';
         $auth_token = 'RXTN0yzOth5dFffkvvb6';
 
-        $city = html_entity_decode(strip_tags($recipient->city ?? ''));
+        $city = html_entity_decode(strip_tags($city ?? ''));
         $city = ucwords(strtolower(trim($city)));
     
         $url = "https://us-street.api.smartystreets.com/street-address?"
