@@ -569,60 +569,96 @@ class OAM_Ajax{
         $recipient_table = OAM_Helper::$recipient_order_table;
         $process_recipient_table = OAM_Helper::$order_process_recipient_table;
 
-        $wc_order = wc_get_order($orderid);
-        if (!$wc_order) {
-            wp_send_json_error(['message' => 'Order ID not found.']);
-        }
+        $orderids = array_filter(array_map('intval', explode(',', $orderid)));
+        // if (empty($orderids)) {
+        //     wp_send_json_error(['message' => 'Invalid Order IDs']);
+        // }
 
-        if (in_array($wc_order->get_status(), ['draft', 'failed'], true)) {
-            wp_send_json_error(['message' => 'Cannot reorder. Status: ' . $wc_order->get_status()]);
-        }
+        // $wc_order = wc_get_order($orderid);
+        // if (!$wc_order) {
+        //     wp_send_json_error(['message' => 'Order ID not found.']);
+        // }
+
+        // if (in_array($wc_order->get_status(), ['draft', 'failed'], true)) {
+        //     wp_send_json_error(['message' => 'Cannot reorder. Status: ' . $wc_order->get_status()]);
+        // }
 
         $custom_order_id = OAM_COMMON_Custom::get_order_meta($orderid, '_orthoney_OrderID');
         $process_by = OAM_COMMON_Custom::old_user_id();
 
-        $affiliate = $wpdb->get_row($wpdb->prepare(
-            "SELECT a.token, a.ID FROM {$wpdb->prefix}yith_wcaf_commissions c
-            JOIN {$wpdb->prefix}yith_wcaf_affiliates a ON c.affiliate_id = a.ID
-            WHERE c.order_id = %d", $orderid
-        ));
+        $affiliate = null;
+        if (!empty($orderids)) {
+            $placeholders = implode(',', array_fill(0, count($orderids), '%d'));
+            $query = $wpdb->prepare("
+                SELECT a.token, a.ID 
+                FROM {$wpdb->prefix}yith_wcaf_commissions c
+                JOIN {$wpdb->prefix}yith_wcaf_affiliates a ON c.affiliate_id = a.ID
+                WHERE c.order_id IN ($placeholders)
+                LIMIT 1
+            ", ...$orderids);
+            $affiliate = $wpdb->get_row($query);
+        }
 
         $affiliate_token = $affiliate->token ?? 'Orthoney';
         $affiliate_id = $affiliate->ID ?? 0;
-
-        $recipient_data = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM {$recipient_table} WHERE order_id = %d", $custom_order_id
-        ));
-
-       
         $process_id = $pid;
 
-        $order_type = empty($recipient_data) ? 'single_order' : 'multi-recipient-order';
-        $greeting = '';
-        $total_quantity = 0;
+        foreach ($orderids as $orderid) {
+            $custom_order_id = OAM_COMMON_Custom::get_order_meta($orderid, '_orthoney_OrderID');
+            $recipient_data = $wpdb->get_results($wpdb->prepare(
+                "SELECT * FROM {$recipient_table} WHERE order_id = %d", $custom_order_id
+            ));
 
-        foreach ($wc_order->get_items() as $item) {
-            $quantity = (int)$item->get_quantity();
-            $greeting = $item->get_meta('greeting', true) ?: '';
-            $total_quantity += $quantity;
-            if ($order_type === 'single_order') break;
-        }
-        
-        // Insert recipient records for multi-recipient orders
-        if (!empty($recipient_data)) {
-            foreach ($recipient_data as $recipient) {
+            $order_type = empty($recipient_data) ? 'single_order' : 'multi-recipient-order';
+            $greeting = '';
+            $total_quantity = 0;
+
+            // foreach ($wc_order->get_items() as $item) {
+            //     $quantity = (int)$item->get_quantity();
+            //     $greeting = $item->get_meta('greeting', true) ?: '';
+            //     $total_quantity += $quantity;
+            //     if ($order_type === 'single_order') break;
+            // }
+            
+            // Insert recipient records for multi-recipient orders
+            
+            if (!empty($recipient_data)) {
+                foreach ($recipient_data as $recipient) {
+                    $wpdb->insert($process_recipient_table, [
+                        'user_id'          => $userID,
+                        'pid'              => $process_id,
+                        'full_name'        => sanitize_text_field($recipient->full_name),
+                        'company_name'     => sanitize_text_field($recipient->company_name),
+                        'address_1'        => sanitize_textarea_field($recipient->address_1),
+                        'address_2'        => sanitize_textarea_field($recipient->address_2),
+                        'city'             => sanitize_text_field($recipient->city),
+                        'state'            => sanitize_text_field($recipient->state),
+                        'zipcode'          => sanitize_text_field($recipient->zipcode),
+                        'quantity'         => max(1, intval($recipient->quantity ?? 1)),
+                        'greeting'         => sanitize_textarea_field($recipient->greeting),
+                        'verified'         => 1,
+                        'update_type'      => sanitize_text_field('re-order'),
+                        'address_verified' => 0,
+                        'new'              => 0,
+                        'reasons'          => null,
+                    ]);
+                    $recipient_id = $wpdb->insert_id;
+                    OAM_Helper::order_process_recipient_activate_log($recipient_id, "new by reorder " . $custom_order_id, 'added', 'reorder');
+                }
+            }else{
+                $wc_order = wc_get_order($orderid);
                 $wpdb->insert($process_recipient_table, [
                     'user_id'          => $userID,
                     'pid'              => $process_id,
-                    'full_name'        => sanitize_text_field($recipient->full_name),
-                    'company_name'     => sanitize_text_field($recipient->company_name),
-                    'address_1'        => sanitize_textarea_field($recipient->address_1),
-                    'address_2'        => sanitize_textarea_field($recipient->address_2),
-                    'city'             => sanitize_text_field($recipient->city),
-                    'state'            => sanitize_text_field($recipient->state),
-                    'zipcode'          => sanitize_text_field($recipient->zipcode),
-                    'quantity'         => max(1, intval($recipient->quantity ?? 1)),
-                    'greeting'         => sanitize_textarea_field($recipient->greeting),
+                    'full_name'        => sanitize_text_field($wc_order->get_shipping_first_name() .' '. $wc_order->get_shipping_last_name()),
+                    'company_name'     => sanitize_text_field($wc_order->get_shipping_company()),
+                    'address_1'        => sanitize_textarea_field($wc_order->get_shipping_address_1()),
+                    'address_2'        => sanitize_textarea_field($wc_order->get_shipping_address_2()),
+                    'city'             => sanitize_text_field($wc_order->get_shipping_city()),
+                    'state'            => sanitize_text_field($wc_order->get_shipping_state()),
+                    'zipcode'          => sanitize_text_field($wc_order->get_shipping_postcode()),
+                    'quantity'         => max(1, intval( $total_quantity ?? 1)),
+                    'greeting'         => sanitize_textarea_field($greeting),
                     'verified'         => 1,
                     'update_type'      => sanitize_text_field('re-order'),
                     'address_verified' => 0,
@@ -631,43 +667,35 @@ class OAM_Ajax{
                 ]);
                 $recipient_id = $wpdb->insert_id;
                 OAM_Helper::order_process_recipient_activate_log($recipient_id, "new by reorder " . $custom_order_id, 'added', 'reorder');
+                
             }
-        }else{
-            $wpdb->insert($process_recipient_table, [
-                'user_id'          => $userID,
-                'pid'              => $process_id,
-                'full_name'        => sanitize_text_field($wc_order->get_shipping_first_name() .' '. $wc_order->get_shipping_last_name()),
-                'company_name'     => sanitize_text_field($wc_order->get_shipping_company()),
-                'address_1'        => sanitize_textarea_field($wc_order->get_shipping_address_1()),
-                'address_2'        => sanitize_textarea_field($wc_order->get_shipping_address_2()),
-                'city'             => sanitize_text_field($wc_order->get_shipping_city()),
-                'state'            => sanitize_text_field($wc_order->get_shipping_state()),
-                'zipcode'          => sanitize_text_field($wc_order->get_shipping_postcode()),
-                'quantity'         => max(1, intval( $total_quantity ?? 1)),
-                'greeting'         => sanitize_textarea_field($greeting),
-                'verified'         => 1,
-                'update_type'      => sanitize_text_field('re-order'),
-                'address_verified' => 0,
-                'new'              => 0,
-                'reasons'          => null,
-            ]);
-             $recipient_id = $wpdb->insert_id;
-            OAM_Helper::order_process_recipient_activate_log($recipient_id, "new by reorder " . $custom_order_id, 'added', 'reorder');
-            
         }
 
-        // Update user meta from billing/shipping data
-        if ($userID > 0) {
-            $this->update_user_meta_from_order($userID, $wc_order);
-        }
+        if(count($orderids) == 1){
+            // Update user meta from billing/shipping data
+            if ($userID > 0) {
+                $this->update_user_meta_from_order($userID, $wc_order);
+            }
+              $processExistQuery = $wpdb->prepare("
+                SELECT id
+                FROM {$order_process_table}
+                WHERE user_id = %d 
+                AND id = %d 
+                ", get_current_user_id(), $process_id);
 
-       if (isset($_COOKIE['yith_wcaf_referral_token'])) {
+                $processExistResult = $wpdb->get_row($processExistQuery);
+                if (!$processExistResult) {
+                    $process_id = 0;
+                }
+            if (isset($_COOKIE['yith_wcaf_referral_token'])) {
                 setcookie('yith_wcaf_referral_token', $processExistResult, time() + 3600, "/", "", true, true);
             }
-
+            
             if (isset($_COOKIE['yith_wcaf_referral_history'])) {
                 setcookie('yith_wcaf_referral_history', $processExistResult, time() + 3600, "/", "", true, true);
             }
+        }
+        
     }
 
     // Update user billing/shipping meta from order
