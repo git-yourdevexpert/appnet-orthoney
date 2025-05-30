@@ -3061,8 +3061,9 @@ class OAM_Ajax{
             $order = wc_get_order($order_id);
             if (!$order) continue;
     
-            $orderdata = OAM_COMMON_Custom::orthoney_get_order_data($order_id);
-            $sub_order_id =  OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID')?: $order_id;
+            // $orderdata = OAM_COMMON_Custom::orthoney_get_order_data($order_id);
+            // $sub_order_id =  OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID')?: $order_id;
+             $sub_order_id =  $order_id;
             $name = esc_html($orderdata['customer_name']);
             $email = esc_html($orderdata['email']);
             $address = esc_html($orderdata['address']);

@@ -21,10 +21,15 @@ $requests = $wpdb->get_results(
      FROM $table_name 
      WHERE status IN (0, 1) AND  affiliate_id = $user_id"
 );
-
+$dashboard_link = ORGANIZATION_DASHBOARD_LINK;
+$dashboard_link_label = 'Return to Dashboard';
 ?>
 <div class="affiliate-dashboard order-process-block pb-40 mb-40">
-    <h3>Search customer here to link</h3>
+  
+    <div class="heading-title">
+        <h3 class="block-title">Search customer here to link</h3>
+        <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
+    </div>
     <!-- Search and filter options -->
     <div class="filter-container orthoney-datatable-warraper">
         <div class="customer-email-search linked-customer-search">       <input type="text" id="customer-email-search" required placeholder="Enter Customer Email" data-error-message="Please enter a Email.">

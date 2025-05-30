@@ -25,10 +25,13 @@
    $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
    
    //TODO
+   $dashboard_link = ORGANIZATION_DASHBOARD_LINK;
+$dashboard_link_label = 'Return to Dashboard';
    ?>
 <div class="order-process-block form-deisgn">
     <div class="heading-title">
         <h3 class="block-title">My Profile</h3>
+        <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
     </div>
     <div class="affiliate-profile" id="update-affiliate-form">
         <form id="affiliate-profile-form">
