@@ -1918,21 +1918,23 @@ class OAM_Helper{
             $pid_placeholders = implode(',', array_fill(0, count($failed_rows), '%d'));
             $where .= " AND step = 5 AND order_id != 0 AND id IN ($pid_placeholders)";
             $params = array_merge($params, $failed_rows);
-        }
-    
-        // Pagination (start from 0)
-        $params[] = 0;
-        $params[] = (int)$limit;
-    
-        // Final query
-        $query = "
-            SELECT * FROM $order_process_table
-            $where
-            ORDER BY $order_column $order_dir
-            LIMIT %d, %d
-        ";
-    
-        $results = $wpdb->get_results($wpdb->prepare($query, ...$params));
+       
+            // Pagination (start from 0)
+            $params[] = 0;
+            $params[] = (int)$limit;
+        
+            // Final query
+            $query = "
+                SELECT * FROM $order_process_table
+                $where
+                ORDER BY $order_column $order_dir
+                LIMIT %d, %d
+            ";
+        
+            $results = $wpdb->get_results($wpdb->prepare($query, ...$params));
+         }else{
+            $results = [];
+         }
         
        
         $html = '<div class="recipient-lists-block custom-table">
