@@ -1382,8 +1382,12 @@ document.addEventListener("click", function (event) {
             const zipcode = data.data.zipcode;
             const quantity = data.data.quantity;
             const greeting = data.data.greeting;
-            const reasons = data.data.reasons;
+            let reasons = data.data.reasons;
 
+            if(reasons == 'Valid and deliverable address.'){
+              reasons = '';
+            }
+            
             console.log(reasons);
             console.log(address_verified);
             if (event.target.classList.contains("editRecipient")) {
