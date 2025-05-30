@@ -22,10 +22,13 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
 }
 $current_url = home_url( $_SERVER['REQUEST_URI'] );
 
+$dashboard_link = CUSTOMER_DASHBOARD_LINK;
+$dashboard_link_label = 'Return to Dashboard';
 ?>
 <div class="groups-block order-process-block orthoney-datatable-warraper table-with-search-block">
     <div class="heading-title">
         <h3 class="block-title">All Recipient Lists</h3>
+        <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
     </div>
 
     <table id="group-recipient-table" class="display">

@@ -13,13 +13,20 @@ ob_start();
 $manage_affiliates_content = OAM_Helper::manage_affiliates_content();
 $result = json_decode($manage_affiliates_content, true);
 
+$dashboard_link = CUSTOMER_DASHBOARD_LINK;
+$dashboard_link_label = 'Return to Dashboard';
+
 if (!empty($result) && isset($result['success']) && $result['success']) {
     $affiliates = $result['data']['affiliates'];
     $blocked_affiliates = $result['data']['blocked_affiliates'];
     if(!empty($affiliates)){
     ?>
         <div class="affiliate-dashboard">
-            <h2>My Affiliates</h2>
+           
+            <div class="heading-title">
+                <h3 class="block-title">My Affiliates</h3>
+                <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
+            </div>
             <!-- Search and filter options -->
             <!-- <div class="filter-container">
                 <input type="text" id="search-affiliates" placeholder="Search Affiliates">

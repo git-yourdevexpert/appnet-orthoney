@@ -22,9 +22,14 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
     return;
 }
 
+$dashboard_link = CUSTOMER_DASHBOARD_LINK;
+$dashboard_link_label = 'Return to Dashboard';
 ?>
 <div class="incomplete-order-block order-process-block orthoney-datatable-warraper">
-    <div class="heading-title"><h3 class="block-title">Failed Addresses</h3></div>
+    <div class="heading-title">
+        <h3 class="block-title">Failed Addresses</h3>
+        <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
+    </div>
     <table id="incomplete-order-table" data-failed="1" class="display">
         <thead>
             <tr>

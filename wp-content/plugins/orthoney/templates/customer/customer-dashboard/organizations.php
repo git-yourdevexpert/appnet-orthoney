@@ -26,6 +26,10 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
 $manage_affiliates_content = OAM_Helper::manage_affiliates_content();
 $result = json_decode($manage_affiliates_content, true);
 
+
+$dashboard_link = CUSTOMER_DASHBOARD_LINK;
+$dashboard_link_label = 'Return to Dashboard';
+
 if (!empty($result) && isset($result['success']) && $result['success']) {
     $affiliates = $result['data']['user_info'];
     $blocked_affiliates = $result['data']['affiliates'];    
@@ -34,7 +38,11 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
         #DataTables_Table_0_filter{display:none}
     </style>
     <div class="affiliate-dashboard order-process-block">
-        <h3>All Organizations</h3>
+        
+        <div class="heading-title">
+            <h3 class="block-title">All Organizations</h3>
+            <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
+        </div>
         <!-- Search and filter options -->
         <div class="filter-container" style="display:none">
             <input type="text" id="search-affiliates" placeholder="Search Organization">

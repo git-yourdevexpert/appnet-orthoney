@@ -70,12 +70,16 @@ if($group_id != 'unique_recipients'){
         )
     );
 }
+$dashboard_link = CUSTOMER_DASHBOARD_LINK.'groups/';
+$dashboard_link_label = 'Return to Dashboard';
+
 if (!empty($recipients)) :
 ?>
 
     <div class="order-process-block" id="customer-dashboard-recipient-list" data-groupid="<?php echo $group_id; ?>">
         <div class="heading-title">
-            <h5 class="block-title"><?php echo ($group_id == 'unique_recipients') ? 'Unique' : ''; ?> Recipient List</h5>
+            <h3 class="block-title"><?php echo ($group_id == 'unique_recipients') ? 'Unique' : ''; ?> Recipient List</h3>
+             <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
         </div>
 
         <div class="heading-title">
