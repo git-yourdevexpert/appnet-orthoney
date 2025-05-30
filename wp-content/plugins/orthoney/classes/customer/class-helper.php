@@ -1580,13 +1580,15 @@ class OAM_Helper{
         $auth_id = '0fdfc34a-4087-0f9d-ae9c-afb52f987e78';
         $auth_token = 'RXTN0yzOth5dFffkvvb6';
 
+        $city = html_entity_decode(strip_tags($recipient->city ?? ''));
+        $city = ucwords(strtolower(trim($city)));
     
         $url = "https://us-street.api.smartystreets.com/street-address?"
              . http_build_query([
                  'auth-id'    => $auth_id,
                  'auth-token' => $auth_token,
                  'street'     => trim($delivery_line_1 . ' ' . $delivery_line_2),
-                 'city'       => ucwords($city),
+                 'city'       => $city,
                  'state'      => $state,
                  'zipcode'    => $zipcode,
                  'match'      => 'invalid',

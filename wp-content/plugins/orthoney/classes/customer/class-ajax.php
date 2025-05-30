@@ -948,10 +948,14 @@ class OAM_Ajax{
 
     foreach ($recipients as $recipient) {
         $street = trim(($recipient->address_1 ?? '') . ' ' . ($recipient->address_2 ?? ''));
+
+        $city = html_entity_decode(strip_tags($recipient->city ?? ''));
+        $city = ucwords(strtolower(trim($city)));
+
         $address_list[] = [
             "input_id"   => $recipient->id,
             "street"     => $street,
-            "city"       => ucwords($recipient->city ?? ''),
+            "city"       => $city,
             "state"      => $recipient->state ?? '',
             "zipcode"    => $recipient->zipcode ?? '',
             "candidates" => 10,
