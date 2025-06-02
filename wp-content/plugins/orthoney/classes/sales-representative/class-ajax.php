@@ -114,124 +114,122 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         ]);
     }
 
+     public function get_affiliates_list_ajax_handler() {
+        global $wpdb;
 
+        $user_id = get_current_user_id();
+        $select_organization = get_user_meta($user_id, 'select_organization', true);
+        $choose_organization = get_user_meta($user_id, 'choose_organization', true);
 
-public function get_affiliates_list_ajax_handler() {
-    global $wpdb;
-
-    $user_id = get_current_user_id();
-    $select_organization = get_user_meta($user_id, 'select_organization', true);
-    $choose_organization = get_user_meta($user_id, 'choose_organization', true);
-
-    // Build include clause based on user meta
-    $include_clause = '';
-    if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
-        $choose_ids = array_map('intval', (array)$choose_organization);
-        if (!empty($choose_ids)) {
-            $include_clause = ' AND a.user_id IN (' . implode(',', $choose_ids) . ') ';
+        // Build include clause based on user meta
+        $include_clause = '';
+        if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
+            $choose_ids = array_map('intval', (array)$choose_organization);
+            if (!empty($choose_ids)) {
+                $include_clause = ' AND a.user_id IN (' . implode(',', $choose_ids) . ') ';
+            }
         }
-    }
 
-    // Pagination and search parameters
-    $start  = intval($_POST['start'] ?? 0);
-    $length = intval($_POST['length'] ?? 10);
-    $draw   = intval($_POST['draw'] ?? 1);
-    $search = sanitize_text_field($_POST['search']['value'] ?? '');
+        // Pagination and search parameters
+        $start  = intval($_POST['start'] ?? 0);
+        $length = intval($_POST['length'] ?? 10);
+        $draw   = intval($_POST['draw'] ?? 1);
+        $search = sanitize_text_field($_POST['search']['value'] ?? '');
 
-    // Handle ordering safely
-    $order = $_POST['order'][0] ?? null;
-    $order_column_index = 0;
-    $order_dir = 'ASC';
-    if (is_array($order)) {
-        $order_column_index = intval($order['column'] ?? 0);
-        $order_dir = strtoupper($order['dir'] ?? 'ASC') === 'DESC' ? 'DESC' : 'ASC';
-    }
+        // Handle ordering safely
+        $order = $_POST['order'][0] ?? null;
+        $order_column_index = 0;
+        $order_dir = 'ASC';
+        if (is_array($order)) {
+            $order_column_index = intval($order['column'] ?? 0);
+            $order_dir = strtoupper($order['dir'] ?? 'ASC') === 'DESC' ? 'DESC' : 'ASC';
+        }
 
-    // Define columns for ordering
-    $columns = ['organization_name', 'city', 'state', 'a.token'];
-    $order_by = $columns[$order_column_index] ?? 'organization_name';
+        // Define columns for ordering
+        $columns = ['organization_name', 'city', 'state', 'a.token'];
+        $order_by = $columns[$order_column_index] ?? 'organization_name';
 
-    // Prepare search filter SQL
-    $search_filter = '';
-    $search_like = '%' . $wpdb->esc_like($search) . '%';
-    if (!empty($search)) {
-        $search_filter = $wpdb->prepare(" AND (
-            MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END) LIKE %s
-            OR MAX(CASE WHEN um.meta_key = '_yith_wcaf_city' THEN um.meta_value END) LIKE %s
-            OR MAX(CASE WHEN um.meta_key = '_yith_wcaf_state' THEN um.meta_value END) LIKE %s
-            OR a.token LIKE %s
-        ) ", $search_like, $search_like, $search_like, $search_like);
-    }
+        // Prepare search filter SQL
+        $search_filter = '';
+        $search_like = '%' . $wpdb->esc_like($search) . '%';
+        if (!empty($search)) {
+            $search_filter = $wpdb->prepare(" AND (
+                MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END) LIKE %s
+                OR MAX(CASE WHEN um.meta_key = '_yith_wcaf_city' THEN um.meta_value END) LIKE %s
+                OR MAX(CASE WHEN um.meta_key = '_yith_wcaf_state' THEN um.meta_value END) LIKE %s
+                OR a.token LIKE %s
+            ) ", $search_like, $search_like, $search_like, $search_like);
+        }
 
-    // Total records count (without search)
-    $sql_total = "
-        SELECT COUNT(DISTINCT a.user_id)
-        FROM {$wpdb->prefix}yith_wcaf_affiliates AS a
-        WHERE a.enabled = '1' AND a.banned = '0'
-        $include_clause
-    ";
-    $records_total = $wpdb->get_var($sql_total);
-
-    // Filtered records count (with search)
-    $sql_filtered = "
-        SELECT COUNT(*) FROM (
-            SELECT a.user_id
+        // Total records count (without search)
+        $sql_total = "
+            SELECT COUNT(DISTINCT a.user_id)
             FROM {$wpdb->prefix}yith_wcaf_affiliates AS a
+            WHERE a.enabled = '1' AND a.banned = '0'
+            $include_clause
+        ";
+        $records_total = $wpdb->get_var($sql_total);
+
+        // Filtered records count (with search)
+        $sql_filtered = "
+            SELECT COUNT(*) FROM (
+                SELECT a.user_id
+                FROM {$wpdb->prefix}yith_wcaf_affiliates AS a
+                LEFT JOIN {$wpdb->usermeta} um ON a.user_id = um.user_id
+                WHERE a.enabled = '1' AND a.banned = '0'
+                $include_clause
+                GROUP BY a.user_id, a.token
+                HAVING 1=1
+                $search_filter
+            ) AS subquery
+        ";
+        $records_filtered = $wpdb->get_var($sql_filtered);
+
+        // Data query
+        $sql_data = "
+            SELECT 
+                a.user_id,
+                a.token,
+                u.user_email,
+                MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END) AS organization_name,
+                MAX(CASE WHEN um.meta_key = '_yith_wcaf_city' THEN um.meta_value END) AS city,
+                MAX(CASE WHEN um.meta_key = '_yith_wcaf_state' THEN um.meta_value END) AS state
+            FROM {$wpdb->prefix}yith_wcaf_affiliates AS a
+            INNER JOIN {$wpdb->users} u ON u.ID = a.user_id
             LEFT JOIN {$wpdb->usermeta} um ON a.user_id = um.user_id
             WHERE a.enabled = '1' AND a.banned = '0'
             $include_clause
             GROUP BY a.user_id, a.token
             HAVING 1=1
             $search_filter
-        ) AS subquery
-    ";
-    $records_filtered = $wpdb->get_var($sql_filtered);
+            ORDER BY $order_by $order_dir
+            LIMIT %d OFFSET %d
+        ";
 
-    // Data query
-    $sql_data = "
-        SELECT 
-            a.user_id,
-            a.token,
-            u.user_email,
-            MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END) AS organization_name,
-            MAX(CASE WHEN um.meta_key = '_yith_wcaf_city' THEN um.meta_value END) AS city,
-            MAX(CASE WHEN um.meta_key = '_yith_wcaf_state' THEN um.meta_value END) AS state
-        FROM {$wpdb->prefix}yith_wcaf_affiliates AS a
-        INNER JOIN {$wpdb->users} u ON u.ID = a.user_id
-        LEFT JOIN {$wpdb->usermeta} um ON a.user_id = um.user_id
-        WHERE a.enabled = '1' AND a.banned = '0'
-        $include_clause
-        GROUP BY a.user_id, a.token
-        HAVING 1=1
-        $search_filter
-        ORDER BY $order_by $order_dir
-        LIMIT %d OFFSET %d
-    ";
+        $results = $wpdb->get_results($wpdb->prepare($sql_data, $length, $start));
 
-    $results = $wpdb->get_results($wpdb->prepare($sql_data, $length, $start));
+        $data = [];
+        foreach ($results as $row) {
+            $nonce = wp_create_nonce('switch_to_user_' . $row->user_id);
+            $data[] = [
+                'code' => esc_html($row->token ?? ''),
+                'email' => esc_html($row->user_email ?? ''),
+                'organization' => esc_html($row->organization_name ?? ''),
+                'city' => esc_html($row->city ?? ''),
+                'state' => esc_html($row->state ?? ''),
+                'status' => esc_html($row->status ?? ''),
+                'login' => '<button class="affiliate-login-btn" data-user-id="' . esc_attr($row->user_id) . '" data-nonce="' . esc_attr($nonce) . '">Login</button>',
+            ];
+        }
 
-    $data = [];
-    foreach ($results as $row) {
-        $nonce = wp_create_nonce('switch_to_user_' . $row->user_id);
-        $data[] = [
-            'code' => esc_html($row->token ?? ''),
-            'email' => esc_html($row->user_email ?? ''),
-            'organization' => esc_html($row->organization_name ?? ''),
-            'city' => esc_html($row->city ?? ''),
-            'state' => esc_html($row->state ?? ''),
-            'status' => esc_html($row->status ?? ''),
-            'login' => '<button class="affiliate-login-btn" data-user-id="' . esc_attr($row->user_id) . '" data-nonce="' . esc_attr($nonce) . '">Login</button>',
-        ];
+        wp_send_json([
+            'draw' => $draw,
+            'recordsTotal' => intval($records_total),
+            'recordsFiltered' => intval($records_filtered),
+            'data' => $data,
+        ]);
+        wp_die();
     }
-
-    wp_send_json([
-        'draw' => $draw,
-        'recordsTotal' => intval($records_total),
-        'recordsFiltered' => intval($records_filtered),
-        'data' => $data,
-    ]);
-    wp_die();
-}
 
 
 
