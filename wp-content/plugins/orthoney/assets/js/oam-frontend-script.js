@@ -2099,7 +2099,7 @@ document.addEventListener("DOMContentLoaded", function () {
    new DataTable("#sales-representative-affiliate-table", {
     pageLength: 50,
     lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-    serverSide: true,
+    serverSide: false,
     processing: true,
     paging: true,
     searching: true,
