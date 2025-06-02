@@ -82,7 +82,7 @@ if ($first_segment == 'dashboard'){
             <th>Recipient No</th>
             <th>Order No</th>
             <th>Date</th>
-            <th><?php echo ($first_segment == 'dashboard') ? 'Billing Name': 'Customer Name'  ?></th>
+            <th><?php echo ($first_segment == 'dashboard') ? 'Billing Name': 'Billing Name'  ?></th>
             <th>Recipient Name</th>
             <th>Organization Code</th>
             <th>Total Honey Jar</th>
