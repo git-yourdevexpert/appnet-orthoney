@@ -2111,7 +2111,6 @@ document.addEventListener("DOMContentLoaded", function () {
         draw: data.draw,
         start: data.start,
         length: data.length,
-        search: { value: data.search.value },
         order: data.order
       };
 
