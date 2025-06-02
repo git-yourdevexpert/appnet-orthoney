@@ -13,7 +13,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         add_action('wp_ajax_update_sales_representative', array($this, 'update_sales_representative_handler'));
         add_action('wp_ajax_auto_login_request_to_sales_rep', array($this, 'auto_login_request_to_sales_rep_handler'));
 
-        add_action('wp_ajax_get_affiliates_list', array($this, 'get_affiliates_list_ajax_handler'));
+        add_action('wp_ajax_get_affiliates_list_ajax', array($this, 'get_affiliates_list_ajax_handler'));
         add_action('wp_ajax_get_filtered_customers', array($this, 'orthoney_get_filtered_customers'));
     }
 

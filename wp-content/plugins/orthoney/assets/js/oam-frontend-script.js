@@ -2106,21 +2106,16 @@ document.addEventListener("DOMContentLoaded", function () {
     processing: true,
     paging: true,
     searching: true,
-    ordering: true, // Enable ordering
+    ordering: true,
     ajax: function(data, callback) {
-      // Map DataTables ordering to your server parameters
-      let orderColumnIndex = data.order && data.order.length > 0 ? data.order[0].column : 0;
-      let orderDir = data.order && data.order.length > 0 ? data.order[0].dir : 'asc';
-
       const postData = {
-        action: "get_affiliates_list",
+        action: "get_affiliates_list_ajax_handler", // ✅ FIXED action name
         nonce: oam_ajax.nonce,
         draw: data.draw,
         start: data.start,
         length: data.length,
         search: { value: data.search.value },
-        order_column: orderColumnIndex,
-        order_dir: orderDir,
+        order: data.order // ✅ send full DataTables order array
       };
 
       fetch(oam_ajax.ajax_url, {
