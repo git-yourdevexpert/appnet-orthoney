@@ -18,9 +18,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
     }
 
     
-    public function orthoney_get_filtered_customers() {
-        // check_ajax_referer('get_customers_nonce', 'nonce');
-
+   public function orthoney_get_filtered_customers() {
         global $wpdb;
 
         $user_id = get_current_user_id();
@@ -32,38 +30,32 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         $draw   = intval($_POST['draw'] ?? 1);
         $search = sanitize_text_field($_POST['search']['value'] ?? '');
 
-        // Prepare "include" filter if needed
         $include_clause = '';
-        $include_ids = [];
         if ($select_customer === 'choose_customer' && !empty($choose_customer)) {
-            $choose_customer_int = array_map('intval', (array)$choose_customer);
-            if (!empty($choose_customer_int)) {
-                $include_ids = $choose_customer_int;
-                $include_clause = 'AND u.ID IN (' . implode(',', $include_ids) . ')';
-            }
+            $choose_ids = array_map('intval', (array) $choose_customer);
+            $include_clause = 'AND u.ID IN (' . implode(',', $choose_ids) . ')';
         }
 
-        // Clean search for SQL LIKE
         $like_search = '%' . $wpdb->esc_like($search) . '%';
 
-        // Prepare SQL for counting total 'customer' users with possible inclusion filter (no search)
         $sql_total = "
-            SELECT COUNT(DISTINCT u.ID) FROM {$wpdb->users} u
-            INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID AND um_role.meta_key = '{$wpdb->prefix}capabilities'
-            WHERE um_role.meta_value = 'a:1:{s:8:\"customer\";b:1;}'
+            SELECT COUNT(DISTINCT u.ID)
+            FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
+            WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
+            AND um_role.meta_value LIKE '%customer%'
             {$include_clause}
         ";
-
-        // Total count without search
         $total_count = $wpdb->get_var($sql_total);
 
-        // Prepare SQL for filtered count with search
         $sql_filtered = "
-            SELECT COUNT(DISTINCT u.ID) FROM {$wpdb->users} u
-            INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID AND um_role.meta_key = '{$wpdb->prefix}capabilities'
+            SELECT COUNT(DISTINCT u.ID)
+            FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
             LEFT JOIN {$wpdb->usermeta} um_first ON (um_first.user_id = u.ID AND um_first.meta_key = 'first_name')
             LEFT JOIN {$wpdb->usermeta} um_last ON (um_last.user_id = u.ID AND um_last.meta_key = 'last_name')
-            WHERE um_role.meta_value = 'a:1:{s:8:\"customer\";b:1;}'
+            WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
+            AND um_role.meta_value LIKE '%customer%'
             AND (
                 u.user_email LIKE %s
                 OR um_first.meta_value LIKE %s
@@ -71,44 +63,35 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
             )
             {$include_clause}
         ";
-
         $filtered_count = $wpdb->get_var($wpdb->prepare($sql_filtered, $like_search, $like_search, $like_search));
 
-        // Prepare SQL to get user data with limit and search
         $sql_data = "
-            SELECT u.ID, u.user_email, um_first.meta_value AS first_name, um_last.meta_value AS last_name
+            SELECT u.ID, u.user_email, u.display_name, um_first.meta_value AS first_name, um_last.meta_value AS last_name
             FROM {$wpdb->users} u
-            INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID AND um_role.meta_key = '{$wpdb->prefix}capabilities'
+            INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
             LEFT JOIN {$wpdb->usermeta} um_first ON (um_first.user_id = u.ID AND um_first.meta_key = 'first_name')
             LEFT JOIN {$wpdb->usermeta} um_last ON (um_last.user_id = u.ID AND um_last.meta_key = 'last_name')
-            WHERE um_role.meta_value = 'a:1:{s:8:\"customer\";b:1;}'
+            WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
+            AND um_role.meta_value LIKE '%customer%'
             AND (
                 u.user_email LIKE %s
                 OR um_first.meta_value LIKE %s
                 OR um_last.meta_value LIKE %s
             )
             {$include_clause}
-            ORDER BY um_first.meta_value ASC, um_last.meta_value ASC
-            LIMIT %d, %d
+            ORDER BY um_first.meta_value ASC
+            LIMIT %d OFFSET %d
         ";
 
-        $results = $wpdb->get_results($wpdb->prepare(
-            $sql_data,
-            $like_search,
-            $like_search,
-            $like_search,
-            $start,
-            $length
-        ));
+        $results = $wpdb->get_results($wpdb->prepare($sql_data, $like_search, $like_search, $like_search, $length, $start));
 
-        // Prepare data for DataTables
         $data = [];
         foreach ($results as $user) {
             $nonce = wp_create_nonce('switch_to_user_' . $user->ID);
             $name = trim($user->first_name . ' ' . $user->last_name);
 
             $data[] = [
-                'name' => esc_html($name ?: '—'),
+                'name' => esc_html($name ?: $user->display_name), // ✅ Correct fallback
                 'email' => esc_html($user->user_email),
                 'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '" data-nonce="' . esc_attr($nonce) . '">
                                 <img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login as Customer
@@ -123,6 +106,8 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
             'data' => $data,
         ]);
     }
+
+    
  public function get_affiliates_list_ajax_handler() {
         global $wpdb;
 

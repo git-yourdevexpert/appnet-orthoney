@@ -1,4 +1,4 @@
-<?php 
+<?php
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
@@ -6,156 +6,103 @@ if (!defined('ABSPATH')) {
 
 class OAM_SALES_REPRESENTATIVE_Custom {
 
-    /**
-     * Constructor to hook into sales representative template loading.
-     */
     public function __construct() {
         add_action('init', array($this, 'sales_representative_dashboard_handler'));
+        add_action('acf/load_field/name=choose_customer', array($this, 'populate_choose_customer_acf_handler'));
         add_action('wp_head', array($this, 'remove_user_switching_footer_button'));
+        add_action('orthoney_cron_cache_customers', array($this, 'orthoney_cache_customer_data'));
 
-        add_filter('acf/fields/select/query/key=field_67e12644ba5fe',array($this, 'populate_choose_customer_select_field'), 10, 2);
-        add_filter('acf/fields/select/query/key=field_67e12685ba5ff',array($this, 'populate_choose_organization_select_field'), 10, 2);
-
+        // Schedule the cron only once
+        if (!wp_next_scheduled('orthoney_cron_cache_customers')) {
+            wp_schedule_event(time(), 'daily', 'orthoney_cron_cache_customers');
+        }
     }
 
+    /**
+     * Removes the User Switching footer button from frontend.
+     */
     public function remove_user_switching_footer_button() {
         ob_start(function ($buffer) {
             return preg_replace('/<p id="user_switching_switch_on".*?<\/p>/s', '', $buffer);
         });
     }
-     /**
-     * sales representative callback
+
+    /**
+     * Adds a custom rewrite endpoint for the sales representative dashboard.
      */
     public function sales_representative_dashboard_handler() {
+        $parsed_url = SALES_REPRESENTATIVE_DASHBOARD_LINK;
+        $relative_url = str_replace(home_url(), '', $parsed_url);
+        $slug = trim($relative_url, '/');
 
-        $parsedUrl = SALES_REPRESENTATIVE_DASHBOARD_LINK;
-        $newdUrl = str_replace(home_url(), '' ,$parsedUrl);
-        $slug = trim($newdUrl, '/');
         if (!empty($slug)) {
-            $sales_representative_dashboard_id = get_page_by_path($slug);
-        
-            if ($sales_representative_dashboard_id) {
-                add_rewrite_rule($slug.'/([^/]+)/?$', 'index.php?pagename='.$slug.'&sales_representative_endpoint=$matches[1]', 'top');
+            $page = get_page_by_path($slug);
+            if ($page) {
+                add_rewrite_rule("{$slug}/([^/]+)/?$", 'index.php?pagename=' . $slug . '&sales_representative_endpoint=$matches[1]', 'top');
                 add_rewrite_endpoint('sales_representative_endpoint', EP_PAGES);
             }
         }
     }
 
-   
-
-    
-public function populate_choose_customer_select_field($args, $field) {
-    $args['results'] = [];
-
-    // Get search term from request
-    $search = isset($_REQUEST['s']) ? sanitize_text_field($_REQUEST['s']) : '';
-
-    // Fetch users with customer role (may include those with multiple roles)
-    $users = get_users([
-        'role'    => 'customer',
-        'orderby' => 'display_name',
-        'order'   => 'ASC',
-        'meta_query' => [
-            'relation' => 'OR',
-            [
-                'key'     => 'first_name',
-                'value'   => $search,
-                'compare' => 'LIKE',
-            ],
-            [
-                'key'     => 'last_name',
-                'value'   => $search,
-                'compare' => 'LIKE',
-            ]
-        ],
-    ]);
-
-    foreach ($users as $user) {
-        $roles = (array) $user->roles;
-
-        // Skip users with more than one role or if role isn't exactly 'customer'
-        if (count($roles) !== 1 || $roles[0] !== 'customer') {
-            continue;
+    /**
+     * Populates the ACF select field with cached customer data.
+     */
+    public function populate_choose_customer_acf_handler($field) {
+        if ($field['name'] !== 'choose_customer') {
+            return $field;
         }
 
-        $first_name = get_user_meta($user->ID, 'first_name', true);
-        $last_name  = get_user_meta($user->ID, 'last_name', true);
-        $full_name  = trim($first_name . ' ' . $last_name);
+        $cached_customers = get_transient('orthoney_cached_customers');
 
-        if (empty($full_name)) {
-            $full_name = $user->display_name;
+        if (!empty($cached_customers)) {
+            foreach ($cached_customers as $user_id => $label) {
+                $field['choices'][$user_id] = $label;
+            }
         }
 
-        $args['results'][] = [
-            'id'   => $user->ID,
-            'text' => $full_name,
-        ];
+        if (empty($field['choices'])) {
+            $field['choices'] = ['' => 'No Customers Found'];
+        }
+
+        return $field;
     }
 
-    return $args;
-}
-public function populate_choose_organization_select_field($args, $field) {
-    $args['results'] = [];
+    /**
+     * Caches customer data in a transient to improve ACF load performance.
+     */
+    public function orthoney_cache_customer_data() {
+        global $wpdb;
 
-    // Get search string from Select2 (passed as ?s=...)
-    $search = isset($_REQUEST['s']) ? sanitize_text_field($_REQUEST['s']) : '';
+        $query = $wpdb->prepare("
+            SELECT u.ID, u.display_name, u.user_email,
+                MAX(CASE WHEN um.meta_key = 'first_name' THEN um.meta_value END) AS first_name,
+                MAX(CASE WHEN um.meta_key = 'last_name' THEN um.meta_value END) AS last_name,
+                MAX(CASE WHEN um.meta_key = '{$wpdb->prefix}capabilities' THEN um.meta_value END) AS capabilities
+            FROM {$wpdb->users} u
+            LEFT JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+            GROUP BY u.ID, u.display_name, u.user_email
+            HAVING capabilities LIKE %s
+            ORDER BY display_name ASC
+        ", '%"customer"%');
 
-    // Fetch users with role 'yith_affiliate'
-    $users = get_users([
-        'role'    => 'yith_affiliate',
-        'orderby' => 'display_name',
-        'order'   => 'ASC',
-        'number'  => 20,
-        'meta_query' => [
-            'relation' => 'OR',
-            [
-                'key'     => '_yith_wcaf_name_of_your_organization',
-                'value'   => $search,
-                'compare' => 'LIKE',
-            ],
-            [
-                'key'     => '_yith_wcaf_city',
-                'value'   => $search,
-                'compare' => 'LIKE',
-            ],
-            [
-                'key'     => '_yith_wcaf_state',
-                'value'   => $search,
-                'compare' => 'LIKE',
-            ],
-            [
-                'key'     => '_yith_wcaf_zipcode',
-                'value'   => $search,
-                'compare' => 'LIKE',
-            ],
-        ],
-    ]);
+        $users = $wpdb->get_results($query);
 
-foreach ($users as $user) {
-    $organization_name = trim(get_user_meta($user->ID, '_yith_wcaf_name_of_your_organization', true));
-    $city              = trim(get_user_meta($user->ID, '_yith_wcaf_city', true));
-    $state             = trim(get_user_meta($user->ID, '_yith_wcaf_state', true));
-    $code              = trim(get_user_meta($user->ID, '_yith_wcaf_zipcode', true));
+        $cached = [];
 
-    // Build location string only if values exist
-    $location_parts = array_filter([$city, $state, $code]);
-    $location       = $location_parts ? ' (' . implode(', ', $location_parts) . ')' : '';
+        foreach ($users as $user) {
+            $first_name = $user->first_name;
+            $last_name  = $user->last_name;
+            $full_name  = trim($first_name . ' ' . $last_name);
+            if (empty($full_name)) {
+                $full_name = $user->display_name;
+            }
 
-    // Fallback if org name is missing
-    $label = $organization_name ?: 'Unnamed Organization';
-    $label .= $location;
+            // Build the label in format: #123 John Doe [john@example.com]
+            $cached[$user->ID] = $full_name . ' [' . $user->user_email . ']';
+        }
 
-    $args['results'][] = [
-        'id'   => $user->ID,
-        'text' => $label,
-    ];
-}
-
-
-    return $args;
-}
-
-    
+        set_transient('orthoney_cached_customers', $cached, DAY_IN_SECONDS);
+    }
 }
 
 new OAM_SALES_REPRESENTATIVE_Custom();
