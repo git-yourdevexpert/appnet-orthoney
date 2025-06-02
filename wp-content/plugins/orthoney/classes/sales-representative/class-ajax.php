@@ -116,125 +116,129 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
 
 
    public function get_affiliates_list_ajax_handler() {
-        global $wpdb;
+         global $wpdb;
 
-        $user_id              = get_current_user_id();
-        $select_organization  = get_user_meta($user_id, 'select_organization', true);
-        $choose_organization  = get_user_meta($user_id, 'choose_organization', true); // fixed key spacing
-
-        $start  = intval($_POST['start'] ?? 0);
-        $length = intval($_POST['length'] ?? 10);
-        $draw   = intval($_POST['draw'] ?? 1);
-        $search = sanitize_text_field($_POST['search']['value'] ?? '');
-        $nonce  = wp_create_nonce('customer_login_nonce');
-
-        // Step 1: Fetch organizations from DB with conditional filter
-        $query = "SELECT user_id, enabled, banned, token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE enabled = 1 AND banned = 0";
-
-        // Restrict to selected organization if applicable
-        if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
-            $query .= $wpdb->prepare(" AND user_id = %d", $choose_organization);
-        }
-
-        $raw_users = $wpdb->get_results($query);
-
-        if (empty($raw_users)) {
-            wp_send_json([
-                'draw'            => $draw,
-                'recordsTotal'    => 0,
-                'recordsFiltered' => 0,
-                'data'            => [],
-            ]);
-        }
-
-        // Step 2: Prepare user meta and status
-        $user_meta_cache = [];
-        $user_status_map = [];
-
-        foreach ($raw_users as $row) {
-            $user_id = intval($row->user_id);
-            $enabled = intval($row->enabled);
-            $banned  = intval($row->banned);
-
-            // Determine status
-            if ($banned === 1) {
-                $status = 'Banned';
-            } elseif ($enabled === 1) {
-                $status = 'Accepted and enabled';
-            } elseif ($enabled === -1) {
-                $status = 'Rejected';
-            } else {
-                $status = 'New request';
-            }
-
-            $user_status_map[$user_id] = [
-                'enabled' => $enabled,
-                'banned'  => $banned,
-                'label'   => $status,
-            ];
-
-            $user_obj = get_userdata($user_id);
-
-            $city  = get_user_meta($user_id, '_yith_wcaf_city', true) ?: get_user_meta($user_id, 'billing_city', true) ?: '';
-            $state = get_user_meta($user_id, '_yith_wcaf_state', true) ?: get_user_meta($user_id, 'billing_state', true) ?: '';
-
-            $user_meta_cache[$user_id] = [
-                'organization' => get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true),
-                'city'         => $city,
-                'state'        => $state,
-                'code'         => $row->token,
-                'email'        => $user_obj ? $user_obj->user_email : '',
-            ];
-        }
-
-        // Step 3: Apply search filter
-        $filtered_user_ids = array_filter(array_keys($user_meta_cache), function ($user_id) use ($search, $user_meta_cache, $user_status_map) {
-            if (empty($search)) return true;
-
-            $search_lc = strtolower($search);
-            $meta      = $user_meta_cache[$user_id];
-            $status    = strtolower($user_status_map[$user_id]['label']);
-
-            return (
-                strpos(strtolower($meta['organization']), $search_lc) !== false ||
-                strpos(strtolower($meta['city']), $search_lc)         !== false ||
-                strpos(strtolower($meta['state']), $search_lc)        !== false ||
-                strpos(strtolower($meta['code']), $search_lc)         !== false ||
-                strpos(strtolower($meta['email']), $search_lc)        !== false ||
-                strpos($status, $search_lc)                           !== false
-            );
-        });
-
-        $recordsTotal    = count($user_meta_cache);
-        $recordsFiltered = count($filtered_user_ids);
-
-        // Step 4: Paginate
-        $paged_user_ids = array_slice(array_values($filtered_user_ids), $start, $length);
-
-        // Step 5: Prepare response
-        $data = [];
-        foreach ($paged_user_ids as $user_id) {
-            $meta   = $user_meta_cache[$user_id];
-            $status = $user_status_map[$user_id]['label'];
-
-            $data[] = [
-                'code'         => esc_html($meta['code']),
-                'organization' => esc_html($meta['organization']),
-                'city'         => esc_html($meta['city']),
-                'state'        => esc_html($meta['state']),
-                'email'        => esc_html($meta['email']),
-                'status'       => esc_html($status),
-                'login'        => ($status == 'Accepted and enabled' ? '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As An Organization</button>' : '')
-            ];
-        }
-
-        wp_send_json([
-            'draw'            => $draw,
-            'recordsTotal'    => $recordsTotal,
-            'recordsFiltered' => $recordsFiltered,
-            'data'            => $data,
-        ]);
+    // Check nonce for security - adjust nonce action as needed
+    if (empty($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'your_nonce_action')) {
+        wp_send_json_error('Invalid nonce');
+        wp_die();
     }
+
+    $start  = intval($_POST['start'] ?? 0);
+    $length = intval($_POST['length'] ?? 10);
+    $draw   = intval($_POST['draw'] ?? 1);
+    $search = sanitize_text_field($_POST['search']['value'] ?? '');
+
+    // Ordering data sent by DataTables
+    $order_column_index = intval($_POST['order'][0]['column'] ?? 0);
+    $order_dir = strtoupper($_POST['order'][0]['dir'] ?? 'ASC');
+    $order_dir = in_array($order_dir, ['ASC', 'DESC']) ? $order_dir : 'ASC';
+
+    // Map the columns to the DB columns (adjust according to your columns)
+    $columns = ['meta_code.meta_value', 'u.user_email', 'org.meta_value', 'city.meta_value', 'state.meta_value', 'status.meta_value'];
+    $order_column = $columns[$order_column_index] ?? $columns[0];
+
+    $like_search = '%' . $wpdb->esc_like($search) . '%';
+
+    // We want users with role yith_affiliate
+    // Join usermeta for affiliate meta fields: code, organization, city, state, status
+
+    // Total count of affiliates
+    $sql_total = "
+        SELECT COUNT(DISTINCT u.ID)
+        FROM {$wpdb->users} u
+        INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
+        WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
+          AND um_role.meta_value LIKE '%yith_affiliate%'
+    ";
+    $total_count = $wpdb->get_var($sql_total);
+
+    // Count filtered rows with search applied on relevant fields
+    $sql_filtered = "
+        SELECT COUNT(DISTINCT u.ID)
+        FROM {$wpdb->users} u
+        INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
+        LEFT JOIN {$wpdb->usermeta} meta_code ON meta_code.user_id = u.ID AND meta_code.meta_key = 'code'
+        LEFT JOIN {$wpdb->usermeta} org ON org.user_id = u.ID AND org.meta_key = 'organization'
+        LEFT JOIN {$wpdb->usermeta} city ON city.user_id = u.ID AND city.meta_key = 'city'
+        LEFT JOIN {$wpdb->usermeta} state ON state.user_id = u.ID AND state.meta_key = 'state'
+        LEFT JOIN {$wpdb->usermeta} status ON status.user_id = u.ID AND status.meta_key = 'status'
+        WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
+          AND um_role.meta_value LIKE '%yith_affiliate%'
+          AND (
+            meta_code.meta_value LIKE %s
+            OR u.user_email LIKE %s
+            OR org.meta_value LIKE %s
+            OR city.meta_value LIKE %s
+            OR state.meta_value LIKE %s
+            OR status.meta_value LIKE %s
+          )
+    ";
+    $filtered_count = $wpdb->get_var($wpdb->prepare($sql_filtered, $like_search, $like_search, $like_search, $like_search, $like_search, $like_search));
+
+    // Get the data for current page
+    $sql_data = "
+        SELECT u.ID, u.user_email,
+            meta_code.meta_value AS code,
+            org.meta_value AS organization,
+            city.meta_value AS city,
+            state.meta_value AS state,
+            status.meta_value AS status
+        FROM {$wpdb->users} u
+        INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
+        LEFT JOIN {$wpdb->usermeta} meta_code ON meta_code.user_id = u.ID AND meta_code.meta_key = 'code'
+        LEFT JOIN {$wpdb->usermeta} org ON org.user_id = u.ID AND org.meta_key = 'organization'
+        LEFT JOIN {$wpdb->usermeta} city ON city.user_id = u.ID AND city.meta_key = 'city'
+        LEFT JOIN {$wpdb->usermeta} state ON state.user_id = u.ID AND state.meta_key = 'state'
+        LEFT JOIN {$wpdb->usermeta} status ON status.user_id = u.ID AND status.meta_key = 'status'
+        WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
+          AND um_role.meta_value LIKE '%yith_affiliate%'
+          AND (
+            meta_code.meta_value LIKE %s
+            OR u.user_email LIKE %s
+            OR org.meta_value LIKE %s
+            OR city.meta_value LIKE %s
+            OR state.meta_value LIKE %s
+            OR status.meta_value LIKE %s
+          )
+        ORDER BY {$order_column} {$order_dir}
+        LIMIT %d OFFSET %d
+    ";
+
+    $results = $wpdb->get_results($wpdb->prepare(
+        $sql_data,
+        $like_search,
+        $like_search,
+        $like_search,
+        $like_search,
+        $like_search,
+        $like_search,
+        $length,
+        $start
+    ));
+
+    // Build rows with a login button (you can customize the button as needed)
+    $data = [];
+    foreach ($results as $affiliate) {
+        $nonce = wp_create_nonce('switch_to_user_' . $affiliate->ID);
+        $data[] = [
+            'code' => esc_html($affiliate->code),
+            'email' => esc_html($affiliate->user_email),
+            'organization' => esc_html($affiliate->organization),
+            'city' => esc_html($affiliate->city),
+            'state' => esc_html($affiliate->state),
+            'status' => esc_html($affiliate->status),
+            'login' => '<button class="affiliate-login-btn icon-txt-btn" data-user-id="' . esc_attr($affiliate->ID) . '" data-nonce="' . esc_attr($nonce) . '">Login</button>',
+        ];
+    }
+
+    wp_send_json([
+        'draw' => $draw,
+        'recordsTotal' => intval($total_count),
+        'recordsFiltered' => intval($filtered_count),
+        'data' => $data,
+    ]);
+}
    
 
 
