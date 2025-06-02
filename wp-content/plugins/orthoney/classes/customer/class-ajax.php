@@ -1990,7 +1990,8 @@ class OAM_Ajax{
             );
     
             foreach ($failData as $record) {
-                $reasons = (!empty($record->reasons)) ? implode(", ", json_decode($record->reasons, true)) : '';
+                $decoded_reasons = json_decode($record->reasons, true);
+                $reasons = (is_array($decoded_reasons)) ? implode(", ", $decoded_reasons) : (string) $decoded_reasons;
     
                 $csvData[] = array(
                     $record->full_name,
