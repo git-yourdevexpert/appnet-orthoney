@@ -370,13 +370,14 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                                         $custom_order_id
                                                     ) );
 
+                                                    $token_display = !empty($affiliate_token) ? '[' . $affiliate_token . ']' : '';
                                                     $selected = '';
                                                     if (!empty($orders) && in_array($order_id, $orders)) {
                                                         $selected = 'selected';
                                                     }
 
                                                     echo '<option ' . $selected . ' value="' . esc_attr($order_id) . '">'
-                                                    . esc_html($custom_order_id . ' - ' . $billing_name . ' ' . $affiliate_token . ' (Jars: ' . $total_quantity . ')')
+                                                    . esc_html($custom_order_id . ' - ' . $billing_name . ' ' . $token_display . ' (Jars: ' . $total_quantity . ')')
                                                     . '</option>';
                                                 }
                                                 ?>
