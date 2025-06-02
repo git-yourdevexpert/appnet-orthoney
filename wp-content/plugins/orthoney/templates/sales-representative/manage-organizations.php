@@ -15,8 +15,7 @@ if (!defined('ABSPATH')) {
                 <th>Email</th>
                 <th>Organization Name</th>
                 <th>City</th>
-                <th>State</th>
-                <th>Status</th>
+                <th>State</th>  
                 <th>Login</th>
             </tr>
         </thead>

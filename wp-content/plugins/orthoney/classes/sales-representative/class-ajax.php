@@ -38,65 +38,29 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
                 $include_clause = 'AND u.ID IN (' . implode(',', $choose_ids) . ')';
             }
         }
-        // If $select_customer == 'value', no include clause → show all customers
-
-        $like_search = '%' . $wpdb->esc_like($search) . '%';
-
-        // Total customers count (with optional filter)
-        $sql_total = "
-            SELECT COUNT(DISTINCT u.ID)
-            FROM {$wpdb->users} u
-            INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
-            WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
-            AND um_role.meta_value LIKE '%customer%'
-            {$include_clause}
-        ";
-        $total_count = $wpdb->get_var($sql_total);
-
-        // Filtered customers count with search + filter
-        $sql_filtered = "
-            SELECT COUNT(DISTINCT u.ID)
-            FROM {$wpdb->users} u
-            INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
-            LEFT JOIN {$wpdb->usermeta} um_first ON (um_first.user_id = u.ID AND um_first.meta_key = 'first_name')
-            LEFT JOIN {$wpdb->usermeta} um_last ON (um_last.user_id = u.ID AND um_last.meta_key = 'last_name')
-            WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
-            AND um_role.meta_value LIKE '%customer%'
-            AND (
-                u.user_email LIKE %s
-                OR um_first.meta_value LIKE %s
-                OR um_last.meta_value LIKE %s
-            )
-            {$include_clause}
-        ";
-        $filtered_count = $wpdb->get_var($wpdb->prepare($sql_filtered, $like_search, $like_search, $like_search));
+        
 
         // Fetch paginated customer data with search + filter
-        $sql_data = "
-            SELECT u.ID, u.user_email, u.display_name, um_first.meta_value AS first_name, um_last.meta_value AS last_name
+       $sql_data = "
+            SELECT DISTINCT u.ID, u.user_email, u.display_name, um_first.meta_value AS first_name, um_last.meta_value AS last_name
             FROM {$wpdb->users} u
             INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
             LEFT JOIN {$wpdb->usermeta} um_first ON (um_first.user_id = u.ID AND um_first.meta_key = 'first_name')
             LEFT JOIN {$wpdb->usermeta} um_last ON (um_last.user_id = u.ID AND um_last.meta_key = 'last_name')
             WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
-            AND um_role.meta_value LIKE '%customer%'
-            AND (
-                u.user_email LIKE %s
-                OR um_first.meta_value LIKE %s
-                OR um_last.meta_value LIKE %s
-            )
+            AND um_role.meta_value = 'a:1:{s:8:\"customer\";b:1;}'
+            AND u.user_email != ''
             {$include_clause}
             ORDER BY um_first.meta_value ASC
-            LIMIT %d OFFSET %d
         ";
 
-        $results = $wpdb->get_results($wpdb->prepare($sql_data, $like_search, $like_search, $like_search, $length, $start));
+        $results = $wpdb->get_results($wpdb->prepare($sql_data));
 
         $data = [];
         foreach ($results as $user) {
             $nonce = wp_create_nonce('switch_to_user_' . $user->ID);
             $name  = trim($user->first_name . ' ' . $user->last_name);
-
+if($user->user_email != ''){
             $data[] = [
                 'name'   => esc_html($name ?: $user->display_name),
                 'email'  => esc_html($user->user_email),
@@ -105,11 +69,12 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
                             </button>',
             ];
         }
+        }
 
         wp_send_json([
             'draw'            => $draw,
-            'recordsTotal'    => intval($total_count),
-            'recordsFiltered' => intval($filtered_count),
+            'recordsTotal'    => intval(count($data)),
+            'recordsFiltered' => intval(count($data)),
             'data'            => $data,
         ]);
     }
@@ -203,7 +168,6 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
             HAVING 1=1
             $search_filter
             ORDER BY $order_by $order_dir
-            LIMIT %d OFFSET %d
         ";
 
         $results = $wpdb->get_results($wpdb->prepare($sql_data, $length, $start));
@@ -217,7 +181,6 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
                 'organization' => esc_html($row->organization_name ?? ''),
                 'city' => esc_html($row->city ?? ''),
                 'state' => esc_html($row->state ?? ''),
-                'status' => esc_html($row->status ?? ''),
                 'login' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($row->user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png"> Login as Organization</button>',
             ];
         }

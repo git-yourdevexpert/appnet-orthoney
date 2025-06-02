@@ -2099,20 +2099,15 @@ document.addEventListener("DOMContentLoaded", function () {
    new DataTable("#sales-representative-affiliate-table", {
     pageLength: 50,
     lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-    serverSide: true,
+    serverSide: false,
     processing: true,
     paging: true,
-    searching: false,
-    ordering: false,
+    searching: true,
+    ordering: true,
     ajax: function (data, callback) {
       const postData = {
         action: "get_affiliates_list_ajax",
         nonce: oam_ajax.nonce,
-        draw: data.draw,
-        start: data.start,
-        length: data.length,
-        search: { value: data.search.value },
-        order: data.order
       };
 
       fetch(oam_ajax.ajax_url, {
@@ -2133,7 +2128,6 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "organization" },
       { data: "city" },
       { data: "state" },
-      { data: "status" },
       { data: "login" }
     ],
     columnDefs: [{ targets: -1, orderable: false }],
@@ -2158,12 +2152,12 @@ document.addEventListener("DOMContentLoaded", function () {
       [10, 25, 50, 100],
       [10, 25, 50, 100]
     ],
-    serverSide: true,
+    serverSide: false,
     processing: true,
     paging: true,
-    searching: false,
+    searching: true,
     responsive: true,
-    ordering: false, // Enable ordering
+    ordering: true, // Enable ordering
     ajax: function(data, callback) {
       let orderColumnIndex = data.order && data.order.length > 0 ? data.order[0].column : 0;
       let orderDir = data.order && data.order.length > 0 ? data.order[0].dir : 'asc';
@@ -2171,12 +2165,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const postData = {
         action: "get_filtered_customers",
         nonce: oam_ajax.nonce,
-        draw: data.draw,
-        start: data.start,
-        length: data.length,
-        search: { value: data.search.value },
-        order_column: orderColumnIndex,
-        order_dir: orderDir,
       };
 
       fetch(oam_ajax.ajax_url, {

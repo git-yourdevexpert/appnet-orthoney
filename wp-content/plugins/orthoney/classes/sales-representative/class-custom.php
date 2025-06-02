@@ -82,16 +82,17 @@ class OAM_SALES_REPRESENTATIVE_Custom {
         global $wpdb;
 
         $query = $wpdb->prepare("
-            SELECT u.ID, u.display_name, u.user_email,
+            SELECT DISTINCT u.ID, u.display_name, u.user_email,
                 MAX(CASE WHEN um.meta_key = 'first_name' THEN um.meta_value END) AS first_name,
                 MAX(CASE WHEN um.meta_key = 'last_name' THEN um.meta_value END) AS last_name,
                 MAX(CASE WHEN um.meta_key = '{$wpdb->prefix}capabilities' THEN um.meta_value END) AS capabilities
             FROM {$wpdb->users} u
             LEFT JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+            WHERE u.user_email != ''
             GROUP BY u.ID, u.display_name, u.user_email
-            HAVING capabilities LIKE %s
+            HAVING capabilities = %s
             ORDER BY display_name ASC
-        ", '%"customer"%');
+        ", 'a:1:{s:8:"customer";b:1;}');
 
         $users = $wpdb->get_results($query);
 
