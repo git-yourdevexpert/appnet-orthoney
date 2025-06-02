@@ -2161,9 +2161,9 @@ document.addEventListener("DOMContentLoaded", function () {
     serverSide: true,
     processing: true,
     paging: true,
-    searching: true,
+    searching: false,
     responsive: true,
-    ordering: true, // Enable ordering
+    ordering: false, // Enable ordering
     ajax: function(data, callback) {
       let orderColumnIndex = data.order && data.order.length > 0 ? data.order[0].column : 0;
       let orderDir = data.order && data.order.length > 0 ? data.order[0].dir : 'asc';
