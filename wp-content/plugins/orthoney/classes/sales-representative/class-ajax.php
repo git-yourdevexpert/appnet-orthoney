@@ -101,7 +101,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
                 'name'   => esc_html($name ?: $user->display_name),
                 'email'  => esc_html($user->user_email),
                 'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '" data-nonce="' . esc_attr($nonce) . '">
-                                <img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login as Customer
+                                <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png"> Login as Customer
                             </button>',
             ];
         }
@@ -218,7 +218,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
                 'city' => esc_html($row->city ?? ''),
                 'state' => esc_html($row->state ?? ''),
                 'status' => esc_html($row->status ?? ''),
-                'login' => '<button class="affiliate-login-btn" data-user-id="' . esc_attr($row->user_id) . '" data-nonce="' . esc_attr($nonce) . '">Login</button>',
+                'login' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($row->user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png"> Login as Organization</button>',
             ];
         }
 
