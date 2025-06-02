@@ -637,7 +637,13 @@ class OAM_COMMON_Custom {
         }
     }
 
-    function check_userrole_update_meta($user_id) {
+   function check_userrole_update_meta($user_id) {
+        $user = get_user_by('id', $user_id);
+        // Get the role set at creation time (from $_POST)
+        if (isset($_POST['role']) && $_POST['role'] === 'sales_representative') {
+            // Add customer role if sales_representative
+            $user->add_role('customer');
+        }
         $user = get_userdata($user_id);
         $roles = $user->roles; // Get the user's roles (array)
         
@@ -648,6 +654,7 @@ class OAM_COMMON_Custom {
         }
 
     }
+    
     
     public static function get_user_role_by_id($user_id) {
         $user = get_userdata($user_id);

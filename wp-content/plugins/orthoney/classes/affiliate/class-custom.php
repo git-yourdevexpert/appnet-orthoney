@@ -19,6 +19,16 @@ class OAM_AFFILIATE_Custom {
     }
 
     public function affiliate_import_handler() {
+         if ( isset($_GET['sales_representative_data_import']) && $_GET['sales_representative_data_import'] == 'import' ) {
+            $sales_reps = get_users( array(
+                'role' => 'sales_representative',
+            ) );
+
+            foreach ( $sales_reps as $user ) {
+                $user->add_role('customer');
+            }
+        }
+        
         if(isset($_GET['affiliate_data_import']) &&  $_GET['affiliate_data_import'] = 'import') {
             global $wpdb;
 
