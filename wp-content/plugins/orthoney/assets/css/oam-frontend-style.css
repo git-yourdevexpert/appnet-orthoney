@@ -525,6 +525,7 @@ body .select2-container--default .select2-results__option--highlighted.select2-r
   min-width: 980px;
   padding: 40px 40px;
   max-height: inherit !important;
+  overflow-y: auto;
 }
 
 .popup-show form label {
