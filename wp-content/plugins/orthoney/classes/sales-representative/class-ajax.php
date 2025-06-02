@@ -18,12 +18,12 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
     }
 
     
-   public function orthoney_get_filtered_customers() {
+    public function orthoney_get_filtered_customers() {
         global $wpdb;
 
-        $user_id = get_current_user_id();
+        $user_id         = get_current_user_id();
         $select_customer = get_user_meta($user_id, 'select_customer', true);
-        $choose_customer = get_user_meta($user_id, 'choose_customer', true);
+        $choose_customer = get_user_meta($user_id, 'choose_customer', true); // no trailing space
 
         $start  = intval($_POST['start'] ?? 0);
         $length = intval($_POST['length'] ?? 10);
@@ -32,12 +32,17 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
 
         $include_clause = '';
         if ($select_customer === 'choose_customer' && !empty($choose_customer)) {
+            // make sure $choose_customer is array of integers
             $choose_ids = array_map('intval', (array) $choose_customer);
-            $include_clause = 'AND u.ID IN (' . implode(',', $choose_ids) . ')';
+            if (!empty($choose_ids)) {
+                $include_clause = 'AND u.ID IN (' . implode(',', $choose_ids) . ')';
+            }
         }
+        // If $select_customer == 'value', no include clause → show all customers
 
         $like_search = '%' . $wpdb->esc_like($search) . '%';
 
+        // Total customers count (with optional filter)
         $sql_total = "
             SELECT COUNT(DISTINCT u.ID)
             FROM {$wpdb->users} u
@@ -48,6 +53,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         ";
         $total_count = $wpdb->get_var($sql_total);
 
+        // Filtered customers count with search + filter
         $sql_filtered = "
             SELECT COUNT(DISTINCT u.ID)
             FROM {$wpdb->users} u
@@ -65,6 +71,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         ";
         $filtered_count = $wpdb->get_var($wpdb->prepare($sql_filtered, $like_search, $like_search, $like_search));
 
+        // Fetch paginated customer data with search + filter
         $sql_data = "
             SELECT u.ID, u.user_email, u.display_name, um_first.meta_value AS first_name, um_last.meta_value AS last_name
             FROM {$wpdb->users} u
@@ -88,11 +95,11 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         $data = [];
         foreach ($results as $user) {
             $nonce = wp_create_nonce('switch_to_user_' . $user->ID);
-            $name = trim($user->first_name . ' ' . $user->last_name);
+            $name  = trim($user->first_name . ' ' . $user->last_name);
 
             $data[] = [
-                'name' => esc_html($name ?: $user->display_name), // ✅ Correct fallback
-                'email' => esc_html($user->user_email),
+                'name'   => esc_html($name ?: $user->display_name),
+                'email'  => esc_html($user->user_email),
                 'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '" data-nonce="' . esc_attr($nonce) . '">
                                 <img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login as Customer
                             </button>',
@@ -100,16 +107,20 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         }
 
         wp_send_json([
-            'draw' => $draw,
-            'recordsTotal' => intval($total_count),
+            'draw'            => $draw,
+            'recordsTotal'    => intval($total_count),
             'recordsFiltered' => intval($filtered_count),
-            'data' => $data,
+            'data'            => $data,
         ]);
     }
 
-    
- public function get_affiliates_list_ajax_handler() {
+
+   public function get_affiliates_list_ajax_handler() {
         global $wpdb;
+
+        $user_id              = get_current_user_id();
+        $select_organization  = get_user_meta($user_id, 'select_organization', true);
+        $choose_organization  = get_user_meta($user_id, 'choose_organization', true); // fixed key spacing
 
         $start  = intval($_POST['start'] ?? 0);
         $length = intval($_POST['length'] ?? 10);
@@ -117,8 +128,15 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         $search = sanitize_text_field($_POST['search']['value'] ?? '');
         $nonce  = wp_create_nonce('customer_login_nonce');
 
-        // Step 1: Get all affiliate users from yith_wcaf_affiliates table
-        $raw_users = $wpdb->get_results(" SELECT user_id, enabled, banned , token  FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE enabled = 1 AND banned = 0");
+        // Step 1: Fetch organizations from DB with conditional filter
+        $query = "SELECT user_id, enabled, banned, token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE enabled = 1 AND banned = 0";
+
+        // Restrict to selected organization if applicable
+        if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
+            $query .= $wpdb->prepare(" AND user_id = %d", $choose_organization);
+        }
+
+        $raw_users = $wpdb->get_results($query);
 
         if (empty($raw_users)) {
             wp_send_json([
@@ -129,9 +147,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
             ]);
         }
 
-        // Step 2: Prepare user meta and status map
-        $user_ids = wp_list_pluck($raw_users, 'user_id');
-
+        // Step 2: Prepare user meta and status
         $user_meta_cache = [];
         $user_status_map = [];
 
@@ -171,13 +187,13 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
             ];
         }
 
-        // Step 3: Search filter
-        $filtered_user_ids = array_filter($user_ids, function ($user_id) use ($search, $user_meta_cache, $user_status_map) {
+        // Step 3: Apply search filter
+        $filtered_user_ids = array_filter(array_keys($user_meta_cache), function ($user_id) use ($search, $user_meta_cache, $user_status_map) {
             if (empty($search)) return true;
 
             $search_lc = strtolower($search);
-            $meta   = $user_meta_cache[$user_id];
-            $status = strtolower($user_status_map[$user_id]['label']);
+            $meta      = $user_meta_cache[$user_id];
+            $status    = strtolower($user_status_map[$user_id]['label']);
 
             return (
                 strpos(strtolower($meta['organization']), $search_lc) !== false ||
@@ -189,13 +205,13 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
             );
         });
 
-        $recordsTotal    = count($user_ids);
+        $recordsTotal    = count($user_meta_cache);
         $recordsFiltered = count($filtered_user_ids);
 
         // Step 4: Paginate
         $paged_user_ids = array_slice(array_values($filtered_user_ids), $start, $length);
 
-        // Step 5: Prepare DataTables data
+        // Step 5: Prepare response
         $data = [];
         foreach ($paged_user_ids as $user_id) {
             $meta   = $user_meta_cache[$user_id];
@@ -208,7 +224,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
                 'state'        => esc_html($meta['state']),
                 'email'        => esc_html($meta['email']),
                 'status'       => esc_html($status),
-                'login'        => ($status =='Accepted and enabled' ? '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As An Organization</button>' : "" )
+                'login'        => ($status == 'Accepted and enabled' ? '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As An Organization</button>' : '')
             ];
         }
 
@@ -218,7 +234,8 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
             'recordsFiltered' => $recordsFiltered,
             'data'            => $data,
         ]);
-    }    
+    }
+   
 
 
     public function update_sales_representative_handler() {
