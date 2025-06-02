@@ -3722,7 +3722,7 @@ class OAM_Ajax{
             $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($item->created));
 
             $resume_url = ($failed == 1)
-                ? esc_url(CUSTOMER_DASHBOARD_LINK . "failed-recipients/details/" . $item->id)
+                ? esc_url(CUSTOMER_DASHBOARD_LINK . "failed-recipients/details/" . $item->id."?pid=". $item->id)
                 : esc_url(ORDER_PROCESS_LINK . "?pid=" . $item->id);
 
             $download_button = '';
