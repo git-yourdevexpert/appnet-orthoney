@@ -2109,7 +2109,7 @@ document.addEventListener("DOMContentLoaded", function () {
     ordering: true,
     ajax: function(data, callback) {
       const postData = {
-        action: "get_affiliates_list_ajax_handler", // ✅ FIXED action name
+        action: "get_affiliates_list_ajax", // ✅ FIXED action name
         nonce: oam_ajax.nonce,
         draw: data.draw,
         start: data.start,
