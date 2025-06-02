@@ -141,7 +141,7 @@ if (!empty($recipients)) :
                             <div class="thead-data">Status</div>
                             <?php 
                             $decoded_reasons = json_decode($data->reasons, true);
-                            $reasons = (is_array($decoded_reasons)) ? implode(", ", $decoded_reasons) : (string) $decoded_reasons;
+                            echo $reasons = (is_array($decoded_reasons)) ? implode(", ", $decoded_reasons) : (string) $decoded_reasons;
                             echo ($data->address_verified == 0) ? $reasons : 'Data Validated';
                              ?>
                         </td>
