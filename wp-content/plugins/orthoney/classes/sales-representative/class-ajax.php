@@ -115,125 +115,147 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
     }
 
 
-   public function get_affiliates_list_ajax_handler() {global $wpdb;
+   public function get_affiliates_list_ajax_handler() {
+        global $wpdb;
 
-    if (empty($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'get_affiliates_list_nonce')) {
-        wp_send_json_error(['message' => 'Invalid nonce']);
-    }
+        if (empty($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'get_affiliates_list_nonce')) {
+            wp_send_json_error(['message' => 'Invalid nonce']);
+        }
 
-    $start  = intval($_POST['start'] ?? 0);
-    $length = intval($_POST['length'] ?? 10);
-    $draw   = intval($_POST['draw'] ?? 1);
-    $search = sanitize_text_field($_POST['search']['value'] ?? '');
-    $order  = $_POST['order'][0] ?? ['column' => 0, 'dir' => 'asc'];
+        $user_id = get_current_user_id();
+        $select_organization = get_user_meta($user_id, 'select_organization', true);
+        $choose_organization = get_user_meta($user_id, 'choose_organization', true);
+        $assigned_affiliate_ids = array_filter([$select_organization, $choose_organization]);
 
-    $columns = [
-        'meta_code.meta_value', // code
-        'u.user_email',
-        'org.meta_value',       // organization
-        'city.meta_value',
-        'state.meta_value',
-        'status.meta_value'
-    ];
-    $order_column_index = intval($order['column']);
-    $order_dir = strtoupper($order['dir']) === 'DESC' ? 'DESC' : 'ASC';
-    $order_by = $columns[$order_column_index] ?? 'meta_code.meta_value';
+        // If no assigned affiliates, return nothing
+        if (empty($assigned_affiliate_ids)) {
+            wp_send_json([
+                'draw' => intval($_POST['draw']),
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => [],
+            ]);
+        }
 
-    $like = '%' . $wpdb->esc_like($search) . '%';
+        $start  = intval($_POST['start'] ?? 0);
+        $length = intval($_POST['length'] ?? 10);
+        $draw   = intval($_POST['draw'] ?? 1);
+        $search = sanitize_text_field($_POST['search']['value'] ?? '');
+        $order  = $_POST['order'][0] ?? ['column' => 0, 'dir' => 'asc'];
 
-    // Total count
-    $sql_total = "
-        SELECT COUNT(DISTINCT u.ID)
-        FROM {$wpdb->users} u
-        INNER JOIN {$wpdb->usermeta} um_role 
-            ON um_role.user_id = u.ID
-        WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
-        AND um_role.meta_value LIKE '%yith_affiliate%'
-    ";
-    $records_total = $wpdb->get_var($sql_total);
-
-    // Filtered count
-    $sql_filtered = "
-        SELECT COUNT(DISTINCT u.ID)
-        FROM {$wpdb->users} u
-        INNER JOIN {$wpdb->usermeta} um_role 
-            ON um_role.user_id = u.ID
-        LEFT JOIN {$wpdb->usermeta} meta_code ON meta_code.user_id = u.ID AND meta_code.meta_key = 'code'
-        LEFT JOIN {$wpdb->usermeta} org ON org.user_id = u.ID AND org.meta_key = 'organization'
-        LEFT JOIN {$wpdb->usermeta} city ON city.user_id = u.ID AND city.meta_key = 'city'
-        LEFT JOIN {$wpdb->usermeta} state ON state.user_id = u.ID AND state.meta_key = 'state'
-        LEFT JOIN {$wpdb->usermeta} status ON status.user_id = u.ID AND status.meta_key = 'status'
-        WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
-        AND um_role.meta_value LIKE '%yith_affiliate%'
-        AND (
-            meta_code.meta_value LIKE %s
-            OR u.user_email LIKE %s
-            OR org.meta_value LIKE %s
-            OR city.meta_value LIKE %s
-            OR state.meta_value LIKE %s
-            OR status.meta_value LIKE %s
-        )
-    ";
-    $records_filtered = $wpdb->get_var($wpdb->prepare(
-        $sql_filtered, $like, $like, $like, $like, $like, $like
-    ));
-
-    // Data rows
-    $sql = "
-        SELECT u.ID, u.user_email,
-            meta_code.meta_value AS code,
-            org.meta_value AS organization,
-            city.meta_value AS city,
-            state.meta_value AS state,
-            status.meta_value AS status
-        FROM {$wpdb->users} u
-        INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
-        LEFT JOIN {$wpdb->usermeta} meta_code ON meta_code.user_id = u.ID AND meta_code.meta_key = 'code'
-        LEFT JOIN {$wpdb->usermeta} org ON org.user_id = u.ID AND org.meta_key = 'organization'
-        LEFT JOIN {$wpdb->usermeta} city ON city.user_id = u.ID AND city.meta_key = 'city'
-        LEFT JOIN {$wpdb->usermeta} state ON state.user_id = u.ID AND state.meta_key = 'state'
-        LEFT JOIN {$wpdb->usermeta} status ON status.user_id = u.ID AND status.meta_key = 'status'
-        WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
-        AND um_role.meta_value LIKE '%yith_affiliate%'
-        AND (
-            meta_code.meta_value LIKE %s
-            OR u.user_email LIKE %s
-            OR org.meta_value LIKE %s
-            OR city.meta_value LIKE %s
-            OR state.meta_value LIKE %s
-            OR status.meta_value LIKE %s
-        )
-        ORDER BY {$order_by} {$order_dir}
-        LIMIT %d OFFSET %d
-    ";
-
-    $results = $wpdb->get_results($wpdb->prepare(
-        $sql,
-        $like, $like, $like, $like, $like, $like,
-        $length, $start
-    ));
-
-    $data = [];
-    foreach ($results as $row) {
-        $nonce = wp_create_nonce('switch_to_user_' . $row->ID);
-        $data[] = [
-            'code'         => esc_html($row->code),
-            'email'        => esc_html($row->user_email),
-            'organization' => esc_html($row->organization),
-            'city'         => esc_html($row->city),
-            'state'        => esc_html($row->state),
-            'status'       => esc_html($row->status),
-            'login'        => '<button class="affiliate-login-btn" data-user-id="' . esc_attr($row->ID) . '" data-nonce="' . esc_attr($nonce) . '">Login</button>'
+        $columns = [
+            'meta_code.meta_value', // code
+            'u.user_email',
+            'org.meta_value',
+            'city.meta_value',
+            'state.meta_value',
+            'status.meta_value'
         ];
-    }
+        $order_column_index = intval($order['column']);
+        $order_dir = strtoupper($order['dir']) === 'DESC' ? 'DESC' : 'ASC';
+        $order_by = $columns[$order_column_index] ?? 'meta_code.meta_value';
 
-    wp_send_json([
-        'draw' => $draw,
-        'recordsTotal' => $records_total,
-        'recordsFiltered' => $records_filtered,
-        'data' => $data,
-    ]);
-}
+        $like = '%' . $wpdb->esc_like($search) . '%';
+        $ids_placeholders = implode(',', array_fill(0, count($assigned_affiliate_ids), '%d'));
+
+        // Total count
+        $sql_total = "
+            SELECT COUNT(DISTINCT u.ID)
+            FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} um_role 
+                ON um_role.user_id = u.ID
+            WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
+            AND um_role.meta_value LIKE '%yith_affiliate%'
+            AND u.ID IN ($ids_placeholders)
+        ";
+        $records_total = $wpdb->get_var($wpdb->prepare($sql_total, ...$assigned_affiliate_ids));
+
+        // Filtered count
+        $sql_filtered = "
+            SELECT COUNT(DISTINCT u.ID)
+            FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} um_role 
+                ON um_role.user_id = u.ID
+            LEFT JOIN {$wpdb->usermeta} meta_code ON meta_code.user_id = u.ID AND meta_code.meta_key = 'code'
+            LEFT JOIN {$wpdb->usermeta} org ON org.user_id = u.ID AND org.meta_key = 'organization'
+            LEFT JOIN {$wpdb->usermeta} city ON city.user_id = u.ID AND city.meta_key = 'city'
+            LEFT JOIN {$wpdb->usermeta} state ON state.user_id = u.ID AND state.meta_key = 'state'
+            LEFT JOIN {$wpdb->usermeta} status ON status.user_id = u.ID AND status.meta_key = 'status'
+            WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
+            AND um_role.meta_value LIKE '%yith_affiliate%'
+            AND u.ID IN ($ids_placeholders)
+            AND (
+                meta_code.meta_value LIKE %s
+                OR u.user_email LIKE %s
+                OR org.meta_value LIKE %s
+                OR city.meta_value LIKE %s
+                OR state.meta_value LIKE %s
+                OR status.meta_value LIKE %s
+            )
+        ";
+        $records_filtered = $wpdb->get_var($wpdb->prepare(
+            $sql_filtered,
+            ...$assigned_affiliate_ids, $like, $like, $like, $like, $like, $like
+        ));
+
+        // Data
+        $sql = "
+            SELECT u.ID, u.user_email,
+                meta_code.meta_value AS code,
+                org.meta_value AS organization,
+                city.meta_value AS city,
+                state.meta_value AS state,
+                status.meta_value AS status
+            FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
+            LEFT JOIN {$wpdb->usermeta} meta_code ON meta_code.user_id = u.ID AND meta_code.meta_key = 'code'
+            LEFT JOIN {$wpdb->usermeta} org ON org.user_id = u.ID AND org.meta_key = 'organization'
+            LEFT JOIN {$wpdb->usermeta} city ON city.user_id = u.ID AND city.meta_key = 'city'
+            LEFT JOIN {$wpdb->usermeta} state ON state.user_id = u.ID AND state.meta_key = 'state'
+            LEFT JOIN {$wpdb->usermeta} status ON status.user_id = u.ID AND status.meta_key = 'status'
+            WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
+            AND um_role.meta_value LIKE '%yith_affiliate%'
+            AND u.ID IN ($ids_placeholders)
+            AND (
+                meta_code.meta_value LIKE %s
+                OR u.user_email LIKE %s
+                OR org.meta_value LIKE %s
+                OR city.meta_value LIKE %s
+                OR state.meta_value LIKE %s
+                OR status.meta_value LIKE %s
+            )
+            ORDER BY {$order_by} {$order_dir}
+            LIMIT %d OFFSET %d
+        ";
+
+        $results = $wpdb->get_results($wpdb->prepare(
+            $sql,
+            ...$assigned_affiliate_ids, $like, $like, $like, $like, $like, $like,
+            $length, $start
+        ));
+
+        $data = [];
+        foreach ($results as $row) {
+            $nonce = wp_create_nonce('switch_to_user_' . $row->ID);
+            $data[] = [
+                'code'         => esc_html($row->code),
+                'email'        => esc_html($row->user_email),
+                'organization' => esc_html($row->organization),
+                'city'         => esc_html($row->city),
+                'state'        => esc_html($row->state),
+                'status'       => esc_html($row->status),
+                'login'        => '<button class="affiliate-login-btn" data-user-id="' . esc_attr($row->ID) . '" data-nonce="' . esc_attr($nonce) . '">Login</button>'
+            ];
+        }
+
+        wp_send_json([
+            'draw' => $draw,
+            'recordsTotal' => $records_total,
+            'recordsFiltered' => $records_filtered,
+            'data' => $data,
+        ]);
+
+    }
 
 
     public function update_sales_representative_handler() {
