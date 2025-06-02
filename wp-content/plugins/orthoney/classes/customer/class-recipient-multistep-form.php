@@ -350,16 +350,34 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                             <select name="orders[]" data-error-message="Please select a order." <?php echo $upload_type_output == 'select-order' ? 'required' : '' ?> multiple>
                                                 <?php 
                                                  echo '<option></option>';
-                                                foreach ($getLastYearOrderList as $key => $order) {
+                                                foreach ($getLastYearOrderList as $key => $order_id) {
 
-                                                    $custom_order_id = OAM_COMMON_Custom::get_order_meta($order, '_orthoney_OrderID');
-                                                    $selected = '';
-                                                    if(!empty($orders)){
-                                                        if(in_array($order, $orders)){
-                                                            $selected =  'selected';
-                                                        }
+                                                    $order = wc_get_order($order_id); // Get the order object
+                                                    if (!$order) continue;
+
+                                                    $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
+                                                    $billing_name = $order->get_formatted_billing_full_name();
+
+                                                    // Calculate total quantity
+                                                    $total_quantity = 0;
+                                                    foreach ($order->get_items() as $item) {
+                                                        $total_quantity += $item->get_quantity();
                                                     }
-                                                    echo '<option '.$selected.' value="'.$order.'">'.$custom_order_id.'</option>';
+                                                    global $wpdb;
+                    
+                                                   $affiliate_token = $wpdb->get_var( $wpdb->prepare(
+                                                        "SELECT affiliate_token FROM {$wpdb->prefix}oh_recipient_order WHERE order_id = %d LIMIT 1",
+                                                        $custom_order_id
+                                                    ) );
+
+                                                    $selected = '';
+                                                    if (!empty($orders) && in_array($order_id, $orders)) {
+                                                        $selected = 'selected';
+                                                    }
+
+                                                    echo '<option ' . $selected . ' value="' . esc_attr($order_id) . '">'
+                                                    . esc_html($custom_order_id . ' - ' . $billing_name . ' ' . $affiliate_token . ' (Jars: ' . $total_quantity . ')')
+                                                    . '</option>';
                                                 }
                                                 ?>
                                                 
