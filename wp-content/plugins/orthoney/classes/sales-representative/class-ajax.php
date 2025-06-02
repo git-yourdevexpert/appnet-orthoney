@@ -193,10 +193,8 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
                 OR status.meta_value LIKE %s
             )
         ";
-        $records_filtered = $wpdb->get_var($wpdb->prepare(
-            $sql_filtered,
-            ...$assigned_affiliate_ids, $like, $like, $like, $like, $like, $like
-        ));
+       $args = array_merge($assigned_affiliate_ids, [$like, $like, $like, $like, $like, $like]);
+       $records_filtered = $wpdb->get_var($wpdb->prepare($sql_filtered, ...$args));
 
         // Data
         $sql = "
