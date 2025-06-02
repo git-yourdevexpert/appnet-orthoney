@@ -139,7 +139,11 @@ if (!empty($recipients)) :
                         </td>
                         <td data-label="Status">
                             <div class="thead-data">Status</div>
-                            <?php echo ($data->address_verified == 0) ? 'Data Failed' : 'Data Validated'; ?>
+                            <?php 
+                            $decoded_reasons = json_decode($record->reasons, true);
+                            $reasons = (is_array($decoded_reasons)) ? implode(", ", $decoded_reasons) : (string) $decoded_reasons;
+                            echo ($data->address_verified == 0) ? $reasons : 'Data Validated';
+                             ?>
                         </td>
                         <td data-label="Action">
                             <div class="thead-data">Action</div>
