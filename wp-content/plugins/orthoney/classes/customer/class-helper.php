@@ -555,7 +555,8 @@ class OAM_Helper{
                 $sub_order_id
             )
         ) ?: 'Honey from the Heart';
-        if($affiliate_token == 'Orthoney'){
+        
+        if ($referral_id === 'Orthoney') {
             $referral_id = 'Honey from the Heart';
         }
     }
