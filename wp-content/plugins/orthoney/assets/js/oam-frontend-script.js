@@ -2096,26 +2096,23 @@ jQuery(document).ready(function ($) {
 
 document.addEventListener("DOMContentLoaded", function () {
   // Affiliates DataTable with ordering support
-  new DataTable("#sales-representative-affiliate-table", {
+   new DataTable("#sales-representative-affiliate-table", {
     pageLength: 50,
-    lengthMenu: [
-      [10, 25, 50, 100],
-      [10, 25, 50, 100]
-    ],
+    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
     serverSide: true,
     processing: true,
     paging: true,
     searching: true,
     ordering: true,
-    ajax: function(data, callback) {
+    ajax: function (data, callback) {
       const postData = {
-        action: "get_affiliates_list_ajax", // ✅ FIXED action name
+        action: "get_affiliates_list_ajax",
         nonce: oam_ajax.nonce,
         draw: data.draw,
         start: data.start,
         length: data.length,
         search: { value: data.search.value },
-        order: data.order // ✅ send full DataTables order array
+        order: data.order
       };
 
       fetch(oam_ajax.ajax_url, {
@@ -2123,17 +2120,12 @@ document.addEventListener("DOMContentLoaded", function () {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(postData)
       })
-      .then(res => res.json())
-      .then(callback)
-      .catch(error => {
-        console.error("DataTables fetch error (affiliates):", error);
-        callback({
-          data: [],
-          recordsTotal: 0,
-          recordsFiltered: 0,
-          draw: data.draw
+        .then(res => res.json())
+        .then(callback)
+        .catch(error => {
+          console.error("DataTables fetch error:", error);
+          callback({ data: [], recordsTotal: 0, recordsFiltered: 0, draw: data.draw });
         });
-      });
     },
     columns: [
       { data: "code" },

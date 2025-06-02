@@ -115,69 +115,71 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
     }
 
 
-   public function get_affiliates_list_ajax_handler() {
-         global $wpdb;
+   public function get_affiliates_list_ajax_handler() {global $wpdb;
 
-    // Check nonce for security - adjust nonce action as needed
-    if (empty($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'your_nonce_action')) {
-        wp_send_json_error('Invalid nonce');
-        wp_die();
+    if (empty($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'get_affiliates_list_nonce')) {
+        wp_send_json_error(['message' => 'Invalid nonce']);
     }
 
     $start  = intval($_POST['start'] ?? 0);
     $length = intval($_POST['length'] ?? 10);
     $draw   = intval($_POST['draw'] ?? 1);
     $search = sanitize_text_field($_POST['search']['value'] ?? '');
+    $order  = $_POST['order'][0] ?? ['column' => 0, 'dir' => 'asc'];
 
-    // Ordering data sent by DataTables
-    $order_column_index = intval($_POST['order'][0]['column'] ?? 0);
-    $order_dir = strtoupper($_POST['order'][0]['dir'] ?? 'ASC');
-    $order_dir = in_array($order_dir, ['ASC', 'DESC']) ? $order_dir : 'ASC';
+    $columns = [
+        'meta_code.meta_value', // code
+        'u.user_email',
+        'org.meta_value',       // organization
+        'city.meta_value',
+        'state.meta_value',
+        'status.meta_value'
+    ];
+    $order_column_index = intval($order['column']);
+    $order_dir = strtoupper($order['dir']) === 'DESC' ? 'DESC' : 'ASC';
+    $order_by = $columns[$order_column_index] ?? 'meta_code.meta_value';
 
-    // Map the columns to the DB columns (adjust according to your columns)
-    $columns = ['meta_code.meta_value', 'u.user_email', 'org.meta_value', 'city.meta_value', 'state.meta_value', 'status.meta_value'];
-    $order_column = $columns[$order_column_index] ?? $columns[0];
+    $like = '%' . $wpdb->esc_like($search) . '%';
 
-    $like_search = '%' . $wpdb->esc_like($search) . '%';
-
-    // We want users with role yith_affiliate
-    // Join usermeta for affiliate meta fields: code, organization, city, state, status
-
-    // Total count of affiliates
+    // Total count
     $sql_total = "
         SELECT COUNT(DISTINCT u.ID)
         FROM {$wpdb->users} u
-        INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
+        INNER JOIN {$wpdb->usermeta} um_role 
+            ON um_role.user_id = u.ID
         WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
-          AND um_role.meta_value LIKE '%yith_affiliate%'
+        AND um_role.meta_value LIKE '%yith_affiliate%'
     ";
-    $total_count = $wpdb->get_var($sql_total);
+    $records_total = $wpdb->get_var($sql_total);
 
-    // Count filtered rows with search applied on relevant fields
+    // Filtered count
     $sql_filtered = "
         SELECT COUNT(DISTINCT u.ID)
         FROM {$wpdb->users} u
-        INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
+        INNER JOIN {$wpdb->usermeta} um_role 
+            ON um_role.user_id = u.ID
         LEFT JOIN {$wpdb->usermeta} meta_code ON meta_code.user_id = u.ID AND meta_code.meta_key = 'code'
         LEFT JOIN {$wpdb->usermeta} org ON org.user_id = u.ID AND org.meta_key = 'organization'
         LEFT JOIN {$wpdb->usermeta} city ON city.user_id = u.ID AND city.meta_key = 'city'
         LEFT JOIN {$wpdb->usermeta} state ON state.user_id = u.ID AND state.meta_key = 'state'
         LEFT JOIN {$wpdb->usermeta} status ON status.user_id = u.ID AND status.meta_key = 'status'
         WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
-          AND um_role.meta_value LIKE '%yith_affiliate%'
-          AND (
+        AND um_role.meta_value LIKE '%yith_affiliate%'
+        AND (
             meta_code.meta_value LIKE %s
             OR u.user_email LIKE %s
             OR org.meta_value LIKE %s
             OR city.meta_value LIKE %s
             OR state.meta_value LIKE %s
             OR status.meta_value LIKE %s
-          )
+        )
     ";
-    $filtered_count = $wpdb->get_var($wpdb->prepare($sql_filtered, $like_search, $like_search, $like_search, $like_search, $like_search, $like_search));
+    $records_filtered = $wpdb->get_var($wpdb->prepare(
+        $sql_filtered, $like, $like, $like, $like, $like, $like
+    ));
 
-    // Get the data for current page
-    $sql_data = "
+    // Data rows
+    $sql = "
         SELECT u.ID, u.user_email,
             meta_code.meta_value AS code,
             org.meta_value AS organization,
@@ -192,54 +194,46 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         LEFT JOIN {$wpdb->usermeta} state ON state.user_id = u.ID AND state.meta_key = 'state'
         LEFT JOIN {$wpdb->usermeta} status ON status.user_id = u.ID AND status.meta_key = 'status'
         WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
-          AND um_role.meta_value LIKE '%yith_affiliate%'
-          AND (
+        AND um_role.meta_value LIKE '%yith_affiliate%'
+        AND (
             meta_code.meta_value LIKE %s
             OR u.user_email LIKE %s
             OR org.meta_value LIKE %s
             OR city.meta_value LIKE %s
             OR state.meta_value LIKE %s
             OR status.meta_value LIKE %s
-          )
-        ORDER BY {$order_column} {$order_dir}
+        )
+        ORDER BY {$order_by} {$order_dir}
         LIMIT %d OFFSET %d
     ";
 
     $results = $wpdb->get_results($wpdb->prepare(
-        $sql_data,
-        $like_search,
-        $like_search,
-        $like_search,
-        $like_search,
-        $like_search,
-        $like_search,
-        $length,
-        $start
+        $sql,
+        $like, $like, $like, $like, $like, $like,
+        $length, $start
     ));
 
-    // Build rows with a login button (you can customize the button as needed)
     $data = [];
-    foreach ($results as $affiliate) {
-        $nonce = wp_create_nonce('switch_to_user_' . $affiliate->ID);
+    foreach ($results as $row) {
+        $nonce = wp_create_nonce('switch_to_user_' . $row->ID);
         $data[] = [
-            'code' => esc_html($affiliate->code),
-            'email' => esc_html($affiliate->user_email),
-            'organization' => esc_html($affiliate->organization),
-            'city' => esc_html($affiliate->city),
-            'state' => esc_html($affiliate->state),
-            'status' => esc_html($affiliate->status),
-            'login' => '<button class="affiliate-login-btn icon-txt-btn" data-user-id="' . esc_attr($affiliate->ID) . '" data-nonce="' . esc_attr($nonce) . '">Login</button>',
+            'code'         => esc_html($row->code),
+            'email'        => esc_html($row->user_email),
+            'organization' => esc_html($row->organization),
+            'city'         => esc_html($row->city),
+            'state'        => esc_html($row->state),
+            'status'       => esc_html($row->status),
+            'login'        => '<button class="affiliate-login-btn" data-user-id="' . esc_attr($row->ID) . '" data-nonce="' . esc_attr($nonce) . '">Login</button>'
         ];
     }
 
     wp_send_json([
         'draw' => $draw,
-        'recordsTotal' => intval($total_count),
-        'recordsFiltered' => intval($filtered_count),
+        'recordsTotal' => $records_total,
+        'recordsFiltered' => $records_filtered,
         'data' => $data,
     ]);
 }
-   
 
 
     public function update_sales_representative_handler() {
