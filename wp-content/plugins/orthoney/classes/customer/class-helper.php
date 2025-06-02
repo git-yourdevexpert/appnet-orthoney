@@ -555,10 +555,11 @@ class OAM_Helper{
                 $sub_order_id
             )
         ) ?: 'Honey from the Heart';
-        
-        if ($referral_id === 'Orthoney') {
+
+       if ($referral_id === 'Orthoney') {
             $referral_id = 'Honey from the Heart';
         }
+        
     }
 
 
@@ -797,7 +798,7 @@ class OAM_Helper{
                 $filtered_ids_string = implode(',', $filtered_ids);
                 $AlreadyOrderHtml = '';
                 if($alreadyOrder == 0){
-                 $AlreadyOrderHtml = (!empty($filtered_ids) ? '<button data-recipientname="'.$data->full_name.'" data-tippy="Recipient has been verified but has already placed an order this season." style="color:red" class="alreadyOrderButton btn-underline">Already Ordered</button>' : '');
+                 $AlreadyOrderHtml = (!empty($filtered_ids) ? '<button data-recipientname="'.stripslashes($data->full_name).'" data-tippy="Recipient has been verified but has already placed an order this season." style="color:red" class="alreadyOrderButton btn-underline">Already Ordered</button>' : '');
                 }
                 if($data->verified == 0){
                     $reasonsHtml = '<div>No';
@@ -805,7 +806,7 @@ class OAM_Helper{
 						
                         $reasons = implode(", ", json_decode($data->reasons, true));
                         if($reasons != ''){
-							$reasonsHtml = '<div class="tooltip" data-tippy="'.$reasons.'" style="color:red">Failed to Add to Order</span></div>';
+							$reasonsHtml = '<div class="tooltip" data-tippy="'.stripslashes($reasons).'" style="color:red">Failed to Add to Order</span></div>';
                         }
                     }
                     $reasonsHtml .= '</div>';
@@ -813,7 +814,7 @@ class OAM_Helper{
                 
                 
                 if (!empty($addressParts)) {
-                    $addressPartsHtml = '<td data-label="Address"><div class="thead-data">Address</div>' . implode(', ', $addressParts) . '</td>';
+                    $addressPartsHtml = '<td data-label="Address"><div class="thead-data">Address</div>' . stripslashes(implode(', ', $addressParts)) . '</td>';
                 } else {
                     $addressPartsHtml = '<td data-label="Address"><div class="thead-data">Address</div>-</td>';
                 }
@@ -833,9 +834,9 @@ class OAM_Helper{
                     $html .= '<td data-label="Create Date"><div class="thead-data">Create Date</div>'.$created_date.'</td>';
                 }
                 
-                    $html .= '<td data-label="Full Name"><div class="thead-data">Full Name</div><input type="hidden" name="'.(($reverify == 1 OR $reverify == 2) ? "recipientAddressIds[]" : "recipientIds[]").'" value="'.$id.'">'.$data->full_name.'</td>';
+                    $html .= '<td data-label="Full Name"><div class="thead-data">Full Name</div><input type="hidden" name="'.(($reverify == 1 OR $reverify == 2) ? "recipientAddressIds[]" : "recipientIds[]").'" value="'.$id.'">'.stripslashes(stripslashes($data->full_name)).'</td>';
                 
-                $html .= '<td data-label="Company name"><div class="thead-data">Company name</div>'.($data->company_name != "" ? $data->company_name : '') .'</td>';
+                $html .= '<td data-label="Company name"><div class="thead-data">Company name</div>'.($data->company_name != "" ? stripslashes($data->company_name) : '') .'</td>';
                 
                 $html .= $addressPartsHtml;
                 $html .= '<td data-label="Quantity"><div class="thead-data">Quantity</div>'.((empty($data->quantity) || $data->quantity <= 0) ? '0' : $data->quantity).'</td>';
@@ -844,25 +845,25 @@ class OAM_Helper{
 
                 if($alreadyOrder == 0){
                     if($reverify == 0){
-                        $html .= '<td data-label="Status"><div class="thead-data">Status</div>'.(($data->verified == 0) ? $reasonsHtml: 'Added to Order').'</td>';
+                        $html .= '<td data-label="Status"><div class="thead-data">Status</div>'.(($data->verified == 0) ? stripslashes($reasonsHtml): 'Added to Order').'</td>';
                     }
                     if($reverify == 1 OR $reverify == 2){
                         if($reverify == 1){
-                             $html .= '<td data-label="Status"><div class="thead-data">Reason</div><span style="color:red">'.$data->reasons.'</span></td>';
+                             $html .= '<td data-label="Status"><div class="thead-data">Reason</div><span style="color:red">'.stripslashes($data->reasons).'</span></td>';
                         }
                         $html .= '<td data-label="Action"><div class="thead-data">Action</div>';
                         if($data->address_verified == 0){
                             // $html .= '<button class="reverifyAddress w-btn us-btn-style_1" style="padding:10px"><small>Reverify Address</small></button>';
                         }
-                        $html .=  ' <button class="editRecipient far fa-edit" data-tippy="update Recipient Details" data-popup="#recipient-manage-popup" data-address_verified="1"></button>' .'<button data-recipientname="'.$data->full_name.'" class="deleteRecipient far fa-trash" data-tippy="Remove Recipient"></button>';
+                        $html .=  ' <button class="editRecipient far fa-edit" data-tippy="update Recipient Details" data-popup="#recipient-manage-popup" data-address_verified="1"></button>' .'<button data-recipientname="'.stripslashes($data->full_name).'" class="deleteRecipient far fa-trash" data-tippy="Remove Recipient"></button>';
                         $html .= '</td>';
                         
                     }else{
                         $html .= '<td data-label="Action"><div class="thead-data">Action</div>';
                         if($duplicate == 1){
-                            $html .= '<button class="keep_this_and_delete_others" data-recipientname="'.$data->full_name.'"  data-popup="#recipient-manage-popup" data-tippy="Keep this and delete others">Keep this and delete others</button>';
+                            $html .= '<button class="keep_this_and_delete_others" data-recipientname="'.stripslashes($data->full_name).'"  data-popup="#recipient-manage-popup" data-tippy="Keep this and delete others">Keep this and delete others</button>';
                         }
-                        $html .= '<button class="viewRecipient far fa-eye" data-tippy="View Recipient Details" data-popup="#recipient-view-details-popup"></button><button class="editRecipient far fa-edit" data-tippy="Update Recipient Details" data-popup="#recipient-manage-popup"></button><button data-recipientname="'.$data->full_name.'" data-tippy="Remove Recipient" class="deleteRecipient far fa-trash"></button>'.$AlreadyOrderHtml;
+                        $html .= '<button class="viewRecipient far fa-eye" data-tippy="View Recipient Details" data-popup="#recipient-view-details-popup"></button><button class="editRecipient far fa-edit" data-tippy="Update Recipient Details" data-popup="#recipient-manage-popup"></button><button data-recipientname="'.stripslashes($data->full_name).'" data-tippy="Remove Recipient" class="deleteRecipient far fa-trash"></button>'.$AlreadyOrderHtml;
                         $html .= '</td>';
                     }
                 }
@@ -1596,7 +1597,7 @@ class OAM_Helper{
                  'zipcode'    => $zipcode,
                  'match'      => 'invalid',
                  'geocode'    => true,
-                 'candidates' => 5,
+                 'candidates' => 10,
              ]);
     
         $response = wp_remote_get($url);
@@ -1683,8 +1684,8 @@ class OAM_Helper{
     public static function addressCorrections($code = '') {
         
          $addressCorrections = [
-                'A#'  => 'Corrected ZIP Code',
-                'B#'  => 'Corrected city/state spelling',
+                'A#'  => 'Correct ZIP Code',
+                'B#'  => 'Correct city/state spelling',
                 'C#'  => 'Invalid city/state/ZIP',
                 'D#'  => 'No ZIP+4 assigned',
                 'E#'  => 'Same ZIP for multiple',
@@ -1695,11 +1696,11 @@ class OAM_Helper{
                 'J#'  => 'Dual address',
                 'K#'  => 'Cardinal rule match',
                 'L#'  => 'Changed address component',
-                'LL# or LI#' => 'Flagged address for LACSLink',
-                'LI#' => 'Flagged address for LACSLink',
-                'LL#' => 'Flagged address for LACSLink',
-                'M#'  => 'Corrected street spelling',
-                'N#'  => 'Fixed abbreviations',
+                'LL# or LI#' => 'Flag address for LACSLink',
+                'LI#' => 'Flag address for LACSLink',
+                'LL#' => 'Flag address for LACSLink',
+                'M#'  => 'Correct street spelling',
+                'N#'  => 'Fix abbreviations',
                 'O#'  => 'Multiple ZIP+4; lowest used',
                 'P#'  => 'Better address exists',
                 'Q#'  => 'Unique ZIP match',

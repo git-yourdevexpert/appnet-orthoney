@@ -2339,36 +2339,41 @@ class OAM_Ajax{
 
     // Callback function for get recipient base in id
     public function orthoney_get_recipient_base_id_handler($recipient = '') {
-        global $wpdb;
-    
-        // Determine recipient ID from POST or fallback to the function parameter
-        $recipientID = !empty($_POST['id']) ? intval($_POST['id']) : intval($recipient);
-        $method = !empty($_POST['method']) ? $_POST['method'] : 'process';
-    
-        if (empty($recipientID)) {
-            $response = ['success' => false, 'message' => 'Invalid recipient ID.'];
-            return !empty($recipient) ? json_encode($response) : wp_send_json_error($response);
-        }
-    
-        // Table name
-        $recipient_table = OAM_Helper::$order_process_recipient_table;
-        if($method == 'group'){
-            $recipient_table = OAM_Helper::$group_recipient_table;
-        }
-    
-        // Fetch recipient record as an associative array
-        $record = $wpdb->get_row(
-            $wpdb->prepare("SELECT * FROM $recipient_table WHERE id = %d", $recipientID), ARRAY_A
-        );
-    
-        if (!empty($record)) {
-            $response = ['success' => true, 'data' => $record];
-            return !empty($recipient) ? json_encode($response) : wp_send_json_success($record);
-        } else {
-            $response = ['success' => false, 'message' => 'No data found.'];
-            return !empty($recipient) ? json_encode($response) : wp_send_json_error($response);
-        }
+    global $wpdb;
+
+    // Determine recipient ID from POST or fallback to the function parameter
+    $recipientID = !empty($_POST['id']) ? intval($_POST['id']) : intval($recipient);
+    $method = !empty($_POST['method']) ? $_POST['method'] : 'process';
+
+    if (empty($recipientID)) {
+        $response = ['success' => false, 'message' => 'Invalid recipient ID.'];
+        return !empty($recipient) ? json_encode($response) : wp_send_json_error($response);
     }
+
+    // Table name
+    $recipient_table = OAM_Helper::$order_process_recipient_table;
+    if ($method == 'group') {
+        $recipient_table = OAM_Helper::$group_recipient_table;
+    }
+
+    // Fetch recipient record as an associative array
+    $record = $wpdb->get_row(
+        $wpdb->prepare("SELECT * FROM $recipient_table WHERE id = %d", $recipientID),
+        ARRAY_A
+    );
+
+    if (!empty($record)) {
+        // Apply stripslashes to each value
+        $record = array_map('stripslashes', $record);
+
+        $response = ['success' => true, 'data' => $record];
+        return !empty($recipient) ? json_encode($response) : wp_send_json_success($record);
+    } else {
+        $response = ['success' => false, 'message' => 'No data found.'];
+        return !empty($recipient) ? json_encode($response) : wp_send_json_error($response);
+    }
+}
+
 
     // Callback function for manually add new recipient and edit recipient
     
