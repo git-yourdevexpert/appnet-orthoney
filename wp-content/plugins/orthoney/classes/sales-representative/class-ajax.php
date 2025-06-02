@@ -114,7 +114,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         ]);
     }
 
-     public function get_affiliates_list_ajax_handler() {
+      public function get_affiliates_list_ajax_handler() {
         global $wpdb;
 
         $user_id = get_current_user_id();

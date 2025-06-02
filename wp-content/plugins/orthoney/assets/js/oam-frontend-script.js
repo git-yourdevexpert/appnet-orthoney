@@ -2099,7 +2099,7 @@ document.addEventListener("DOMContentLoaded", function () {
    new DataTable("#sales-representative-affiliate-table", {
     pageLength: 50,
     lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-    serverSide: false,
+    serverSide: true,
     processing: true,
     paging: true,
     searching: true,
@@ -2111,6 +2111,7 @@ document.addEventListener("DOMContentLoaded", function () {
         draw: data.draw,
         start: data.start,
         length: data.length,
+        search: { value: data.search.value },
         order: data.order
       };
 
@@ -2148,6 +2149,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+
+  
   // Customers DataTable with ordering support
   new DataTable("#sales-representative-customer-table", {
     pageLength: 50,
