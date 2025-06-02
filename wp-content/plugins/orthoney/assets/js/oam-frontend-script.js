@@ -2102,8 +2102,8 @@ document.addEventListener("DOMContentLoaded", function () {
     serverSide: true,
     processing: true,
     paging: true,
-    searching: true,
-    ordering: true,
+    searching: false,
+    ordering: false,
     ajax: function (data, callback) {
       const postData = {
         action: "get_affiliates_list_ajax",
@@ -2150,7 +2150,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
 
-  
+
   // Customers DataTable with ordering support
   new DataTable("#sales-representative-customer-table", {
     pageLength: 50,
