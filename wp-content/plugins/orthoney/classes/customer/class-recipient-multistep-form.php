@@ -186,7 +186,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                     FROM {$oh_affiliate_customer_linker} 
                                     WHERE customer_id = %d AND status = %d 
                                 )
-                                AND a.enabled = 1 AND a.banned = 0",
+                                AND a.enabled = 1 AND a.banned = 0
+                                ORDER BY a.token",
                                 self::$current_user_id, 1
                             );
 
