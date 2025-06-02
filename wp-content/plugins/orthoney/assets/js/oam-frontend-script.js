@@ -2094,20 +2094,51 @@ jQuery(document).ready(function ($) {
   });
 });
 
-jQuery(document).ready(function ($) {
-  const table = new DataTable("#sales-representative-affiliate-table", {
+document.addEventListener("DOMContentLoaded", function () {
+  // Affiliates DataTable with ordering support
+  new DataTable("#sales-representative-affiliate-table", {
     pageLength: 50,
     lengthMenu: [
       [10, 25, 50, 100],
       [10, 25, 50, 100]
     ],
-    ajax: {
-      url: oam_ajax.ajax_url,
-      type: "POST",
-      data: function (d) {
-        d.action = "get_affiliates_list";
-        d.nonce = oam_ajax.nonce;
-      }
+    serverSide: true,
+    processing: true,
+    paging: true,
+    searching: true,
+    ordering: true, // Enable ordering
+    ajax: function(data, callback) {
+      // Map DataTables ordering to your server parameters
+      let orderColumnIndex = data.order && data.order.length > 0 ? data.order[0].column : 0;
+      let orderDir = data.order && data.order.length > 0 ? data.order[0].dir : 'asc';
+
+      const postData = {
+        action: "get_affiliates_list",
+        nonce: oam_ajax.nonce,
+        draw: data.draw,
+        start: data.start,
+        length: data.length,
+        search: { value: data.search.value },
+        order_column: orderColumnIndex,
+        order_dir: orderDir,
+      };
+
+      fetch(oam_ajax.ajax_url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(postData)
+      })
+      .then(res => res.json())
+      .then(callback)
+      .catch(error => {
+        console.error("DataTables fetch error (affiliates):", error);
+        callback({
+          data: [],
+          recordsTotal: 0,
+          recordsFiltered: 0,
+          draw: data.draw
+        });
+      });
     },
     columns: [
       { data: "code" },
@@ -2120,22 +2151,18 @@ jQuery(document).ready(function ($) {
     ],
     columnDefs: [{ targets: -1, orderable: false }],
     language: {
-      processing: `<div class="loader multiStepForm" style="display:block">
-                <div>
-                    <h2 class="swal2-title">Processing...</h2>
-                    <div class="swal2-html-container">Please wait while we process your request.</div>
-                    <div class="loader-5"></div>
-                </div>
-            </div>`
-    },
-    processing: true,
-    serverSide: true,
-    paging: true,
-    searching: true
+      processing: `
+        <div class="loader multiStepForm" style="display:block">
+          <div>
+            <h2 class="swal2-title">Processing...</h2>
+            <div class="swal2-html-container">Please wait while we process your request.</div>
+            <div class="loader-5"></div>
+          </div>
+        </div>`
+    }
   });
-});
 
-document.addEventListener("DOMContentLoaded", function () {
+  // Customers DataTable with ordering support
   new DataTable("#sales-representative-customer-table", {
     pageLength: 50,
     lengthMenu: [
@@ -2147,16 +2174,20 @@ document.addEventListener("DOMContentLoaded", function () {
     paging: true,
     searching: true,
     responsive: true,
-    lengthMenu: [10, 25, 50, 100],
+    ordering: true, // Enable ordering
+    ajax: function(data, callback) {
+      let orderColumnIndex = data.order && data.order.length > 0 ? data.order[0].column : 0;
+      let orderDir = data.order && data.order.length > 0 ? data.order[0].dir : 'asc';
 
-    ajax: function (data, callback) {
       const postData = {
         action: "get_filtered_customers",
         nonce: oam_ajax.nonce,
         draw: data.draw,
         start: data.start,
         length: data.length,
-        search: { value: data.search.value }
+        search: { value: data.search.value },
+        order_column: orderColumnIndex,
+        order_dir: orderDir,
       };
 
       fetch(oam_ajax.ajax_url, {
@@ -2164,25 +2195,33 @@ document.addEventListener("DOMContentLoaded", function () {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(postData)
       })
-        .then((res) => res.json())
-        .then(callback)
-        .catch((error) => {
-          console.error("DataTables fetch error:", error);
+      .then(res => res.json())
+      .then(callback)
+      .catch(error => {
+        console.error("DataTables fetch error (customers):", error);
+        callback({
+          data: [],
+          recordsTotal: 0,
+          recordsFiltered: 0,
+          draw: data.draw
         });
+      });
     },
-
-    columns: [{ data: "name" }, { data: "email" }, { data: "action" }],
+    columns: [
+      { data: "name" },
+      { data: "email" },
+      { data: "action" }
+    ],
     columnDefs: [{ targets: -1, orderable: false }],
     language: {
       processing: `
-                <div class="loader multiStepForm" style="display:block">
-                    <div>
-                        <h2 class="swal2-title">Processing...</h2>
-                        <div class="swal2-html-container">Please wait while we process your request.</div>
-                        <div class="loader-5"></div>
-                    </div>
-                </div>
-            `
+        <div class="loader multiStepForm" style="display:block">
+          <div>
+            <h2 class="swal2-title">Processing...</h2>
+            <div class="swal2-html-container">Please wait while we process your request.</div>
+            <div class="loader-5"></div>
+          </div>
+        </div>`
     }
   });
 });
