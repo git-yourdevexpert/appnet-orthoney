@@ -422,6 +422,7 @@ class OAM_WC_Customizer {
     
             $custom_data = $cart_item['custom_data'] ?? [];
             $is_single_order = $custom_data['single_order'] ?? 0;
+            $per_jar_cost = $custom_data['new_price'] ?? 0;
             $pid = $custom_data['process_id'] ?? 0;
     
             if ($is_single_order == 0) {
@@ -471,6 +472,7 @@ class OAM_WC_Customizer {
             $custom_content = '<div class="viewAllRecipientsPopupCheckoutContent">
                 <div class="item"><strong>Total Honey Jar(s):</strong> ' . esc_html($total_quantity) . '</div>
                 <div class="item"><strong>Total Recipient(s):</strong> ' . esc_html(count($recipients)) . '</div>
+                  <div class="item"><strong>Price per Jar:</strong> ' . (wc_price($per_jar_cost)) . '</div>
                 <div class="item"><a href="#viewAllRecipientsPopupCheckout" class="viewAllRecipientsPopupCheckout btn-underline" data-lity>View All Recipients Details</a></div>
     
                 <div id="viewAllRecipientsPopupCheckout" class="lity-popup-normal lity-hide">
