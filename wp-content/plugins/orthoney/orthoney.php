@@ -159,6 +159,12 @@ function add_customer_role_to_affiliates() {
             }
         }
     }
+
+    if( isset($_GET['season_popup']) && $_GET['season_popup'] == 'yes'){
+
+        ?>
+        <?php
+    }
 }
 
 if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
