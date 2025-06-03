@@ -275,15 +275,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         console.log(currentStep);
 
-        const uploadTypeOutput = document.querySelector(
-          'input[name="upload_type_output"]:checked'
-        );
-        const deliveryPreference = document.querySelector(
-          'input[name="delivery_preference"]:checked'
-        );
-        const multipleaddressordererrormessage = document.querySelector(
-          ".multipleaddressordererrormessage"
-        );
+        const uploadTypeOutput = document.querySelector('input[name="upload_type_output"]:checked');
+        const deliveryPreference = document.querySelector('input[name="delivery_preference"]:checked');
+        const multipleaddressordererrormessage = document.querySelector(".multipleaddressordererrormessage");
 
         multipleaddressordererrormessage.style.display = "none";
         if (currentStep !== 0) {
@@ -297,6 +291,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   multipleaddressordererrormessage.style.display = "block";
                   return;
                 }
+
                 multipleaddressordererrormessage.style.display = "none";
                 process_group_popup();
 
@@ -347,6 +342,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 process_group_popup();
                 currentStep = Math.max(currentStep, steps.length - 1);
               }
+              
               if (
                 uploadTypeOutput &&
                 uploadTypeOutput.value !== "" &&

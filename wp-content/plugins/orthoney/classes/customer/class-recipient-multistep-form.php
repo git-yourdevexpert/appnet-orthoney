@@ -117,8 +117,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     self::step_1($setData);
                     self::step_2($setData);
                     self::step_3($setData, $csv_name);
-                    self::step_4($setData, $currentStep, $group_name);
-                    self::step_5($setData, $currentStep, $group_name);
+                    self::step_4($setData, $currentStep, $csv_name);
+                    self::step_5($setData, $currentStep, $csv_name);
                     ?>
                 </form>
                 <?php

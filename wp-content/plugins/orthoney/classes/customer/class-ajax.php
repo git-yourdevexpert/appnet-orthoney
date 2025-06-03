@@ -1537,13 +1537,12 @@ class OAM_Ajax{
             'step'     => sanitize_text_field($currentStep),
             'greeting' => sanitize_text_field($stepData['greeting']),
         ];
+        
+        if($currentStep == 3 && (isset($_POST['multiple_address_output']) && !empty($_POST['multiple_address_output']) && $_POST['multiple_address_output'] === 'add-manually') && (isset($_POST['upload_type_output_process_name']) )){
+            $data['csv_name'] = $_POST['upload_type_output_process_name'];
+        }
 
-        $processExistQuery = $wpdb->prepare("
-        SELECT id
-        FROM {$order_process_table}
-        WHERE user_id = %d 
-        AND id = %d 
-        ", get_current_user_id(), $process_id);
+        $processExistQuery = $wpdb->prepare("SELECT id FROM {$order_process_table}  WHERE user_id = %d  AND id = %d", get_current_user_id(), $process_id);
 
         $processExistResult = $wpdb->get_row($processExistQuery);
         if (!$processExistResult) {
