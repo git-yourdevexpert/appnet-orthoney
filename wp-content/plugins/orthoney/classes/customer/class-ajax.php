@@ -1001,10 +1001,19 @@ class OAM_Ajax{
                             $message .= 'Provided state is invalid. Accepted state is <span style="color: #6BBE56;">' . esc_html($components['state_abbreviation']) . '</span>';
                             $success = false;
                         } 
-                        if (($original['zipcode'] ?? '') !== ($components['zipcode'] ?? '')) {
-                            $message .= 'Provided zipcode is invalid. Accepted zipcode is <span style="color: #6BBE56;">' . esc_html($components['zipcode']) . '</span>';
-                            $success = false;
+                       
+
+                        if (strpos($zipcode, '-') !== false) {
+                            if (strpos($zipcode, $data[0]['components']['zipcode']) === false) {
+                                echo "sasdf";
+                                $success = false;
+                            }
+                        }else{
+                            if ($zipcode !== $data[0]['components']['zipcode']) {
+                                $success = false;
+                            }
                         }
+                        
                     }
                 } else {
                     $message = 'Invalid address format.';
