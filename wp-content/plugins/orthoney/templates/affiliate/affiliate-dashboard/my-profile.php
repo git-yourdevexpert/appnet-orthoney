@@ -24,6 +24,7 @@
    $zipcode = get_user_meta($user_id, '_yith_wcaf_zipcode', true);
    $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
    
+   $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
    //TODO
    $dashboard_link = ORGANIZATION_DASHBOARD_LINK;
 $dashboard_link_label = 'Return to Dashboard';
@@ -127,19 +128,15 @@ $dashboard_link_label = 'Return to Dashboard';
             <div class="affiliate-profile" id="update-price-affiliate-form">
                 <form id="affiliate-update-price-form">
                     <div class="form-row gfield--width-half">
-                        <label for="city">Product Price</label>
+                        <label for="city">Product Price <span class="error-message"><strong>Please set the minimum honey jar price to <?php echo wc_price($selling_minimum_price ) ?>.</strong></span></label>
 
                         <div class="product-price-box textarea-div form-row gfield--width-full update-price">
-                           
-                                <input type="text" name="product_price" id="product_price"
-                                    value="<?php echo esc_attr($product_price); ?>"
-                                    data-error-message="Please enter a product price">
-                                <span class="error-message"></span>
-                         
-                                <button type="button" class="add-user w-btn us-btn-style_1"
-                                    id="affiliate-product-price-profile">Update Price</button>
+                            <input type="text" name="product_price" id="product_price" value="<?php echo esc_attr($product_price); ?>" data-error-message="Please enter a product price">
+                            <span class="error-message"></span>
                         
+                            <button type="button" class="add-user w-btn us-btn-style_1" id="affiliate-product-price-profile">Update Price</button>
                         </div>
+                        
                     </div>
                 </form>
             </div>

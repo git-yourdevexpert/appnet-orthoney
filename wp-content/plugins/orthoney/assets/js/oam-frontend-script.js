@@ -167,6 +167,7 @@ function affiliateDatatable() {
           searching: true,
           responsive: true,
           deferRender: false,
+          order: [[-1, "asc"]],
           lengthChange: false,
           language: {
             search: "",
@@ -3068,6 +3069,7 @@ jQuery(function ($) {
           });
         });
 
+
         $(document).on("click", ".order-pdf-export", function (e) {
           e.preventDefault();
 
@@ -3455,6 +3457,8 @@ function jarfilter_trigger(jarOrderId, year) {
  * Recipient Order End
  */
 
+
+
 jQuery(document).ready(function ($) {
   const recipientOrderID = getURLParam("recipient-order");
   if (recipientOrderID) {
@@ -3721,4 +3725,54 @@ jQuery(document).ready(function ($) {
       }
     });
   });
+});
+
+
+
+jQuery(document).on("click", ".org_account_statement", function (e) {
+  e.preventDefault();
+
+  const $btn = jQuery(this);
+  $btn.prop("disabled", true); // Disable the button
+
+  const requestData = {
+    action: "orthoney_org_account_statement_ajax",
+    security: oam_ajax.nonce,
+    orgid: $btn.data("orgid"),
+  };
+
+  process_group_popup("Generating CSV...");
+
+  jQuery
+    .post(oam_ajax.ajax_url, requestData)
+    .done(function (response) {
+      Swal.close();
+      if (response.success && response.data?.url) {
+        const a = document.createElement("a");
+        a.href = response.data.url;
+        a.download = response.data.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        Swal.fire({
+          title: "Export Failed",
+          text:
+            response?.data?.message ||
+            "Something went wrong during export.",
+          icon: "error",
+        });
+      }
+    })
+    .fail(function () {
+      Swal.close();
+      Swal.fire({
+        title: "Network Error",
+        text: "Failed to communicate with server. Please try again.",
+        icon: "error",
+      });
+    })
+    .always(function () {
+      $btn.prop("disabled", false); // Re-enable the button
+    });
 });

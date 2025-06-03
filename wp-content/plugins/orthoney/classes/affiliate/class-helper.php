@@ -20,6 +20,14 @@ class OAM_AFFILIATE_Helper {
     }
     
     public static function affiliate_status_check($user_id) {
+        if($user_id == ''){
+             return json_encode([
+                'success' => false, 
+                'message'=> 'Something went wrong. Please contact the Honey From The Heart team.',
+                'reason'=> $ban_message
+            ]);
+        }
+
         global $wpdb;
         $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
         // Get affiliate data from the database
@@ -39,6 +47,7 @@ class OAM_AFFILIATE_Helper {
             ]);
             
         } elseif (isset($affiliate->enabled)) {
+           
             if ($affiliate->enabled == 0) {
                 ?>
                 <style>
@@ -148,6 +157,7 @@ class OAM_AFFILIATE_Helper {
         if (empty($details['orders'])) {
             return '';
         }
+        $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
         $html = '';
         // rsort($details['orders']);
         $orders = $details['orders'];
@@ -160,62 +170,11 @@ class OAM_AFFILIATE_Helper {
                     <table >
                         <thead>
                             <tr>
-                                <th>Order ID</th>
-                                <th>Billing Name</th>
-                                <th>Number of Jars</th>
-                                <th>Total</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>';
-        $count = 0;
-        foreach ($orders as $order_id) {
-            if (++$count > $limit) break;
-            $order = wc_get_order($order_id);
-            if (!$order) continue;
-            $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
-            $quantity = 0;
-            foreach ($order->get_items() as $item) {
-                $quantity += (int) $item->get_quantity();
-            }
-            $html .= '<tr>
-                        <td><div class="thead-data">Order ID</div>#' . esc_html($custom_order_id) . '</td>
-                        <td><div class="thead-data">Billing Name</div>' . esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()) . '</td>
-                        <td><div class="thead-data">Number of Jars</div>' . esc_html($quantity) . '</td>
-                        <td><div class="thead-data">Total</div>' . wc_price($order->get_total()) . '</td>
-                        <td><div class="thead-data">Date</div>' . wc_format_datetime( $order->get_date_created() ). '</td>
-                    </tr>';
-        }
-        if ($count === 0) {
-            $html .= '<tr><td colspan="4" class="no-available-msg">Order not found!</td></tr>';
-        }
-        $html .=    '</tbody>
-                    </table>
-                </div>
-            </div>
-        </div>';
-        return $html;
-    }
-    public static function affiliate_current_year_order_list($details, $limit = 9999999) {
-        if (empty($details['current_year_orders_ids'])) {
-            return '<p>Current year customer order is not found?</p>';
-        }
-        $html = '';
-        //rsort($details['current_year_orders_ids']);
-        $orders = $details['current_year_orders_ids'];
-        $current_url = OAM_Helper::$organization_dashboard_link . '/orders-list/';
-        $html .= '<div>
-                    <div class="">
-                        <div class="recipient-lists-block custom-table orthoney-datatable-warraper table-with-search-block" id="affiliate-orderlist-table">';
-                           
-        $html .=    '
-                    <table >
-                        <thead>
-                            <tr>
-                                <th>Order ID</th>
+                               <th>Order ID</th>
                                 <th>Billing Name</th>
                                 <th>Total Honey Jar</th>
                                 <th>Price</th>
+                                <th>Commission</th>
                                 <th>Order Date</th>
                             </tr>
                         </thead>
@@ -233,8 +192,69 @@ class OAM_AFFILIATE_Helper {
             $html .= '<tr>
                         <td><div class="thead-data">Order ID</div>#' . esc_html($custom_order_id) . '</td>
                         <td><div class="thead-data">Billing Name</div>' . esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()) . '</td>
-                        <td><div class="thead-data">Number of Jars</div>' . esc_html($quantity) . '</td>
-                        <td><div class="thead-data">Total</div>' . wc_price($order->get_total()) . '</td>
+                        <td><div class="thead-data">Total Honey Jar</div>' . esc_html($quantity) . '</td>
+                        <td><div class="thead-data">Price</div>' . wc_price($order->get_total()) . '</td>
+                        <td><div class="thead-data">Commission</div>' . wc_price($commission_array[$custom_order_id]['commission']) . '</td>
+                        <td><div class="thead-data">Date</div>' . wc_format_datetime( $order->get_date_created() ). '</td>
+                    </tr>';
+        }
+        if ($count === 0) {
+            $html .= '<tr><td colspan="4" class="no-available-msg">Order not found!</td></tr>';
+        }
+        $html .=    '</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>';
+        return $html;
+    }
+
+
+
+    public static function affiliate_current_year_order_list($details, $limit = 9999999) {
+        if (empty($details['current_year_orders_ids'])) {
+            return '<p>Current year customer order is not found?</p>';
+        }
+        $html = '';
+        $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
+
+        
+        //rsort($details['current_year_orders_ids']);
+        $orders = $details['current_year_orders_ids'];
+        $current_url = OAM_Helper::$organization_dashboard_link . '/orders-list/';
+        $html .= '<div><style>#yearFilter{display:none}</style>
+                    <div class="">
+                        <div class="recipient-lists-block custom-table orthoney-datatable-warraper table-with-search-block" id="affiliate-orderlist-table">';
+                           
+        $html .=    '
+                    <table >
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Billing Name</th>
+                                <th>Total Honey Jar</th>
+                                <th>Price</th>
+                                <th>Commission</th>
+                                <th>Order Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>';
+        $count = 0;
+        foreach ($orders as $order_id) {
+            if (++$count > $limit) break;
+            $order = wc_get_order($order_id);
+            if (!$order) continue;
+            $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
+            $quantity = 0;
+            foreach ($order->get_items() as $item) {
+                $quantity += (int) $item->get_quantity();
+            }
+            $html .= '<tr>
+                        <td><div class="thead-data">Order ID</div>#' . esc_html($custom_order_id) . '</td>
+                        <td><div class="thead-data">Billing Name</div>' . esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()) . '</td>
+                        <td><div class="thead-data">Total Honey Jar</div>' . esc_html($quantity) . '</td>
+                        <td><div class="thead-data">Price</div>' . wc_price($order->get_total()) . '</td>
+                        <td><div class="thead-data">Commission</div>' . wc_price($commission_array[$custom_order_id]['commission']) . '</td>
                         <td><div class="thead-data">Date</div>' . wc_format_datetime( $order->get_date_created() ). '</td>
                     </tr>';
         }
@@ -251,6 +271,13 @@ class OAM_AFFILIATE_Helper {
     public static function affiliate_details($affiliate_id, $details){
         $affiliate = get_userdata($affiliate_id);
         
+        $total_commission = 0;
+        $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
+       
+        foreach ($commission_array as $key => $data) {
+           $total_commission = $total_commission + $data['commission'];
+        }
+
         if($details['token'] != ''){
             $html = '<div class="dashboard-heading block-row">
                     <div class="item">
@@ -289,6 +316,17 @@ class OAM_AFFILIATE_Helper {
                     </div>
                     <div class="place-order item">
                         <div class="row-block">
+                            <h4 class="block-title">Total Commission</h4>
+                            <div class="see-all">
+                                <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/commission-icon.png" width="30" height="30" /></div>
+                            </div>
+                        </div>
+                        <div class="sub-heading">
+                            <div>'.wc_price($total_commission).' </div>
+                        </div>
+                    </div>
+                    <div class="place-order item">
+                        <div class="row-block">
                             <h4 class="block-title">Claim Commission</h4>
                             <div class="see-all">
                                 <div class="icon-card"><img alt="speedicon" src="'.OH_PLUGIN_DIR_URL.'/assets/image/commission-icon.png" width="30" height="30" /></div>
@@ -296,7 +334,7 @@ class OAM_AFFILIATE_Helper {
                         </div>
                         <div class="sub-heading">
                             <div>
-                            <p>'.(($details['total_quantity'] > 50)  ?  '<a href="#" class="w-btn us-btn-style_1">View all</a>': 'A minimum of 50 jars is required. You still need '.(50 - $details['total_quantity']).' more jars.').'</p>
+                            <p>'.(($details['total_quantity'] > 50)  ?  '<button data-orgid="'.$affiliate_id.'"  class="w-btn us-btn-style_1 org_account_statement">Account Statement</button>': 'A minimum of 50 jars is required. You still need '.(50 - $details['total_quantity']).' more jars.').'</p>
                             
                             </div>
                         </div>
@@ -316,6 +354,116 @@ class OAM_AFFILIATE_Helper {
             }
             return  $html;
     }
+
+    public static function is_user_created_this_year($user_id) {
+        $user = get_userdata($user_id);
+
+        if (!$user || empty($user->user_registered)) {
+            return false;
+        }
+
+        $registered_year = (int) date('Y', strtotime($user->user_registered));
+        $current_year = (int) date('Y');
+
+        return $registered_year === $current_year;
+    }
+
+    public static function get_commission_affiliate() {
+        global $wpdb;
+
+        $commission_array = [];
+        $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
+        $affiliate_id = $user_id = get_current_user_id();
+        $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
+    
+        if (in_array('yith_affiliate', $user_roles) || in_array('affiliate_team_member', $user_roles) || in_array('administrator', $user_roles)) {
+            $affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+        }
+        
+        $affiliate = $wpdb->get_row(
+            $wpdb->prepare("SELECT * FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d", $affiliate_id)
+        );
+
+       $commission_year_results = $wpdb->get_results( $wpdb->prepare(
+            "SELECT 
+                c.order_id,
+                SUM(CAST(qty_meta.meta_value AS UNSIGNED)) AS total_quantity,
+                SUM(CAST(line_total_meta.meta_value AS DECIMAL(10,2))) AS line_total
+            FROM {$wpdb->prefix}yith_wcaf_commissions c
+            INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+            INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_id = o.id AND oi.order_item_type = 'line_item'
+            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta qty_meta 
+                ON qty_meta.order_item_id = oi.order_item_id AND qty_meta.meta_key = '_qty'
+            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_total_meta 
+                ON line_total_meta.order_item_id = oi.order_item_id AND line_total_meta.meta_key = '_line_total'
+            WHERE c.affiliate_id = %d
+            AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
+            GROUP BY c.order_id",
+            $affiliate->ID
+        ));
+
+
+        $total_quantity = $wpdb->get_var( $wpdb->prepare(
+            "SELECT 
+                SUM(CAST(om.meta_value AS UNSIGNED))
+            FROM {$wpdb->prefix}yith_wcaf_commissions c
+            INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+            INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id AND oi.order_item_type = 'line_item'
+            INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
+            WHERE c.affiliate_id = %d
+            AND YEAR(o.date_created_gmt) = YEAR(CURDATE())",
+            $affiliate->ID
+        ));
+
+     
+        if(!empty($commission_year_results)){
+            if($total_quantity >= 50){
+                foreach ($commission_year_results as $key => $commission) {
+                    $total_all_quantity = $commission->total_quantity;
+                    $total_quantity = $total_quantity;
+                    $line_total = $commission->line_total;
+                    $par_jar = $commission->line_total /$commission->total_quantity;
+                    $minimum_price = 0;
+                    
+                    $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
+                    if($par_jar >= $selling_minimum_price){
+                        if (OAM_AFFILIATE_Helper::is_user_created_this_year($user_id)) {
+                            if($total_all_quantity < 99){
+                                $minimum_price = get_field('new_minimum_price_50', 'option');
+                            } else{
+                                $minimum_price = get_field('new_minimum_price_100', 'option');
+                            }
+                        }else{
+                            if($total_all_quantity < 99){
+                                $minimum_price = get_field('ex_minimum_price_50', 'option');
+                            } else{
+                                $minimum_price = get_field('ex_minimum_price_100', 'option');
+                            }
+                        }
+                        
+                    }
+
+                    
+                    $custom_order_id = OAM_COMMON_Custom::get_order_meta( $commission->order_id, '_orthoney_OrderID');
+                    
+                    $data['total_all_quantity'] = $total_quantity;
+                    $data['order_id'] = $commission->order_id;
+                    $data['custom_order_id'] = $custom_order_id;
+                    $data['total_quantity'] =  $total_all_quantity;
+                    $data['line_total'] = $line_total;
+                    $data['line_total'] = $line_total;
+                    $data['par_jar'] = $par_jar;
+                    $data['minimum_price'] = $minimum_price;
+                    $data['commission'] =( $par_jar >= $selling_minimum_price ? (($par_jar - $minimum_price) * $total_all_quantity) : 0);
+
+                    $commission_array[$custom_order_id] = $data;
+                }
+            }
+        }
+        return $commission_array;
+
+    }
+
     public static function get_affiliate_details($affiliate_id) {
         global $wpdb;
         

@@ -33,7 +33,123 @@ class OAM_AFFILIATE_Ajax{
         add_action('wp_ajax_nopriv_add_affiliate_link', array($this, 'add_affiliate_link_handler'));
         add_action('wp_ajax_add_affiliate_link', array( $this, 'add_affiliate_link_handler' ));
 
+        add_action('wp_ajax_orthoney_org_account_statement_ajax', array( $this, 'orthoney_org_account_statement_ajax_handler' ));
+
+
     }
+
+    public function orthoney_org_account_statement_ajax_handler() {
+        check_ajax_referer('oam_nonce', 'security');
+
+        // Load Dompdf if not already loaded
+        if (!class_exists('\Dompdf\Dompdf')) {
+            require_once plugin_dir_path(__FILE__) . 'libs/dompdf/vendor/autoload.php';
+        }
+
+        $org_id = isset($_POST['orgid']) ? intval($_POST['orgid']) : 0;
+        if (!$org_id) {
+            wp_send_json_error(['message' => 'Invalid Organization ID.']);
+        }
+
+        // Dummy HTML content for now – populate with real data
+        $html = '
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>2025 Honey Reorder Form</title>
+            <style>
+                body {
+                    font-family: DejaVu Sans, sans-serif;
+                    font-size: 12px;
+                    line-height: 1.6;
+                }
+                h2 {
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+                .section {
+                    margin-bottom: 20px;
+                }
+                .label {
+                    font-weight: bold;
+                }
+                .order-summary, .addresses {
+                    border: 1px solid #000;
+                    padding: 10px;
+                }
+                .address-block {
+                    margin-bottom: 10px;
+                }
+                .payment-section {
+                    border: 1px dashed #000;
+                    padding: 10px;
+                }
+                .page-break {
+                    page-break-before: always;
+                }
+            </style>
+        </head>
+        <body>
+            <h2>Account Statement for Organization ID: ' . esc_html($org_id) . '</h2>
+            <div class="section">
+                <div class="order-summary">
+                    <p>This is where the order summary or account statement content will go.</p>
+                </div>
+            </div>
+            <div class="section" style="color:red">
+            <hr>
+                <p><strong>Important Check Terms:</strong></p>
+                <ul>
+                <li>2-4 weeks after submitting your Remittance Form, you’ll receive an email notification that the check was mailed.</li>
+                <li>A $25 processing fee is charged to replace a lost or expired check.</li>
+                <li>If the check does not arrive within 2 weeks of the mailing notification, you must immediately notify support@orthoney.com to avoid a $25 replacement processing fee.</li>
+                <li>Checks expire 90 days after date of issue.</li>
+                <li>Under no circumstances will ORT replace a check that has been deposited.</li>
+                <li>It is your responsibility to provide a complete and accurate mailing address on the Remittance Form.</li>
+                </ul>
+            </div>
+            <div class="section" style="color:blue">
+            <hr>
+                <p><strong>To Request your Profit Check</strong></p>
+                <ol>
+                <li>Click the Remittance Form button on the Account Statement page of your Distributor Account. Your username is Juliegur@yahoo.com.</li>
+                <li>Complete the Remittance Form. (Your organization code is ABR.)</li>
+                <li>Click the Captcha (I’m not a robot).</li>
+                <li>Click Submit.</li>
+                </ol>
+                <p>An Account Statement notification was emailed to all contacts in your Distributor Account. Please do not submit duplicate forms.</p>
+            </div>
+        </body>
+        </html>';
+
+        // Generate PDF
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // Filename and file path
+        $timestamp = date('Y-m-d_H-i-s');
+        $upload_dir = wp_upload_dir();
+        $pdf_filename = 'organization-statement-' . $org_id . '-' . $timestamp . '.pdf';
+        $pdf_path = $upload_dir['path'] . '/' . $pdf_filename;
+
+        // Save PDF
+        file_put_contents($pdf_path, $dompdf->output());
+
+        // URL to return for download
+        $pdf_url = $upload_dir['url'] . '/' . $pdf_filename;
+
+        // Respond with success
+        wp_send_json_success([
+            'url' => $pdf_url,
+            'filename' => $pdf_filename,
+            'status' => 'success',
+            'request' => 'download',
+        ]);
+    }
+
 
     public function add_affiliate_link_handler() {
         check_ajax_referer('oam_nonce', 'security');

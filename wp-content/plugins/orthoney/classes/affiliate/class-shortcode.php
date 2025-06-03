@@ -16,6 +16,8 @@ class OAM_AFFILIATE_Shortcode
 
     public function affiliate_dashboard_handler() {
         ob_start();
+
+        $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
     
         if (!is_user_logged_in()) {
             $message = 'Please login to view your affiliate dashboard.';
@@ -29,6 +31,11 @@ class OAM_AFFILIATE_Shortcode
     
         if (in_array('yith_affiliate', $user_roles) || in_array('affiliate_team_member', $user_roles) || in_array('administrator', $user_roles)) {
             $affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+
+            if( $affiliate_id == '' && in_array('yith_affiliate', $user_roles) ){
+                 $affiliate_id = get_current_user_id();
+            }
+
             $affiliate_status_check = OAM_AFFILIATE_Helper::affiliate_status_check($affiliate_id);
             $result = json_decode($affiliate_status_check, true);
 

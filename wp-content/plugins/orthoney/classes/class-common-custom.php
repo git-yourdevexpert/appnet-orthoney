@@ -167,32 +167,30 @@ class OAM_COMMON_Custom {
     }
     
        
-    public static function get_product_custom_price($product_id, $affiliate_id) {
-        global $wpdb; // Add this line to access $wpdb
+     public static function get_product_custom_price($product_id, $affiliate_id) {
+        global $wpdb;
 
-        $product = wc_get_product( $product_id );
-        $price = 14;
+        $product = wc_get_product($product_id);
+        $price = get_field('selling_minimum_price', 'option') ?: 18;
 
-        if($affiliate_id !=0 ){
+        if ($affiliate_id != 0) {
             // Get the affiliate ID from yith_wcaf_affiliates table
-            $affiliate_id_result = $wpdb->get_var( $wpdb->prepare(
+            $affiliate_id_result = $wpdb->get_var($wpdb->prepare(
                 "SELECT ID FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id = %d",
                 $affiliate_id
-            ) );
+            ));
 
-            if ( $affiliate_id_result ) {
-                // Use the provided affiliate ID to get user-specific price
+            if ($affiliate_id_result) {
+                // Get the user-specific price
                 $custom_price = get_user_meta($affiliate_id, 'DJarPrice', true);
-                if ( $custom_price !== '' ) {
-                    $price = $custom_price;
-                }
-            } else {
-                $price = $product->get_price();
-            }
 
-        }else{
-             $price = $product->get_price();
+                // Make sure it's a valid numeric value and not lower than the default price
+                if ($custom_price !== '' && is_numeric($custom_price) && floatval($custom_price) >= floatval($price)) {
+                    $price = floatval($custom_price);
+                }
+            }
         }
+
         return $price;
     }
 
@@ -642,14 +640,13 @@ class OAM_COMMON_Custom {
         }
     }
 
-   function check_userrole_update_meta($user_id) {
+    function check_userrole_update_meta($user_id) {
         $user = get_user_by('id', $user_id);
         // Get the role set at creation time (from $_POST)
         if (isset($_POST['role']) && $_POST['role'] === 'sales_representative') {
             // Add customer role if sales_representative
             $user->add_role('customer');
         }
-        
         $user = get_userdata($user_id);
         $roles = $user->roles; // Get the user's roles (array)
         
@@ -660,7 +657,6 @@ class OAM_COMMON_Custom {
         }
 
     }
-    
     
     public static function get_user_role_by_id($user_id) {
         $user = get_userdata($user_id);
