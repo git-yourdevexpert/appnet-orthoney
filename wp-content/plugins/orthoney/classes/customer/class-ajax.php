@@ -1341,7 +1341,7 @@ class OAM_Ajax{
                     'address_1'        => sanitize_textarea_field($data['mailing address']),
                     'address_2'        => sanitize_textarea_field($data['suite/apt#']),
                     'city'             => sanitize_text_field($data['city']),
-                    'state'            => sanitize_text_field($data['state']),
+                    'state'            => sanitize_text_field(strtoupper($data['state'])),
                     'zipcode'          => sanitize_text_field($data['zipcode']),
                     'quantity'         => intval($quantity),
                     'greeting'         => sanitize_textarea_field($data['greeting']),
