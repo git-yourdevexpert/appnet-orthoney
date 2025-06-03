@@ -2428,7 +2428,7 @@ class OAM_Ajax{
                 'address_1'  => sanitize_textarea_field($_POST['address_1']),
                 'address_2'  => isset($_POST['address_2']) ? sanitize_textarea_field($_POST['address_2']) : '',
                 'city'       => sanitize_text_field($_POST['city']),
-                'state'      => sanitize_text_field($_POST['state']),
+                'state'      => sanitize_text_field(strtoupper($_POST['state'])),
                 'zipcode'    => sanitize_text_field($_POST['zipcode']),
                 'quantity'   => $_POST['quantity'],
                 'greeting'   => sanitize_textarea_field($_POST['greeting']),
@@ -2446,7 +2446,7 @@ class OAM_Ajax{
 
             if($invalid_address == 1){
                  $validation_result = json_decode(OAM_Helper::validate_address(
-                    $data['address_1'], $data['address_2'], $data['city'], $data['state'], $data['zipcode']
+                    $data['address_1'], $data['address_2'], $data['city'], strtoupper($data['state']), $data['zipcode']
                 ), true);
 
                 $data['reasons'] = $validation_result['message'];
@@ -2493,14 +2493,14 @@ class OAM_Ajax{
                 $table = OAM_Helper::$group_recipient_table;
                 $existing_recipient = $wpdb->get_row( $wpdb->prepare(
                     "SELECT id, visibility FROM $table WHERE full_name = %s AND address_1 = %s AND city = %s AND state = %s AND zipcode = %s AND group_id = %d", 
-                    $data['full_name'], $data['address_1'], $data['city'], $data['state'], $data['zipcode'], $group_id
+                    $data['full_name'], $data['address_1'], $data['city'], strtoupper($data['state']), $data['zipcode'], $group_id
                     )
                 );
             }else{
             
                 $existing_recipient = $wpdb->get_row( $wpdb->prepare(
                     "SELECT id, visibility FROM $table WHERE full_name = %s AND address_1 = %s AND city = %s AND state = %s AND zipcode = %s AND pid = %d", 
-                    $data['full_name'], $data['address_1'], $data['city'], $data['state'], $data['zipcode'], $process_id
+                    $data['full_name'], $data['address_1'], $data['city'], strtoupper($data['state']), $data['zipcode'], $process_id
                     )
                 );
             }
@@ -2543,7 +2543,7 @@ class OAM_Ajax{
             if($address_verified == 1){
 
                 $validation_result = json_decode(OAM_Helper::validate_address(
-                    $data['address_1'], $data['address_2'], $data['city'], $data['state'], $data['zipcode']
+                    $data['address_1'], $data['address_2'], $data['city'], strtoupper($data['state']), $data['zipcode']
                 ), true);
         
                 if ($validation_result) {
@@ -2570,7 +2570,7 @@ class OAM_Ajax{
 
             }else{
                 $validation_result = json_decode(OAM_Helper::validate_address(
-                    $data['address_1'], $data['address_2'], $data['city'], $data['state'], $data['zipcode']
+                    $data['address_1'], $data['address_2'], $data['city'], strtoupper($data['state']), $data['zipcode']
                 ), true);
 
                 $data['reasons'] = $validation_result['message'];
