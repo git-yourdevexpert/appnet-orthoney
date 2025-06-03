@@ -1008,9 +1008,10 @@ class OAM_Ajax{
                     }
                 } else {
                     $message = 'Invalid address format.';
-                    $dpv_footnotes = $data['analysis']['footnotes'] ?? '';
-                    if (!empty($dpv_footnotes)) {
-                        $message = OAM_Helper::addressCorrections($dpv_footnotes);
+                    $footnotes = $data['analysis']['footnotes'] ?? '';
+                    $dpv_footnotes = $data['analysis']['dpv_footnotes'] ?? '';
+                    if ($footnotes !== '' && !empty($footnotes) || $dpv_footnotes !== '' && !empty($dpv_footnotes)) {
+                        $message = OAM_Helper::addressCorrections($footnotes, $dpv_footnotes);
                         $success = false;
                     }
                 }
@@ -1540,6 +1541,7 @@ class OAM_Ajax{
         
         if($currentStep == 3 && (isset($_POST['multiple_address_output']) && !empty($_POST['multiple_address_output']) && $_POST['multiple_address_output'] === 'add-manually') && (isset($_POST['upload_type_output_process_name']) )){
             $data['csv_name'] = $_POST['upload_type_output_process_name'];
+            $data['name'] = $_POST['upload_type_output_process_name'];
         }
 
         $processExistQuery = $wpdb->prepare("SELECT id FROM {$order_process_table}  WHERE user_id = %d  AND id = %d", get_current_user_id(), $process_id);

@@ -1681,8 +1681,36 @@ class OAM_Helper{
         return wp_remote_retrieve_body($response);
     }
 
-    public static function addressCorrections($code = '') {
-        
+    public static function addressCorrections($code = '', $dpv_footnotes = '') {
+
+        $dpv_footnotes_corrections = [
+            'AA' => 'Street name, city, state, and ZIP are all valid.',
+            'A1' => 'Address not present in USPS data.',
+            'BB' => 'Entire address is valid.',
+            'CC' => 'The submitted secondary information (apartment, suite, etc.) was not recognized. Secondary number is NOT REQUIRED for delivery.',
+            'C1' => 'The submitted secondary information (apartment, suite, etc.) was not recognized. Secondary number IS REQUIRED for delivery.',
+            'F1' => 'Military or diplomatic address',
+            'G1' => 'General delivery address',
+            'M1' => 'Primary number (house number) is missing.',
+            'M3' => 'Primary number (house number) is invalid.',
+            'N1' => 'Address is missing secondary information (apartment, suite, etc.) which IS REQUIRED for delivery.',
+            'PB' => 'PO Box street style address.',
+            'P1' => 'PO, RR, or HC box number is missing.',
+            'P3' => 'PO, RR, or HC box number is invalid.',
+            'RR' => 'Confirmed address with private mailbox (PMB) info.',
+            'R1' => 'Confirmed address without private mailbox (PMB) info.',
+            'R7' => 'Confirmed as a valid address that doesn\'t currently receive US Postal Service street delivery.',
+            'TA' => 'Primary number was matched by dropping trailing alpha.',
+            'U1' => 'Address has a "unique" ZIP Code.',
+            'AABB' => 'ZIP, state, city, street name, and primary number match.',
+            'AABBCC' => 'ZIP, state, city, street name, and primary number match, but secondary does not. A secondary is not required for delivery.',
+            'AAC1' => 'ZIP, state, city, street name, and primary number match, but secondary does not. A secondary is required for delivery.',
+            'AAM1' => 'ZIP, state, city, and street name match, but the primary number is missing.',
+            'AAM3' => 'ZIP, state, city, and street name match, but the primary number is invalid.',
+            'AAN1' => 'ZIP, state, city, street name, and primary number match, but there is secondary information such as apartment or suite that would be helpful.',
+            'AABBR1' => 'ZIP, state, city, street name, and primary number match. Address confirmed without private mailbox (PMB) info.'
+        ];
+
          $addressCorrections = [
                 'A#'  => 'Correct ZIP Code',
                 'B#'  => 'Correct city/state spelling',
@@ -1715,12 +1743,25 @@ class OAM_Helper{
                 'Z#'  => 'Matched with ZIPMOVE',
             ];
 
+
+            $dpv_suffix = substr($dpv_footnotes, -2);
             $message = 'Invalid address format.';
-            if ($code !== '' && isset($addressCorrections[$code])) {
-                $message = $addressCorrections[$code];
+            if ($dpv_footnotes !== '' && array_key_exists($dpv_suffix, $dpv_footnotes_corrections)) {
+               $message = $dpv_footnotes_corrections[$dpv_suffix];
             }
+            else{
+                if ($dpv_footnotes !== '' && array_key_exists($dpv_footnotes, $dpv_footnotes_corrections)) {
+                    $message = $dpv_footnotes_corrections[$dpv_suffix];
+                }else{
+                    if ($code !== '' && isset($addressCorrections[$code])) {
+                        $message = $addressCorrections[$code];
+                    }
+                }
+            }
+           
             return $message;
     }
+
     public static function group_dashboard_widget($title = "", $limit = 3, $link = '') {
         global $wpdb;
         $user_id = get_current_user_id();
