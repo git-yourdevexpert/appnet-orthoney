@@ -474,6 +474,7 @@ document.addEventListener("DOMContentLoaded", function () {
           const errorMessage = document.querySelector(
             ".multipleaddressordererrormessage"
           );
+          const displayProcessName = this.value === "add-manually";
 
           // Hide the error message initially
           errorMessage.style.display = "none";
@@ -491,6 +492,11 @@ document.addEventListener("DOMContentLoaded", function () {
           // Handle display logic for order and group sections
           const displayOrderWrapper = this.value === "select-order";
           const displayGroupsWrapper = this.value === "select-group";
+
+          document.querySelector( ".upload_type_output_process_name").style.display = displayProcessName ? "block" : "none";
+          document.querySelector(".upload_type_output_process_name input").toggleAttribute("required", displayProcessName);
+          document.querySelector( ".upload_type_output_process_name input").style.border = displayProcessName ? "" : "none";
+          document.querySelector( ".upload_type_output_process_name .error-message").innerText = displayProcessName ? "" : "";
 
           if (orderWrapper) {
             orderWrapper.style.display = displayOrderWrapper ? "block" : "none";
