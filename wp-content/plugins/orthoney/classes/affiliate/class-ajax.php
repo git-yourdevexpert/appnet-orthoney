@@ -106,13 +106,36 @@ class OAM_AFFILIATE_Ajax{
         wp_send_json(['success' => false, 'message' => 'Failed to send request.']);
     }
     
-    private function send_affiliate_email($customer_id, $affiliate_id, $subject, $token) {
-        $customer_email = get_userdata($customer_id)->user_email;
-        $affiliate_name = get_userdata($affiliate_id)->display_name;
-        $message = "Hello,\n\nYou have received an affiliate request from {$affiliate_name}.\n\n";
-        $message .= "Please approve or reject the request using the following link:\n";
-        $message .= home_url("/?action=organization-link&token={$token}");
-        wp_mail($customer_email, $subject, $message, ['Content-Type: text/plain; charset=UTF-8']);
+     private function send_affiliate_email($customer_id, $affiliate_id, $subject, $token) {
+        $customer = get_userdata($customer_id);
+        $affiliate = get_userdata($affiliate_id);
+
+        if (!$customer || !$affiliate) {
+            return; // Exit if either user is not found
+        }
+
+        $first_name     = get_user_meta($customer_id, 'first_name', true);
+        $last_name      = get_user_meta($customer_id, 'last_name', true);
+        $customer_email = $customer->user_email;
+
+        $full_name = (!empty($first_name) && !empty($last_name)) 
+            ? $first_name
+            : $customer->display_name;
+
+        $organization   = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
+        $affiliate_name = $affiliate->display_name;
+
+        $link = esc_url(home_url("/?action=organization-link&token={$token}"));
+
+        $message = "
+            <p>Dear {$full_name},</p>
+            <p>A honey sale administrator from <strong>{$organization}</strong> has made a request.</p>
+            <p>Please approve or reject the request using the following link:</p>
+            <p><a href=\"{$link}\" target=\"_blank\">Click here</a>  (or whatever link)</p>
+            <p>Thank you,<br>Honey From The Heart</p>
+        ";
+
+        wp_mail($customer_email, $subject, $message, ['Content-Type: text/html; charset=UTF-8']);
     }
 
     public function search_customer_by_email() {
