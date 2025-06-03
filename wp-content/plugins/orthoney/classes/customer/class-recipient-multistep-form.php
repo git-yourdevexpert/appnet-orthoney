@@ -256,12 +256,14 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         $upload_type_output = '';
         $groups = [];
         $affiliate_select = '';
+        $upload_type_output_process_name = '';
 
         if (!empty($data)) {
             $delivery_preference = (!empty($data->delivery_preference)) ? $data->delivery_preference : '';
             $affiliate_select = (!empty($data->affiliate_select)) ? $data->affiliate_select : 'Orthoney';
             $multiple_address_output = $data->multiple_address_output ? $data->multiple_address_output : '';
             $upload_type_output = !empty($data->upload_type_output) ? $data->upload_type_output : '';
+            $upload_type_output_process_name = !empty($data->upload_type_output_process_name) ? $data->upload_type_output_process_name : '';
             $single_address_quantity = $data->single_address_quantity ? $data->single_address_quantity : '';
             $single_address_greeting = $data->single_address_greeting ? $data->single_address_greeting : '';
             $groups = isset($data->groups) ? $data->groups : [];
@@ -331,6 +333,12 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                                 Enter a new order
                                             </span>
                                         </label>
+                                        <div>
+                                            <label class="upload_type_output_process_name" style="display: <?php echo $upload_type_output == 'add-manually' ? 'block' : 'none' ?> ">
+                                                <input type="text" name="upload_type_output_process_name" <?php echo $upload_type_output == 'add-manually' ? 'required' : '' ?> value="<?php echo  $upload_type_output_process_name ?>" placeholder="Please recipient list name" data-error-message="Please add recipient list name.">
+                                                <span class="error-message"></span>
+                                            </label>
+                                        </div>
                                         <?php 
                                     $user = self::$current_user_id;
                                     $getLastYearOrderList = OAM_Helper::getLastYearOrderList($user);
