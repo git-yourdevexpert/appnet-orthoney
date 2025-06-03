@@ -974,7 +974,7 @@ document.addEventListener("DOMContentLoaded", function () {
           ) {
             html = `All (${totalCount}) recipient(s) ${
               totalCount === 1 ? "has" : "have"
-            } been successfully added`;
+            } been added`;
           } else if (
             parseInt(successCount) +
               parseInt(newCount) +
@@ -1027,7 +1027,7 @@ document.addEventListener("DOMContentLoaded", function () {
             successCount != 0
           ) {
             html +=
-              "<div class='exceptions'><div class='exceptions-wrapper'><div class='sub-exceptions'><strong>Passed Recipient(s): </strong><ul>";
+              "<div class='exceptions'><div class='exceptions-wrapper'><div class='sub-exceptions'><strong>Added Recipient(s): </strong><ul>";
           }
 
           // if (successCount != 0) {
