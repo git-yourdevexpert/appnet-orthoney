@@ -1549,7 +1549,7 @@ class OAM_Ajax{
         ];
         
         if($currentStep == 3 && (isset($_POST['multiple_address_output']) && !empty($_POST['multiple_address_output']) && $_POST['multiple_address_output'] === 'add-manually') && (isset($_POST['upload_type_output_process_name']) )){
-            $data['csv_name'] = $_POST['upload_type_output_process_name'];
+            // $data['csv_name'] = $_POST['upload_type_output_process_name'];
             $data['name'] = $_POST['upload_type_output_process_name'];
         }
 
