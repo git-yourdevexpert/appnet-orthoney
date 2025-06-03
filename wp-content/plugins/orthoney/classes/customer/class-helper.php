@@ -1643,9 +1643,11 @@ class OAM_Helper{
 
         }else{
             $message = 'Invalid address format.';
-            $dpv_footnotes = $data[0]['analysis']['footnotes'] ?? '';
-            if ($dpv_footnotes !== '' && !empty($dpv_footnotes)) {
-                $message = self::addressCorrections($dpv_footnotes);
+            $footnotes = $data[0]['analysis']['footnotes'] ?? '';
+            $dpv_footnotes = $data[0]['analysis']['dpv_footnotes'] ?? '';
+            if ($footnotes !== '' && !empty($footnotes) || $dpv_footnotes !== '' && !empty($dpv_footnotes)) {
+                $message = OAM_Helper::addressCorrections($footnotes, $dpv_footnotes);
+                $success = false;
             }
            
             $response = ['success' => false, 'message' =>  $message];
