@@ -9,6 +9,11 @@ class OAM_COMMON_Custom {
      * Constructor to hook into Affiliate template loading.
      */
     public function __construct() {       
+
+        add_shortcode('season_start_end_message_box', array($this,'season_start_end_message_box_shortcode'));
+
+        add_action('wp', array($this,'season_start_end_message_box_shortcode_footer'));
+
         add_action('user_register', array($this, 'check_userrole_update_meta'));
         add_filter('acf/settings/save_json', array($this, 'oh_acf_json_save_path'));
         add_filter('acf/settings/load_json', array($this, 'oh_acf_json_load_paths'));
@@ -33,6 +38,74 @@ class OAM_COMMON_Custom {
     }
 
     public static function init() {}
+
+        
+    public function season_start_end_message_box_shortcode($atts) {
+        $atts = shortcode_atts(array(
+            'type' => '',
+            'popup' => '',
+            'date' => '',
+        ), $atts);
+
+        if ($atts['type'] === 'order') {
+            ?>
+            <style>
+                #page-content{
+                background:#ddd;
+                }
+                .us_custom_76d41440 {
+                    padding-top: 0rem !important;
+                    padding-bottom: 1rem !important;
+                }
+                .l-section.wpb_row.us_custom_19737bc8 .g-cols.vc_row{
+                    display:none;
+                }
+            </style>
+            <?php
+        }
+        ob_start();
+        ?>
+    
+    <div class="season_start_end_message_box <?php echo $atts['popup'] ?>" style="<?php echo $atts['popup'] === 'withpopup' ? 'display:none' : '' ?>">
+        <div class="popupbox <?php echo $atts['popup'] ?>">
+        <div class="content-wrapper">
+            <div class="bee-animation"><img decoding="async" width="72" height="72" src="/wp-content/uploads/2025/06/bee.png" class="attachment-full size-full" alt="Bee" loading="lazy"></div>
+            <div class="close-popup" onclick="this.closest('.popupbox').style.display='none'">x</div>
+            <div class="top-content">
+                <h2>The Hive’s Just Waking Up… Get Ready for the Buzz!</h2>
+                <div class="subtext">We’re almost ready to launch this season’s buzz-worthy tradition and trust us, it’s going to bee amazing!</div>
+                <p>Our honey isn’t flowing just yet, but the hive opens for gifting on <strong>June 12th 2025</strong></p>
+                <div class="border-top-bottom">Please come back soon to Send Honey. Share Hope. Spread Joy.</div>
+                <div class="notifyme">
+                    <span>Your friends at Honey From The Heart</span>
+                    <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="https://www.orthoney.com/sign-up/"><span class="w-btn-label">Notify Me</span></a>
+                </div>
+                <div id="countdown">
+                    <ul>
+                        <li><span id="days"></span>Days</li>
+                        <li><span id="hours"></span>Hours</li>
+                        <li><span id="minutes"></span>Minutes</li>
+                        <li><span id="seconds"></span>Seconds</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="bottom-content"></div>
+        </div>
+        </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    public function season_start_end_message_box_shortcode_footer($atts) {
+        if ( is_front_page() ) {
+            $today = date('Y-m-d H:i:s');
+            $season_start_date = get_field('season_start_date', 'option');
+            if ($season_start_date >= $today) {
+                echo do_shortcode("[season_start_end_message_box type='order' popup='withpopup']");
+            }
+        }
+    }
     
     public function oam_ajax_logout() {
         wp_logout();            
