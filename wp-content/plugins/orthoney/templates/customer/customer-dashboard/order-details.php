@@ -203,13 +203,119 @@ $dashboard_link_label = 'Return to Dashboard';
             </div>
         </div>
     
-    
-    <div id="recipient-order-data" class="table-data orthoney-datatable-warraper">
-        <div class="download-csv heading-title">
-            <div></div>
-            <div></div>
-        </div>
+    <?php 
+   if ($order_date && $order_date->format('Y') === '2025') {
+    ?>
+    <div id="recipient-jar-order-data" class="table-data orthoney-datatable-warraper">
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Recipient No</th>
+                    <th>Jar No</th>
+                    <th>Recipient Name</th>
+                    <th>Company Name</th>
+                    <th>Address</th>
+                    <th>Honey Jar</th>
+                    <th>Tracking status</th>
+                    <th style="width:200px">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $recipients = !empty($recipientResult) ? $recipientResult : [(object) [
+                    'recipient_order_id' => $sub_order_id,
+                    'full_name' => $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name(),
+                    'company_name' => '',
+                    'address_1' => $order->get_shipping_address_1(),
+                    'address_2' => $order->get_shipping_address_2(),
+                    'city' => $order->get_shipping_city(),
+                    'state' => $order->get_shipping_state(),
+                    'zipcode' => $order->get_shipping_postcode(),
+                    'quantity' => $quantity
+                ]];
 
+                foreach ($recipients as $sub_order) {
+                    $address = implode(', ', array_filter([
+                        $sub_order->address_1,
+                        $sub_order->address_2,
+                        $sub_order->city,
+                        $sub_order->state,
+                        $sub_order->zipcode
+                    ]));
+
+                    $oh_wc_jar_order = $wpdb->prefix . 'oh_wc_jar_order';
+                    $jarOrderResult = $wpdb->get_results($wpdb->prepare(
+                        "SELECT * FROM {$oh_wc_jar_order} WHERE recipient_order_id =%s ",
+                        $sub_order->recipient_order_id
+                    ));
+                    ?>
+                    <tr class="group-header" data-count="<?php echo count($jarOrderResult) ?>" data-group="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-id="<?php echo esc_attr($sub_order->recipient_order_id); ?>">
+                        <td colspan="8" style="background: #dee2e6 !important;">
+                            <div class="heading-title" style="margin-bottom: 0px;">
+                                <div>
+                                    <strong>
+                            <?php echo "#".esc_html($sub_order->recipient_order_id); ?>
+                            <?php //echo esc_html($sub_order->full_name); ?>
+                            <?php //echo esc_html($sub_order->company_name); ?>
+                            <?php // echo esc_html($address); ?>
+                            <?php echo "Total Honey Jars (" .esc_html($sub_order->quantity).")"; ?>
+                            </strong>
+                        </div>
+                        <div>
+                            <?php 
+                            if(!empty($recipientResult)){
+                                ?>
+                                <button class="far fa-eye viewRecipientOrder" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-popup="#recipient-order-edit-popup"></button>
+
+                                <?php 
+                                if($editable === true){
+                                ?>
+                                <button class="far fa-edit editRecipientOrder" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-popup="#recipient-order-manage-popup"></button>
+                                <?php
+                                }
+                            }
+                            ?>
+                            </div>
+                            </div>
+                            
+                            <!-- <button class="deleteRecipient far fa-times" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-recipientname="<?php echo esc_attr($sub_order->full_name); ?>"></button> -->
+                        </td>
+                    </tr>
+                    
+                    <?php 
+
+                    
+
+                    if(!empty($jarOrderResult)){
+                        foreach ($jarOrderResult as $jar_order) {
+                            ?>
+                              <tr data-id="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-group="<?php echo esc_attr($sub_order->recipient_order_id); ?>">
+                                <td><?php echo esc_html($sub_order->recipient_order_id); ?></td>
+                                <td><?php echo esc_html($jar_order->jar_order_id); ?></td>
+                                <td><?php echo esc_html($sub_order->full_name); ?></td>
+                                <td><?php echo esc_html($sub_order->company_name); ?></td>
+                                <td><?php echo esc_html($address); ?></td>
+                                <td><?php echo esc_html( ($sub_order->quantity > 6 ? $sub_order->quantity : 1)); ?></td>
+                                <th></th>
+                                <td>Processing</td>
+                            </tr>
+                            <?php
+                        }
+                    }
+
+                    ?>
+                <?php } ?>
+            </tbody>
+        </table>
+
+        
+    </div>
+    <?php 
+    }else{
+        ?>
+  <div id="recipient-order-data" class="table-data orthoney-datatable-warraper">
+      
         <table>
             <thead>
                 <tr>
@@ -274,7 +380,13 @@ $dashboard_link_label = 'Return to Dashboard';
             </tbody>
         </table>
 
-        <!-- Popups -->
+        
+    </div>
+        <?php
+    }
+    ?>
+    </div>
+    <!-- Popups -->
         <div id="recipient-order-manage-popup" class="lity-popup-normal lity-hide">
             <div class="popup-show order-process-block orthoney-datatable-warraper">
                 <h3 class="popup-title"><span></span> Order Details</h3>
@@ -297,6 +409,4 @@ $dashboard_link_label = 'Return to Dashboard';
                 </div>
             </div>
         </div>
-    </div>
-    </div>
 </div>
