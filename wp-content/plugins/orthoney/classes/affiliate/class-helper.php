@@ -320,7 +320,7 @@ class OAM_AFFILIATE_Helper {
                                 if (!empty($tax_id)) {
                                     $html .= '<button data-userid="' . esc_attr($affiliate_id) . '" class="w-btn us-btn-style_1 activate_affiliate_account">Activate Account</button>';
                                 } else {
-                                    $html .= '<a href="'.ORGANIZATION_DASHBOARD_LINK.'my-profile/" class="w-btn us-btn-style_1 activate_affiliate_account">Update Tax ID</a>';
+                                    $html .= '<a href="'.ORGANIZATION_DASHBOARD_LINK.'my-profile/" class="w-btn us-btn-style_1">Update Tax ID</a>';
                                 }
 
                             $html .= '</div>
