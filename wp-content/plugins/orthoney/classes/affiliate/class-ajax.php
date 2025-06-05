@@ -208,14 +208,14 @@ class OAM_AFFILIATE_Ajax{
         if ($existing_request) {
             if ($existing_request->status == 0) {
                 $token = $existing_request->token;
-                $this->send_affiliate_email($customer_id, $affiliate_id, 'Resend : Affiliate Request Notification', $token);
+                $this->send_affiliate_email($customer_id, $affiliate_id, 'Resend : Organization Request Notification', $token);
                 wp_send_json(['success' => true, 'message' => 'Resend request successfully!']);
             }
             wp_send_json(['success' => false, 'message' => 'Customer is already linked with you.']);
         }
     
         if ($wpdb->insert($table_name, ['customer_id' => $customer_id, 'affiliate_id' => $affiliate_id, 'status' => 0, 'token' => $token], ['%d', '%d', '%d', '%s'])) {
-            $this->send_affiliate_email($customer_id, $affiliate_id, 'Affiliate Request Notification', $token);
+            $this->send_affiliate_email($customer_id, $affiliate_id, 'Organization Request Notification', $token);
             wp_send_json(['success' => true, 'message' => 'Request sent successfully.', 'token' => $token]);
         }
     
@@ -242,12 +242,14 @@ class OAM_AFFILIATE_Ajax{
         $affiliate_name = $affiliate->display_name;
 
         $link = esc_url(home_url("/?action=organization-link&token={$token}"));
+        $organizations_link = esc_url(CUSTOMER_DASHBOARD_LINK.'organizations/');
 
         $message = "
             <p>Dear {$full_name},</p>
             <p>A honey sale administrator from <strong>{$organization}</strong> has made a request.</p>
-            <p>Please approve or reject the request using the following link:</p>
+            <p>Please click the link below to approve their request:</p>
             <p><a href=\"{$link}\" target=\"_blank\">Click here</a></p>
+            <p>In the future, you can block organizations from accessing your account. Please <a href=\"{$organizations_link}\" target=\"_blank\">Click here</a>: </p>
             <p>Thank you,<br>Honey From The Heart</p>
         ";
 
