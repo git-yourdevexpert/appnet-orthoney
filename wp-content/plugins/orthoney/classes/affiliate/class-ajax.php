@@ -246,9 +246,8 @@ class OAM_AFFILIATE_Ajax{
 
         $message = "
             <p>Dear {$full_name},</p>
-            <p>A honey sale administrator from <strong>{$organization}</strong> has made a request.</p>
-            <p>Please click the link below to approve their request:</p>
-            <p><a href=\"{$link}\" target=\"_blank\">Click here</a></p>
+            <p>A honey sale administrator from <strong>{$organization}</strong> has requested access to your Honey From The Heart account.</p>
+            <p>Please click the link below to approve their request: <a href=\"{$link}\" target=\"_blank\">Click here</a></p>
             <p>In the future, you can block organizations from accessing your account. Please <a href=\"{$organizations_link}\" target=\"_blank\">Click here</a>: </p>
             <p>Thank you,<br>Honey From The Heart</p>
         ";
