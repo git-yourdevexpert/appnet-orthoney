@@ -1632,7 +1632,7 @@ class OAM_Helper{
                 } 
                 if (strpos($zipcode, '-') !== false) {
                     if (strpos($zipcode, $data[0]['components']['zipcode']) === false) {
-                        $message .= 'Provided zipcode is invalid. Accepted zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'</span>';
+                        $message .= 'Provided zipcode is invalid. Accepted zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'-'.$data[0]['components']['plus4_code'].'</span>';
                     }
                 }else{
                     if ($zipcode !== $data[0]['components']['zipcode']) {

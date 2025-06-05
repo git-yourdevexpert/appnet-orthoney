@@ -1045,14 +1045,15 @@ class OAM_Ajax{
                             $success = false;
                         } 
                        
-
                         if (strpos($zipcode, '-') !== false) {
                             if (strpos($zipcode, $data[0]['components']['zipcode']) === false) {
-                                $success = false;
+                                $message .= 'Provided zipcode is invalid. Accepted zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'-'.$data[0]['components']['plus4_code'].'</span>';
+                                 $success = false;
                             }
                         }else{
                             if ($zipcode !== $data[0]['components']['zipcode']) {
-                                $success = false;
+                                $message .= 'Provided zipcode is invalid. Accepted zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'</span>';
+                                 $success = false;
                             }
                         }
                         
