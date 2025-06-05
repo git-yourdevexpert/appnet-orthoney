@@ -1048,7 +1048,6 @@ class OAM_Ajax{
 
                         if (strpos($zipcode, '-') !== false) {
                             if (strpos($zipcode, $data[0]['components']['zipcode']) === false) {
-                                echo "sasdf";
                                 $success = false;
                             }
                         }else{
