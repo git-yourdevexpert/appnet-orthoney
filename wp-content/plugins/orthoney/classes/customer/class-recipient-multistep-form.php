@@ -58,7 +58,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         $today = date('Y-m-d H:i:s');
     
         $season_start_date = get_field('season_start_date', 'option');
-        if ($season_start_date >= $today) {
+        $season_end_date = get_field('season_end_date', 'option');
+        if ($today >= $season_start_date && $today <= $season_end_date) {}else{
             echo do_shortcode("[season_start_end_message_box type='order']");
             return;
         }

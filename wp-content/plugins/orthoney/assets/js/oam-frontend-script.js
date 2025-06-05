@@ -3859,38 +3859,84 @@ setTimeout(() => {
     }, 2000);
 });
 
-(function () {
-      const second = 1000,
-            minute = second * 60,
-            hour = minute * 60,
-            day = hour * 24;
+(function() {
+  const second = 1000,
+        minute = second * 60,
+        hour = minute * 60,
+        day = hour * 24;
 
-      let today = new Date(),
-          dd = String(today.getDate()).padStart(2, "0"),
-          mm = String(today.getMonth() + 1).padStart(2, "0"),
-          yyyy = today.getFullYear(),
-          nextYear = yyyy + 1,
-          dayMonth = "06/12/",
-          birthday = dayMonth + yyyy;
+  const countdowns = document.querySelectorAll('.season_start_end_message_box .countdown');
 
-      today = mm + "/" + dd + "/" + yyyy;
-      if (today > birthday) {
-          birthday = dayMonth + nextYear;
+  countdowns.forEach(countdown => {
+    const dataDate = countdown.getAttribute('data-date'); // e.g. "06/15" or "06/15/2026"
+
+    // parse data-date:
+    // if dataDate includes year, use it directly
+    // else, add current year and adjust to next year if passed
+    function parseTargetDate() {
+      if (!dataDate) return null;
+
+      // Check if dataDate has year (e.g. MM/DD/YYYY)
+      const parts = dataDate.split('/');
+
+      if (parts.length === 3) {
+        // full date with year present
+        return new Date(dataDate);
+      } else if (parts.length === 2) {
+        // no year, so add current or next year logic
+        const today = new Date(),
+              yyyy = today.getFullYear(),
+              mm = parts[0].padStart(2, '0'),
+              dd = parts[1].padStart(2, '0');
+
+        let birthday = new Date(`${mm}/${dd}/${yyyy}`);
+        if (today > birthday) {
+          birthday = new Date(`${mm}/${dd}/${yyyy + 1}`);
+        }
+        return birthday;
+      }
+      return null;
+    }
+
+    let timer;
+
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const targetDate = parseTargetDate();
+
+      if (!targetDate) {
+        console.error('Invalid data-date format:', dataDate);
+        clearInterval(timer);
+        return;
       }
 
-      const countDown = new Date(birthday).getTime(),
-          x = setInterval(function () {
-              const now = new Date().getTime(),
-                    distance = countDown - now;
+      const countDownTime = targetDate.getTime();
+      const distance = countDownTime - now;
 
-              document.getElementById("days").innerText = Math.floor(distance / day);
-              document.getElementById("hours").innerText = Math.floor((distance % day) / hour);
-              document.getElementById("minutes").innerText = Math.floor((distance % hour) / minute);
-              document.getElementById("seconds").innerText = Math.floor((distance % minute) / second);
+      if (distance < 0) {
+        countdown.style.display = 'none';
+        clearInterval(timer);
+        return;
+      }
 
-              if (distance < 0) {
-                  document.getElementById("countdown").style.display = "none";
-                  clearInterval(x);
-              }
-          }, 1000);
+      const daysEl = countdown.querySelector('.days');
+      const hoursEl = countdown.querySelector('.hours');
+      const minutesEl = countdown.querySelector('.minutes');
+      const secondsEl = countdown.querySelector('.seconds');
+
+      if (!daysEl || !hoursEl || !minutesEl || !secondsEl) {
+        console.error('One or more countdown elements missing inside', countdown);
+        clearInterval(timer);
+        return;
+      }
+
+      daysEl.innerText = Math.floor(distance / day);
+      hoursEl.innerText = Math.floor((distance % day) / hour);
+      minutesEl.innerText = Math.floor((distance % hour) / minute);
+      secondsEl.innerText = Math.floor((distance % minute) / second);
+    };
+
+    updateCountdown();
+    timer = setInterval(updateCountdown, 1000);
+  });
 })();

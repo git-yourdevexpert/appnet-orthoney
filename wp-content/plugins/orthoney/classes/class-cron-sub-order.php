@@ -68,6 +68,7 @@ class OAM_WC_CRON_Suborder {
         $recipient_order_table = OAM_Helper::$recipient_order_table;
         $wc_order_relation_table = $wpdb->prefix . 'oh_wc_order_relation';
         $yith_wcaf_affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+        $oh_wc_jar_order = $wpdb->prefix . 'oh_wc_jar_order';
 
         $main_order = wc_get_order($order_id);
         if (!$main_order) return;

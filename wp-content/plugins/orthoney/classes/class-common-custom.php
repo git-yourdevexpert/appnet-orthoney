@@ -64,36 +64,78 @@ class OAM_COMMON_Custom {
             <?php
         }
         ob_start();
+
+        $today = date('Y-m-d H:i:s');
+        $season_start_date = get_field('season_start_date', 'option');
+        $season_end_date = get_field('season_end_date', 'option');
+        if ($today <= $season_start_date){
         ?>
-    
-    <div class="season_start_end_message_box <?php echo $atts['popup'] ?>" style="<?php echo $atts['popup'] === 'withpopup' ? 'display:none' : '' ?>">
-        <div class="popupbox <?php echo $atts['popup'] ?>">
-        <div class="content-wrapper">
-            <div class="bee-animation"><img decoding="async" width="72" height="72" src="/wp-content/uploads/2025/06/bee.png" class="attachment-full size-full" alt="Bee" loading="lazy"></div>
-            <div class="close-popup" onclick="this.closest('.popupbox').style.display='none'">x</div>
-            <div class="top-content">
-                <h2>The Hive’s Just Waking Up… Get Ready for the Buzz!</h2>
-                <div class="subtext">We’re almost ready to launch this season’s buzz-worthy tradition and trust us, it’s going to bee amazing!</div>
-                <p>Our honey isn’t flowing just yet, but the hive opens for gifting on <strong>June 12th 2025</strong></p>
-                <div class="border-top-bottom">Please come back soon to Send Honey. Share Hope. Spread Joy.</div>
-                <div class="notifyme">
-                    <span>Your friends at Honey From The Heart</span>
-                    <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="https://www.orthoney.com/sign-up/"><span class="w-btn-label">Notify Me</span></a>
-                </div>
-                <div id="countdown">
-                    <ul>
-                        <li><span id="days"></span>Days</li>
-                        <li><span id="hours"></span>Hours</li>
-                        <li><span id="minutes"></span>Minutes</li>
-                        <li><span id="seconds"></span>Seconds</li>
-                    </ul>
+            <div class="season_start_end_message_box <?php echo $atts['popup'] ?>" style="<?php echo $atts['popup'] === 'withpopup' ? 'display:none' : '' ?>">
+                <div class="popupbox <?php echo $atts['popup'] ?>">
+                    <div class="content-wrapper">
+                        <div class="bee-animation"><img decoding="async" width="72" height="72" src="/wp-content/uploads/2025/06/bee.png" class="attachment-full size-full" alt="Bee" loading="lazy"></div>
+                        <div class="close-popup" onclick="this.closest('.popupbox').style.display='none'">x</div>
+                        <div class="top-content">
+                            <h2>The Hive’s Just Waking Up… Get Ready for the Buzz!</h2>
+                            <div class="subtext">We’re almost ready to launch this season’s buzz-worthy tradition and trust us, it’s going to bee amazing!</div>
+                            <p>Our honey isn’t flowing just yet, but the hive opens for gifting on <strong>June 12th 2025</strong></p>
+                            <div class="border-top-bottom">Please come back soon to Send Honey. Share Hope. Spread Joy.</div>
+                            <div class="notifyme">
+                                <span>Your friends at Honey From The Heart</span>
+                                <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="https://www.orthoney.com/sign-up/"><span class="w-btn-label">Notify Me</span></a>
+                            </div>
+                            <div id="countdown" class="countdown" data-date="06/15/2025">
+                                <ul>
+                                    <li><span class="days"></span> Days</li>
+                                    <li><span class="hours"></span> Hours</li>
+                                    <li><span class="minutes"></span> Minutes</li>
+                                    <li><span class="seconds"></span> Seconds</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="bottom-content"></div>
+                    </div>
                 </div>
             </div>
-            <div class="bottom-content"></div>
-        </div>
-        </div>
-        </div>
         <?php
+        }
+        
+        if ($today >= $season_end_date) {
+            ?>
+            <div class="season_start_end_message_box <?php echo $atts['popup'] ?>" style="<?php echo $atts['popup'] === 'withpopup' ? 'display:none' : '' ?>">
+                <div class="popupbox <?php echo $atts['popup'] ?>">
+                    <div class="content-wrapper">
+                        <div class="bee-animation"><img decoding="async" width="72" height="72" src="/wp-content/uploads/2025/06/bee.png" class="attachment-full size-full" alt="Bee" loading="lazy"></div>
+                        <div class="close-popup" onclick="this.closest('.popupbox').style.display='none'">x</div>
+                        <div class="top-content">
+                             <h2>The Hive Is Slowing Down… But the Sweetness Will Return!</h2>
+                           <div class="subtext">As the honey season is now closed, we’re filled with gratitude for the kindness you’ve shared. </div>
+                            <p>We’ll be buzzing again in <strong>June 15, 2026,</strong> and we can’t wait to share the sweetness with you once more.</strong></p>
+                            <div class="border-top-bottom">Until then — thank you for helping us Send Honey. Share Hope. Spread Joy.</div>
+                            <div class="message-txt">
+                                With heartfelt appreciation,<br>
+                                Your friends at Honey From The Heart<br><br>
+                                </div>
+                            <div class="notifyme">
+                                <span>Be the first to know when the season opens!</span>
+                                <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="https://www.orthoney.com/sign-up/"><span class="w-btn-label">Notify Me</span></a>
+                            </div>
+                            <div id="countdown" class="countdown" data-date="06/15/2026">
+                                 <ul>
+                                    <li><span class="days"></span> Days</li>
+                                    <li><span class="hours"></span> Hours</li>
+                                    <li><span class="minutes"></span> Minutes</li>
+                                    <li><span class="seconds"></span> Seconds</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="bottom-content"></div>
+                    </div>
+                </div>
+            </div>
+            <?php
+        }
+    
         return ob_get_clean();
     }
 
@@ -101,7 +143,8 @@ class OAM_COMMON_Custom {
         if ( is_front_page() ) {
             $today = date('Y-m-d H:i:s');
             $season_start_date = get_field('season_start_date', 'option');
-            if ($season_start_date >= $today) {
+            $season_end_date = get_field('season_end_date', 'option');
+            if ($today >= $season_start_date && $today <= $season_end_date) {}else{
                 echo do_shortcode("[season_start_end_message_box type='order' popup='withpopup']");
             }
         }
