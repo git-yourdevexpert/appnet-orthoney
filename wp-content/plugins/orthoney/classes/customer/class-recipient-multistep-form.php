@@ -54,13 +54,14 @@ class OAM_RECIPIENT_MULTISTEP_FORM
          }
 
         ob_start();
-        // $today = date('Y-m-d');
+
+        $today = date('Y-m-d');
     
-        // $free_shipping_start_date = get_field('free_shipping_start_date');
-        // if ($free_shipping_start_date <= $today) {
-        //     echo do_shortcode("[season_start_end_message_box type='order']");
-        //     return;
-        // }
+        $season_start_date = get_field('season_start_date');
+        if ($season_start_date <= $today) {
+            echo do_shortcode("[season_start_end_message_box type='order']");
+            return;
+        }
     
         $failed_recipients_details = get_query_var('failed-recipients-details');
         if (!empty($failed_recipients_details)) {

@@ -10,8 +10,8 @@ class OAM_COMMON_Custom {
      */
     public function __construct() {       
         add_action('user_register', array($this, 'check_userrole_update_meta'));
-        add_filter('acf/settings/save_json', array($this, 'oh_acf_json_save_path'));
-        add_filter('acf/settings/load_json', array($this, 'oh_acf_json_load_paths'));
+        // add_filter('acf/settings/save_json', array($this, 'oh_acf_json_save_path'));
+        // add_filter('acf/settings/load_json', array($this, 'oh_acf_json_load_paths'));
         
         add_action('template_redirect', array($this, 'redirect_logged_in_user_to_dashboard'));
         // add_action('user_registration_after_submit_buttons', array($this, 'add_login_user_registration_after_submit_buttons'));
