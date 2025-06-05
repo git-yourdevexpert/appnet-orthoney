@@ -1269,7 +1269,7 @@ if (recipientManageForm) {
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Proceed",
+            confirmButtonText: "Proceed with My Entered Address",
             cancelButtonText: "Review & Edit Address",
             reverseButtons: true,
             allowOutsideClick: false,
