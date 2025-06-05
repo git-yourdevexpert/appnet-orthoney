@@ -417,7 +417,7 @@ class OAM_WC_Customizer {
                         SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE token = %s
                     ", $yith_wcaf_referral_token));
 
-                    $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true);
+                    $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true)?:0;
 
                     $states = WC()->countries->get_states('US');
                     $state = get_user_meta($user_id, '_yith_wcaf_state', true);
