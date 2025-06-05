@@ -69,6 +69,44 @@
             "allow_in_bindings": 0
         },
         {
+            "key": "field_6841341d8fbd7",
+            "label": "Season Start Date",
+            "name": "season_start_date",
+            "aria-label": "",
+            "type": "date_time_picker",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "display_format": "Y-m-d H:i:s",
+            "return_format": "Y-m-d H:i:s",
+            "first_day": 1,
+            "allow_in_bindings": 0
+        },
+        {
+            "key": "field_684134218fbd8",
+            "label": "Season End Date",
+            "name": "season_end_date",
+            "aria-label": "",
+            "type": "date_time_picker",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "display_format": "Y-m-d H:i:s",
+            "return_format": "Y-m-d H:i:s",
+            "first_day": 1,
+            "allow_in_bindings": 0
+        },
+        {
             "key": "field_67d959baf233a",
             "label": "Free Shipping Start Date",
             "name": "free_shipping_start_date",
@@ -91,6 +129,44 @@
             "key": "field_67d95ba9be6b3",
             "label": "Free Shipping End Date",
             "name": "free_shipping_end_date",
+            "aria-label": "",
+            "type": "date_time_picker",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "display_format": "Y-m-d H:i:s",
+            "return_format": "Y-m-d H:i:s",
+            "first_day": 1,
+            "allow_in_bindings": 0
+        },
+        {
+            "key": "field_68383ddc3dee0",
+            "label": "Fulfilment Start Date",
+            "name": "fulfilment_start_date",
+            "aria-label": "",
+            "type": "date_time_picker",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "display_format": "Y-m-d H:i:s",
+            "return_format": "Y-m-d H:i:s",
+            "first_day": 1,
+            "allow_in_bindings": 0
+        },
+        {
+            "key": "field_68383de23dee1",
+            "label": "Fulfilment End Date",
+            "name": "fulfilment_end_date",
             "aria-label": "",
             "type": "date_time_picker",
             "instructions": "",
@@ -328,6 +404,129 @@
                 "id": ""
             },
             "return_format": "array"
+        },
+        {
+            "key": "field_683ee60d80dcd",
+            "label": "Organization Commission",
+            "name": "",
+            "aria-label": "",
+            "type": "tab",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "placement": "top",
+            "endpoint": 0,
+            "selected": 0
+        },
+        {
+            "key": "field_683ee7f0af80d",
+            "label": "Minimum Selling Jar Price",
+            "name": "selling_minimum_price",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": 18,
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_683ee64d80dcf",
+            "label": "Minimum Cost Per Jar",
+            "name": "ex_minimum_price_50",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "This is the cost per jar for the existing organization when selling 50–99 jars.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_683ee6f680dd0",
+            "label": "Minimum Cost Per Jar",
+            "name": "ex_minimum_price_100",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "This is the cost per jar for the existing organization when selling more than 100 jars.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_683ee767e48d0",
+            "label": "Minimum Cost Per Jar",
+            "name": "new_minimum_price_50",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "This is the cost per jar for a new organization when selling 50–99 jars.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_683ee76be48d1",
+            "label": "Minimum Cost Per Jar",
+            "name": "new_minimum_price_100",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "This is the cost per jar for a new organization when selling over 100 jars.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
         }
     ],
     "location": [
@@ -348,5 +547,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1747239307
+    "modified": 1749104098
 }
