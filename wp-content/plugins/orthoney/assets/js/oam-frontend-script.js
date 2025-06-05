@@ -1263,7 +1263,7 @@ if (recipientManageForm) {
             html:
               '<h2 class="swal2-title" style="padding-top: 0;">' +
               data.data.message +
-              " <br><br>Would you like to fix it or continue with this address?</h2>",
+              " <br><br>Please review and edit your address, or proceed with the address you have entered.</h2>",
 
             icon: "question",
             showCancelButton: true,
