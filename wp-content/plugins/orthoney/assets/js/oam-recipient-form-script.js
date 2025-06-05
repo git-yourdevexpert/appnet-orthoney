@@ -2045,3 +2045,80 @@ jQuery(document).ready(function ($) {
     $(".ur-frontend-form.login .user-registration-Button").before(linkHtml);
   }
 });
+
+
+
+jQuery(document).ready(function ($) {
+  const tableEl = $("#recipient-jar-order-data table");
+  const tbody = tableEl.find("tbody");
+
+  // Store group header HTML rows in memory (indexed by data-group)
+  const groupHeaderMap = {};
+  tbody.find("tr.group-header").each(function () {
+    const groupId = $(this).attr("data-group");
+    if (groupId) {
+      groupHeaderMap[groupId] = $(this).prop("outerHTML");
+    }
+    $(this).remove(); // remove from DOM
+  });
+
+  // Initialize DataTable
+  const dataTable = tableEl.DataTable({
+    pageLength: 25,
+    lengthMenu: [
+      [10, 25, 50, 100],
+      [10, 25, 50, 100]
+    ],
+    paging: true,
+    info: true,
+    fixedHeader: true,
+    scrollCollapse: true,
+    searching: true,
+    responsive: true,
+    deferRender: false,
+    lengthChange: false,
+    language: {
+      search: "",
+      searchPlaceholder: "Search..."
+    },
+    columnDefs: [
+      {
+        targets: -1,
+        orderable: false
+      }
+    ]
+  });
+
+  // Reinsert group-header rows on each draw
+  dataTable.on("draw", function () {
+    const visibleRows = dataTable.rows({ search: "applied", page: "current" }).nodes();
+    const addedGroups = {};
+
+    $(visibleRows).each(function () {
+      const groupId = $(this).attr("data-group");
+      if (groupId && !addedGroups[groupId] && groupHeaderMap[groupId]) {
+        $(this).before(groupHeaderMap[groupId]);
+        addedGroups[groupId] = true;
+      }
+    });
+
+    const pageInfo = dataTable.page.info();
+    const wrapper = $(tableEl).closest(".dataTables_wrapper");
+    const pagination = wrapper.find(".dataTables_paginate");
+    const infoText = wrapper.find(".dataTables_info");
+
+    if (pageInfo.pages <= 1) {
+      pagination.hide();
+      infoText.hide();
+    } else {
+      pagination.show();
+      infoText.show();
+    }
+  });
+
+  // Trigger initial draw to reinsert group-headers
+  dataTable.draw();
+});
+
+    
+  

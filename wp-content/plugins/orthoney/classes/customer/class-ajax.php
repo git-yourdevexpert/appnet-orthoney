@@ -445,14 +445,15 @@ class OAM_Ajax{
 
             $yith_wcaf_affiliates_table = OAM_helper::$yith_wcaf_affiliates_table;
             $processExistResult = 'Orthoney';
-            if($affiliate_select != 'Orthoney'){
+
+            if($affiliate_select != 'Orthoney' && $affiliate_select  != ''){
                 // Correct query execution
                 $processExistResult = $wpdb->get_var($wpdb->prepare("
                     SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d
                 ", $affiliate_select));
 
                 if (!$processExistResult) {
-                    return;
+                    $processExistResult = 'Orthoney';
                 }
             }
 

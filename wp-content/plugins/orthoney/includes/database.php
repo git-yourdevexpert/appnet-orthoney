@@ -4,6 +4,31 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// CREATE TABLE `wp_oh_wc_jar_order` (
+//   `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+//   `order_id` BIGINT(20) UNSIGNED NOT NULL,
+//   `recipient_order_id` VARCHAR(255) NULL,
+//   `jar_order_id` VARCHAR(255) NULL,
+//   `tracking_no` VARCHAR(255) NULL,
+//   `quantity` BIGINT(20) UNSIGNED NOT NULL,
+//   `order_type` VARCHAR(255) NULL,
+//   `status` VARCHAR(255) NULL,
+//   `created_date` DATETIME DEFAULT CURRENT_TIMESTAMP,
+//   PRIMARY KEY (`id`)
+// ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+// CREATE TABLE `wp_oh_jar_order_greeting` (
+//   `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+//   `order_id` BIGINT(20) UNSIGNED NOT NULL,
+//   `recipient_order_id` VARCHAR(255) NULL,
+//   `jar_order_id` VARCHAR(255) NULL,
+//   `greeting` VARCHAR(255) NULL,
+//   `created_date` DATETIME DEFAULT CURRENT_TIMESTAMP,
+//   PRIMARY KEY (`id`)
+// ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 // Function to create custom tables
 function orthoney_create_custom_tables() {
     global $wpdb;
@@ -23,6 +48,9 @@ function orthoney_create_custom_tables() {
 
     // Define table names
     $tables = [
+        'wc_jar_order_table' => $wpdb->prefix . 'oh_wc_jar_order',
+
+
         'wc_order_relation_table' => $wpdb->prefix . 'oh_wc_order_relation',
         'recipient_table' => $wpdb->prefix . 'oh_group_recipient',
         'group_table' => $wpdb->prefix . 'oh_group',
@@ -82,6 +110,21 @@ function orthoney_create_custom_tables() {
 
     // SQL queries for table creation
     $sql_queries = [
+
+        'wc_jar_order_table' => "CREATE TABLE {$tables['wc_jar_order_table']} (
+            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            order_id BIGINT(20) UNSIGNED NOT NULL,
+            recipient_order_id BIGINT(20) UNSIGNED NOT NULL,
+            jar_order_id BIGINT(20) UNSIGNED NOT NULL,
+            tracking_no BIGINT(20) UNSIGNED NOT NULL,
+            quantity BIGINT(20) UNSIGNED NOT NULL,
+            greeting VARCHAR(255) NULL,
+            order_type VARCHAR(255) NULL,
+            created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id)
+        ) ENGINE=InnoDB {$wpdb->get_charset_collate()};",
+
+
         'wc_order_relation_table' => "CREATE TABLE {$tables['wc_order_relation_table']} (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
             user_id BIGINT(20) UNSIGNED NOT NULL,

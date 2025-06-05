@@ -69,6 +69,7 @@ class OAM_WC_CRON_Suborder {
         $wc_order_relation_table = $wpdb->prefix . 'oh_wc_order_relation';
         $yith_wcaf_affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
         $oh_wc_jar_order = $wpdb->prefix . 'oh_wc_jar_order';
+        $oh_jar_order_greeting = $wpdb->prefix . 'oh_jar_order_greeting';
 
         $main_order = wc_get_order($order_id);
         if (!$main_order) return;
@@ -247,6 +248,7 @@ class OAM_WC_CRON_Suborder {
             $insert_result = $wpdb->insert($recipient_order_table, $recipient_order_data);
 
             if (false === $insert_result) {
+
                 OAM_COMMON_Custom::sub_order_error_log('Insert into recipient_order_table failed: ' . $wpdb->last_error, $order_id);
             } else {
                 $inserted_id = $wpdb->insert_id;
@@ -283,6 +285,59 @@ class OAM_WC_CRON_Suborder {
             } else {
                 $inserted_id = $wpdb->insert_id;
                 OAM_COMMON_Custom::sub_order_error_log('Insert into group_recipient_table success: ' . $inserted_id, $order_id);
+            }
+
+
+            if($recipient->quantity > 6){
+                $jar_order_type = 'internal';
+
+                $jar_order_data = [
+                    'order_id'           => $custom_order_id,
+                    'recipient_order_id' => $sub_order_id,
+                    'jar_order_id'       => $sub_order_id.'-1',
+                    'tracking_no'        => '',
+                    'quantity'           => $recipient->quantity,
+                    'order_type'         => $jar_order_type,
+                    'status'             => ''
+                ];
+
+                $jar_greeting_data = [
+                    'order_id'           => $custom_order_id,
+                    'recipient_order_id' => $sub_order_id,
+                    'jar_order_id'       => $sub_order_id.'-1',
+                    'greeting'           => $recipient->greeting,
+                ];
+
+                $insert_result = $wpdb->insert($oh_wc_jar_order, $jar_order_data);
+               
+                $insert_result = $wpdb->insert($oh_jar_order_greeting, $jar_greeting_data);
+
+            }else{
+                $jar_order_type = 'external';
+
+                for ($i=1; $i <= $recipient->quantity; $i++) { 
+
+                    $jar_order_data = [
+                        'order_id'           => $custom_order_id,
+                        'recipient_order_id' => $sub_order_id,
+                        'jar_order_id'       => $sub_order_id.'-'.$i,
+                        'tracking_no'        => '',
+                        'quantity'           => 1,
+                        'order_type'         => $jar_order_type,
+                        'status'             => ''
+                    ];
+                    $insert_result = $wpdb->insert($oh_wc_jar_order, $jar_order_data);
+                }
+
+                $jar_greeting_data = [
+                    'order_id'           => $custom_order_id,
+                    'recipient_order_id' => $sub_order_id,
+                    'jar_order_id'       => $sub_order_id.'-'.$i,
+                    'greeting'           => $recipient->greeting,
+                ];
+
+                $insert_result = $wpdb->insert($oh_jar_order_greeting, $jar_greeting_data);
+
             }
 
             OAM_COMMON_Custom::sub_order_error_log("Sub-order created for Recipient ID: {$recipient->id} → Sub Order ID: {$sub_order_id}", $order_id);
