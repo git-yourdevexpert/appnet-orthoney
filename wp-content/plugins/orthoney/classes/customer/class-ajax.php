@@ -893,7 +893,11 @@ class OAM_Ajax{
 
         $check_process_status = OAM_COMMON_Custom::check_process_exist($name, $process_id);
         if ($check_process_status) {
-            wp_send_json_error(['message' => 'The group name already exists. Please enter a different name.']);
+            if($method == 'order-process'){
+                wp_send_json_error(['message' => 'The recipient list name already exists. Please enter a different name.']);
+            }else{
+                wp_send_json_error(['message' => 'The group name already exists. Please enter a different name.']);
+            }
         }
 
         $processDataQuery = $wpdb->prepare("SELECT data FROM {$order_process_table} WHERE user_id = %d AND id = %d",
