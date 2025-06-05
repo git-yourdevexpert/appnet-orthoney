@@ -34,13 +34,19 @@
     $activate_affiliate_account = get_user_meta($affiliate_id, 'activate_affiliate_account', true);
     $tax_id = get_user_meta($affiliate_id, '_yith_wcaf_tax_id', true);
 
-       if ((empty($activate_affiliate_account) AND $activate_affiliate_account != 1 )OR !empty($tax_id)) {
+       if ((empty($activate_affiliate_account) AND $activate_affiliate_account != 1 ) ) {
             echo '<div class="dashboard-block"><div class="dashboard-heading block-row">
                         <div class="item" style="background-color: rgba(255, 0, 0, 0.5);">
                             <div class="row-block">
                                 <h6 class="block-title">Your account is inactive. Submit your Tax ID to activate your account and become eligible for this year`s commission.</h6>
-                                <div><button data-userid="' . esc_attr($affiliate_id) . '" class="w-btn us-btn-style_1 activate_affiliate_account">Activate Account</button></div>
-                            </div>
+                                <div>';
+                                if (!empty($tax_id)) {
+                                     echo '<button data-userid="' . esc_attr($affiliate_id) . '" class="w-btn us-btn-style_1 activate_affiliate_account">Activate Account</button>';
+                                } else {
+                                     echo '<a href="'.ORGANIZATION_DASHBOARD_LINK.'my-profile/" class="w-btn us-btn-style_1">Update Tax ID</a>';
+                                }
+                                
+                           echo '</div></div>
                         </div>
                     </div></div>';
         }
