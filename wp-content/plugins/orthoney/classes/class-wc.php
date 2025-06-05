@@ -414,10 +414,10 @@ class OAM_WC_Customizer {
                     
                     // Correct query execution
                     $user_id = $wpdb->get_var($wpdb->prepare("
-                        SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE token = %s
+                        SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE token = %s AND user_id != 0
                     ", $yith_wcaf_referral_token));
-
-                    $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true)?:0;
+                    
+                   $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true)?:0;
 
                     $states = WC()->countries->get_states('US');
                     $state = get_user_meta($user_id, '_yith_wcaf_state', true);
@@ -445,7 +445,7 @@ class OAM_WC_Customizer {
                         $value .= ', ' . $state_name;
                     }
                         
-                   if ((int)$activate_affiliate_account !== 1) {
+                    if ((int)$activate_affiliate_account !== 1) {
                         $custom_content = '<div class="organization-not-active-error-message">The <strong>'.  $value.' </strong> organization is not active at the moment. The profit commission from this order will be allocated to Honey From The Heart.</div>';
                     }
                     
