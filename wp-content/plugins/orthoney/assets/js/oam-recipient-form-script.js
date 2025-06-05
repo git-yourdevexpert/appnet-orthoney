@@ -2070,7 +2070,7 @@ jQuery(document).ready(function ($) {
       [10, 25, 50, 100]
     ],
     paging: true,
-    info: true,
+    info: false,
     fixedHeader: true,
     scrollCollapse: true,
     searching: true,
