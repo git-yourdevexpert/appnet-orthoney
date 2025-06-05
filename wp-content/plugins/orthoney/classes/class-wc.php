@@ -445,7 +445,7 @@ class OAM_WC_Customizer {
                         $value .= ', ' . $state_name;
                     }
                         
-                    if (!empty($activate_affiliate_account) AND (int)$activate_affiliate_account !== 1) {
+                   if ((int)$activate_affiliate_account !== 1) {
                         $custom_content = '<div class="organization-not-active-error-message">The <strong>'.  $value.' </strong> organization is not active at the moment. The profit commission from this order will be allocated to Honey From The Heart.</div>';
                     }
                     
