@@ -140,104 +140,108 @@ function affiliateDatatable() {
   });
 
   ["affiliate-orderlist-table"].forEach((id) => {
-    const div = document.getElementById(id);
-    if (div && div.innerHTML.trim() !== "") {
-      const tableEl = div.querySelector("table");
-      if (tableEl && !jQuery(tableEl).hasClass("dataTable")) {
-        const $table = jQuery(tableEl);
-        const dateColIndex = 4; // "Date" column is the 5th column (index starts at 0)
+  const div = document.getElementById(id);
+  if (div && div.innerHTML.trim() !== "") {
+    const tableEl = div.querySelector("table");
+    if (tableEl && !jQuery(tableEl).hasClass("dataTable")) {
+      const $table = jQuery(tableEl);
+      const dateColIndex = 5; // Adjust this if "Date" column is at a different index
+      const lastColIndex = $table.find("thead th").length - 1;
 
-        // Create Year filter dropdown with spacing
-        const yearSelect =
-          jQuery(`<select id="yearFilter" class="form-control" style="margin-left: 10px;">
-            <option value="">Filter by Year</option>
-        </select>`);
+      // Create Year filter dropdown with spacing
+      const yearSelect = jQuery(`
+        <select id="yearFilter" class="form-control" style="margin-left: 10px;">
+          <option value="">Filter by Year</option>
+        </select>
+      `);
 
-        // Initialize DataTable
-        const dataTable = $table.DataTable({
-          paging: true,
-          pageLength: 50,
-          lengthMenu: [
-            [10, 25, 50, 100],
-            [10, 25, 50, 100]
-          ],
-          fixedHeader: true,
-          scrollCollapse: false,
-          info: true,
-          searching: true,
-          responsive: true,
-          deferRender: false,
-          order: [[-1, "asc"]],
-          lengthChange: false,
-          language: {
-            search: "",
-            searchPlaceholder: "Search..."
-          },
-          columnDefs: [
-            {
-              targets: -1, // Last column (e.g., Actions)
-              orderable: false
-            }
-          ],
-          initComplete: function () {
-            // Extract years from Date column
-            const years = new Set();
-            this.api()
-              .column(dateColIndex)
-              .data()
-              .each(function (d) {
-                const match = d.match(/\d{2}\/\d{2}\/(\d{4})/); // Match MM/DD/YYYY
-                if (match) {
-                  years.add(match[1]); // Get year part
-                }
-              });
-
-            // Populate dropdown
-            Array.from(years)
-              .sort((a, b) => b - a)
-              .forEach((year) => {
-                yearSelect.append(`<option value="${year}">${year}</option>`);
-              });
-
-            // Append dropdown next to search box
-            jQuery(`.dataTables_filter label`).before(yearSelect);
+      // Initialize DataTable
+      const dataTable = $table.DataTable({
+        paging: true,
+        pageLength: 50,
+        lengthMenu: [
+          [10, 25, 50, 100],
+          [10, 25, 50, 100]
+        ],
+        fixedHeader: true,
+        scrollCollapse: false,
+        info: true,
+        searching: true,
+        responsive: true,
+        deferRender: false,
+        order: [[lastColIndex, "asc"]],
+        lengthChange: false,
+        language: {
+          search: "",
+          searchPlaceholder: "Search..."
+        },
+        columnDefs: [
+          {
+            targets: lastColIndex, // Last column (e.g., Actions)
+            orderable: false
           }
-        });
+        ],
+        initComplete: function () {
+          // Extract years from Date column
+          const years = new Set();
+          this.api()
+            .column(dateColIndex)
+            .data()
+            .each(function (d) {
+              const match = d.match(/\d{2}\/\d{2}\/(\d{4})/); // Match MM/DD/YYYY
+              if (match) {
+                years.add(match[1]); // Get year part
+              }
+            });
 
-        // Year filter change event
-        yearSelect.on("change", function () {
-          const selectedYear = this.value;
-          if (selectedYear) {
-            dataTable
-              .column(dateColIndex)
-              .search(`/${selectedYear}$`, true, false)
-              .draw();
-          } else {
-            dataTable.column(dateColIndex).search("").draw();
-          }
-        });
+          // Populate dropdown
+          Array.from(years)
+            .sort((a, b) => b - a)
+            .forEach((year) => {
+              yearSelect.append(`<option value="${year}">${year}</option>`);
+            });
 
-        // Hide pagination/info if only one page
-        dataTable.on("draw", function () {
-          const pageInfo = dataTable.page.info();
-          const wrapper = $table.closest(".dataTables_wrapper");
-          const pagination = wrapper.find(".dataTables_paginate");
-          const infoText = wrapper.find(".dataTables_info");
+          // Append dropdown next to search box
+          jQuery(`.dataTables_filter label`).before(yearSelect);
+        }
+      });
 
-          if (pageInfo.pages <= 1) {
-            pagination.hide();
-            infoText.hide();
-          } else {
-            pagination.show();
-            infoText.show();
-          }
-        });
+      // Year filter change event
+      yearSelect.on("change", function () {
+        const selectedYear = this.value;
+        if (selectedYear) {
+          dataTable
+            .column(dateColIndex)
+            .search(`/${selectedYear}$`, true, false)
+            .draw();
+        } else {
+          dataTable.column(dateColIndex).search("").draw();
+        }
+      });
 
-        // Trigger initial draw
-        dataTable.draw();
-      }
+      // Hide pagination/info if only one page
+      dataTable.on("draw", function () {
+        const pageInfo = dataTable.page.info();
+        const wrapper = $table.closest(".dataTables_wrapper");
+        const pagination = wrapper.find(".dataTables_paginate");
+        const infoText = wrapper.find(".dataTables_info");
+
+        if (pageInfo.pages <= 1) {
+          pagination.hide();
+          infoText.hide();
+        } else {
+          pagination.show();
+          infoText.show();
+        }
+      });
+
+      // Trigger initial draw
+      dataTable.draw();
     }
-  });
+  }
+});
+
+
 }
 
 function VerifyRecipientsDatatable() {
@@ -2069,6 +2073,8 @@ jQuery(document).ready(function ($) {
       { data: "city" },
       { data: "state" },
       { data: "status" },
+      { data: "season_status" },
+      { data: "commission" },
       { data: "login" }
     ],
     columnDefs: [
@@ -3775,4 +3781,69 @@ jQuery(document).on("click", ".org_account_statement", function (e) {
     .always(function () {
       $btn.prop("disabled", false); // Re-enable the button
     });
+});
+
+jQuery(document).ready(function ($) {
+  $(document).on("click", ".activate_affiliate_account", function (e) {
+    e.preventDefault();
+
+    const user_id = $(this).data("userid");
+
+    const requestData = {
+      action: "orthoney_activate_affiliate_account_ajax",
+      security: oam_ajax.nonce,
+      user_id: user_id
+    };
+
+    process_group_popup();
+
+    $.ajax({
+      url: oam_ajax.ajax_url,
+      type: "POST",
+      data: requestData,
+      success: function (response) {
+        setTimeout(() => {
+          Swal.close();
+        }, 500);
+
+        if (response.success) {
+          Swal.fire({
+            title: response.data?.message || "Your account has been successfully activated.",
+            icon: "success",
+            showConfirmButton: false,
+            timerProgressBar: false
+          });
+
+          setTimeout(() => {
+            window.location.reload();
+          }, 750);
+        } else {
+          Swal.fire({
+            title: "Activation Failed",
+            text: response?.data?.message || "Something went wrong during activation.",
+            icon: "error"
+          });
+        }
+      },
+      error: function () {
+        Swal.close();
+        Swal.fire({
+          title: "Activation Failed",
+          text: "An AJAX error occurred while activating the account.",
+          icon: "error"
+        });
+      }
+    });
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(() => {
+    const errorEl = document.querySelector('.organization-not-active-error-message');
+    const checkoutForm = document.querySelector('.wc-block-components-form.wc-block-checkout__form');
+
+    if (errorEl && checkoutForm) {
+        checkoutForm.classList.add('show-message');
+    }
+    }, 1000);
 });

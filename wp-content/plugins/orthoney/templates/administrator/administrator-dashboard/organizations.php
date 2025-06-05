@@ -25,6 +25,8 @@ $dashboard_link = ADMINISTRATOR_DASHBOARD_LINK;
                     <th>City</th>
                     <th>State</th>
                     <th>Status</th>
+                    <th>Season Status</th>
+                    <th>Commission</th>
                     <th>Login</th>
                 </tr>
             </thead>

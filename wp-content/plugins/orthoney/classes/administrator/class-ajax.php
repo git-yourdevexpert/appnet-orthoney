@@ -13,11 +13,26 @@ class OAM_ADMINISTRATOR_AJAX {
          add_action('wp_ajax_orthoney_admin_get_customers_data', array($this,'orthoney_admin_get_customers_data_handler'));
          add_action('wp_ajax_orthoney_admin_get_organizations_data', array($this,'orthoney_admin_get_organizations_data_handler'));
          add_action('wp_ajax_orthoney_admin_get_sales_representative_data', array($this,'orthoney_admin_get_sales_representative_data_handler'));
+         add_action('wp_ajax_orthoney_activate_affiliate_account_ajax', array($this,'orthoney_orthoney_activate_affiliate_account_ajax_handler'));
     }
     
     /**
      * administrator callback
      */
+    public function orthoney_orthoney_activate_affiliate_account_ajax_handler() {
+        $user_id = intval($_POST['user_id'] ?? 0);
+
+        if (!$user_id) {
+            wp_send_json_error(['message' => 'Invalid user ID.']);
+        }
+
+        // Optionally set any user meta or status updates here
+        // Example:
+        update_user_meta($user_id, 'activate_affiliate_account', 1);
+
+        wp_send_json_success(['message' => 'Your account has been successfully activated.']);
+    }
+
     public function orthoney_admin_get_customers_data_handler() {
 
         // Security check if needed: check_ajax_referer('your-nonce')
@@ -130,6 +145,7 @@ class OAM_ADMINISTRATOR_AJAX {
                     $city = get_user_meta($user_id, 'shipping_city', true);
                 }
             }
+            // $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true)? 'Activated' : 'Deactivated';
 
             // Retrieve state with fallback: _yith_wcaf_state → billing_state → shipping_state
             $state = get_user_meta($user_id, '_yith_wcaf_state', true);
@@ -208,6 +224,23 @@ class OAM_ADMINISTRATOR_AJAX {
         foreach ($paged_user_ids as $user_id) {
             $meta   = $user_meta_cache[$user_id];
             $status = $user_status_map[$user_id]['label'];
+           
+            $total_commission = 0;
+            $activate_affiliate_account = 0;
+            $total_quantity = 0;
+            $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate($user_id);
+            $commission_array_data = json_decode($commission_array, true);
+
+            if(!empty( $commission_array_data['data'])){
+                $activate_affiliate_account = $commission_array_data['activate_affiliate_account'];
+                foreach ($commission_array_data['data'] as $key => $value) {
+                    if($value['affiliate_account_status'] == 1){
+                        $total_commission = $total_commission + $value['commission'];
+                        // $total_quantity = $total_quantity + $data['total_quantity'];
+                    }
+                }
+            }
+        
 
             $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . $user_id . '&tab=affiliates';
 
@@ -219,10 +252,13 @@ class OAM_ADMINISTRATOR_AJAX {
                     'state'        => esc_html($meta['state']),
                     'email'        => esc_html($meta['email']),
                     'status'       => esc_html($status),
+                    'season_status' => esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
+                    'commission' => wc_price($total_commission),
                     'login'        => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . intval($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As An Organization</button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Organizations Profile</a>'
                     ];
             }
         }
+
 
         wp_send_json([
             'draw'            => $draw,

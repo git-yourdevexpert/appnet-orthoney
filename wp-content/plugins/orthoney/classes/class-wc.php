@@ -400,6 +400,60 @@ class OAM_WC_Customizer {
     // }
 
     public function checkout_order_summary_render_block_handler($block_content, $block) {
+
+         if (!is_checkout() || !isset($block['blockName']) || $block['blockName'] === 'woocommerce/checkout-actions-block' ) {
+
+            $custom_content = '';
+            if (isset($_COOKIE['yith_wcaf_referral_token'])) {
+                $yith_wcaf_referral_token = $_COOKIE['yith_wcaf_referral_token'];
+            
+                if($yith_wcaf_referral_token != 'Orthoney'){
+                    
+                    global $wpdb;
+                    $yith_wcaf_affiliates_table = OAM_helper::$yith_wcaf_affiliates_table;
+                    
+                    // Correct query execution
+                    $user_id = $wpdb->get_var($wpdb->prepare("
+                        SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE token = %s
+                    ", $yith_wcaf_referral_token));
+
+                    $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true);
+
+                    $states = WC()->countries->get_states('US');
+                    $state = get_user_meta($user_id, '_yith_wcaf_state', true);
+
+                    if (empty($state)) {
+                        $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
+                    }
+
+                    $city = get_user_meta($user_id, '_yith_wcaf_city', true);
+                    if (empty($city)) {
+                        $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
+                    }
+
+                    $orgName = get_user_meta($user_id, '_orgName', true);
+                    if (empty($orgName)) {
+                        $orgName = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+                    }
+
+                    $state_name = isset($states[$state]) ? $states[$state] : $state;
+                    $value = '[' . $yith_wcaf_referral_token . '] ' . $orgName ?:$data->display_name;
+                    if (!empty($city)) {
+                        $value .= ', ' . $city;
+                    }
+                    if (!empty($state)) {
+                        $value .= ', ' . $state_name;
+                    }
+                        
+                    if (empty($activate_affiliate_account) AND $activate_affiliate_account != 1) {
+                        $custom_content = '<div class="organization-not-active-error-message">The <strong>'.  $value.' </strong> organization is not active at the moment. The profit commission from this order will be allocated to Honey From The Heart.</div>';
+                    }
+                    
+                }
+            }
+            return $block_content . $custom_content;
+         }
+
         if (!is_checkout() || !isset($block['blockName']) || $block['blockName'] !== 'woocommerce/checkout-order-summary-cart-items-block') {
             return $block_content;
         }
@@ -414,7 +468,7 @@ class OAM_WC_Customizer {
         $status = false;
         $recipients = [];
 
-     
+    
         foreach ($cart as $cart_item) {
       
             $quantity = isset($cart_item['quantity']) ? (int) $cart_item['quantity'] : 0;
@@ -469,6 +523,7 @@ class OAM_WC_Customizer {
         }
     
         if ($status) {
+
             $custom_content = '<div class="viewAllRecipientsPopupCheckoutContent">
                 <div class="item"><strong>Total Honey Jar(s):</strong> ' . esc_html($total_quantity) . '</div>
                 <div class="item"><strong>Total Recipient(s):</strong> ' . esc_html(count($recipients)) . '</div>
@@ -510,6 +565,33 @@ class OAM_WC_Customizer {
     
         if (!$order) return;
         $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
+        $yith_wcaf_referral = OAM_COMMON_Custom::get_order_meta($order_id, '_yith_wcaf_referral');
+
+        if (!empty($yith_wcaf_referral)) {
+            $yith_wcaf_referral_token = $yith_wcaf_referral;
+        
+            if($yith_wcaf_referral_token != 'Orthoney'){
+                
+                global $wpdb;
+                $yith_wcaf_affiliates_table = OAM_helper::$yith_wcaf_affiliates_table;
+                
+                // Correct query execution
+                $user_id = $wpdb->get_var($wpdb->prepare("
+                    SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE token = %s
+                ", $yith_wcaf_referral_token));
+
+                $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true);
+    
+                if (empty($activate_affiliate_account) AND $activate_affiliate_account != 1) {
+                    $order->update_meta_data('affiliate_account_status', 0);
+                }else{
+                    $order->update_meta_data('affiliate_account_status', 1);
+                }
+                $order->save();
+                
+            }
+        }
+
         ?>
         <div class="order-process-wrapp">
             <ul class="woocommerce-order-overview woocommerce-thankyou-order-details order_details">
@@ -547,7 +629,7 @@ class OAM_WC_Customizer {
         </div>
         <?php 
 
-    $order_details_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($order->get_order_number()));
+        $order_details_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($order->get_order_number()));
 
 
         echo '<div class="view-order-btn"><a href="' . esc_url($order_details_url) . '" class="button">View Order Details</a></div>';?>

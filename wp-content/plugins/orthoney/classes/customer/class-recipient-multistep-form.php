@@ -19,6 +19,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     public static function init() {}
 
     public function recipient_multistep_form_handler($atts) {
+        
         global $wpdb;
         $order_process_table = OAM_Helper::$order_process_table;
         if (!is_user_logged_in()) {
@@ -53,6 +54,13 @@ class OAM_RECIPIENT_MULTISTEP_FORM
          }
 
         ob_start();
+        // $today = date('Y-m-d');
+    
+        // $free_shipping_start_date = get_field('free_shipping_start_date');
+        // if ($free_shipping_start_date <= $today) {
+        //     echo do_shortcode("[season_start_end_message_box type='order']");
+        //     return;
+        // }
     
         $failed_recipients_details = get_query_var('failed-recipients-details');
         if (!empty($failed_recipients_details)) {
@@ -171,7 +179,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         <p>To begin your order, please select an organization you'd like to support and then you can proceed.</p>
                         <div>
                             <?php
-                            
+
                             global $wpdb;
 
                             $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
@@ -184,14 +192,43 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                 WHERE a.user_id NOT IN (
                                     SELECT affiliate_id 
                                     FROM {$oh_affiliate_customer_linker} 
-                                    WHERE customer_id = %d AND status = %d 
+                                    WHERE customer_id = %d AND (status = %d OR status = -1)
                                 )
-                                AND a.enabled = 1 AND a.banned = 0
+                                AND a.enabled = 1 AND a.banned = 0 
                                 ORDER BY a.token",
-                                self::$current_user_id, 1
+                                self::$current_user_id, 0
                             );
+                            
 
                             $affiliateList = $wpdb->get_results($query);
+
+                            $aha_item = null;
+                            $reordered = [];
+
+                            // Make sure $affiliateList is indexed properly
+                            $affiliateList = array_values($affiliateList);
+
+                            // Separate the item with token 'ATL'
+                            if (!empty($affiliateList)) {
+                                foreach ($affiliateList as $index => $item) {
+                                    if ($item->token === 'ATL') {
+                                        $aha_item = $item;
+                                        unset($affiliateList[$index]);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // Re-index the array after unsetting
+                            $affiliateList = array_values($affiliateList);
+
+                            // Add the ALT item first if found
+                            if ($aha_item) {
+                                $reordered[] = $aha_item;
+                            }
+
+                            // Append the remaining items
+                            $affiliateListreordered = array_merge($reordered, $affiliateList);
 
                             // $affiliateList = OAM_Helper::manage_affiliates_content('', 'blocked');
                             // $affiliateList = json_decode($affiliateList, true);
@@ -199,8 +236,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             echo '<select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an Organization.">';
                             echo '<option></option><option data-token="'.$data->token.'" ' . selected($affiliate, '0', false) . ' value="Orthoney">Honey from the Heart</option>';
                             
-                            if (!empty($affiliateList)) {
-                                foreach ($affiliateList  as $key => $data) {
+                            if (!empty($affiliateListreordered)) {
+                                foreach ($affiliateListreordered  as $key => $data) {
                                     if($data->token != ''){
                                         $user_id = $data->user_id;
                                         $states = WC()->countries->get_states('US');

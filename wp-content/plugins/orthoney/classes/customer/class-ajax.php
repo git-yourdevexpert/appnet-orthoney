@@ -410,6 +410,7 @@ class OAM_Ajax{
         $pid               = (int) ($_POST['pid'] ?? 1);
         $recipientIds      = array_map('intval', $_POST['recipientAddressIds'] ?? []);
         $user_id           = get_current_user_id();
+        $affiliate_select  = ($_POST['affiliate_select'] ?? 'Orthoney');
 
         $stepData    = $_POST ?? [];
         $currentStep = isset($_POST['currentStep']) ? intval($_POST['currentStep']) + 1 : 1;
@@ -441,6 +442,30 @@ class OAM_Ajax{
         $total_quantity = (int) $wpdb->get_var($query);
 
         if ($total_quantity > 0) {
+
+            $yith_wcaf_affiliates_table = OAM_helper::$yith_wcaf_affiliates_table;
+            $processExistResult = 'Orthoney';
+            if($affiliate_select != 'Orthoney'){
+                // Correct query execution
+                $processExistResult = $wpdb->get_var($wpdb->prepare("
+                    SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d
+                ", $affiliate_select));
+
+                if (!$processExistResult) {
+                    return;
+                }
+            }
+
+            setcookie('yith_wcaf_referral_token', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
+            setcookie('yith_wcaf_referral_history', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
+            unset($_COOKIE['yith_wcaf_referral_token']);
+            unset($_COOKIE['yith_wcaf_referral_history']);
+            
+            yith_wcaf_delete_cookie('yith_wcaf_referral_token');
+            yith_wcaf_delete_cookie('yith_wcaf_referral_history');
+            yith_wcaf_set_cookie( 'yith_wcaf_referral_token', $processExistResult, WEEK_IN_SECONDS );
+            yith_wcaf_set_cookie( 'yith_wcaf_referral_history', $processExistResult, WEEK_IN_SECONDS );
+
             $this->add_items_to_cart_chunk($total_quantity, $pid, $product_id);
             $checkout_url = wc_get_checkout_url();
 
@@ -871,12 +896,30 @@ class OAM_Ajax{
             wp_send_json_error(['message' => 'The group name already exists. Please enter a different name.']);
         }
 
+        $processDataQuery = $wpdb->prepare("SELECT data FROM {$order_process_table} WHERE user_id = %d AND id = %d",
+            get_current_user_id(),
+            $process_id
+        );
+        $processDataResult = $wpdb->get_row($processDataQuery);
+
+        $setData = [];
+
+        if ($processDataResult && !empty($processDataResult->data)) {
+            $setData = json_decode($processDataResult->data, true) ?? [];
+        }
+
+        if (!empty($setData)) {
+            $setData['upload_type_output_process_name'] = sanitize_text_field($name);
+        }
+
+
         if($method == 'order-process'){
     
             $result = $wpdb->update(
                 $order_process_table,
                 [
                     'name'     => sanitize_text_field($name),
+                    'data'     => wp_json_encode($setData)
                 ],
                 ['id' => $process_id]
             );
@@ -1534,7 +1577,6 @@ class OAM_Ajax{
     
         $order_process_table = OAM_Helper::$order_process_table;
         
-        
         if(isset($_POST['affiliate_select'])){
             OAM_COMMON_Custom::set_affiliate_cookie($_POST['affiliate_select']);
         }
@@ -1547,6 +1589,7 @@ class OAM_Ajax{
             'step'     => sanitize_text_field($currentStep),
             'greeting' => sanitize_text_field($stepData['greeting']),
         ];
+        
         
         if($currentStep == 3 && (isset($_POST['multiple_address_output']) && !empty($_POST['multiple_address_output']) && $_POST['multiple_address_output'] === 'add-manually') && (isset($_POST['upload_type_output_process_name']) )){
             // $data['csv_name'] = $_POST['upload_type_output_process_name'];

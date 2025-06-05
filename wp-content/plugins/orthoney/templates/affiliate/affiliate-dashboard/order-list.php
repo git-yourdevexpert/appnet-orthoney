@@ -3,16 +3,17 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-$dashboard_link = ORGANIZATION_DASHBOARD_LINK;
+  $dashboard_link = ORGANIZATION_DASHBOARD_LINK;
 $dashboard_link_label = 'Return to Dashboard';
 ?>
 <div class="order-block-wrap">
     <div class="order-process-dashboard">
         <div class="dashboard-block">
-        <div class="row-block">
-            <h3 class="block-title">Recent Customer Orders</h3>
-            <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
-        </div>
+        <div class="heading-title"><h3 class="block-title">Recent Customer Orders</h3></div>
+             <div class="heading-title">
+        <h3 class="block-title">Recent Customer Orders</h3>
+        <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
+    </div>
             <?php
             $details = OAM_AFFILIATE_Helper::get_affiliate_details($affiliate_id);
             if( !empty($details['orders']) ){

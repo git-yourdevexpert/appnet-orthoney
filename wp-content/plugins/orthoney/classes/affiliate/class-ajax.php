@@ -247,7 +247,7 @@ class OAM_AFFILIATE_Ajax{
             <p>Dear {$full_name},</p>
             <p>A honey sale administrator from <strong>{$organization}</strong> has made a request.</p>
             <p>Please approve or reject the request using the following link:</p>
-            <p><a href=\"{$link}\" target=\"_blank\">Click here</a>  (or whatever link)</p>
+            <p><a href=\"{$link}\" target=\"_blank\">Click here</a></p>
             <p>Thank you,<br>Honey From The Heart</p>
         ";
 

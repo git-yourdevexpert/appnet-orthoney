@@ -17,8 +17,7 @@ class OAM_AFFILIATE_Shortcode
     public function affiliate_dashboard_handler() {
         ob_start();
 
-        $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
-    
+           
         if (!is_user_logged_in()) {
             $message = 'Please login to view your affiliate dashboard.';
             $url = home_url('/login');

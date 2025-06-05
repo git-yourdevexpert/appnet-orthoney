@@ -70,9 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
               .then((response) => response.json())
               .then((data) => {
                 if (data.success) {
-                  document
-                    .querySelectorAll(".editProcessName")
-                    .forEach((editProcessName) => {
+                  document.querySelectorAll(".editProcessName").forEach((editProcessName) => {
                       editProcessName.setAttribute("data-name", groupName);
 
                       // Get the closest parent <p> tag safely
@@ -85,6 +83,10 @@ document.addEventListener("DOMContentLoaded", function () {
                           strongTag.innerHTML = groupName;
                         }
                       }
+                    });
+
+                    document.querySelectorAll(".upload_type_output_process_name input[name='upload_type_output_process_name']").forEach((process_name) => {
+                     process_name.value = groupName;
                     });
 
                   Swal.fire({

@@ -274,10 +274,19 @@ class OAM_COMMON_Custom {
                 return;
             }
 
+            setcookie('yith_wcaf_referral_token', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
+            setcookie('yith_wcaf_referral_history', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
+            unset($_COOKIE['yith_wcaf_referral_token']);
+            unset($_COOKIE['yith_wcaf_referral_history']);
             yith_wcaf_set_cookie( 'yith_wcaf_referral_token', $processExistResult, WEEK_IN_SECONDS );
             yith_wcaf_set_cookie( 'yith_wcaf_referral_history', $processExistResult, WEEK_IN_SECONDS );
             
         } else {
+            setcookie('yith_wcaf_referral_token', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
+            setcookie('yith_wcaf_referral_history', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
+            unset($_COOKIE['yith_wcaf_referral_token']);
+            unset($_COOKIE['yith_wcaf_referral_history']);
+            
             yith_wcaf_set_cookie( 'yith_wcaf_referral_token', $token, WEEK_IN_SECONDS );
             yith_wcaf_set_cookie( 'yith_wcaf_referral_history', $token, WEEK_IN_SECONDS );
         }

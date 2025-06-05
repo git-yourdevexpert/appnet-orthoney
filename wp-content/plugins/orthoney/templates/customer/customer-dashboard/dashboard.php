@@ -72,7 +72,7 @@ if ( in_array( 'yith_affiliate', (array) $user->roles ) ) {
                     </div>
                     <div class="cl-right">
                     <?php 
-                        echo OAM_Helper::failed_recipients_dashboard_widget('Failed Addresses', 3, esc_url(OAM_Helper::$customer_dashboard_link.'failed-recipients/'));
+                        echo OAM_Helper::failed_recipients_dashboard_widget('Failed Recipients', 3, esc_url(OAM_Helper::$customer_dashboard_link.'failed-recipients/'));
                         ?>
                     
                     </div>

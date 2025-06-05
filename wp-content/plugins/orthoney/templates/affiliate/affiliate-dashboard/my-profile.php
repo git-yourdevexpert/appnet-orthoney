@@ -27,13 +27,30 @@
    $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
    //TODO
    $dashboard_link = ORGANIZATION_DASHBOARD_LINK;
-$dashboard_link_label = 'Return to Dashboard';
+   $dashboard_link_label = 'Return to Dashboard';
    ?>
+
+   <?php 
+    $activate_affiliate_account = get_user_meta($affiliate_id, 'activate_affiliate_account', true);
+    $tax_id = get_user_meta($affiliate_id, '_yith_wcaf_tax_id', true);
+
+       if ((empty($activate_affiliate_account) AND $activate_affiliate_account != 1 )OR !empty($tax_id)) {
+            echo '<div class="dashboard-block"><div class="dashboard-heading block-row">
+                        <div class="item" style="background-color: rgba(255, 0, 0, 0.5);">
+                            <div class="row-block">
+                                <h6 class="block-title">Your account is inactive. Submit your Tax ID to activate your account and become eligible for this year`s commission.</h6>
+                                <div><button data-userid="' . esc_attr($affiliate_id) . '" class="w-btn us-btn-style_1 activate_affiliate_account">Activate Account</button></div>
+                            </div>
+                        </div>
+                    </div></div>';
+        }
+    ?>
 <div class="order-process-block form-deisgn">
     <div class="heading-title">
         <h3 class="block-title">My Profile</h3>
         <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
     </div>
+    
     <div class="affiliate-profile" id="update-affiliate-form">
         <form id="affiliate-profile-form">
             <div class="profile-fields site-form grid-two-col">
@@ -64,45 +81,45 @@ $dashboard_link_label = 'Return to Dashboard';
                 </div>
                 <div class="form-row gfield--width-half">
                     <label for="organization_name">Organization Name</label>
-                    <input type="text" name="organization_name" id="organization_name"
+                    <input type="text" name="organization_name" id="organization_name" required
                         value="<?php echo esc_attr($name_of_your_organization); ?>"
                         data-error-message="Please enter a Organization Name.">
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-half">
                     <label for="organization_website">Organization Website</label>
-                    <input type="url" name="organization_website" id="organization_website"
+                    <input type="url" name="organization_website" id="organization_website" required 
                         value="<?php echo esc_attr($your_organizations_website); ?>"
                         data-error-message="Please enter a Organization Website.">
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-half">
                     <label for="address">Address</label>
-                    <input type="text" name="address" id="address" value="<?php echo esc_attr($address); ?>"
+                    <input type="text" name="address" id="address" value="<?php echo esc_attr($address); ?>" required
                         data-error-message="Please enter a Address">
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-half">
                     <label for="city">City</label>
-                    <input type="text" name="city" id="city" value="<?php echo esc_attr($city); ?>"
+                    <input type="text" name="city" id="city" value="<?php echo esc_attr($city); ?>" required
                         data-error-message="Please enter a City">
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-half">
                     <label for="state">State</label>
-                    <input type="text" name="state" id="state" value="<?php echo esc_attr($state); ?>"
+                    <input type="text" name="state" id="state" value="<?php echo esc_attr($state); ?>" required
                         data-error-message="Please enter a State">
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-half">
                     <label for="zipcode">Zipcode</label>
-                    <input type="text" name="zipcode" id="zipcode" value="<?php echo esc_attr($zipcode); ?>"
+                    <input type="text" name="zipcode" id="zipcode" value="<?php echo esc_attr($zipcode); ?>" required
                         data-error-message="Please enter a Zip">
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-half">
                     <label for="tax_id">Tax ID</label>
-                    <input type="text" name="tax_id" id="tax_id" value="<?php echo esc_attr($tax_id); ?>"
+                    <input type="text" name="tax_id" id="tax_id" value="<?php echo esc_attr($tax_id); ?>" required
                         data-error-message="Please enter a Tax ID">
                     <span class="error-message"></span>
                 </div>
@@ -131,7 +148,7 @@ $dashboard_link_label = 'Return to Dashboard';
                         <label for="city">Product Price <span class="error-message"><strong>Please set the minimum honey jar price to <?php echo wc_price($selling_minimum_price ) ?>.</strong></span></label>
 
                         <div class="product-price-box textarea-div form-row gfield--width-full update-price">
-                            <input type="text" name="product_price" id="product_price" value="<?php echo esc_attr($product_price); ?>" data-error-message="Please enter a product price">
+                            <input type="text" name="product_price" id="product_price" value="<?php echo esc_attr($product_price ?:$selling_minimum_price); ?>" data-error-message="Please enter a product price">
                             <span class="error-message"></span>
                         
                             <button type="button" class="add-user w-btn us-btn-style_1" id="affiliate-product-price-profile">Update Price</button>
