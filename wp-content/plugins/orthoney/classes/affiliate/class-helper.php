@@ -557,7 +557,7 @@ class OAM_AFFILIATE_Helper
                     }
 
                     $affiliate_account_status =  OAM_COMMON_Custom::get_order_meta($commission->order_id, 'affiliate_account_status') ?: 0;
-                    $custom_order_id = OAM_COMMON_Custom::get_order_meta(order_id: $commission->order_id, '_orthoney_OrderID');
+                    $custom_order_id = OAM_COMMON_Custom::get_order_meta($commission->order_id, '_orthoney_OrderID');
 
                     $data['total_exclude_quantity'] = $total_exclude_quantity;
                     $data['total_all_quantity'] = $total_quantity;
