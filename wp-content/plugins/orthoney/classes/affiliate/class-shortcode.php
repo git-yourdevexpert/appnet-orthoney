@@ -17,6 +17,11 @@ class OAM_AFFILIATE_Shortcode
     public function affiliate_dashboard_handler() {
         ob_start();
 
+    //    $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate(get_current_user_id());
+    //     $commission_array_data = json_decode($commission_array, true);
+    //    echo "<pre>";
+    //    print_r($commission_array_data);
+    //    echo "</pre>";
            
         if (!is_user_logged_in()) {
             $message = 'Please login to view your affiliate dashboard.';

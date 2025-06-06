@@ -196,9 +196,20 @@ class OAM_AFFILIATE_Helper
                 $quantity += (int) $item->get_quantity();
             }
 
-            $commission_price = '';
+            $exclude_coupon = EXCLUDE_COUPON;
+
             if ($commission_array[$custom_order_id]['affiliate_account_status'] == 1) {
-                $commission_price = wc_price($commission_array[$custom_order_id]['commission']);
+                $coupon_array = !empty($commission_array[$custom_order_id]['is_voucher_used']) 
+                    ? explode(",", $commission_array[$custom_order_id]['is_voucher_used']) 
+                    : [];
+
+                $coupon_array = array_diff($coupon_array, $exclude_coupon);
+
+                if (empty($coupon_array)) {
+                    $commission_price = wc_price($commission_array[$custom_order_id]['commission']);
+                } else {
+                    $commission_price = wc_price(0) . ' <span style="color:red">(used voucher: '.implode(",", $coupon_array).')</span>';
+                }
             } else {
                 $commission_price = wc_price(0) . ' <span style="color:red">(Account deactivated)</span>';
             }
@@ -276,12 +287,31 @@ class OAM_AFFILIATE_Helper
                 $quantity += (int) $item->get_quantity();
             }
 
-            $commission_price = '';
+            $exclude_coupon = EXCLUDE_COUPON;
+
             if ($commission_array[$custom_order_id]['affiliate_account_status'] == 1) {
-                $commission_price = wc_price($commission_array[$custom_order_id]['commission']);
+                $coupon_array = !empty($commission_array[$custom_order_id]['is_voucher_used']) 
+                    ? explode(",", $commission_array[$custom_order_id]['is_voucher_used']) 
+                    : [];
+
+                $coupon_array = array_diff($coupon_array, $exclude_coupon);
+
+                if (empty($coupon_array)) {
+                    $commission_price = wc_price($commission_array[$custom_order_id]['commission']);
+                } else {
+                    $commission_price = wc_price(0) . ' <span style="color:red">(used voucher: '.implode(",", $coupon_array).')</span>';
+                }
             } else {
                 $commission_price = wc_price(0) . ' <span style="color:red">(Account deactivated)</span>';
             }
+
+
+            // $commission_price = '';
+            // if ($commission_array[$custom_order_id]['affiliate_account_status'] == 1) {
+            //     $commission_price = wc_price($commission_array[$custom_order_id]['commission']);
+            // } else {
+            //     $commission_price = wc_price(0) . ' <span style="color:red">(Account deactivated)</span>';
+            // }
 
             $html .= '<tr>
                         <td><div class="thead-data">Order ID</div>#' . esc_html($custom_order_id) . '</td>
@@ -308,10 +338,19 @@ class OAM_AFFILIATE_Helper
         $html .= '';
         $total_commission = 0;
         $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
-
+        
+        $exclude_coupon = EXCLUDE_COUPON;
         foreach ($commission_array as $key => $data) {
             if ($data['affiliate_account_status'] == 1) {
-                $total_commission = $total_commission + $data['commission'];
+                $common = [];
+                $coupon_array = !empty($data['is_voucher_used']) ? explode(",", $data['is_voucher_used']) : [];
+                if(count($coupon_array) > 0){
+                    $coupon_array = array_diff($coupon_array, $exclude_coupon);
+                    $coupon_array = array_values($coupon_array);
+                }
+                if(count($coupon_array) == 0){
+                    $total_commission += $data['commission'];
+                }
             }
         }
 
@@ -485,18 +524,19 @@ class OAM_AFFILIATE_Helper
             "SELECT 
                 c.order_id,
                 SUM(CAST(qty_meta.meta_value AS UNSIGNED)) AS total_quantity,
-                SUM(CAST(line_total_meta.meta_value AS DECIMAL(10,2))) AS line_total
+                SUM(CAST(line_total_meta.meta_value AS DECIMAL(10,2))) AS line_total,
+                SUM(CAST(line_subtotal_meta.meta_value AS DECIMAL(10,2))) AS line_subtotal
             FROM {$wpdb->prefix}yith_wcaf_commissions c
             INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
             INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_id = o.id AND oi.order_item_type = 'line_item'
             LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta qty_meta ON qty_meta.order_item_id = oi.order_item_id AND qty_meta.meta_key = '_qty'
             LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_total_meta ON line_total_meta.order_item_id = oi.order_item_id AND line_total_meta.meta_key = '_line_total'
+            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_subtotal_meta ON line_subtotal_meta.order_item_id = oi.order_item_id AND line_subtotal_meta.meta_key = '_line_subtotal'
             WHERE c.affiliate_id = %d
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
             GROUP BY c.order_id",
             $affiliate_id
         ));
-
 
         $total_quantity = $wpdb->get_var($wpdb->prepare(
             "SELECT 
@@ -532,11 +572,14 @@ class OAM_AFFILIATE_Helper
         if (!empty($commission_year_results)) {
             if ($total_quantity >= 50) {
                 foreach ($commission_year_results as $key => $commission) {
+                   
                     $total_all_quantity = $commission->total_quantity;
                     $total_exclude_quantity = $total_exclude_quantity ?: 0;
                     $total_quantity = $total_quantity;
                     $line_total = $commission->line_total;
-                    $par_jar = $commission->line_total / $commission->total_quantity;
+                    $line_subtotal = $commission->line_subtotal;
+                    
+                    $par_jar = $commission->line_subtotal / $commission->total_quantity;
                     $minimum_price = 0;
 
                     $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
@@ -565,7 +608,7 @@ class OAM_AFFILIATE_Helper
                     $data['custom_order_id'] = $custom_order_id;
                     $data['total_quantity'] =  $total_all_quantity;
                     $data['line_total'] = $line_total;
-                    $data['line_total'] = $line_total;
+                    $data['line_subtotal'] = $line_subtotal;
                     $data['par_jar'] = $par_jar;
                     $data['minimum_price'] = $minimum_price;
                     $data['is_voucher_used'] = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($commission->order_id);

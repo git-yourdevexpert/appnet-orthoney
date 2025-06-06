@@ -71,9 +71,13 @@ if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins',
 
 // Define required columns
 $required_columns = ['full name','Company Name', 'Mailing Address', 'Suite/Apt#', 'city', 'state', 'zipcode', 'quantity', 'greeting'];
+$exclude_coupon = ['freeshipping'];
 
 if ( ! defined( 'OH_REQUIRED_COLUMNS' ) ) {
     define( 'OH_REQUIRED_COLUMNS', $required_columns );
+}
+if ( ! defined( 'EXCLUDE_COUPON' ) ) {
+    define( 'EXCLUDE_COUPON', $exclude_coupon );
 }
 
 if ( ! defined( 'OH_PLUGIN_DIR_URL' ) ) {

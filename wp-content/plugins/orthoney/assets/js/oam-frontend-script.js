@@ -2052,6 +2052,8 @@ jQuery(document).ready(function ($) {
   });
 });
 
+
+
 jQuery(document).ready(function ($) {
   const table = new DataTable("#admin-organizations-table", {
     pageLength: 50,
@@ -2067,12 +2069,6 @@ jQuery(document).ready(function ($) {
       }
     },
     columns: [
-      {
-        data: null,
-        defaultContent: '',
-        className: 'dtr-control',
-        orderable: false
-      },
       { data: "code" },
       { data: "email" },
       { data: "organization" },
@@ -2091,20 +2087,19 @@ jQuery(document).ready(function ($) {
     ],
     language: {
       processing: `
-        <div class="loader multiStepForm" style="display:block">
-          <div>
-            <h2 class="swal2-title">Processing...</h2>
-            <div class="swal2-html-container">Please wait while we process your request.</div>
-            <div class="loader-5"></div>
-          </div>
-        </div>
-      `
+                <div class="loader multiStepForm" style="display:block">
+                    <div>
+                        <h2 class="swal2-title">Processing...</h2>
+                        <div class="swal2-html-container">Please wait while we process your request.</div>
+                        <div class="loader-5"></div>
+                    </div>
+                </div>
+            `
     },
-    processing: true,
+     processing: true,
     serverSide: true,
     paging: true,
-    searching: true,
-    responsive: true
+    searching: true
   });
 });
 

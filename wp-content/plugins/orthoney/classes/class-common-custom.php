@@ -68,6 +68,16 @@ class OAM_COMMON_Custom {
         $today = date('Y-m-d H:i:s');
         $season_start_date = get_field('season_start_date', 'option');
         $season_end_date = get_field('season_end_date', 'option');
+
+        $seasonStartDate = new DateTime($season_start_date);
+
+        // Format as MM/DD/YYYY
+        $formatted_numeric = $seasonStartDate->format('m/d/Y');
+
+        // Format as "June 12, 2025"
+        $startDay = $seasonStartDate->format('j');
+        $formatted_text = $seasonStartDate->format("F {$startDay}, Y");
+
         if ($today <= $season_start_date){
         ?>
             <div class="season_start_end_message_box <?php echo $atts['popup'] ?>" style="<?php echo $atts['popup'] === 'withpopup' ? 'display:none' : '' ?>">
@@ -78,13 +88,13 @@ class OAM_COMMON_Custom {
                         <div class="top-content">
                             <h2>The Hive’s Just Waking Up… Get Ready for the Buzz!</h2>
                             <div class="subtext">We’re almost ready to launch this season’s buzz-worthy tradition and trust us, it’s going to bee amazing!</div>
-                            <p>Our honey isn’t flowing just yet, but the hive opens for gifting on <strong>June 12th 2025</strong></p>
+                            <p>Our honey isn’t flowing just yet, but the hive opens for gifting on <strong><?php echo $formatted_text ?></strong></p>
                             <div class="border-top-bottom">Please come back soon to Send Honey. Share Hope. Spread Joy.</div>
                             <div class="notifyme">
                                 <span>Your friends at Honey From The Heart</span>
                                 <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="https://www.orthoney.com/sign-up/"><span class="w-btn-label">Notify Me</span></a>
                             </div>
-                            <div id="countdown" class="countdown" data-date="06/15/2025">
+                            <div id="countdown" class="countdown" data-date="<?php echo $formatted_numeric ?>">
                                 <ul>
                                     <li><span class="days"></span> Days</li>
                                     <li><span class="hours"></span> Hours</li>
@@ -99,6 +109,17 @@ class OAM_COMMON_Custom {
             </div>
         <?php
         }
+
+        $next_year_season_start_date = get_field('next_year_season_start_date', 'option');
+
+        $nextYearSeasonStartDate = new DateTime($next_year_season_start_date);
+
+        // Format as MM/DD/YYYY
+        $next_year_formatted_numeric = $nextYearSeasonStartDate->format('m/d/Y');
+
+        // Format as "June 12, 2025"
+        $nextYearStartDay = $nextYearSeasonStartDate->format('j');
+        $next_year_formatted_text = $nextYearSeasonStartDate->format("F {$nextYearStartDay}, Y");
         
         if ($today >= $season_end_date) {
             ?>
@@ -110,7 +131,7 @@ class OAM_COMMON_Custom {
                         <div class="top-content">
                              <h2>The Hive Is Slowing Down… But the Sweetness Will Return!</h2>
                            <div class="subtext">As the honey season is now closed, we’re filled with gratitude for the kindness you’ve shared. </div>
-                            <p>We’ll be buzzing again in <strong>June 15, 2026,</strong> and we can’t wait to share the sweetness with you once more.</strong></p>
+                            <p>We’ll be buzzing again in <strong><?php echo $next_year_formatted_text ?>,</strong> and we can’t wait to share the sweetness with you once more.</strong></p>
                             <div class="border-top-bottom">Until then — thank you for helping us Send Honey. Share Hope. Spread Joy.</div>
                             <div class="message-txt">
                                 With heartfelt appreciation,<br>
@@ -120,7 +141,7 @@ class OAM_COMMON_Custom {
                                 <span>Be the first to know when the season opens!</span>
                                 <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="https://www.orthoney.com/sign-up/"><span class="w-btn-label">Notify Me</span></a>
                             </div>
-                            <div id="countdown" class="countdown" data-date="06/15/2026">
+                            <div id="countdown" class="countdown" data-date="<?php echo $next_year_formatted_numeric ?>">
                                  <ul>
                                     <li><span class="days"></span> Days</li>
                                     <li><span class="hours"></span> Hours</li>

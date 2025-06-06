@@ -224,26 +224,40 @@ class OAM_WC_Customizer {
      */
     public function conditional_shipping_based_on_acf_date( $rates, $package ) {
         // Get ACF start and end dates
-        $start_date = get_field('free_shipping_start_date', 'option');
-        $end_date = get_field('free_shipping_end_date', 'option');
-        $current_date = current_time('Y-m-d H:i:s');
+        $start_date    = get_field( 'free_shipping_start_date', 'option' );
+        $end_date      = get_field( 'free_shipping_end_date', 'option' );
+        $current_date  = current_time( 'Y-m-d H:i:s' );
 
-        if ( !$start_date || !$end_date ) {
+        if ( ! $start_date || ! $end_date ) {
             return $rates;
         }
 
-        $is_within_date_range = ($current_date >= $start_date && $current_date <= $end_date);
+        $is_within_range = ( $current_date >= $start_date && $current_date <= $end_date );
+
+        $preferred_method = '';
 
         foreach ( $rates as $rate_key => $rate ) {
-            if ( $is_within_date_range ) {
+            // Inside free shipping period: allow only free_shipping
+            if ( $is_within_range ) {
                 if ( $rate->method_id !== 'free_shipping' ) {
-                    unset( $rates[$rate_key] );
+                    unset( $rates[ $rate_key ] );
+                } else {
+                    $preferred_method = $rate_key;
                 }
             } else {
-                if ( $rate->method_id !== 'flat_rate' ) {
-                    unset( $rates[$rate_key] );
+                // Outside free shipping period: allow all methods, but prefer flat_rate
+                if ( $rate->method_id === 'flat_rate' && empty( $preferred_method ) ) {
+                    $preferred_method = $rate_key;
                 }
             }
+        }
+
+        // Set preferred/default method
+        if ( $preferred_method && isset( $rates[ $preferred_method ] ) ) {
+            // Move preferred method to the top of the array to auto-select it
+            $preferred = $rates[ $preferred_method ];
+            unset( $rates[ $preferred_method ] );
+            $rates = array_merge( [ $preferred_method => $preferred ], $rates );
         }
 
         return $rates;

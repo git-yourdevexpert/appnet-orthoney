@@ -231,16 +231,22 @@ class OAM_ADMINISTRATOR_AJAX {
             $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate($user_id);
             $commission_array_data = json_decode($commission_array, true);
 
+            $exclude_coupon = EXCLUDE_COUPON;
             if(!empty( $commission_array_data['data'])){
-                $activate_affiliate_account = $commission_array_data['activate_affiliate_account'];
                 foreach ($commission_array_data['data'] as $key => $value) {
-                    if($value['affiliate_account_status'] == 1){
-                        $total_commission = $total_commission + $value['commission'];
-                        // $total_quantity = $total_quantity + $data['total_quantity'];
+                    if ($value['affiliate_account_status'] == 1) {
+                        $common = [];
+                        $coupon_array = !empty($value['is_voucher_used']) ? explode(",", $value['is_voucher_used']) : [];
+                        if(count($coupon_array) > 0){
+                            $coupon_array = array_diff($coupon_array, $exclude_coupon);
+                            $coupon_array = array_values($coupon_array);
+                        }
+                        if(count($coupon_array) == 0){
+                            $total_commission += $value['commission'];
+                        }
                     }
                 }
             }
-        
 
             $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . $user_id . '&tab=affiliates';
 
