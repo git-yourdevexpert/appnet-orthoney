@@ -3861,7 +3861,8 @@ setTimeout(() => {
     }, 2000);
 });
 
-(function() {
+
+(function () {
   const second = 1000,
         minute = second * 60,
         hour = minute * 60,
@@ -3870,34 +3871,40 @@ setTimeout(() => {
   const countdowns = document.querySelectorAll('.season_start_end_message_box .countdown');
 
   countdowns.forEach(countdown => {
-    const dataDate = countdown.getAttribute('data-date'); // e.g. "06/15" or "06/15/2026"
+    const dataDate = countdown.getAttribute('data-date');
 
-    // parse data-date:
-    // if dataDate includes year, use it directly
-    // else, add current year and adjust to next year if passed
     function parseTargetDate() {
       if (!dataDate) return null;
 
-      // Check if dataDate has year (e.g. MM/DD/YYYY)
-      const parts = dataDate.split('/');
+      // If time is included, assume full format
+      let targetDate;
+      const hasTime = /\d{2}:\d{2}:\d{2}/.test(dataDate);
 
-      if (parts.length === 3) {
-        // full date with year present
-        return new Date(dataDate);
-      } else if (parts.length === 2) {
-        // no year, so add current or next year logic
-        const today = new Date(),
-              yyyy = today.getFullYear(),
-              mm = parts[0].padStart(2, '0'),
-              dd = parts[1].padStart(2, '0');
+      if (hasTime) {
+        // Format: MM/DD/YYYY HH:MM:SS
+        targetDate = new Date(dataDate);
+      } else {
+        const parts = dataDate.split('/'); // Split by /
+        if (parts.length === 3) {
+          // Format: MM/DD/YYYY
+          targetDate = new Date(dataDate);
+        } else if (parts.length === 2) {
+          // Format: MM/DD
+          const today = new Date();
+          const yyyy = today.getFullYear();
+          const mm = parts[0].padStart(2, '0');
+          const dd = parts[1].padStart(2, '0');
 
-        let birthday = new Date(`${mm}/${dd}/${yyyy}`);
-        if (today > birthday) {
-          birthday = new Date(`${mm}/${dd}/${yyyy + 1}`);
+          targetDate = new Date(`${mm}/${dd}/${yyyy}`);
+          if (today > targetDate) {
+            targetDate = new Date(`${mm}/${dd}/${yyyy + 1}`);
+          }
+        } else {
+          return null;
         }
-        return birthday;
       }
-      return null;
+
+      return isNaN(targetDate.getTime()) ? null : targetDate;
     }
 
     let timer;
@@ -3927,7 +3934,7 @@ setTimeout(() => {
       const secondsEl = countdown.querySelector('.seconds');
 
       if (!daysEl || !hoursEl || !minutesEl || !secondsEl) {
-        console.error('One or more countdown elements missing inside', countdown);
+        console.error('Missing .days/.hours/.minutes/.seconds in countdown block');
         clearInterval(timer);
         return;
       }

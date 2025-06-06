@@ -72,7 +72,7 @@ class OAM_COMMON_Custom {
         $seasonStartDate = new DateTime($season_start_date);
 
         // Format as MM/DD/YYYY
-        $formatted_numeric = $seasonStartDate->format('m/d/Y');
+        $formatted_numeric = $seasonStartDate->format('m/d/Y H:i:s');
 
         // Format as "June 12, 2025"
         $startDay = $seasonStartDate->format('j');
@@ -115,7 +115,7 @@ class OAM_COMMON_Custom {
         $nextYearSeasonStartDate = new DateTime($next_year_season_start_date);
 
         // Format as MM/DD/YYYY
-        $next_year_formatted_numeric = $nextYearSeasonStartDate->format('m/d/Y');
+        $next_year_formatted_numeric = $nextYearSeasonStartDate->format('m/d/Y H:i:s');
 
         // Format as "June 12, 2025"
         $nextYearStartDay = $nextYearSeasonStartDate->format('j');
