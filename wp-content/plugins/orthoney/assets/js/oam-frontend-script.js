@@ -2099,7 +2099,9 @@ jQuery(document).ready(function ($) {
      processing: true,
     serverSide: true,
     paging: true,
-    searching: true
+    searching: true,
+    responsive: true,
+     scrollX: true
   });
 });
 
