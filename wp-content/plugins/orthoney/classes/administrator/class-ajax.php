@@ -248,7 +248,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 }
             }
 
-            $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . $user_id . '&tab=affiliates';
+            $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($row->ID) . '&tab=affiliates';
 
             if($meta['email'] != ''){
                 $data[] = [
