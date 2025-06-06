@@ -206,6 +206,25 @@
             "append": ""
         },
         {
+            "key": "field_6842a6d3ae581",
+            "label": "Next Year Season Start Date",
+            "name": "next_year_season_start_date",
+            "aria-label": "",
+            "type": "date_time_picker",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "display_format": "Y-m-d H:i:s",
+            "return_format": "Y-m-d H:i:s",
+            "first_day": 1,
+            "allow_in_bindings": 0
+        },
+        {
             "key": "field_67ecc9308156c",
             "label": "Links Settings",
             "name": "",
@@ -547,5 +566,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1749104098
+    "modified": 1749198573
 }
