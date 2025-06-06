@@ -70,7 +70,7 @@ class OAM_COMMON_Custom {
         $season_end_date = get_field('season_end_date', 'option');
 
 
-        $current_timestamp      = strtotime($current_date);
+        $current_timestamp      = strtotime($today);
         $season_start_timestamp = strtotime($season_start_date);
         $season_end_timestamp   = strtotime($season_end_date);
 
