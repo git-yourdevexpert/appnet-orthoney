@@ -69,7 +69,6 @@ $recipientResult = $wpdb->get_results($wpdb->prepare(
     $sub_order_id
 ));
 
-echo $sub_order_id;
 
 $jarOrderResult = (int) $wpdb->get_var($wpdb->prepare(
     "SELECT count(*) FROM {$oh_wc_jar_order} WHERE order_id = %d",
@@ -259,7 +258,7 @@ $dashboard_link_label = 'Return to Dashboard';
                     ));
                     ?>
                     <tr class="group-header" data-count="<?php echo count($jarOrderResult) ?>" data-group="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-id="<?php echo esc_attr($sub_order->recipient_order_id); ?>">
-                        <td colspan="8" style="background: #dee2e6 !important;">
+                        <td colspan="8" style="background: #cbdac7 !important;">
                             <div class="heading-title" style="margin-bottom: 0px;">
                                 <div>
                                     <strong>
