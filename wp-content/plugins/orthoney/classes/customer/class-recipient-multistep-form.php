@@ -55,15 +55,24 @@ class OAM_RECIPIENT_MULTISTEP_FORM
 
         ob_start();
 
-        $today = date('Y-m-d H:i:s');
-    
+       $current_date = current_time('Y-m-d H:i:s');
+
         $season_start_date = get_field('season_start_date', 'option');
-        $season_end_date = get_field('season_end_date', 'option');
-        if ($today >= $season_start_date && $today <= $season_end_date) {}else{
+        $season_end_date   = get_field('season_end_date', 'option');
+
+        // Convert all dates to timestamps
+       $current_timestamp      = strtotime($current_date);
+       $season_start_timestamp = strtotime($season_start_date);
+       $season_end_timestamp   = strtotime($season_end_date);
+
+        // Check if current date is within the season range
+        $is_within_range = ( $current_timestamp >= $season_start_timestamp && $current_timestamp <= $season_end_timestamp );
+
+        if ( $is_within_range === false ) {
             echo do_shortcode("[season_start_end_message_box type='order']");
             return;
         }
-    
+            
         $failed_recipients_details = get_query_var('failed-recipients-details');
         if (!empty($failed_recipients_details)) {
             self::$atts_process_id = intval($failed_recipients_details);

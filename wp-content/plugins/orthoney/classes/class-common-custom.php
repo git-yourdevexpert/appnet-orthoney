@@ -65,10 +65,18 @@ class OAM_COMMON_Custom {
         }
         ob_start();
 
-        $today = date('Y-m-d H:i:s');
+        $today = current_time('m/d/Y H:i:s');
         $season_start_date = get_field('season_start_date', 'option');
         $season_end_date = get_field('season_end_date', 'option');
 
+
+        $current_timestamp      = strtotime($current_date);
+        $season_start_timestamp = strtotime($season_start_date);
+        $season_end_timestamp   = strtotime($season_end_date);
+
+        $is_within_range = ( $current_timestamp >= $season_start_timestamp && $current_timestamp <= $season_end_timestamp );
+
+        if ( ! $is_within_range ) {
         $seasonStartDate = new DateTime($season_start_date);
 
         // Format as MM/DD/YYYY
@@ -78,7 +86,7 @@ class OAM_COMMON_Custom {
         $startDay = $seasonStartDate->format('j');
         $formatted_text = $seasonStartDate->format("F {$startDay}, Y");
 
-        if ($today <= $season_start_date){
+        if ($current_timestamp <= $season_start_timestamp){
         ?>
             <div class="season_start_end_message_box <?php echo $atts['popup'] ?>" style="<?php echo $atts['popup'] === 'withpopup' ? 'display:none' : '' ?>">
                 <div class="popupbox <?php echo $atts['popup'] ?>">
@@ -94,7 +102,7 @@ class OAM_COMMON_Custom {
                                 <span>Your friends at Honey From The Heart</span>
                                 <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="https://www.orthoney.com/sign-up/"><span class="w-btn-label">Notify Me</span></a>
                             </div>
-                            <div id="countdown" class="countdown" data-date="<?php echo $formatted_numeric ?>">
+                            <div id="countdown" class="countdown" data-date="<?php echo $formatted_numeric ?>" data-currentdate="<?php echo $today ?>">
                                 <ul>
                                     <li><span class="days"></span> Days</li>
                                     <li><span class="hours"></span> Hours</li>
@@ -121,7 +129,7 @@ class OAM_COMMON_Custom {
         $nextYearStartDay = $nextYearSeasonStartDate->format('j');
         $next_year_formatted_text = $nextYearSeasonStartDate->format("F {$nextYearStartDay}, Y");
         
-        if ($today >= $season_end_date) {
+        if ($current_timestamp >= $season_end_timestamp) {
             ?>
             <div class="season_start_end_message_box <?php echo $atts['popup'] ?>" style="<?php echo $atts['popup'] === 'withpopup' ? 'display:none' : '' ?>">
                 <div class="popupbox <?php echo $atts['popup'] ?>">
@@ -141,7 +149,7 @@ class OAM_COMMON_Custom {
                                 <span>Be the first to know when the season opens!</span>
                                 <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="https://www.orthoney.com/sign-up/"><span class="w-btn-label">Notify Me</span></a>
                             </div>
-                            <div id="countdown" class="countdown" data-date="<?php echo $next_year_formatted_numeric ?>">
+                            <div id="countdown" class="countdown" data-date="<?php echo $next_year_formatted_numeric ?>" data-currentdate="<?php echo $today ?>">
                                  <ul>
                                     <li><span class="days"></span> Days</li>
                                     <li><span class="hours"></span> Hours</li>
@@ -155,6 +163,7 @@ class OAM_COMMON_Custom {
                 </div>
             </div>
             <?php
+            }
         }
     
         return ob_get_clean();
@@ -162,10 +171,20 @@ class OAM_COMMON_Custom {
 
     public function season_start_end_message_box_shortcode_footer($atts) {
         if ( is_front_page() ) {
-            $today = date('Y-m-d H:i:s');
+            $current_date = current_time('Y-m-d H:i:s');
+
             $season_start_date = get_field('season_start_date', 'option');
-            $season_end_date = get_field('season_end_date', 'option');
-            if ($today >= $season_start_date && $today <= $season_end_date) {}else{
+            $season_end_date   = get_field('season_end_date', 'option');
+
+            // Convert all dates to timestamps
+            $current_timestamp      = strtotime($current_date);
+            $season_start_timestamp = strtotime($season_start_date);
+            $season_end_timestamp   = strtotime($season_end_date);
+
+            // Check if current date is within the season range
+            $is_within_range = ( $current_timestamp >= $season_start_timestamp && $current_timestamp <= $season_end_timestamp );
+
+            if ( $is_within_range === false ) {
                 echo do_shortcode("[season_start_end_message_box type='order' popup='withpopup']");
             }
         }

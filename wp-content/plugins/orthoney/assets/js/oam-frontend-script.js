@@ -3862,6 +3862,7 @@ setTimeout(() => {
 });
 
 
+
 (function () {
   const second = 1000,
         minute = second * 60,
@@ -3872,31 +3873,37 @@ setTimeout(() => {
 
   countdowns.forEach(countdown => {
     const dataDate = countdown.getAttribute('data-date');
+    const dataCurrentDate = countdown.getAttribute('data-currentdate');
+
+    // Initial reference time from server
+    let serverNow = dataCurrentDate ? new Date(dataCurrentDate).getTime() : new Date().getTime();
+
+    if (isNaN(serverNow)) {
+      console.error('Invalid data-currentdate format:', dataCurrentDate);
+      return;
+    }
+
+    let elapsedTime = 0;
 
     function parseTargetDate() {
       if (!dataDate) return null;
 
-      // If time is included, assume full format
-      let targetDate;
       const hasTime = /\d{2}:\d{2}:\d{2}/.test(dataDate);
+      let targetDate;
 
       if (hasTime) {
-        // Format: MM/DD/YYYY HH:MM:SS
         targetDate = new Date(dataDate);
       } else {
-        const parts = dataDate.split('/'); // Split by /
+        const parts = dataDate.split('/');
         if (parts.length === 3) {
-          // Format: MM/DD/YYYY
           targetDate = new Date(dataDate);
         } else if (parts.length === 2) {
-          // Format: MM/DD
-          const today = new Date();
-          const yyyy = today.getFullYear();
+          const yyyy = new Date(serverNow).getFullYear();
           const mm = parts[0].padStart(2, '0');
           const dd = parts[1].padStart(2, '0');
 
           targetDate = new Date(`${mm}/${dd}/${yyyy}`);
-          if (today > targetDate) {
+          if (serverNow > targetDate.getTime()) {
             targetDate = new Date(`${mm}/${dd}/${yyyy + 1}`);
           }
         } else {
@@ -3908,19 +3915,16 @@ setTimeout(() => {
     }
 
     let timer;
+    const targetDate = parseTargetDate();
+
+    if (!targetDate) {
+      console.error('Invalid data-date format:', dataDate);
+      return;
+    }
 
     const updateCountdown = () => {
-      const now = new Date().getTime();
-      const targetDate = parseTargetDate();
-
-      if (!targetDate) {
-        console.error('Invalid data-date format:', dataDate);
-        clearInterval(timer);
-        return;
-      }
-
-      const countDownTime = targetDate.getTime();
-      const distance = countDownTime - now;
+      const now = serverNow + elapsedTime;
+      const distance = targetDate.getTime() - now;
 
       if (distance < 0) {
         countdown.style.display = 'none';
@@ -3934,7 +3938,7 @@ setTimeout(() => {
       const secondsEl = countdown.querySelector('.seconds');
 
       if (!daysEl || !hoursEl || !minutesEl || !secondsEl) {
-        console.error('Missing .days/.hours/.minutes/.seconds in countdown block');
+        console.error('Missing countdown elements');
         clearInterval(timer);
         return;
       }
@@ -3943,9 +3947,12 @@ setTimeout(() => {
       hoursEl.innerText = Math.floor((distance % day) / hour);
       minutesEl.innerText = Math.floor((distance % hour) / minute);
       secondsEl.innerText = Math.floor((distance % minute) / second);
+
+      elapsedTime += 1000; // simulate time passing from initial serverNow
     };
 
     updateCountdown();
     timer = setInterval(updateCountdown, 1000);
   });
 })();
+
