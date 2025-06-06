@@ -50,6 +50,7 @@ $notes = $order->get_customer_order_notes();
 // Get order process user
 global $wpdb;
 $wc_orders_meta_table = $wpdb->prefix . 'wc_orders_meta';
+ $oh_wc_jar_order = $wpdb->prefix . 'oh_wc_jar_order';
 $order_process_user_id = $wpdb->get_var($wpdb->prepare(
     "SELECT meta_value FROM {$wc_orders_meta_table} WHERE order_id = %d AND meta_key = %s",
     $order->get_id(), 'order_process_by'
@@ -65,6 +66,13 @@ $sub_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID'
 $recipient_order_table = $wpdb->prefix . 'oh_recipient_order';
 $recipientResult = $wpdb->get_results($wpdb->prepare(
     "SELECT * FROM {$recipient_order_table} WHERE order_id = %d",
+    $sub_order_id
+));
+
+echo $sub_order_id;
+
+$jarOrderResult = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT count(*) FROM {$oh_wc_jar_order} WHERE order_id = %d",
     $sub_order_id
 ));
 
@@ -204,7 +212,7 @@ $dashboard_link_label = 'Return to Dashboard';
         </div>
     
     <?php 
-   if ($order_date && $order_date->format('Y') === '2025') {
+   if ($jarOrderResult !== 0) {
     ?>
     <div id="recipient-jar-order-data" class="table-data orthoney-datatable-warraper">
         
@@ -244,7 +252,7 @@ $dashboard_link_label = 'Return to Dashboard';
                         $sub_order->zipcode
                     ]));
 
-                    $oh_wc_jar_order = $wpdb->prefix . 'oh_wc_jar_order';
+                   
                     $jarOrderResult = $wpdb->get_results($wpdb->prepare(
                         "SELECT * FROM {$oh_wc_jar_order} WHERE recipient_order_id =%s ",
                         $sub_order->recipient_order_id
