@@ -150,6 +150,14 @@ if(isset($_GET['database_refresh']) && ($_GET['database_refresh'] == 'okay' OR $
 
 add_action( 'init', 'add_customer_role_to_affiliates' );
 
+add_action('admin_head', function() {
+    echo '<style>
+        .ui-datepicker-current.ui-state-default.ui-priority-secondary.ui-corner-all {
+            display: none !important;
+        }
+    </style>';
+});
+
 function add_customer_role_to_affiliates() {
 
     if( isset($_GET['add_customer_role_to_affiliates']) && $_GET['add_customer_role_to_affiliates'] == 'yes'){
