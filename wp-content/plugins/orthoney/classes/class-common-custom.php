@@ -96,7 +96,7 @@ class OAM_COMMON_Custom {
                         <div class="top-content">
                             <h2>The Hive’s Just Waking Up… Get Ready for the Buzz!</h2>
                             <div class="subtext">We’re almost ready to launch this season’s buzz-worthy tradition and trust us, it’s going to bee amazing!</div>
-                            <p>Our honey isn’t flowing just yet, but the hive opens for gifting on <strong><?php echo $formatted_text ?></strong></p>
+                            <p>Our honey isn’t flowing just yet, but the hive opens for gifting on <strong class="green-text"><?php echo $formatted_text ?></strong></p>
                             <div class="border-top-bottom">Please come back soon to Send Honey. Share Hope. Spread Joy.</div>
                             <div class="notifyme">
                                 <span>Your friends at Honey From The Heart</span>
@@ -137,9 +137,9 @@ class OAM_COMMON_Custom {
                         <div class="bee-animation"><img decoding="async" width="72" height="72" src="/wp-content/uploads/2025/06/bee.png" class="attachment-full size-full" alt="Bee" loading="lazy"></div>
                         <div class="close-popup" onclick="this.closest('.popupbox').style.display='none'">x</div>
                         <div class="top-content">
-                             <h2>The Hive Is Slowing Down… But the Sweetness Will Return!</h2>
-                           <div class="subtext">As the honey season is now closed, we’re filled with gratitude for the kindness you’ve shared. </div>
-                            <p>We’ll be buzzing again in <strong><?php echo $next_year_formatted_text ?>,</strong> and we can’t wait to share the sweetness with you once more.</strong></p>
+                            <h2>The Hive Is Slowing Down… But the Sweetness Will Return!</h2>
+                            <div class="subtext">As the honey season is now closed, we’re filled with gratitude for the kindness you’ve shared. </div>
+                            <p>We’ll be buzzing again in <strong class="green-text"><?php echo $next_year_formatted_text ?>,</strong> and we can’t wait to share the sweetness with you once more.</strong></p>
                             <div class="border-top-bottom">Until then — thank you for helping us Send Honey. Share Hope. Spread Joy.</div>
                             <div class="message-txt">
                                 With heartfelt appreciation,<br>
