@@ -383,7 +383,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'add-manually' ? 'checked' : '' ?> value="add-manually" data-error-message="Please select a delivery preference."> <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/contract.png" alt="" class="address-icon">
                                                 Enter a new order
                                             </span>
-                                            <div class="tooltip" data-tippy="The name you assign to your list of recipients will appear on your Incomplete Orders list. When you complete the order, an order number will replace the list name, and your list will be retained for future reference"></div>
+                                            <div class="tooltip" data-tippy="The name you assign to your recipient list will be used to identify it in the <strong>Incomplete Orders</strong> section and in <strong>recipient lists</strong> after successfully placing an order."></div>
                                         </label>
                                         <div>
                                             <label class="upload_type_output_process_name" style="display: <?php echo $upload_type_output == 'add-manually' ? 'block' : 'none' ?> ">
