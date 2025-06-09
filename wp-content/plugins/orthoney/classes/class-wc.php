@@ -27,14 +27,14 @@ class OAM_WC_Customizer {
 
         add_filter( 'woocommerce_package_rates', array($this,'conditional_shipping_based_on_acf_date'), 10, 2 );
 
-        add_filter('woocommerce_email_enabled_new_order', array($this,'disable_wc_order_mail'), 10, 2);
-        add_filter('woocommerce_email_enabled_customer_processing_order', array($this,'disable_wc_order_mail'), 10, 2);
-        add_filter('woocommerce_email_enabled_cancelled_order', array($this,'disable_wc_order_mail'), 10, 2);
-        add_filter('woocommerce_email_enabled_failed_order', array($this,'disable_wc_order_mail'), 10, 2);
-        add_filter('woocommerce_email_enabled_customer_failed_order', array($this,'disable_wc_order_mail'), 10, 2);
-        add_filter('woocommerce_email_enabled_customer_on_hold_order', array($this,'disable_wc_order_mail'), 10, 2);
-        add_filter('woocommerce_email_enabled_customer_completed_order', array($this,'disable_wc_order_mail'), 10, 2);
-        add_filter('woocommerce_email_enabled_customer_refunded_order', array($this,'disable_wc_order_mail'), 10, 2);
+        // add_filter('woocommerce_email_enabled_new_order', array($this,'disable_wc_order_mail'), 10, 2);
+        // add_filter('woocommerce_email_enabled_customer_processing_order', array($this,'disable_wc_order_mail'), 10, 2);
+        // add_filter('woocommerce_email_enabled_cancelled_order', array($this,'disable_wc_order_mail'), 10, 2);
+        // add_filter('woocommerce_email_enabled_failed_order', array($this,'disable_wc_order_mail'), 10, 2);
+        // add_filter('woocommerce_email_enabled_customer_failed_order', array($this,'disable_wc_order_mail'), 10, 2);
+        // add_filter('woocommerce_email_enabled_customer_on_hold_order', array($this,'disable_wc_order_mail'), 10, 2);
+        // add_filter('woocommerce_email_enabled_customer_completed_order', array($this,'disable_wc_order_mail'), 10, 2);
+        // add_filter('woocommerce_email_enabled_customer_refunded_order', array($this,'disable_wc_order_mail'), 10, 2);
 
 
         // WC thank you page template changes hooks
@@ -66,136 +66,216 @@ class OAM_WC_Customizer {
         return $attachments;
     }
     
-    public function generate_pdf_from_order_email($order, $pdf_path) {
-        if (!class_exists('Dompdf\Dompdf')) {
-            require_once plugin_dir_path(__DIR__) . 'vendor/autoload.php';
+   public function generate_pdf_from_order_email($order, $pdf_path) {
+         // Load Dompdf if not already loaded
+        if (!class_exists('\Dompdf\Dompdf')) {
+            require_once plugin_dir_path(__FILE__) . 'libs/dompdf/vendor/autoload.php';
         }
-    
+
         if (!class_exists('Dompdf\Dompdf')) {
             error_log('Dompdf not found.');
             return;
         }
-    
-        $options = new Options();
+
+        $options = new \Dompdf\Options();
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isRemoteEnabled', true);
-        $dompdf = new Dompdf($options);
+        $dompdf = new \Dompdf\Dompdf($options);
         ob_start();
 
-        
         global $wpdb;
         $total_honey_jars = 0;
         $taxable_donation = get_field('ort_taxable_donation', 'option');
         $order_id = intval($order->get_order_number());
         $order_process_table = OAM_Helper::$order_process_table;
         $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
-        
-        // Fetch order data
+
         $result = $wpdb->get_row($wpdb->prepare(
             "SELECT data FROM {$order_process_table} WHERE order_id = %d",
             $order_id
         ));
-        $json_data = $result->data;
+        $json_data = $result->data ?? '';
         $decoded_data = json_decode($json_data, true);
         $affiliate = !empty($decoded_data['affiliate_select']) ? $decoded_data['affiliate_select'] : 'Orthoney';
-        
-        // Fetch the token
+
         $token = $wpdb->get_var($wpdb->prepare(
             "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d",
             $affiliate
         ));
 
-        $sub_order_id =  OAM_COMMON_Custom::get_order_meta($order->get_order_number(), '_orthoney_OrderID');
-        $plugin_path = plugin_dir_path(__DIR__); // Get plugin root directory
-        $file_path = $plugin_path . 'templates/woocommerce/emails/email-styles.php';
-        $css = file_get_contents($file_path);
+        $sub_order_id = OAM_COMMON_Custom::get_order_meta($order->get_order_number(), '_orthoney_OrderID');
 
-        foreach ($order->get_items() as $item_id => $item) { 
-            $total_honey_jars += $item->get_quantity();
+        $recipient_order_table = $wpdb->prefix . 'oh_recipient_order';
+        $recipientResult = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$recipient_order_table} WHERE order_id = %d",
+            $sub_order_id
+        ));
+
+        $line_subtotal = 0;
+        $total_quantity = 0;
+
+        $total_quantity = 0;
+        $total_price_before_discount = 0;
+
+        foreach ( $order->get_items() as $item ) {
+            $quantity = $item->get_quantity();
+            $line_subtotal = $item->get_meta('_line_subtotal', true); // always a float
+            if (!$line_subtotal) {
+                $line_subtotal = $item->get_subtotal(); // fallback
+            }
+
+            $total_price_before_discount += floatval($line_subtotal);
+            $total_quantity += $quantity;
+        }
+
+        $per_jar_price = $total_quantity > 0 ? round($total_price_before_discount / $total_quantity, 2) : 0;
+
+
+
+        // Calculate unit price from the subtotal and total quantity
+        $unit_price = ($total_quantity > 0) ? ($line_subtotal / $total_quantity) : 0;
+
+        // Now calculate price for this recipient
+        
+
+        $organization = 'Orthoney';
+        $organization_data = '';
+        
+        if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affiliate_token !== 'Orthoney') {
+            $token = $recipientResult[0]->affiliate_token;
+            $meta_key = '_yith_wcaf_name_of_your_organization';
+
+            $organization = $wpdb->get_var($wpdb->prepare(
+                "SELECT um.meta_value
+                FROM {$wpdb->usermeta} um
+                JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON um.user_id = aff.user_id
+                WHERE aff.token = %s AND um.meta_key = %s",
+                $token, $meta_key
+            ));
+
+            if ($organization != 'Orthoney') {
+                $organization_data_query = $wpdb->get_row($wpdb->prepare(
+                    "SELECT 
+                        aff.*,
+                        MAX(CASE WHEN um.meta_key = '_yith_wcaf_city' THEN um.meta_value END) AS _yith_wcaf_city,
+                        MAX(CASE WHEN um.meta_key = '_yith_wcaf_state' THEN um.meta_value END) AS _yith_wcaf_state,
+                        MAX(CASE WHEN um.meta_key = 'billing_city' THEN um.meta_value END) AS billing_city,
+                        MAX(CASE WHEN um.meta_key = 'billing_state' THEN um.meta_value END) AS billing_state,
+                        MAX(CASE WHEN um.meta_key = 'shipping_city' THEN um.meta_value END) AS shipping_city,
+                        MAX(CASE WHEN um.meta_key = 'shipping_state' THEN um.meta_value END) AS shipping_state
+                    FROM {$wpdb->prefix}yith_wcaf_affiliates AS aff
+                    LEFT JOIN {$wpdb->usermeta} AS um ON um.user_id = aff.user_id
+                    WHERE aff.token = %s
+                    GROUP BY aff.user_id",
+                    $token
+                ));
+
+                $city = $organization_data_query->_yith_wcaf_city 
+                    ?: $organization_data_query->billing_city 
+                    ?: $organization_data_query->shipping_city;
+
+                $state = $organization_data_query->_yith_wcaf_state 
+                    ?: $organization_data_query->billing_state 
+                    ?: $organization_data_query->shipping_state;
+
+                $merged_address = implode(', ', array_filter(['[' . $token . ']', $organization, $city, $state]));
+                $organization_data = trim($merged_address);
+            }
         }
 
         echo '<!DOCTYPE html><html>';
-            echo '<head><meta charset="UTF-8">
-                <style>
-               body,html{padding:0; margin:0;}
-                    body { font-family: DejaVu Sans, sans-serif; background-color: #f7f7f7; color: #515151; margin: 0; padding: 0; font-size:12px;}
-                    .email-container { width: 600px; background: #ffffff; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
-                    h1 { color: #333; text-align: center; }
-                    .order-summary { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    .order-summary th, .order-summary td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-                    .order-summary th { background: #eee; }
-                    .footer { text-align: center; font-size: 12px; color: #777; margin-top: 20px; }
-                </style>
-            </head>';
-            echo '<body>';
-                echo '<div class="pdf-heading" style="background-color: #491571; text-align:left; color: #ffffff;padding:0; margin:0;">';
-                    echo '<h1 style="color:white;padding: 36px 48px;">Thank you for your order</h1>';
-                echo '</div>';
-                echo '<div class="email-container">';
-                    echo '<p>Thank you for your gift of $'.$order->get_total().' to '.$order->get_billing_company().'. Your Honey From The Heart gift benefits '.$order->get_billing_company().', a non-profit organization, and ORT America, a 501(c)(3) organization. For federal income tax purposes, your charitable deduction is limited to the purchase price of the honey less its fair market value. For purposes of determining the value of goods provided, you should use $'.$taxable_donation.' per jar so your charitable contribution is '.'$'.number_format(($order->get_subtotal()) - ($total_honey_jars * $taxable_donation), 2).'.</p>';
-                    echo '<p>Your order has been received and is now being processed. Your order details are shown below for your reference:</p>';
-                    echo '<h2 style="color:#491571;">Order #'.$sub_order_id.'</h2>';
-                    // Ensure the order items table has a fixed width
-                    echo '<table class="order-summary" style="width:100%; border-collapse:collapse; border: 1px solid black;">';
-                        echo '<thead>
-                                <tr>
-                                    <th style="width:50%; border: 1px solid black; color:black;">Recipient</th>
-                                    <th style="width:25%; border: 1px solid black; color:black;">Quantity</th>
-                                    <th style="width:25%; border: 1px solid black; color:black;">Price</th>
-                                </tr>
-                            </thead>';
-                        echo '<tbody>';
-                        echo '<tr>
-                                <td style="border:1px solid black; padding: 10px;">
-                                    <strong>' . $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() . '</strong><br>
-                                    ' . $order->get_billing_address_1() . ' ' . $order->get_billing_address_2() . '<br>
-                                    ' . $order->get_billing_city() . ', ' . $order->get_billing_state() . ', ' . $order->get_billing_country() . '<br>
-                                    ' . $order->get_billing_postcode() . '
-                                </td>
-                                <td style="border:1px solid black; text-align:center; padding: 10px;">' . $total_honey_jars . '</td>
-                                <td style="border:1px solid black; padding: 10px;">' . wc_price($order->get_subtotal()) . '</td>
-                            </tr>';
-                        
-                        echo '</tbody>';
-                    echo '</table>';
-                    echo '<table class="order-summary" style="width:100%; border-collapse:collapse; border: 1px solid black;">';
-                        echo '<tbody>';
-                            if ( @$totals = $order->get_order_item_totals() ) {
-                                $totals['shipping']['value'] = "$".number_format((int) preg_replace('/\D/', '', @$totals['shipping']['value']), 2);
-                                $i = 0;
-                                foreach ( $totals as $total ) {
-                                    $i++;
-                                    ?><tr>
-                                        <th scope="row" colspan="2" style="text-align:left; border: 1px solid #eee; <?php if ( $i == 1 ) echo 'border-top-width: 4px;'; ?>"><?php echo $total['label']; ?></th>
-                                        <td style="text-align:left; border: 1px solid #eee; <?php if ( $i == 1 ) echo 'border-top-width: 4px;'; ?>"><?php if($i==2) { ?>$<?php echo number_format(WC()->cart->shipping_total, 2);}else { echo $total['value']; } ?></td>
-                                    </tr><?php
-                                }
-                            }
-                        
-                        echo '</tbody>';
-                    echo '</table>';
-                    echo '<p>Distributor Code: ' . (($token != '') ? $token : $affiliate) . '</p>';
-                    echo '<h3 style="color:#491571;">Billing Address</h3>';
+        echo '<head><meta charset="UTF-8">
+            <style>
+                body,html{padding:0; margin:0;}
+                body { font-family: DejaVu Sans, sans-serif; background-color: #f7f7f7; color: #515151; margin: 0; padding: 0; font-size:12px;}
+                .email-container { width: 600px; background: #ffffff; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+                h1 { color: #333; text-align: center; }
+                .order-summary { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                .order-summary th, .order-summary td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+                .order-summary th { background: #eee; }
+                .footer { text-align: center; font-size: 12px; color: #777; margin-top: 20px; }
+            </style>
+        </head>';
+        echo '<body>';
+        echo '<div class="pdf-heading" style="background-color: #491571; text-align:left; color: #ffffff;padding:0; margin:0;">';
+        echo '<h1 style="color:white;padding: 36px 48px;">Thank you for your order</h1>';
+        echo '</div>';
+        echo '<div class="email-container">';
+        echo '<p>Thank you for your gift of $' . $order->get_total() . ' to ' . $organization_data . '. Your Honey From The Heart gift benefits ' . $organization_data . ', a non-profit organization, and ORT America, a 501(c)(3) organization. For federal income tax purposes, your charitable deduction is limited to the purchase price of the honey less its fair market value. For purposes of determining the value of goods provided, you should use $' . $taxable_donation . ' per jar so your charitable contribution is $' . number_format(($order->get_subtotal()) - (count($recipientResult) * $taxable_donation), 2) . '.</p>';
+        echo '<p>Your order has been received and is now being processed. Your order details are shown below for your reference:</p>';
+        echo '<h2 style="color:#491571;">Order #' . $sub_order_id . '</h2>';
 
-                    echo '<p>' . $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() . '
-                    <br>' . $order->get_billing_address_1() . ' ' . $order->get_billing_address_2() . '
-                    <br>' . $order->get_billing_city() . ' ' . $order->get_billing_state() . ', '. $order->get_billing_country() . $order->get_billing_postcode() .'
-                    <br>' . $order->get_billing_phone() . '
-                    <br><a href="mailto:' . $order->get_billing_email() . '">' . $order->get_billing_email() . '</a></p>';
-                echo '</div>';
-            echo '</body>';
+        // Start recipient table
+        echo '<table class="order-summary" style="width:100%; border-collapse:collapse; border: 1px solid black;">';
+        echo '<thead>
+                <tr>
+                    <th style="width:50%; border: 1px solid black; color:black;">Recipient</th>
+                    <th style="width:25%; border: 1px solid black; color:black;">Quantity</th>
+                    <th style="width:25%; border: 1px solid black; color:black;">Price</th>
+                </tr>
+            </thead>';
+        echo '<tbody>';
+        foreach ($recipientResult as $data) {
+            $full_name    = $data->full_name ?: '';
+            $company_name = $data->company_name ?: '';
+            $addressParts = array_filter([$data->address_1, $data->address_2, $data->city, $data->state, $data->zipcode, $order->get_billing_country()]);
+            $quantity     = $data->quantity;
+            $greeting     = $data->greeting ?: '';
+            $price        =  $unit_price * $quantity;
+
+            echo '<tr>';
+            echo '<td style="border:1px solid black; padding:10px;">';
+            echo '<strong>' . esc_html($full_name) . '</strong><br>';
+            echo '<small>' . esc_html($company_name) . '<br>';
+            echo esc_html(implode(' ', $addressParts)) . '<br>';
+            echo esc_html($greeting) . '<br></small>';
+            echo '</td>';
+            echo '<td style="border:1px solid black; text-align:center;">' . esc_html($quantity) . '</td>';
+            echo '<td style="border:1px solid black;">$' . number_format($price, 2) . '</td>';
+            echo '</tr>';
+        }
+        echo '</tbody>';
+        echo '</table>';
+
+        // Totals Table
+        echo '<table class="order-summary" style="width:100%; border-collapse:collapse; border: 1px solid black;">';
+        echo '<tbody>';
+        if ($totals = $order->get_order_item_totals()) {
+            $totals['shipping']['value'] = "$" . number_format((int) preg_replace('/\D/', '', @$totals['shipping']['value']), 2);
+            $i = 0;
+            foreach ($totals as $total) {
+                $i++;
+                echo '<tr>';
+                echo '<th scope="row" colspan="2" style="text-align:left; border: 1px solid #eee; ' . ($i == 1 ? 'border-top-width: 4px;' : '') . '">' . $total['label'] . '</th>';
+                echo '<td style="text-align:left; border: 1px solid #eee; ' . ($i == 1 ? 'border-top-width: 4px;' : '') . '">' . $total['value'] . '</td>';
+                echo '</tr>';
+            }
+        }
+        echo '</tbody>';
+        echo '</table>';
+
+        echo '<p>Distributor Code: ' . ($token ?: $affiliate) . '</p>';
+        echo '<h3 style="color:#491571;">Billing Address</h3>';
+        echo '<p>' . $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() . '
+            <br>' . $order->get_billing_address_1() . ' ' . $order->get_billing_address_2() . '
+            <br>' . $order->get_billing_city() . ' ' . $order->get_billing_state() . ', ' . $order->get_billing_country() . ' ' . $order->get_billing_postcode() . '
+            <br>' . $order->get_billing_phone() . '
+            <br><a href="mailto:' . $order->get_billing_email() . '">' . $order->get_billing_email() . '</a></p>';
+
+        echo '</div>';
+        echo '</body>';
         echo '</html>';
-        
+
         $html = ob_get_clean();
-    
+
         if (empty($html)) {
             error_log('Empty PDF content.');
             return;
         }
-    
+
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
-    
+
         try {
             $dompdf->render();
             file_put_contents($pdf_path, $dompdf->output());
@@ -203,7 +283,8 @@ class OAM_WC_Customizer {
         } catch (Exception $e) {
             error_log('Dompdf Error: ' . $e->getMessage());
         }
-    }   
+    }
+  
 
     /**
      * Disable Email for Sub Order 
