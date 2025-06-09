@@ -3083,7 +3083,7 @@ class OAM_Ajax{
         $shipStartDate = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime(get_field('free_shipping_start_date', 'option')));
         $shipEndDate = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime(get_field('free_shipping_end_date', 'option')));
 
-        $ort_shipping_cost = get_field('ort_shipping_cost', 'option')
+        $ort_shipping_cost = get_field('ort_shipping_cost', 'option');
 
         $order_id_array = $_REQUEST['selectedValues'];
         $custom_order_pdf_type = $_REQUEST['custom_order_pdf_type'];
