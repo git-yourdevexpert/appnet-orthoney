@@ -5119,3 +5119,7 @@ table#customer-jar-orders-table thead tr th:last-child{
     margin-top: -6px;
   }
 }
+
+#profile_consent_field .woocommerce-input-wrapper .optional{
+  display: none !important;
+}
