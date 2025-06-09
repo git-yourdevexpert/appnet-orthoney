@@ -3269,7 +3269,7 @@ class OAM_Ajax{
             <h2>'.date('Y').' Honey Reorder Form</h2>
             <div class="section">
                 <div><span class="label">Name:</span> ' . $name . '</div>
-                <div><span class="label">Address:</span> ' . $address . '</div>
+                '.(!empty($address) ? '<div><span class="label">Address:</span> ' . $address . '</div>' : '' ).'
                 <div><span class="label">Email:</span> ' . $email . '</div>
             </div>
             <div class="section">
