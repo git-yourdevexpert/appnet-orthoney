@@ -57,20 +57,23 @@ class OAM_RECIPIENT_MULTISTEP_FORM
 
        $current_date = current_time('Y-m-d H:i:s');
 
-        $season_start_date = get_field('season_start_date', 'option');
-        $season_end_date   = get_field('season_end_date', 'option');
+        $ort_bypass_user = get_field('ort_bypass_user', 'option');
+        if(!in_array(get_current_user_id(), $ort_bypass_user)){
+            $season_start_date = get_field('season_start_date', 'option');
+            $season_end_date   = get_field('season_end_date', 'option');
 
-        // Convert all dates to timestamps
-       $current_timestamp      = strtotime($current_date);
-       $season_start_timestamp = strtotime($season_start_date);
-       $season_end_timestamp   = strtotime($season_end_date);
+            // Convert all dates to timestamps
+            $current_timestamp      = strtotime($current_date);
+            $season_start_timestamp = strtotime($season_start_date);
+            $season_end_timestamp   = strtotime($season_end_date);
 
-        // Check if current date is within the season range
-        $is_within_range = ( $current_timestamp >= $season_start_timestamp && $current_timestamp <= $season_end_timestamp );
+            // Check if current date is within the season range
+            $is_within_range = ( $current_timestamp >= $season_start_timestamp && $current_timestamp <= $season_end_timestamp );
 
-        if ( $is_within_range === false ) {
-            echo do_shortcode("[season_start_end_message_box type='order']");
-            return;
+            if ( $is_within_range === false ) {
+                echo do_shortcode("[season_start_end_message_box type='order']");
+                return;
+            }
         }
             
         $failed_recipients_details = get_query_var('failed-recipients-details');
@@ -376,15 +379,17 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         value="<?php echo $multiple_address_output ?>" data-error-message="Please choose an option to upload the recipient list.">
                                         <span class="error-message"></span>
                                         <div class="multiple-address-grid">
-                                        <label >
+                                        <label class="upload_type_output_label">
                                             <input type="radio" name="upload_type_output" <?php echo  $delivery_preference == 'multiple_address'  ? 'required' : '' ?> <?php echo $upload_type_output == 'add-manually' ? 'checked' : '' ?> value="add-manually" data-error-message="Please select a delivery preference."> <span><img src="<?php echo OH_PLUGIN_DIR_URL ?>assets/image/contract.png" alt="" class="address-icon">
                                                 Enter a new order
                                             </span>
+                                            <div class="tooltip" data-tippy="The name you assign to your list of recipients will appear on your Incomplete Orders list. When you complete the order, an order number will replace the list name, and your list will be retained for future reference"></div>
                                         </label>
                                         <div>
                                             <label class="upload_type_output_process_name" style="display: <?php echo $upload_type_output == 'add-manually' ? 'block' : 'none' ?> ">
-                                                <input type="text" name="upload_type_output_process_name" <?php echo $upload_type_output == 'add-manually' ? 'required' : '' ?> value="<?php echo  $upload_type_output_process_name ?>" placeholder="Please recipient list name" data-error-message="Please add recipient list name.">
+                                                <input type="text" name="upload_type_output_process_name" <?php echo $upload_type_output == 'add-manually' ? 'required' : '' ?> value="<?php echo  $upload_type_output_process_name ?>" placeholder="Name your list of recipients" data-error-message="Please add recipient list name.">
                                                 <span class="error-message"></span>
+                                                
                                             </label>
                                         </div>
                                         <?php 
