@@ -69,7 +69,7 @@
             "allow_in_bindings": 0
         },
         {
-            "key": "field_6841341d8fbd7",
+            "key": "field_6841335923580",
             "label": "Season Start Date",
             "name": "season_start_date",
             "aria-label": "",
@@ -88,7 +88,7 @@
             "allow_in_bindings": 0
         },
         {
-            "key": "field_684134218fbd8",
+            "key": "field_6841336223581",
             "label": "Season End Date",
             "name": "season_end_date",
             "aria-label": "",
@@ -107,7 +107,7 @@
             "allow_in_bindings": 0
         },
         {
-            "key": "field_67d959baf233a",
+            "key": "field_68380773b8f8a",
             "label": "Free Shipping Start Date",
             "name": "free_shipping_start_date",
             "aria-label": "",
@@ -164,7 +164,7 @@
             "allow_in_bindings": 0
         },
         {
-            "key": "field_68383de23dee1",
+            "key": "field_68380776b8f8b",
             "label": "Fulfilment End Date",
             "name": "fulfilment_end_date",
             "aria-label": "",
@@ -206,9 +206,32 @@
             "append": ""
         },
         {
-            "key": "field_6842a6d3ae581",
-            "label": "Next Year Season Start Date",
-            "name": "next_year_season_start_date",
+            "key": "field_6846ad8535ea9",
+            "label": "Shipping Cost",
+            "name": "ort_shipping_cost",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": 8,
+            "min": 8,
+            "max": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "step": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_68383de23dee1",
+            "label": "Fulfilment End Date",
+            "name": "fulfilment_end_date",
             "aria-label": "",
             "type": "date_time_picker",
             "instructions": "",
@@ -566,5 +589,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1749209856
+    "modified": 1749462464
 }
