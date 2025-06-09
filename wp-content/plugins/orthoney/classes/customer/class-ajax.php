@@ -3078,9 +3078,10 @@ class OAM_Ajax{
 
     }
     // AJAX: Order Export PDF generate 
-   public function orthoney_customer_order_export_ajax_pdf_handler() {
+    public function orthoney_customer_order_export_ajax_pdf_handler() {
 
-        $shipDate = get_field('shipping_date', 'options');
+        $shipStartDate = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime(get_field('free_shipping_start_date', 'option')));
+        $shipEndDate = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime(get_field('free_shipping_end_date', 'option')));
 
         $order_id_array = $_REQUEST['selectedValues'];
         $custom_order_pdf_type = $_REQUEST['custom_order_pdf_type'];
@@ -3161,38 +3162,56 @@ class OAM_Ajax{
             $shopAddressParts = [];
             $distNameParts = [];
             
-            $userinfo = maybe_unserialize($userinfo);
+            // $userinfo = maybe_unserialize($userinfo);
             
-            if (is_array($userinfo)) {
+            // if (is_array($userinfo)) {
 
-                if(!empty($userinfo['FirstName'])){
-                    $distNameParts[] = $userinfo['FirstName'];
-                    $distNameParts[] = $userinfo['LastName'];
-                }else{
-                    $distNameParts[] = $userinfo['Distributor']['Primary']['FirstName'];
-                    $distNameParts[] = $userinfo['Distributor']['Primary']['LastName'];
-                }
+            //     if(!empty($userinfo['FirstName'])){
+            //         $distNameParts[] = $userinfo['FirstName'];
+            //         $distNameParts[] = $userinfo['LastName'];
+            //     }else{
+            //         $distNameParts[] = $userinfo['Distributor']['Primary']['FirstName'];
+            //         $distNameParts[] = $userinfo['Distributor']['Primary']['LastName'];
+            //     }
 
-                if ( ! empty( $userinfo['Address'] ) ) {
-                    $distAddressParts[] = $userinfo['Address'];
-                    $distAddressParts[] = $userinfo['Address2'] ?? '';
-                    $cityStateZip = trim(
-                        rtrim( $userinfo['City'] ?? '', ',' ) . ', ' . 
-                        ( $userinfo['State'] ?? '' ) . ' ' . 
-                        ( $userinfo['Zip'] ?? '' )
-                    );
-                    $distAddressParts[] = $cityStateZip;
-                } elseif ( ! empty( $primaryContact ) ) {
-                    $distAddressParts[] = $primaryContact['Address'] ?? '';
-                    $distAddressParts[] = $primaryContact['Address2'] ?? '';
-                    $cityStateZip = trim(
-                        rtrim( $primaryContact['City'] ?? '', ',' ) . ', ' . 
-                        ( $primaryContact['State'] ?? '' ) . ' ' . 
-                        ( $primaryContact['Zip'] ?? '' )
-                    );
-                    $distAddressParts[] = $cityStateZip;
-                }
+            //     if ( ! empty( $userinfo['Address'] ) ) {
+            //         $distAddressParts[] = $userinfo['Address'];
+            //         $distAddressParts[] = $userinfo['Address2'] ?? '';
+            //         $cityStateZip = trim(
+            //             rtrim( $userinfo['City'] ?? '', ',' ) . ', ' . 
+            //             ( $userinfo['State'] ?? '' ) . ' ' . 
+            //             ( $userinfo['Zip'] ?? '' )
+            //         );
+            //         $distAddressParts[] = $cityStateZip;
+            //     } elseif ( ! empty( $primaryContact ) ) {
+            //         $distAddressParts[] = $primaryContact['Address'] ?? '';
+            //         $distAddressParts[] = $primaryContact['Address2'] ?? '';
+            //         $cityStateZip = trim(
+            //             rtrim( $primaryContact['City'] ?? '', ',' ) . ', ' . 
+            //             ( $primaryContact['State'] ?? '' ) . ' ' . 
+            //             ( $primaryContact['Zip'] ?? '' )
+            //         );
+            //         $distAddressParts[] = $cityStateZip;
+            //     }
+            // }
+
+           $distNameParts[] = get_user_meta($user_id, '_yith_wcaf_first_name', true)?: '';
+           $distNameParts[] = get_user_meta($user_id, '_yith_wcaf_last_name', true)?: '';
+           $distAddressParts[] = get_user_meta($user_id, '_yith_wcaf_address', true)?: '';
+            $cityStateZip = trim(
+                rtrim( get_user_meta($user_id, '_yith_wcaf_city', true) ?? '', ',' ) . ', ' . 
+                ( get_user_meta($user_id, '_yith_wcaf_state', true) ?? '' ) . ' ' . 
+                ( get_user_meta($user_id, '_yith_wcaf_zipcode', true) ?? '' )
+            );
+            $distAddressParts[] = $cityStateZip;
+
+            $selling_minimum_price = get_field('selling_minimum_price', 'option');
+            $custom_price = get_user_meta($user_id, 'DJarPrice', true);
+            if($custom_price != '' OR $custom_price < $selling_minimum_price){
+                $custom_price = $selling_minimum_price;
             }
+
+          
 
             $shop_address = get_option( 'woocommerce_store_address' );
             $shop_address_2 = get_option( 'woocommerce_store_address_2' );
@@ -3261,23 +3280,23 @@ class OAM_Ajax{
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
                     <p>For your ordering convenience, the details of your last order are listed below. To order, simply update this form with any additions, deletions or corrections, fill out the payment section and mail it to $distName $distAddress.</p>
-                    <p>Mail orders must be received by $shipDate. Your order will be shipped to arrive in time for Rosh Hashanah.</p>";
+                    <p>Mail orders must be received by $shipStartDate. Your order will be shipped to arrive in time for Rosh Hashanah.</p>";
             } elseif ($custom_order_pdf_type == "4p") {
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
-                    <p>Shipping is FREE for orders submitted online through $shipDate. After $shipDate, \$8.00 per jar is automatically added for shipping.</p>
+                    <p>Shipping is FREE for orders submitted online through $shipStartDate. After $shipEndDate, \$8.00 per jar is automatically added for shipping.</p>
                     <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='.$refersite.'>$refersite</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $sub_order_id . " when prompted.</p>";
             } elseif ($custom_order_pdf_type == "2p") {
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
-                    <p>Shipping is FREE for orders submitted online through $shipDate. After $shipDate, \$8.00 per jar is automatically added for shipping.</p>
+                    <p>Shipping is FREE for orders submitted online through $shipEndDate. After $shipEndDate, \$8.00 per jar is automatically added for shipping.</p>
                     <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='.$refersite.'>$refersite</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $sub_order_id . " when prompted.</p>
-                    <p>If you are unable to order online, update this form with any additions, deletions or corrections, fill out the payment section and mail it to {$distName} {$distAddress}. Mail orders must be received by $shipDate or shipping charges will be added and charged to you.</p>";
+                    <p>If you are unable to order online, update this form with any additions, deletions or corrections, fill out the payment section and mail it to {$distName} {$distAddress}. Mail orders must be received by $shipEndDate or shipping charges will be added and charged to you.</p>";
             } else {
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey.</p>
                     <p>To order, simply update this form with any additions, deletions or corrections, fill out the payment section and mail it to $distName $distAddress.</p>
-                    <p>Mail orders must be received by $shipDate. Your order will be shipped to arrive in time for Rosh Hashanah.</p>";
+                    <p>Mail orders must be received by $shipEndDate. Your order will be shipped to arrive in time for Rosh Hashanah.</p>";
             }
     
             $html .= $pdftypepdfcontent;
@@ -3287,7 +3306,7 @@ class OAM_Ajax{
             </div>
             <div class="section order-summary">
                 <p><strong>Order Summary:</strong></p>
-                <p># jars ordered ______ x $14 per jar = Order total $ ______</p>
+                <p># jars ordered ______ x '.wc_price($custom_price).' per jar = Order total $ ______</p>
             </div>
             <div class="section payment-section">
                 <p><strong>Payment:</strong></p>
@@ -3355,7 +3374,9 @@ class OAM_Ajax{
             }
             $html .= '</div>';
 
-            $html .= '<p>Code : '.$suborder_affiliate_token.'</p>';
+            if($suborder_affiliate_token != 'Honey from the Heart' ){
+                $html .= '<p>Code : '.$suborder_affiliate_token.'</p>';
+            }
             $html .= '<div style="page-break-after: always;"></div>';
         }
     
@@ -3379,8 +3400,13 @@ class OAM_Ajax{
         // Email or return PDF link
         if ($custom_order_pdf_type == "2e" || $custom_order_pdf_type == "4e") {
             $to = $current_user_email;
-            $subject = 'Your Honey Order Summary';
-            $message = 'Please find your honey reorder form attached.';
+            $subject = 'Your Reordering Form – Honey From The Heart';
+            
+            $message .= '<p>Dear ' . $name . ',</p>';
+            $message .= '<p>Thank you for your continued support of <strong>Honey From The Heart</strong>!</p>';
+            $message .= '<p>Please find your reordering form attached below.</p>';
+            $message .= '<p>We truly appreciate you being a part of our sweet tradition.</p>';
+            $message .= '<p>Regards, <strong>Honey From The Heart Team</strong></p>';
             $headers = ['Content-Type: text/html; charset=UTF-8'];
             $attachments = [$pdf_path];
     
