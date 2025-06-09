@@ -254,7 +254,10 @@ class OAM_WC_Customizer {
         echo '</tbody>';
         echo '</table>';
 
-        echo '<p>Distributor Code: ' . ($token ?: $affiliate) . '</p>';
+        $code = $token ?: $affiliate;
+        if($code != 'Orthoney'){
+            echo '<p>Distributor Code: ' .  $code . '</p>';
+        }
         echo '<h3 style="color:#491571;">Billing Address</h3>';
         echo '<p>' . $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() . '
             <br>' . $order->get_billing_address_1() . ' ' . $order->get_billing_address_2() . '

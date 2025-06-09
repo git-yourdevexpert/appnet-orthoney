@@ -34,7 +34,6 @@ foreach ($order->get_items() as $item_id => $item) {
     $total_honey_jars += $item->get_quantity();
 }
 
-
 $sub_order_id =  OAM_COMMON_Custom::get_order_meta($order->get_order_number(), '_orthoney_OrderID');
 
 $recipientResult = $wpdb->get_results($wpdb->prepare(
@@ -113,7 +112,13 @@ $recipientResult = $wpdb->get_results($wpdb->prepare(
 	</tfoot>
 </table>
 
-<?php echo '<p>Distributor Code: ' . (($token != '') ? $token : $affiliate) . '</p>'; ?>
+<?php 
+$code = $token ?: $affiliate;
+
+if($code != 'Orthoney'){
+echo '<p>Distributor Code: ' . (($token != '') ? $token : $affiliate) . '</p>'; 
+}
+?>
 
 
 <?php do_action( 'woocommerce_email_after_order_table', $order, $sent_to_admin, $plain_text ); ?>
