@@ -35,26 +35,34 @@ global $wpdb;
         ", $user_id));
 
 $admin_email     = get_option('admin_email');
+
+
+
+$organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true)?: '';
+$first_name = get_user_meta($user_id, '_yith_wcaf_first_name', true)?: '';
+$last_name = get_user_meta($user_id, '_yith_wcaf_last_name', true)?: '';
+$city = get_user_meta($user_id, '_yith_wcaf_city', true)?: '';
+$state = get_user_meta($user_id, '_yith_wcaf_state', true)?: '';
+$zipcode = get_user_meta($user_id, '_yith_wcaf_zipcode', true)?: '';
+$tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true)?: '';
+$website = get_user_meta($user_id, '_yith_wcaf_your_organizations_website', true)?: '';
+$phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true)?: '';
+$oam_heart = get_user_meta($user_id, '_yith_wcaf_oam_heart', true)?: '';
 ?>
 
 <?php do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
-<p>
-	<?php
-	// translators: 1. Affiliate formatted name.
-	echo esc_html( sprintf( _x( 'Hello %s,', '[EMAILS] Affiliate enabled email', 'yith-woocommerce-affiliates' ), get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true) ) );
-	?>
-</p>
 
-<p>We are pleased to inform you that your registration has been approved by the administrator.</p>
-<p><strong>Organization Code:</strong> <?php echo $affiliate_token ?></p>
-<p>You can now access your organization dashboard using this code and start managing your activities on the platform.</p>
-<p>If you have any questions or need assistance, feel free to contact our <a href="mailto:<?php echo esc_attr( $admin_email ); ?>"><?php echo esc_html( $admin_email ); ?></a>.</p>
-
-Welcome aboard!  
-<?php echo get_bloginfo('name') ?><br>
-Support Team <a href="mailto:<?php echo esc_attr( $admin_email ); ?>"><?php echo esc_html( $admin_email ); ?></a>
-</p>
-
+<p>Dear, <?php echo  $yith_first_name; echo $yith_last_name;?></p>
+<p>Welcome to the Honey From The Heart family.  Your organization has been approved!</p>
+<p>Your unique 3-digit organization code is: <strong><?php echo $affiliate_token ?> <?php echo $organization ?></strong></p>
+<p>You can now log in using your email address and [<strong>initial password or instructions</strong>] (please be sure to update your password).</p>
+<p>Your dashboard is now live, giving you full access to manage orders, view reports, and engage with supporters.</p>
+<p><strong><i>Sell just 50 jars at $18 each and earn at least $2 per jar. Sell over 100 jars and earn $4 per jar!</i></strong></p>
+<p>If you have any questions, don’t hesitate to reach out to our team at <?php echo get_option('admin_email') ?>. We’re here to help every step of the way.</p>
+<p>Here’s to a sweet and successful fundraising season. Welcome to our sweet family!</p>
+<p>Warm regards,<br>
+<strong>The Honey From The Heart Team</strong><br>
+<i>The Sweet Way To Raise Money</i></p>
 
 <?php do_action( 'woocommerce_email_footer', $email ); ?>
