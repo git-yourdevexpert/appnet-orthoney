@@ -15,10 +15,10 @@ class OAM_Hooks {
         add_shortcode( 'confirm_link', array($this,'orthoney_confirm_link_shortcode') );
 
         add_filter('woocommerce_email', array($this,'register_custom_email_placeholders_with_user_id'));
-        add_filter('woocommerce_email_enabled_customer_new_account', array($this,'disable_new_account_email_for_affiliate'), 10, 2);
+        // add_filter('woocommerce_email_enabled_customer_new_account', array($this,'disable_new_account_email_for_affiliate'), 10, 2);
     }
-
- /**
+    
+    /**
      * Disable "New Account" email for users with the 'yith_affiliate' role
      */
     public function disable_new_account_email_for_affiliate($enabled, $user) {
@@ -61,18 +61,51 @@ class OAM_Hooks {
      * Helper function to define placeholder replacements
      */
     public function get_custom_placeholders($email) {
-        $admin_email     = get_option('admin_email');
-        $support_email   = get_option('admin_email'); // Modify if separate support email exists
-        $site_title      = get_bloginfo('name');
-        $affiliate_token = 'N/A'; // You can modify this to pull from actual user meta if available
+        global $wpdb;
+        $admin_email   = get_option('admin_email');
+        $support_email = get_option('admin_email'); // Modify if needed
+        $site_title    = get_bloginfo('name');
+
+        $user_id = null;
+
+        // Try to get the user ID from the email object
+        if (is_object($email) && method_exists($email, 'get_order')) {
+            $order = $email->get_order();
+            if ($order && is_a($order, 'WC_Order')) {
+                $user_id = $order->get_user_id();
+            }
+        }
+
+        // Default token
+        $affiliate_token = 'N/A';
+       
+        // Try to get affiliate token from user meta
+        if ($user_id) {
+            $organization_name = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true)?: '';
+            $yith_first_name = get_user_meta($user_id, '_yith_wcaf_first_name', true)?: '';
+            $yith_last_name = get_user_meta($user_id, '_yith_wcaf_last_name', true)?: '';
+
+            $table_name = $wpdb->prefix . 'yith_wcaf_affiliates';
+            $affiliate_token = $wpdb->get_var(
+                $wpdb->prepare("SELECT token FROM $table_name WHERE user_id = %d", $user_id)
+            );
+
+            if (empty($affiliate_token)) {
+                $affiliate_token = 'N/A';
+            }
+        }
 
         return [
             '{admin_email}'     => $admin_email,
             '{support_email}'   => $support_email,
             '{site_title}'      => $site_title,
             '{affiliate_token}' => $affiliate_token,
+            '{organization_name}' => $organization_name,
+            '{yith_first_name}' => $yith_first_name,
+            '{yith_last_name}' => $yith_last_name,
         ];
     }
+
 
 
     public function orthoney_confirm_link_shortcode( $atts ) {
