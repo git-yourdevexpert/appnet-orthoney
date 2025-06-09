@@ -139,7 +139,7 @@ class OAM_WC_Customizer {
         
 
         $organization = 'Orthoney';
-        $organization_data = '';
+        $organization_data = 'Honey From The Heart';
         
         if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affiliate_token !== 'Orthoney') {
             $token = $recipientResult[0]->affiliate_token;
