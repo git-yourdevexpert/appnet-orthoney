@@ -1,16 +1,12 @@
 <?php
 /**
  * Customer processing order email
- *
- * @author 		WooThemes
- * @package 	WooCommerce/Templates/Emails
- * @version     1.6.4
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
-}
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 global $wpdb;
+
 $total_honey_jars = 0;
 $taxable_donation = get_field('ort_taxable_donation', 'option');
 $order_process_table = OAM_Helper::$order_process_table;
@@ -34,13 +30,12 @@ foreach ($order->get_items() as $item_id => $item) {
     $total_honey_jars += $item->get_quantity();
 }
 
-$sub_order_id =  OAM_COMMON_Custom::get_order_meta($order->get_order_number(), '_orthoney_OrderID');
+$sub_order_id = OAM_COMMON_Custom::get_order_meta($order->get_order_number(), '_orthoney_OrderID');
 
 $recipientResult = $wpdb->get_results($wpdb->prepare(
     "SELECT * FROM {$order_process_recipient_table} WHERE order_id = %d",
     $sub_order_id 
 ));
-
 
 $organization = 'Orthoney';
 $organization_data = 'Honey From The Heart';
@@ -85,14 +80,32 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
         $merged_address = implode(', ', array_filter(['[' . $token . ']', $organization, $city, $state]));
         $organization_data = trim($merged_address);
     }
-};
+}
+
+$total_price_before_discount = 0;
+$total_quantity = 0;
+
+foreach ( $order->get_items() as $item ) {
+    $quantity = $item->get_quantity();
+    $line_subtotal = $item->get_meta('_line_subtotal', true);
+    if (!$line_subtotal) {
+        $line_subtotal = $item->get_subtotal();
+    }
+
+    $total_price_before_discount += floatval($line_subtotal);
+    $total_quantity += $quantity;
+}
+
+$per_jar_price = $total_quantity > 0 ? round($total_price_before_discount / $total_quantity, 2) : 0;
+$unit_price = ($total_quantity > 0) ? ($line_subtotal / $total_quantity) : 0;
 ?>
 
 <?php do_action('woocommerce_email_header', $email_heading); ?>
 
-<p>Thank you for your gift of $<?php echo $order->get_total(); ?> to <?php echo $organization_data; ?>. Your Honey From The Heart gift benefits <?php echo $organization_data; ?>, a non-profit organization, and ORT America, a 501(c)(3) organization. For federal income tax purposes, your charitable deduction is limited to the purchase price of the honey less its fair market value. For purposes of determining the value of goods provided, you should use $<?php echo $taxable_donation; ?> per jar so your charitable contribution is <?php echo "$".number_format($order->get_total() - ($total_honey_jars * $taxable_donation), 2); ?>.</p>
+<p>Thank you for your gift of $<?php echo $order->get_total(); ?> to <?php echo $organization_data; ?>. Your Honey From The Heart gift benefits <?php echo $organization_data; ?>, a non-profit organization, and ORT America, a 501(c)(3) organization. For federal income tax purposes, your charitable deduction is limited to the purchase price of the honey less its fair market value. For purposes of determining the value of goods provided, you should use $<?php echo $taxable_donation; ?> per jar so your charitable contribution is <?php echo "$" . number_format($order->get_total() - ($total_honey_jars * $taxable_donation), 2); ?>.</p>
 
 <p><?php _e( "Your order has been received and is now being processed. Your order details are shown below for your reference:", 'woocommerce' ); ?></p>
+
 <p>If you have questions about your order please contact:<br />
 <strong><?php echo $order->get_billing_first_name() . " " . $order->get_billing_last_name(); ?></strong><br />
 <?php echo $order->get_billing_phone(); ?><br />
@@ -115,14 +128,12 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
     </thead>
     <tbody>
         <?php foreach ($recipientResult as $data) {
-
-            // Retrieve meta data
             $full_name    = $data->full_name ?: '';
             $company_name = $data->company_name ?: '';
             $addressParts = array_filter([$data->address_1, $data->address_2, $data->city, $data->state, $data->zipcode, $order->get_billing_country()]);
             $quantity     = $data->quantity;
             $greeting     = $data->greeting ?: '';
-            $price        = 14 * $data->quantity;
+            $price        = $unit_price * $quantity;
             ?>
             <tr>
                 <td>
@@ -133,43 +144,61 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
                     </small>
                 </td>
                 <td><?php echo esc_html($quantity); ?></td>
-                <td><span class="amount"><?php echo "$".number_format($price, 2); ?></span></td>
+                <td><span class="amount"><?php echo "$" . number_format($price, 2); ?></span></td>
             </tr>
         <?php } ?>
     </tbody>
     <tfoot>
-		<?php
-			if ( @$totals = $order->get_order_item_totals() ) {
-				/*$totals['shipping']['value'] = str_replace("&nbsp;", " ", $totals['shipping']['value']);
-				$totals['shipping']['value'] = explode(" ", strip_tags($totals['shipping']['value']));
-				$totals['shipping']['value'] = $totals['shipping']['value'][0];*/
-				$totals['shipping']['value'] = "$".number_format((int) preg_replace('/\D/', '', @$totals['shipping']['value']), 2);
-				$i = 0;
-				foreach ( $totals as $total ) {
-					$i++;
-					?><tr>
-						<th scope="row" colspan="2" style="text-align:left; border: 1px solid #eee; <?php if ( $i == 1 ) echo 'border-top-width: 4px;'; ?>"><?php echo $total['label']; ?></th>
-						<td style="text-align:left; border: 1px solid #eee; <?php if ( $i == 1 ) echo 'border-top-width: 4px;'; ?>"><?php if($i==2) { ?>$<?php echo number_format(WC()->cart->shipping_total, 2);}else { echo $total['value']; } ?></td>
-					</tr><?php
-				}
-			}
-		?>
-	</tfoot>
+        <?php
+        $totals = $order->get_order_item_totals();
+        if ($totals && is_array($totals)) {
+            $i = 0;
+            foreach ($totals as $key => $total) {
+                $i++;
+                $label = isset($total['label']) ? $total['label'] : '';
+                $value = isset($total['value']) ? wp_kses_post($total['value']) : '';
+
+                if ($key === 'shipping') {
+                    $value = '$' . number_format((float) $order->get_shipping_total(), 2);
+                }
+                ?>
+                <tr>
+                    <th scope="row" colspan="2" style="text-align:left; border: 1px solid #eee; <?php if ($i == 1) echo 'border-top-width: 4px;'; ?>">
+                        <?php echo $label; ?>
+                    </th>
+                    <td style="text-align:left; border: 1px solid #eee; <?php if ($i == 1) echo 'border-top-width: 4px;'; ?>">
+                        <?php echo $value; ?>
+                    </td>
+                </tr>
+                <?php
+            }
+        }
+
+        // Extra check to force "discount" row if missing
+        if ( $order->get_discount_total() > 0 && ! isset( $totals['discount'] ) ) {
+            ?>
+            <tr>
+                <th scope="row" colspan="2" style="text-align:left; border: 1px solid #eee;">
+                    Discount
+                </th>
+                <td style="text-align:left; border: 1px solid #eee;">
+                    -<?php echo wc_price( $order->get_discount_total() ); ?>
+                </td>
+            </tr>
+            <?php
+        }
+        ?>
+    </tfoot>
 </table>
 
 <?php 
 $code = $token ?: $affiliate;
-
-if($code != 'Orthoney'){
-echo '<p>Distributor Code: ' . (($token != '') ? $token : $affiliate) . '</p>'; 
+if ($code != 'Orthoney') {
+    echo '<p>Distributor Code: ' . esc_html($code) . '</p>'; 
 }
 ?>
 
-
 <?php do_action( 'woocommerce_email_after_order_table', $order, $sent_to_admin, $plain_text ); ?>
-
 <?php do_action( 'woocommerce_email_order_meta', $order, $sent_to_admin, $plain_text ); ?>
-
 <?php do_action( 'woocommerce_email_customer_details', $order, $sent_to_admin, $plain_text ); ?>
-
 <?php do_action( 'woocommerce_email_footer' ); ?>

@@ -66,8 +66,7 @@ class OAM_WC_Customizer {
         return $attachments;
     }
     
-   public function generate_pdf_from_order_email($order, $pdf_path) {
-         // Load Dompdf if not already loaded
+    public function generate_pdf_from_order_email($order, $pdf_path) {
         if (!class_exists('\Dompdf\Dompdf')) {
             require_once plugin_dir_path(__FILE__) . 'libs/dompdf/vendor/autoload.php';
         }
@@ -84,193 +83,97 @@ class OAM_WC_Customizer {
         ob_start();
 
         global $wpdb;
-        $total_honey_jars = 0;
-        $taxable_donation = get_field('ort_taxable_donation', 'option');
         $order_id = intval($order->get_order_number());
+        $sub_order_id = OAM_COMMON_Custom::get_order_meta($order->get_order_number(), '_orthoney_OrderID');
         $order_process_table = OAM_Helper::$order_process_table;
         $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
+        $recipient_order_table = $wpdb->prefix . 'oh_recipient_order';
+        $taxable_donation = get_field('ort_taxable_donation', 'option');
 
-        $result = $wpdb->get_row($wpdb->prepare(
-            "SELECT data FROM {$order_process_table} WHERE order_id = %d",
-            $order_id
-        ));
+        $result = $wpdb->get_row($wpdb->prepare("SELECT data FROM {$order_process_table} WHERE order_id = %d", $order_id));
         $json_data = $result->data ?? '';
         $decoded_data = json_decode($json_data, true);
         $affiliate = !empty($decoded_data['affiliate_select']) ? $decoded_data['affiliate_select'] : 'Orthoney';
 
-        $token = $wpdb->get_var($wpdb->prepare(
-            "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d",
-            $affiliate
-        ));
-
-        $sub_order_id = OAM_COMMON_Custom::get_order_meta($order->get_order_number(), '_orthoney_OrderID');
-
-        $recipient_order_table = $wpdb->prefix . 'oh_recipient_order';
-        $recipientResult = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM {$recipient_order_table} WHERE order_id = %d",
-            $sub_order_id
-        ));
-
-        $line_subtotal = 0;
-        $total_quantity = 0;
+        $token = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d", $affiliate));
+        $recipientResult = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$recipient_order_table} WHERE order_id = %d", $sub_order_id));
 
         $total_quantity = 0;
         $total_price_before_discount = 0;
-
-        foreach ( $order->get_items() as $item ) {
+        foreach ($order->get_items() as $item) {
             $quantity = $item->get_quantity();
-            $line_subtotal = $item->get_meta('_line_subtotal', true); // always a float
-            if (!$line_subtotal) {
-                $line_subtotal = $item->get_subtotal(); // fallback
-            }
-
+            $line_subtotal = $item->get_meta('_line_subtotal', true);
+            if (!$line_subtotal) $line_subtotal = $item->get_subtotal();
             $total_price_before_discount += floatval($line_subtotal);
             $total_quantity += $quantity;
         }
-
         $per_jar_price = $total_quantity > 0 ? round($total_price_before_discount / $total_quantity, 2) : 0;
 
+        $shipping_total = $order->get_shipping_total();
+        $shipping_methods = [];
+        foreach ($order->get_shipping_methods() as $shipping_item) {
+            $shipping_methods[] = $shipping_item->get_name(); // e.g. "Flat rate"
+        }
+        $shipping_method_name = implode(', ', $shipping_methods);
 
-
-        // Calculate unit price from the subtotal and total quantity
-        $unit_price = ($total_quantity > 0) ? ($line_subtotal / $total_quantity) : 0;
-
-        // Now calculate price for this recipient
-        
-
+        $payment_method = $order->get_payment_method_title();
+        $total = $order->get_total();
         $organization = 'Orthoney';
         $organization_data = 'Honey From The Heart';
-        
+
         if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affiliate_token !== 'Orthoney') {
             $token = $recipientResult[0]->affiliate_token;
             $meta_key = '_yith_wcaf_name_of_your_organization';
-
-            $organization = $wpdb->get_var($wpdb->prepare(
-                "SELECT um.meta_value
-                FROM {$wpdb->usermeta} um
-                JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON um.user_id = aff.user_id
-                WHERE aff.token = %s AND um.meta_key = %s",
-                $token, $meta_key
-            ));
+            $organization = $wpdb->get_var($wpdb->prepare("SELECT meta_value FROM {$wpdb->usermeta} um JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON um.user_id = aff.user_id WHERE aff.token = %s AND um.meta_key = %s", $token, $meta_key));
 
             if ($organization != 'Orthoney') {
-                $organization_data_query = $wpdb->get_row($wpdb->prepare(
-                    "SELECT 
-                        aff.*,
-                        MAX(CASE WHEN um.meta_key = '_yith_wcaf_city' THEN um.meta_value END) AS _yith_wcaf_city,
-                        MAX(CASE WHEN um.meta_key = '_yith_wcaf_state' THEN um.meta_value END) AS _yith_wcaf_state,
-                        MAX(CASE WHEN um.meta_key = 'billing_city' THEN um.meta_value END) AS billing_city,
-                        MAX(CASE WHEN um.meta_key = 'billing_state' THEN um.meta_value END) AS billing_state,
-                        MAX(CASE WHEN um.meta_key = 'shipping_city' THEN um.meta_value END) AS shipping_city,
-                        MAX(CASE WHEN um.meta_key = 'shipping_state' THEN um.meta_value END) AS shipping_state
-                    FROM {$wpdb->prefix}yith_wcaf_affiliates AS aff
-                    LEFT JOIN {$wpdb->usermeta} AS um ON um.user_id = aff.user_id
-                    WHERE aff.token = %s
-                    GROUP BY aff.user_id",
-                    $token
-                ));
+                $organization_data_query = $wpdb->get_row($wpdb->prepare("SELECT aff.*, MAX(CASE WHEN um.meta_key = '_yith_wcaf_city' THEN um.meta_value END) AS _yith_wcaf_city, MAX(CASE WHEN um.meta_key = '_yith_wcaf_state' THEN um.meta_value END) AS _yith_wcaf_state, MAX(CASE WHEN um.meta_key = 'billing_city' THEN um.meta_value END) AS billing_city, MAX(CASE WHEN um.meta_key = 'billing_state' THEN um.meta_value END) AS billing_state, MAX(CASE WHEN um.meta_key = 'shipping_city' THEN um.meta_value END) AS shipping_city, MAX(CASE WHEN um.meta_key = 'shipping_state' THEN um.meta_value END) AS shipping_state FROM {$wpdb->prefix}yith_wcaf_affiliates AS aff LEFT JOIN {$wpdb->usermeta} AS um ON um.user_id = aff.user_id WHERE aff.token = %s GROUP BY aff.user_id", $token));
 
-                $city = $organization_data_query->_yith_wcaf_city 
-                    ?: $organization_data_query->billing_city 
-                    ?: $organization_data_query->shipping_city;
-
-                $state = $organization_data_query->_yith_wcaf_state 
-                    ?: $organization_data_query->billing_state 
-                    ?: $organization_data_query->shipping_state;
-
-                $merged_address = implode(', ', array_filter(['[' . $token . ']', $organization, $city, $state]));
-                $organization_data = trim($merged_address);
+                $city = $organization_data_query->_yith_wcaf_city ?: $organization_data_query->billing_city ?: $organization_data_query->shipping_city;
+                $state = $organization_data_query->_yith_wcaf_state ?: $organization_data_query->billing_state ?: $organization_data_query->shipping_state;
+                $organization_data = implode(', ', array_filter(['[' . $token . ']', $organization, $city, $state]));
             }
         }
 
-        echo '<!DOCTYPE html><html>';
-        echo '<head><meta charset="UTF-8">
-            <style>
-                body,html{padding:0; margin:0;}
-                body { font-family: DejaVu Sans, sans-serif; background-color: #f7f7f7; color: #515151; margin: 0; padding: 0; font-size:12px;}
-                .email-container { width: 600px; background: #ffffff; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
-                h1 { color: #333; text-align: center; }
-                .order-summary { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                .order-summary th, .order-summary td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-                .order-summary th { background: #eee; }
-                .footer { text-align: center; font-size: 12px; color: #777; margin-top: 20px; }
-            </style>
-        </head>';
-        echo '<body>';
-        echo '<div class="pdf-heading" style="background-color: #491571; text-align:left; color: #ffffff;padding:0; margin:0;">';
-        echo '<h1 style="color:white;padding: 36px 48px;">Thank you for your order</h1>';
-        echo '</div>';
+        // Get coupon names
+        $coupon_names = [];
+        foreach ($order->get_coupon_codes() as $code) {
+            $coupon_names[] = $code;
+        }
+        $coupon_display = !empty($coupon_names) ? implode(', ', $coupon_names) : 'None';
+
+        echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body,html{padding:0; margin:0;}body { font-family: DejaVu Sans, sans-serif; background-color: #f7f7f7; color: #515151; font-size:12px;} .email-container { width: 600px; background: #ffffff; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; } h1 { color: #333; text-align: center; } .order-summary { width: 100%; border-collapse: collapse; margin-top: 20px; } .order-summary th, .order-summary td { padding: 10px; border: 1px solid #ddd; text-align: left; } .order-summary th { background: #eee; } .footer { text-align: center; font-size: 12px; color: #777; margin-top: 20px; }</style></head><body>';
+        echo '<div class="pdf-heading" style="background-color: #491571; text-align:left; color: #ffffff;"><h1 style="color:white;padding: 36px 48px;">Thank you for your order</h1></div>';
         echo '<div class="email-container">';
-        echo '<p>Thank you for your gift of $' . $order->get_total() . ' to ' . $organization_data . '. Your Honey From The Heart gift benefits ' . $organization_data . ', a non-profit organization, and ORT America, a 501(c)(3) organization. For federal income tax purposes, your charitable deduction is limited to the purchase price of the honey less its fair market value. For purposes of determining the value of goods provided, you should use $' . $taxable_donation . ' per jar so your charitable contribution is $' . number_format(($order->get_subtotal()) - (count($recipientResult) * $taxable_donation), 2) . '.</p>';
+        echo '<p>Thank you for your gift of $' . $total . ' to ' . $organization_data . '. Your Honey From The Heart gift benefits ' . $organization_data . ', a non-profit organization, and ORT America, a 501(c)(3) organization. For federal income tax purposes, your charitable deduction is limited to the purchase price of the honey less its fair market value. For purposes of determining the value of goods provided, you should use $' . $taxable_donation . ' per jar so your charitable contribution is $' . number_format(($order->get_subtotal()) - (count($recipientResult) * $taxable_donation), 2) . '.</p>';
         echo '<p>Your order has been received and is now being processed. Your order details are shown below for your reference:</p>';
         echo '<h2 style="color:#491571;">Order #' . $sub_order_id . '</h2>';
 
-        // Start recipient table
-        echo '<table class="order-summary" style="width:100%; border-collapse:collapse; border: 1px solid black;">';
-        echo '<thead>
-                <tr>
-                    <th style="width:50%; border: 1px solid black; color:black;">Recipient</th>
-                    <th style="width:25%; border: 1px solid black; color:black;">Quantity</th>
-                    <th style="width:25%; border: 1px solid black; color:black;">Price</th>
-                </tr>
-            </thead>';
-        echo '<tbody>';
+        echo '<table class="order-summary" style="width:100%; border: 1px solid black;"><thead><tr><th style="width:50%; border: 1px solid black;">Recipient</th><th style="width:25%; border: 1px solid black;">Quantity</th><th style="width:25%; border: 1px solid black;">Price</th></tr></thead><tbody>';
         foreach ($recipientResult as $data) {
-            $full_name    = $data->full_name ?: '';
-            $company_name = $data->company_name ?: '';
             $addressParts = array_filter([$data->address_1, $data->address_2, $data->city, $data->state, $data->zipcode, $order->get_billing_country()]);
-            $quantity     = $data->quantity;
-            $greeting     = $data->greeting ?: '';
-            $price        =  $unit_price * $quantity;
-
-            echo '<tr>';
-            echo '<td style="border:1px solid black; padding:10px;">';
-            echo '<strong>' . esc_html($full_name) . '</strong><br>';
-            echo '<small>' . esc_html($company_name) . '<br>';
-            echo esc_html(implode(' ', $addressParts)) . '<br>';
-            echo esc_html($greeting) . '<br></small>';
-            echo '</td>';
-            echo '<td style="border:1px solid black; text-align:center;">' . esc_html($quantity) . '</td>';
-            echo '<td style="border:1px solid black;">$' . number_format($price, 2) . '</td>';
-            echo '</tr>';
+            $price = $per_jar_price * $data->quantity;
+            echo '<tr><td style="border:1px solid black;">' . esc_html($data->full_name) . '<br><small>' . esc_html($data->company_name) . '<br>' . esc_html(implode(' ', $addressParts)) . '<br>' . esc_html($data->greeting) . '</small></td><td style="border:1px solid black; text-align:center;">' . esc_html($data->quantity) . '</td><td style="border:1px solid black;">$' . number_format($price, 2) . '</td></tr>';
         }
-        echo '</tbody>';
-        echo '</table>';
+        echo '</tbody></table>';
 
-        // Totals Table
-        echo '<table class="order-summary" style="width:100%; border-collapse:collapse; border: 1px solid black;">';
-        echo '<tbody>';
-        if ($totals = $order->get_order_item_totals()) {
-            $totals['shipping']['value'] = "$" . number_format((int) preg_replace('/\D/', '', @$totals['shipping']['value']), 2);
-            $i = 0;
-            foreach ($totals as $total) {
-                $i++;
-                echo '<tr>';
-                echo '<th scope="row" colspan="2" style="text-align:left; border: 1px solid #eee; ' . ($i == 1 ? 'border-top-width: 4px;' : '') . '">' . $total['label'] . '</th>';
-                echo '<td style="text-align:left; border: 1px solid #eee; ' . ($i == 1 ? 'border-top-width: 4px;' : '') . '">' . $total['value'] . '</td>';
-                echo '</tr>';
-            }
+        echo '<table class="order-summary" style="width:100%; border: 1px solid black;"><tbody>';
+        echo '<tr><td>Subtotal:</td><td>' . wc_price($order->get_subtotal()) . '</td></tr>';
+        echo ($shipping_total == 0)? "" : '<tr><td>Shipping:</td><td>' . wc_price($shipping_total) . ' (' . $shipping_method_name . ')</td></tr>';
+        echo ($coupon_display == '') ? "" :'<tr><td>Coupon(s) Used:</td><td>' . esc_html($coupon_display) . '</td></tr>';
+        echo '<tr><td>Payment method:</td><td>' . $payment_method . '</td></tr>';
+        echo '<tr><td>Total:</td><td>' . wc_price($total) . '</td></tr>';
+        echo '</tbody></table>';
+
+        if ($token && $token !== 'Orthoney') {
+            echo '<p>Distributor Code: ' . $token . '</p>';
         }
-        echo '</tbody>';
-        echo '</table>';
 
-        $code = $token ?: $affiliate;
-        if($code != 'Orthoney'){
-            echo '<p>Distributor Code: ' .  $code . '</p>';
-        }
-        echo '<h3 style="color:#491571;">Billing Address</h3>';
-        echo '<p>' . $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() . '
-            <br>' . $order->get_billing_address_1() . ' ' . $order->get_billing_address_2() . '
-            <br>' . $order->get_billing_city() . ' ' . $order->get_billing_state() . ', ' . $order->get_billing_country() . ' ' . $order->get_billing_postcode() . '
-            <br>' . $order->get_billing_phone() . '
-            <br><a href="mailto:' . $order->get_billing_email() . '">' . $order->get_billing_email() . '</a></p>';
+        echo '<h3 style="color:#491571;">Billing Address</h3><p>' . $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() . '<br>' . $order->get_billing_address_1() . ' ' . $order->get_billing_address_2() . '<br>' . $order->get_billing_city() . ' ' . $order->get_billing_state() . ', ' . $order->get_billing_country() . ' ' . $order->get_billing_postcode() . '<br>' . $order->get_billing_phone() . '<br><a href="mailto:' . $order->get_billing_email() . '">' . $order->get_billing_email() . '</a></p>';
 
-        echo '</div>';
-        echo '</body>';
-        echo '</html>';
+        echo '</div></body></html>';
 
         $html = ob_get_clean();
-
         if (empty($html)) {
             error_log('Empty PDF content.');
             return;
@@ -278,7 +181,6 @@ class OAM_WC_Customizer {
 
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
-
         try {
             $dompdf->render();
             file_put_contents($pdf_path, $dompdf->output());
