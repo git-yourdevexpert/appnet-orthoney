@@ -3083,6 +3083,8 @@ class OAM_Ajax{
         $shipStartDate = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime(get_field('free_shipping_start_date', 'option')));
         $shipEndDate = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime(get_field('free_shipping_end_date', 'option')));
 
+        $ort_shipping_cost = get_field('ort_shipping_cost', 'option')
+
         $order_id_array = $_REQUEST['selectedValues'];
         $custom_order_pdf_type = $_REQUEST['custom_order_pdf_type'];
         $current_user = wp_get_current_user();
@@ -3161,39 +3163,6 @@ class OAM_Ajax{
             $distAddressParts = [];
             $shopAddressParts = [];
             $distNameParts = [];
-            
-            // $userinfo = maybe_unserialize($userinfo);
-            
-            // if (is_array($userinfo)) {
-
-            //     if(!empty($userinfo['FirstName'])){
-            //         $distNameParts[] = $userinfo['FirstName'];
-            //         $distNameParts[] = $userinfo['LastName'];
-            //     }else{
-            //         $distNameParts[] = $userinfo['Distributor']['Primary']['FirstName'];
-            //         $distNameParts[] = $userinfo['Distributor']['Primary']['LastName'];
-            //     }
-
-            //     if ( ! empty( $userinfo['Address'] ) ) {
-            //         $distAddressParts[] = $userinfo['Address'];
-            //         $distAddressParts[] = $userinfo['Address2'] ?? '';
-            //         $cityStateZip = trim(
-            //             rtrim( $userinfo['City'] ?? '', ',' ) . ', ' . 
-            //             ( $userinfo['State'] ?? '' ) . ' ' . 
-            //             ( $userinfo['Zip'] ?? '' )
-            //         );
-            //         $distAddressParts[] = $cityStateZip;
-            //     } elseif ( ! empty( $primaryContact ) ) {
-            //         $distAddressParts[] = $primaryContact['Address'] ?? '';
-            //         $distAddressParts[] = $primaryContact['Address2'] ?? '';
-            //         $cityStateZip = trim(
-            //             rtrim( $primaryContact['City'] ?? '', ',' ) . ', ' . 
-            //             ( $primaryContact['State'] ?? '' ) . ' ' . 
-            //             ( $primaryContact['Zip'] ?? '' )
-            //         );
-            //         $distAddressParts[] = $cityStateZip;
-            //     }
-            // }
 
            $distNameParts[] = get_user_meta($user_id, '_yith_wcaf_first_name', true)?: '';
            $distNameParts[] = get_user_meta($user_id, '_yith_wcaf_last_name', true)?: '';
@@ -3284,12 +3253,12 @@ class OAM_Ajax{
             } elseif ($custom_order_pdf_type == "4p") {
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
-                    <p>Shipping is FREE for orders submitted online through $shipStartDate. After $shipEndDate, \$8.00 per jar is automatically added for shipping.</p>
+                    <p>Shipping is FREE for orders submitted online through $shipStartDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
                     <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='.$refersite.'>$refersite</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $sub_order_id . " when prompted.</p>";
             } elseif ($custom_order_pdf_type == "2p") {
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
-                    <p>Shipping is FREE for orders submitted online through $shipEndDate. After $shipEndDate, \$8.00 per jar is automatically added for shipping.</p>
+                    <p>Shipping is FREE for orders submitted online through $shipEndDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
                     <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='.$refersite.'>$refersite</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $sub_order_id . " when prompted.</p>
                     <p>If you are unable to order online, update this form with any additions, deletions or corrections, fill out the payment section and mail it to {$distName} {$distAddress}. Mail orders must be received by $shipEndDate or shipping charges will be added and charged to you.</p>";
             } else {
