@@ -484,105 +484,113 @@ class OAM_COMMON_Custom {
     }
    
     public static function orthoney_get_order_data($order_id) {
-        global $wpdb;
+    global $wpdb;
 
-        $order = wc_get_order($order_id);
-        if (!$order) return null;
+    $order = wc_get_order($order_id);
+    if (!$order) return null;
 
-        $order_data = [];
+    $order_data = [];
 
-        // Basic customer info
-        $first_name = $order->get_billing_first_name() ?: '';
-        $last_name  = $order->get_billing_last_name() ?: '';
-        $order_data['order_id'] = $order_id;
-        $order_data['customer_name'] = trim("{$first_name} {$last_name}");
-        $order_data['email'] = $order->get_billing_email() ?: '';
+    // Helper inline cleaner
+    $clean = function ($value) {
+        return (empty($value) || strtolower($value) === 'null') ? '' : $value;
+    };
 
-        $address_line1 = $order->get_billing_address_1() ?: '';
-        $city = $order->get_billing_city() ?: '';
-        $state = $order->get_billing_state() ?: '';
-        $postcode = $order->get_billing_postcode() ?: '';
-        $order_data['address'] = trim("{$address_line1}, {$city}, {$state} {$postcode}", ', ');
+    // Basic customer info
+    $first_name = $clean($order->get_billing_first_name());
+    $last_name  = $clean($order->get_billing_last_name());
+    $order_data['order_id'] = $order_id;
+    $order_data['customer_name'] = trim("{$first_name} {$last_name}");
 
-        // Shipping address (optional)
-        $order_data['shipping_address'] = $order->get_formatted_shipping_address() ?: '';
+    $order_data['email'] = $clean($order->get_billing_email());
 
-        // Custom order ID (meta)
-        $custom_sub_oid = $order->get_meta('_orthoney_OrderID');
-        $order_data['custom_sub_oid'] = $custom_sub_oid;
+    $address_line1 = $clean($order->get_billing_address_1());
+    $city          = $clean($order->get_billing_city());
+    $state         = $clean($order->get_billing_state());
+    $postcode      = $clean($order->get_billing_postcode());
 
-        // Query custom suborder table
-        $results = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT * FROM {$wpdb->prefix}oh_recipient_order WHERE order_id = %d",
-                $custom_sub_oid
-            ),
-            ARRAY_A
-        );
+    $order_data['address'] = trim("{$address_line1}, {$city}, {$state} {$postcode}", ', ');
 
-        $order_data['suborder'] = $results;
-        $sub = [];
+    // Shipping address
+    $order_data['shipping_address'] = $clean($order->get_formatted_shipping_address());
 
-        if (!empty($results)) {
-            foreach ($results as $suborder_data) {
-                $suborder_affiliate_token = $suborder_data['affiliate_token'] ?? '';
+    // Custom meta
+    $custom_sub_oid = $clean($order->get_meta('_orthoney_OrderID'));
+    $order_data['custom_sub_oid'] = $custom_sub_oid;
 
-                // Affiliate user info
-                $userinfo = $wpdb->get_var(
-                    $wpdb->prepare(
-                        "
-                        SELECT um.meta_value
-                        FROM {$wpdb->prefix}usermeta um
-                        INNER JOIN {$wpdb->prefix}yith_wcaf_affiliates af ON um.user_id = af.user_id
-                        WHERE um.meta_key = %s
-                        AND af.token = %s
-                        ",
-                        '_userinfo',
-                        $suborder_affiliate_token
-                    )
-                );
+    // Suborders
+    $results = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}oh_recipient_order WHERE order_id = %d",
+            $custom_sub_oid
+        ),
+        ARRAY_A
+    );
 
-                // Affiliate org name
-                $affiliate_table = $wpdb->prefix . 'yith_wcaf_affiliates';
-                $usermeta_table = $wpdb->prefix . 'usermeta';
-                $org_query = "
-                    SELECT meta.meta_value as first_name
-                    FROM {$affiliate_table} affiliate
-                    JOIN {$usermeta_table} meta ON meta.user_id = affiliate.user_id
-                    WHERE meta.meta_key = '_yith_wcaf_first_name'
-                    AND affiliate.token = %s
-                    GROUP BY affiliate.user_id
-                ";
-                $affiliate_org_name = $wpdb->get_var($wpdb->prepare($org_query, $suborder_affiliate_token));
+    $order_data['suborder'] = $results;
+    $sub = [];
 
-                $sub[] = [
-                    'suborder_affiliate_org_name'    => $affiliate_org_name ?: '',
-                    'suborder_product_id'            => $suborder_data['pid'] ?? '',
-                    'suborder_affiliate_token'       => $suborder_affiliate_token,
-                    'suborder_affiliate_user_info'   => $userinfo ?: '',
-                    'suborder_full_name'             => $suborder_data['full_name'] ?? '',
-                    'suborder_data_company_name'     => $suborder_data['company_name'] ?? '',
-                    'suborder_data_city'             => $suborder_data['city'] ?? '',
-                    'suborder_data_state'            => $suborder_data['state'] ?? '',
-                    'suborder_data_zipcode'          => $suborder_data['zipcode'] ?? '',
-                    'suborder_data_country'          => $suborder_data['country'] ?? '',
-                    'suborder_data_address_1'        => $suborder_data['address_1'] ?? '',
-                    'suborder_data_address_2'        => $suborder_data['address_2'] ?? '',
-                    'suborder_data_quantity'         => $suborder_data['quantity'] ?? '',
-                    'suborder_data_userinfo'         => $userinfo ?: '',
-                ];
-            }
+    if (!empty($results)) {
+        foreach ($results as $suborder_data) {
+            $token = $clean($suborder_data['affiliate_token'] ?? '');
+
+            // Get _userinfo
+            $userinfo = $wpdb->get_var(
+                $wpdb->prepare(
+                    "
+                    SELECT um.meta_value
+                    FROM {$wpdb->prefix}usermeta um
+                    INNER JOIN {$wpdb->prefix}yith_wcaf_affiliates af ON um.user_id = af.user_id
+                    WHERE um.meta_key = %s
+                    AND af.token = %s
+                    ",
+                    '_userinfo',
+                    $token
+                )
+            );
+            $userinfo = $clean($userinfo);
+
+            // Affiliate org name
+            $org_query = "
+                SELECT meta.meta_value as first_name
+                FROM {$wpdb->prefix}yith_wcaf_affiliates affiliate
+                JOIN {$wpdb->prefix}usermeta meta ON meta.user_id = affiliate.user_id
+                WHERE meta.meta_key = '_yith_wcaf_first_name'
+                AND affiliate.token = %s
+                GROUP BY affiliate.user_id
+            ";
+            $affiliate_org_name = $wpdb->get_var($wpdb->prepare($org_query, $token));
+            $affiliate_org_name = $clean($affiliate_org_name);
+
+            $sub[] = [
+                'suborder_affiliate_org_name'    => $affiliate_org_name,
+                'suborder_product_id'            => $clean($suborder_data['pid'] ?? ''),
+                'suborder_affiliate_token'       => $token,
+                'suborder_affiliate_user_info'   => $userinfo,
+                'suborder_full_name'             => $clean($suborder_data['full_name'] ?? ''),
+                'suborder_data_company_name'     => $clean($suborder_data['company_name'] ?? ''),
+                'suborder_data_city'             => $clean($suborder_data['city'] ?? ''),
+                'suborder_data_state'            => $clean($suborder_data['state'] ?? ''),
+                'suborder_data_zipcode'          => $clean($suborder_data['zipcode'] ?? ''),
+                'suborder_data_country'          => $clean($suborder_data['country'] ?? ''),
+                'suborder_data_address_1'        => $clean($suborder_data['address_1'] ?? ''),
+                'suborder_data_address_2'        => $clean($suborder_data['address_2'] ?? ''),
+                'suborder_data_quantity'         => $clean($suborder_data['quantity'] ?? ''),
+                'suborder_data_userinfo'         => $userinfo,
+            ];
         }
-
-        $order_data['suborderdata'] = $sub;
-
-        // Totals
-        $order_data['total'] = $order->get_total();
-        $order_data['formatted_total'] = wc_price($order->get_total());
-
-        return $order_data;
     }
-    
+
+    $order_data['suborderdata'] = $sub;
+
+    // Totals
+    $order_data['total'] = $order->get_total();
+    $order_data['formatted_total'] = wc_price($order->get_total());
+
+    return $order_data;
+}
+
+
     public static function redirect_logged_in_user_to_dashboard() {
 
         /**
