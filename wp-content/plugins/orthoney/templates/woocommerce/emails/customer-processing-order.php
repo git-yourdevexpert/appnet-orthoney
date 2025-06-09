@@ -41,11 +41,56 @@ $recipientResult = $wpdb->get_results($wpdb->prepare(
     $sub_order_id 
 ));
 
+
+$organization = 'Orthoney';
+$organization_data = 'Honey From The Heart';
+    
+if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affiliate_token !== 'Orthoney') {
+    $token = $recipientResult[0]->affiliate_token;
+    $meta_key = '_yith_wcaf_name_of_your_organization';
+
+    $organization = $wpdb->get_var($wpdb->prepare(
+        "SELECT um.meta_value
+        FROM {$wpdb->usermeta} um
+        JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON um.user_id = aff.user_id
+        WHERE aff.token = %s AND um.meta_key = %s",
+        $token, $meta_key
+    ));
+
+    if ($organization != 'Orthoney') {
+        $organization_data_query = $wpdb->get_row($wpdb->prepare(
+            "SELECT 
+                aff.*,
+                MAX(CASE WHEN um.meta_key = '_yith_wcaf_city' THEN um.meta_value END) AS _yith_wcaf_city,
+                MAX(CASE WHEN um.meta_key = '_yith_wcaf_state' THEN um.meta_value END) AS _yith_wcaf_state,
+                MAX(CASE WHEN um.meta_key = 'billing_city' THEN um.meta_value END) AS billing_city,
+                MAX(CASE WHEN um.meta_key = 'billing_state' THEN um.meta_value END) AS billing_state,
+                MAX(CASE WHEN um.meta_key = 'shipping_city' THEN um.meta_value END) AS shipping_city,
+                MAX(CASE WHEN um.meta_key = 'shipping_state' THEN um.meta_value END) AS shipping_state
+            FROM {$wpdb->prefix}yith_wcaf_affiliates AS aff
+            LEFT JOIN {$wpdb->usermeta} AS um ON um.user_id = aff.user_id
+            WHERE aff.token = %s
+            GROUP BY aff.user_id",
+            $token
+        ));
+
+        $city = $organization_data_query->_yith_wcaf_city 
+            ?: $organization_data_query->billing_city 
+            ?: $organization_data_query->shipping_city;
+
+        $state = $organization_data_query->_yith_wcaf_state 
+            ?: $organization_data_query->billing_state 
+            ?: $organization_data_query->shipping_state;
+
+        $merged_address = implode(', ', array_filter(['[' . $token . ']', $organization, $city, $state]));
+        $organization_data = trim($merged_address);
+    }
+};
 ?>
 
 <?php do_action('woocommerce_email_header', $email_heading); ?>
 
-<p>Thank you for your gift of $<?php echo $order->get_total(); ?> to <?php echo $order->get_billing_company(); ?>. Your Honey From The Heart gift benefits <?php echo $order->get_billing_company(); ?>, a non-profit organization, and ORT America, a 501(c)(3) organization. For federal income tax purposes, your charitable deduction is limited to the purchase price of the honey less its fair market value. For purposes of determining the value of goods provided, you should use $<?php echo $taxable_donation; ?> per jar so your charitable contribution is <?php echo "$".number_format($order->get_total() - ($total_honey_jars * $taxable_donation), 2); ?>.</p>
+<p>Thank you for your gift of $<?php echo $order->get_total(); ?> to <?php echo $organization_data; ?>. Your Honey From The Heart gift benefits <?php echo $organization_data; ?>, a non-profit organization, and ORT America, a 501(c)(3) organization. For federal income tax purposes, your charitable deduction is limited to the purchase price of the honey less its fair market value. For purposes of determining the value of goods provided, you should use $<?php echo $taxable_donation; ?> per jar so your charitable contribution is <?php echo "$".number_format($order->get_total() - ($total_honey_jars * $taxable_donation), 2); ?>.</p>
 
 <p><?php _e( "Your order has been received and is now being processed. Your order details are shown below for your reference:", 'woocommerce' ); ?></p>
 <p>If you have questions about your order please contact:<br />
