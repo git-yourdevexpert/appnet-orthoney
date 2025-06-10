@@ -163,7 +163,41 @@ class OAM_AFFILIATE_Helper
         if (empty($details['orders'])) {
             return '';
         }
+       
+        $total_commission = 0;
         $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
+
+        $exclude_coupon = EXCLUDE_COUPON;
+        $total_all_quantity = 0;
+        $total_orders = 0;
+        $fundraising_qty = 0;
+        $wholesale_qty = 0;
+        $wholesale_order = 0;
+        $fundraising_orders = 0;
+        $unit_price = 0;
+        $unit_cost = 0;
+        foreach ($commission_array as $key => $data) {
+            if ($data['affiliate_account_status'] == 1) {
+                $unit_price = $data['par_jar'];
+                $unit_cost = $data['minimum_price'];
+                 $total_all_quantity += $data['total_quantity'];
+                 $total_orders++;
+                $common = [];
+                $coupon_array = !empty($data['is_voucher_used']) ? explode(",", $data['is_voucher_used']) : [];
+                if(count($coupon_array) > 0){
+                    $coupon_array = array_diff($coupon_array, $exclude_coupon);
+                    $coupon_array = array_values($coupon_array);
+                }
+                if(count($coupon_array) == 0){
+                    $total_commission += $data['commission'];
+                }else{
+                    $wholesale_qty += $data['total_quantity'];
+                     $wholesale_order++;
+                }
+            }
+        }
+        $fundraising_qty = $total_all_quantity - $wholesale_qty;
+        $fundraising_orders = $total_orders - $wholesale_order;
         $html = '';
         // rsort($details['orders']);
         $orders = $details['orders'];
@@ -176,11 +210,12 @@ class OAM_AFFILIATE_Helper
                     <table >
                         <thead>
                             <tr>
-                               <th>Order ID</th>
+                                <th>Order ID</th>
                                 <th>Billing Name</th>
                                 <th>Qty</th>
-                                <th>Price</th>
-                                <th>Commission</th>
+                                <th>Type</th>
+                                <th>Fundrs total<br><small>(Fundraising Qty * Dist Unit Price )</small></th>
+                                <th>Distributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></th>
                                 <th>Order Date</th>
                             </tr>
                         </thead>
@@ -213,16 +248,19 @@ class OAM_AFFILIATE_Helper
             } else {
                 $commission_price = wc_price(0) . ' <span style="color:red">(Account deactivated)</span>';
             }
-
-
+            
+            if ($commission_array[$custom_order_id]['affiliate_account_status'] == 1) {
             $html .= '<tr>
                         <td><div class="thead-data">Order ID</div>#' . esc_html($custom_order_id) . '</td>
                         <td><div class="thead-data">Billing Name</div>' . esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()) . '</td>
                         <td><div class="thead-data">Qty</div>' . esc_html($quantity) . '</td>
-                        <td><div class="thead-data">Price</div>' . wc_price($order->get_total()) . '</td>
-                        <td><div class="thead-data">Commission</div>' . $commission_price . '</td>
+                        <td><div class="thead-data">Type</div>' . esc_html('Wholesale') . '</td>
+                        <td><div class="thead-data">Fundrs total<br><small>(Fundraising Qty * Dist Unit Price )</small></div>' . wc_price($order->get_total()) . '<br><small>('.$fundraising_qty.' * '.wc_price($unit_price).')</small></td>
+                        
+                        <td><div class="thead-data">CommDistributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></div>' . $commission_price . '<br><small>('.$quantity.' * '.wc_price(($unit_price - $unit_cost)).')</small></td>
                         <td><div class="thead-data">Date</div>' . date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order->get_date_created())) . '</td>
                     </tr>';
+            }
         }
         if ($count === 0) {
             $html .= '<tr><td colspan="4" class="no-available-msg">Order not found!</td></tr>';
@@ -246,11 +284,38 @@ class OAM_AFFILIATE_Helper
         $total_commission = 0;
         $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
 
+        $exclude_coupon = EXCLUDE_COUPON;
+        $total_all_quantity = 0;
+        $total_orders = 0;
+        $fundraising_qty = 0;
+        $wholesale_qty = 0;
+        $wholesale_order = 0;
+        $fundraising_orders = 0;
+        $unit_price = 0;
+        $unit_cost = 0;
         foreach ($commission_array as $key => $data) {
             if ($data['affiliate_account_status'] == 1) {
-                $total_commission = $total_commission + $data['commission'];
+                $unit_price = $data['par_jar'];
+                $unit_cost = $data['minimum_price'];
+                 $total_all_quantity += $data['total_quantity'];
+                 $total_orders++;
+                $common = [];
+                $coupon_array = !empty($data['is_voucher_used']) ? explode(",", $data['is_voucher_used']) : [];
+                if(count($coupon_array) > 0){
+                    $coupon_array = array_diff($coupon_array, $exclude_coupon);
+                    $coupon_array = array_values($coupon_array);
+                }
+                if(count($coupon_array) == 0){
+                    $total_commission += $data['commission'];
+                }else{
+                    $wholesale_qty += $data['total_quantity'];
+                     $wholesale_order++;
+                }
             }
         }
+        $fundraising_qty = $total_all_quantity - $wholesale_qty;
+        $fundraising_orders = $total_orders - $wholesale_order;
+
         $html = '';
         $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
 
@@ -263,15 +328,15 @@ class OAM_AFFILIATE_Helper
                     <div class="">
                         <div class="recipient-lists-block custom-table orthoney-datatable-warraper table-with-search-block" id="affiliate-orderlist-table">';
 
-        $html .=  '
-                    <table >
+        $html .=  '<table >
                         <thead>
                             <tr>
                                 <th>Order ID</th>
                                 <th>Billing Name</th>
                                 <th>Qty</th>
-                                <th>Price</th>
-                                <th>Commission</th>
+                                <th>Type</th>
+                                <th>Fundrs total<br><small>(Fundraising Qty * Dist Unit Price )</small></th>
+                                <th>Distributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></th>
                                 <th>Order Date</th>
                             </tr>
                         </thead>
@@ -313,14 +378,18 @@ class OAM_AFFILIATE_Helper
             //     $commission_price = wc_price(0) . ' <span style="color:red">(Account deactivated)</span>';
             // }
 
+            if ($commission_array[$custom_order_id]['affiliate_account_status'] == 1) {
             $html .= '<tr>
                         <td><div class="thead-data">Order ID</div>#' . esc_html($custom_order_id) . '</td>
                         <td><div class="thead-data">Billing Name</div>' . esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()) . '</td>
                         <td><div class="thead-data">Qty</div>' . esc_html($quantity) . '</td>
-                        <td><div class="thead-data">Price</div>' . wc_price($order->get_total()) . '</td>
-                        <td><div class="thead-data">Commission</div>' . $commission_price . '</td>
+                        <td><div class="thead-data">Type</div>' . esc_html('Wholesale') . '</td>
+                        <td><div class="thead-data">Fundrs total<br><small>(Fundraising Qty * Dist Unit Price )</small></div>' . wc_price($order->get_total()) . '<br><small>('.$fundraising_qty.' * '.wc_price($unit_price).')</small></td>
+                        
+                        <td><div class="thead-data">CommDistributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></div>' . $commission_price . '<br><small>('.$quantity.' * '.wc_price(($unit_price - $unit_cost)).')</small></td>
                         <td><div class="thead-data">Date</div>' . date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order->get_date_created())) . '</td>
                     </tr>';
+            }
         }
         if ($count === 0) {
             $html .= '<tr><td colspan="4" class="no-available-msg">Order not found!</td></tr>';
@@ -332,16 +401,32 @@ class OAM_AFFILIATE_Helper
         </div>';
         return $html;
     }
+
+
     public static function affiliate_details($affiliate_id, $details)
     {
         $affiliate = get_userdata($affiliate_id);
-        $html .= '';
+        $html = '';
         $total_commission = 0;
         $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
-        
+
         $exclude_coupon = EXCLUDE_COUPON;
+        $total_all_quantity = 0;
+        $total_orders = 0;
+        $fundraising_qty = 0;
+        $wholesale_qty = 0;
+        $wholesale_order = 0;
+        $fundraising_orders = 0;
+        $unit_price = 0;
+        $unit_cost = 0;
         foreach ($commission_array as $key => $data) {
+            $fundraising_qty = $data['total_quantity'];
+            $wholesale_qty = $data['wholesale_qty'];
             if ($data['affiliate_account_status'] == 1) {
+                $unit_price = $data['par_jar'];
+                $unit_cost = $data['minimum_price'];
+                 $total_all_quantity = $data['total_quantity'];
+                 $total_orders++;
                 $common = [];
                 $coupon_array = !empty($data['is_voucher_used']) ? explode(",", $data['is_voucher_used']) : [];
                 if(count($coupon_array) > 0){
@@ -350,6 +435,27 @@ class OAM_AFFILIATE_Helper
                 }
                 if(count($coupon_array) == 0){
                     $total_commission += $data['commission'];
+                }else{
+                     $wholesale_order++;
+                }
+            }
+        }
+        $total_all_quantity = $fundraising_qty + $wholesale_qty;
+         $fundraising_orders = $total_orders - $wholesale_order;
+         
+         $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
+            if ($unit_price >= $selling_minimum_price) {
+            if (OAM_AFFILIATE_Helper::is_user_created_this_year(get_current_user_id())) {
+                if ($total_all_quantity < 99) {
+                    $unit_cost = get_field('new_minimum_price_50', 'option');
+                } else {
+                    $unit_cost = get_field('new_minimum_price_100', 'option');
+                }
+            } else {
+                if ($total_all_quantity < 99) {
+                    $unit_cost = get_field('ex_minimum_price_50', 'option');
+                } else {
+                    $unit_cost = get_field('ex_minimum_price_100', 'option');
                 }
             }
         }
@@ -390,7 +496,7 @@ class OAM_AFFILIATE_Helper
                 </div>
                 
                 <div class="block-row three-block-col">
-                    <div class="place-order item">
+                    <div class="place-order item" style="display:none">
                         <div class="row-block">
                             <h4 class="block-title">Total Customer Orders</h4>
                             <div class="see-all">
@@ -402,7 +508,7 @@ class OAM_AFFILIATE_Helper
                             <div> Current Year Orders: ' . (!empty($details['current_year_orders_ids']) ? count($details['current_year_orders_ids']) : '0') . '</div>
                         </div>
                     </div>
-                    <div class="place-order item">
+                    <div class="place-order item" style="display:none">
                         <div class="row-block">
                             <h4 class="block-title">Total Sold Jar</h4>
                             <div class="see-all">
@@ -414,7 +520,7 @@ class OAM_AFFILIATE_Helper
                         <div>Current Year Jars: ' . (!empty($details['current_year_total_quantity']) ? esc_html($details['current_year_total_quantity']) : '0') . '</div>
                         </div>
                     </div>
-                    <div class="place-order item">
+                    <div class="place-order item" style="display:none">
                         <div class="row-block">
                             <h4 class="block-title">Total Commission</h4>
                             <div class="see-all">
@@ -423,6 +529,90 @@ class OAM_AFFILIATE_Helper
                         </div>
                         <div class="sub-heading">
                             <div>' . wc_price($total_commission) . ' ' . (($details['total_quantity'] <= 50) ? '<p style="line-height: 1;"><small style="font-size: 70%; color: red;line-height: 1 !important;font-weight: 900;">You are not eligible for a commission. A minimum of 50 jars is required.</small></p>' : '') . '</div>
+                        </div>
+                    </div>
+                    <style>
+                    .commission-calc{
+                        list-style: none;
+    margin: 0;
+    font-size: 16px;
+    color: #000;
+                    }
+    .commission-calc li{
+    display: flex;
+    justify-content: space-between;
+        }
+    .commission-calc li.total{    border-top: 2px solid #ddd;
+    padding-top: 10px;}
+                    </style>
+                     <div class="place-order item">
+                        <div class="row-block">
+                            <h4 class="block-title">Total(Fundraising + Wholesale)</h4>
+                            <div class="see-all">
+                                <div class="icon-card"><img alt="speedicon" src="' . OH_PLUGIN_DIR_URL . '/assets/image/commission-icon.png" width="30"  height="30" /></div>
+                            </div>
+                        </div>
+                        <div class="sub-heading">
+                            <div></div>
+                            <div>
+                                <ul class="commission-calc">
+                                    <li><span>Total Orders </span><span>'.$total_orders.'</span></li>
+                                    <li><span>Total Qty </span><span>'.$total_all_quantity.'</span></li>
+                                    <li><span>Dist Unit Price </span><span>'.wc_price($unit_price).'</span></li>
+                                    <li><span>Dist Unit Cost </span><span>'.wc_price($unit_cost).'</span></li>
+                                    <li><span>Dist Unit Profit <div class="tooltip" data-tippy="(Dist Unit Price - Dist Unit Cost )"></div></span><span>'.wc_price($unit_price - $unit_cost).'</span></li>
+                                    <li><span>Total Cost <div class="tooltip" data-tippy="(Fundrs Total + Wholesale Total )"></div> </span><span>'.wc_price(($fundraising_qty * $unit_price) + ($wholesale_qty * $unit_price)).'</span></li>
+                                   
+                                    <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Total Qty * Dist Unit Cost )"></div></span><span>'.wc_price($total_all_quantity * $unit_cost).'</span></li>
+                                    <li class="total"><span>Distributor Sales Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div> </span><span>'.wc_price($fundraising_qty * ($unit_price - $unit_cost)).'</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="place-order item">
+                        <div class="row-block">
+                            <h4 class="block-title">Fundraising</h4>
+                            <div class="see-all">
+                                <div class="icon-card"><img alt="speedicon" src="' . OH_PLUGIN_DIR_URL . '/assets/image/commission-icon.png" width="30"  height="30" /></div>
+                            </div>
+                        </div>
+                        <div class="sub-heading">
+                            <div></div>
+                            <div>
+                                <ul class="commission-calc">
+                                    <li><span>Fundraising Orders </span><span>'.$fundraising_orders.'</span></li>
+                                    <li><span>Fundraising Qty </span><span>'.$fundraising_qty.'</span></li>
+                                    <li><span>Dist Unit Price </span><span>'.wc_price($unit_price).'</span></li>
+                                    <li><span>Dist Unit Cost </span><span>'.wc_price($unit_cost).'</span></li>
+                                    <li><span>Dist Unit Profit <div class="tooltip" data-tippy="(Dist Unit Price - Dist Unit Cost )"></div></span><span>'.wc_price($unit_price - $unit_cost).'</span></li>
+                                     <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Price )"></div></span><span>'.wc_price($fundraising_qty * $unit_cost).'</span></li>
+                                    <li ><span>Fundrs Total <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Price )"></div></span><span>'.wc_price($fundraising_qty * $unit_price).'</span></li>
+                                    <li  class="total"><span>Fundrs Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div></span><span>'.wc_price($fundraising_qty * ($unit_price - $unit_cost)).'</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="place-order item">
+                        <div class="row-block">
+                            <h4 class="block-title">Wholesale</h4>
+                            <div class="see-all">
+                                <div class="icon-card"><img alt="speedicon" src="' . OH_PLUGIN_DIR_URL . '/assets/image/commission-icon.png" width="30"  height="30" /></div>
+                            </div>
+                        </div>
+                        <div class="sub-heading">
+                            <div></div>
+                            <div>
+                                <ul class="commission-calc">
+                                    <li><span>Total Orders </span><span>'.$wholesale_order.'</span></li>
+                                    <li><span>Wholesale Qty </span><span>'.$wholesale_qty.'</span></li>
+                                    <li><span>Dist Unit Price </span><span>'.wc_price($unit_price).'</span></li>
+                                    <li><span>Dist Unit Cost </span><span>'.wc_price($unit_cost).'</span></li>
+                                    <li><span>Dist Unit Profit <div class="tooltip" data-tippy="(Dist Unit Price - Dist Unit Cost )"></div></span><span>'.wc_price($unit_price - $unit_cost).'</span></li>
+                                     <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Wholesale Qty * Dist Unit Price )"></div></span><span>'.wc_price($wholesale_qty * $unit_cost).'</span></li>
+                                     <li><span>Wholesale Total <div class="tooltip" data-tippy="(Wholesale Qty * Dist Unit Price )"></div></span><span>'.wc_price($wholesale_qty * $unit_price).'</span></li>
+                                     <li class="total"><span>Wholesale Profit <div class="tooltip" data-tippy="(Wholesale Qty * Dist Unit Profit  )"></div></span><span>'.wc_price($wholesale_qty * ($unit_price - $unit_cost)).'</span></li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                     <div class="place-order item" style="display:none">
@@ -571,9 +761,37 @@ class OAM_AFFILIATE_Helper
 
         if (!empty($commission_year_results)) {
             if ($total_quantity >= 50) {
+                $total_all_quantity = 0;
+                $wholesale_qty = 0;
+               
+                $exclude_coupon = EXCLUDE_COUPON;
+                foreach ($commission_year_results as $key => $value) {
+                    $affiliate_account_status =  OAM_COMMON_Custom::get_order_meta($value->order_id, 'affiliate_account_status') ?: 0;
+                    if($affiliate_account_status == 1){
+                        $common = [];
+                        $coupon_data = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($value->order_id);
+                        $coupon_array = !empty($coupon_data) ? explode(",", $coupon_data) : [];
+                        if(count($coupon_array) > 0){
+                            $coupon_array = array_diff($coupon_array, $exclude_coupon);
+                            $coupon_array = array_values($coupon_array);
+                        }
+
+                        if(count($coupon_array) == 0){
+                           $total_all_quantity += $value->total_quantity;
+                        }else{
+                            $wholesale_qty += $value->total_quantity;
+                        }
+                    }
+                }
+
+                // echo $total_all_quantity;
+                // echo "<br>";
+                // echo $total_all_quantity - $wholesale_qty;
+                // echo "<br>";
+
                 foreach ($commission_year_results as $key => $commission) {
                    
-                    $total_all_quantity = $commission->total_quantity;
+                 
                     $total_exclude_quantity = $total_exclude_quantity ?: 0;
                     $total_quantity = $total_quantity;
                     $line_total = $commission->line_total;
@@ -604,6 +822,7 @@ class OAM_AFFILIATE_Helper
 
                     $data['total_exclude_quantity'] = $total_exclude_quantity;
                     $data['total_all_quantity'] = $total_quantity;
+                    $data['wholesale_qty'] = $wholesale_qty;
                     $data['order_id'] = $commission->order_id;
                     $data['custom_order_id'] = $custom_order_id;
                     $data['total_quantity'] =  $total_all_quantity;
@@ -617,6 +836,10 @@ class OAM_AFFILIATE_Helper
 
                     $commission_array[$custom_order_id] = $data;
                 }
+
+                //  Start
+                
+                //  end
             }
         }
 

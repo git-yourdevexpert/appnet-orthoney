@@ -38,7 +38,7 @@ if (empty($details['token'])) {
                         <div class="dashboard-card">
                             <div class="row-block">
                                 <h4>Recent Customer Orders</h4>
-                                <a href="'.$current_url.'" class="w-btn us-btn-style_1">View order all</a>
+                                <a href="'.$current_url.'" class="w-btn us-btn-style_1">View all order</a>
                             </div>';
                 echo OAM_AFFILIATE_Helper::affiliate_current_year_order_list($details);
                 echo '</div></div>';
