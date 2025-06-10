@@ -119,13 +119,9 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
         // Combine with $organization name (assuming it's defined)
         // echo $organization_data = $organization . ' , ' . $city. ', '.$state;
 
-
         $merged_address = implode(', ', array_filter(['['.$token.']',$organization,$city, $state ]));
-                  
-          $organization_data = trim($merged_address);
+        $organization_data = trim($merged_address);
     }
-
-
 }
 
 
@@ -163,13 +159,12 @@ $dashboard_link_label = 'Return to Dashboard';
                 <p>
                     <?php
                     if($organization_data != ''):
-                    printf(
-                        esc_html__('This order will support %1$s .', 'woocommerce'),
-                        '<mark class="order-number">' . esc_html($organization_data) . '</mark>',
-                        $order_process_by
-                    );
-                    
-                endif;
+                        printf(
+                            esc_html__('This order will support %1$s .', 'woocommerce'),
+                            '<mark class="order-number">' . esc_html($organization_data) . '</mark>',
+                            $order_process_by
+                        );
+                    endif;
                     ?>
                 </p>
             </div>
@@ -266,7 +261,7 @@ $dashboard_link_label = 'Return to Dashboard';
                             <?php //echo esc_html($sub_order->full_name); ?>
                             <?php //echo esc_html($sub_order->company_name); ?>
                             <?php // echo esc_html($address); ?>
-                            <?php echo "Total Honey Jars (" .esc_html($sub_order->quantity).")"; ?>
+                            <?php echo "Qty (" .esc_html($sub_order->quantity).")"; ?>
                             </strong>
                         </div>
                         <div>
@@ -291,9 +286,6 @@ $dashboard_link_label = 'Return to Dashboard';
                     </tr>
                     
                     <?php 
-
-                    
-
                     if(!empty($jarOrderResult)){
                         foreach ($jarOrderResult as $jar_order) {
                             ?>
@@ -315,8 +307,6 @@ $dashboard_link_label = 'Return to Dashboard';
                 <?php } ?>
             </tbody>
         </table>
-
-        
     </div>
     <?php 
     }else{
@@ -330,7 +320,7 @@ $dashboard_link_label = 'Return to Dashboard';
                     <th>Recipient Name</th>
                     <th>Company Name</th>
                     <th>Address</th>
-                    <th>Total Honey Jar</th>
+                    <th>Qty</th>
                     <th>Status</th>
                     <th style="width:200px">Action</th>
                 </tr>

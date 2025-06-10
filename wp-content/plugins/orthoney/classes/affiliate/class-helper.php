@@ -178,7 +178,7 @@ class OAM_AFFILIATE_Helper
                             <tr>
                                <th>Order ID</th>
                                 <th>Billing Name</th>
-                                <th>Total Honey Jar</th>
+                                <th>Qty</th>
                                 <th>Price</th>
                                 <th>Commission</th>
                                 <th>Order Date</th>
@@ -218,7 +218,7 @@ class OAM_AFFILIATE_Helper
             $html .= '<tr>
                         <td><div class="thead-data">Order ID</div>#' . esc_html($custom_order_id) . '</td>
                         <td><div class="thead-data">Billing Name</div>' . esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()) . '</td>
-                        <td><div class="thead-data">Total Honey Jar</div>' . esc_html($quantity) . '</td>
+                        <td><div class="thead-data">Qty</div>' . esc_html($quantity) . '</td>
                         <td><div class="thead-data">Price</div>' . wc_price($order->get_total()) . '</td>
                         <td><div class="thead-data">Commission</div>' . $commission_price . '</td>
                         <td><div class="thead-data">Date</div>' . date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order->get_date_created())) . '</td>
@@ -269,7 +269,7 @@ class OAM_AFFILIATE_Helper
                             <tr>
                                 <th>Order ID</th>
                                 <th>Billing Name</th>
-                                <th>Total Honey Jar</th>
+                                <th>Qty</th>
                                 <th>Price</th>
                                 <th>Commission</th>
                                 <th>Order Date</th>
@@ -316,7 +316,7 @@ class OAM_AFFILIATE_Helper
             $html .= '<tr>
                         <td><div class="thead-data">Order ID</div>#' . esc_html($custom_order_id) . '</td>
                         <td><div class="thead-data">Billing Name</div>' . esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()) . '</td>
-                        <td><div class="thead-data">Total Honey Jar</div>' . esc_html($quantity) . '</td>
+                        <td><div class="thead-data">Qty</div>' . esc_html($quantity) . '</td>
                         <td><div class="thead-data">Price</div>' . wc_price($order->get_total()) . '</td>
                         <td><div class="thead-data">Commission</div>' . $commission_price . '</td>
                         <td><div class="thead-data">Date</div>' . date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order->get_date_created())) . '</td>

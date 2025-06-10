@@ -99,7 +99,7 @@ if (!empty($order_process_user_id)) {
                     <th>Recipient Name</th>
                     <th>Company Name</th>
                     <th>Address</th>
-                    <th>Total Honey Jar</th>
+                    <th>Qty</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>

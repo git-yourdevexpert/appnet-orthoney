@@ -85,7 +85,7 @@ if ($first_segment == 'dashboard'){
             <th><?php echo ($first_segment == 'dashboard') ? 'Billing Name': 'Billing Name'  ?></th>
             <th>Recipient Name</th>
             <th>Organization Code</th>
-            <th>Total Honey Jar</th>
+            <th>Qty</th>
             <th>Total Recipient</th>
             <!-- <th>Type</th>
             <th>Status</th> -->
@@ -103,7 +103,7 @@ if ($first_segment == 'dashboard'){
             <th>Date</th>
             <th>Recipient Name</th>
             <th>Organization Code</th>
-            <th>Total Honey Jar</th>
+            <th>Qty</th>
             <th>Jar Tracking</th>
             <th>Status</th>
             <!-- <th>Price</th> -->

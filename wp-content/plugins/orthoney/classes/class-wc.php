@@ -523,7 +523,7 @@ class OAM_WC_Customizer {
                 $shipping_string = implode(', ', array_filter($shipping_address));
     
                 $custom_content = '<div class="viewAllRecipientsPopupCheckoutContent">
-                    <div class="item"><strong>Total Honey Jar(s):</strong> ' . esc_html($quantity) . '</div>
+                    <div class="item"><strong>Qty:</strong> ' . esc_html($quantity) . '</div>
                     <div class="item"><strong>Shipping Address:</strong> ' . esc_html($shipping_string) . '</div>
                 </div>';
     
@@ -534,7 +534,7 @@ class OAM_WC_Customizer {
         if ($status) {
 
             $custom_content = '<div class="viewAllRecipientsPopupCheckoutContent">
-                <div class="item"><strong>Total Honey Jar(s):</strong> ' . esc_html($total_quantity) . '</div>
+                <div class="item"><strong>Qty:</strong> ' . esc_html($total_quantity) . '</div>
                 <div class="item"><strong>Total Recipient(s):</strong> ' . esc_html(count($recipients)) . '</div>
                   <div class="item"><strong>Price per Jar:</strong> ' . (wc_price($per_jar_cost)) . '</div>
                 <div class="item"><a href="#viewAllRecipientsPopupCheckout" class="viewAllRecipientsPopupCheckout btn-underline" data-lity>View All Recipients Details</a></div>
