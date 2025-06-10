@@ -144,10 +144,10 @@ class OAM_COMMON_Custom
                         <div class="content-wrapper">
                             <div class="bee-animation"><img decoding="async" width="72" height="72" src="/wp-content/uploads/2025/06/bee.png" class="attachment-full size-full" alt="Bee" loading="lazy"></div>
                             <div class="close-popup" onclick="this.closest('.popupbox').style.display='none'">x</div>
-                            <div class="top-content">
+                            <div class="top-content end-season">
                                 <h2>The Hive Is Slowing Down… But the Sweetness Will Return!</h2>
-                                <div class="subtext">As the honey season is now closed, we’re filled with gratitude for the kindness you’ve shared. </div>
-                                <p>We’ll be buzzing again in <strong class="green-text"><?php echo $next_year_formatted_text ?>,</strong> and we can’t wait to share the sweetness with you once more.</strong></p>
+                                <div class="subtext ">As the honey season is now closed, we’re filled with gratitude for the kindness you’ve shared. </div>
+                                <p class="end-season-content">We’ll be buzzing again in <strong class="green-text"><?php echo $next_year_formatted_text ?>,</strong> and we can’t wait to share the sweetness with you once more.</strong></p>
                                 <div class="notify-card">
                                     <div class="notify-card-content"></div>
                                     <div class="border-top-bottom">Until then — thank you for helping us Send Honey. Share Hope. Spread Joy.</div>
@@ -173,7 +173,7 @@ class OAM_COMMON_Custom
                         <div class="bottom-content"></div>
                     </div>
                 </div>
-                </div>
+
             <?php
             }
         }

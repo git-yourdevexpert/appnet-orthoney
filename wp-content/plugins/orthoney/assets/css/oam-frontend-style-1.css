@@ -296,6 +296,11 @@
     text-transform: capitalize;
     
 }
+.season_start_end_message_box .notify-card .end-season .end-season-content{
+    width: 100%;
+    max-width: 675px;
+    margin: 0 auto;
+}
 
 .message-txt
 @media(max-width: 767px) {
