@@ -245,7 +245,6 @@
     color: var(--color-content-heading);
     margin-bottom: 15px;
 }
-
 .season_start_end_message_box .popupbox p {
     color: var(--color-content-primary);
     margin-bottom: 0;
@@ -264,7 +263,9 @@
     font-weight: 300;
     margin-bottom: 10px;
 }
-
+.season_start_end_message_box .notify-card .message-txt{
+    color: #fff;
+}
 .season_start_end_message_box .popupbox .notifyme {
     display: flex;
     flex-direction: column;
@@ -295,6 +296,8 @@
     text-transform: capitalize;
     
 }
+
+.message-txt
 @media(max-width: 767px) {
     .season_start_end_message_box .notify-card {
         padding: 1.5rem;

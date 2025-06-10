@@ -148,27 +148,31 @@ class OAM_COMMON_Custom
                                 <h2>The Hive Is Slowing Down… But the Sweetness Will Return!</h2>
                                 <div class="subtext">As the honey season is now closed, we’re filled with gratitude for the kindness you’ve shared. </div>
                                 <p>We’ll be buzzing again in <strong class="green-text"><?php echo $next_year_formatted_text ?>,</strong> and we can’t wait to share the sweetness with you once more.</strong></p>
-                                <div class="border-top-bottom">Until then — thank you for helping us Send Honey. Share Hope. Spread Joy.</div>
-                                <div class="message-txt">
-                                    With heartfelt appreciation,<br>
-                                    Your friends at Honey From The Heart<br><br>
-                                </div>
-                                <div class="notifyme">
-                                    <span>Be the first to know when the season opens!</span>
-                                    <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="https://www.orthoney.com/sign-up/"><span class="w-btn-label">Notify Me</span></a>
-                                </div>
-                                <div id="countdown" class="countdown" data-date="<?php echo $next_year_formatted_numeric ?>" data-currentdate="<?php echo $today ?>">
-                                    <ul>
-                                        <li><span class="days"></span> Days</li>
-                                        <li><span class="hours"></span> Hours</li>
-                                        <li><span class="minutes"></span> Minutes</li>
-                                        <li><span class="seconds"></span> Seconds</li>
-                                    </ul>
+                                <div class="notify-card">
+                                    <div class="notify-card-content"></div>
+                                    <div class="border-top-bottom">Until then — thank you for helping us Send Honey. Share Hope. Spread Joy.</div>
+                                    <div class="message-txt">
+                                        With heartfelt appreciation,<br>
+                                        Your friends at Honey From The Heart
+                                    </div>
+                                    <div class="notifyme">
+                                        <p>Be the first to know when the season opens!</p>
+                                        <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="https://www.orthoney.com/sign-up/"><span class="w-btn-label">Notify Me</span></a>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="bottom-content"></div>
+                            <div id="countdown" class="countdown" data-date="<?php echo $next_year_formatted_numeric ?>" data-currentdate="<?php echo $today ?>">
+                                <ul>
+                                    <li><span class="days"></span> Days</li>
+                                    <li><span class="hours"></span> Hours</li>
+                                    <li><span class="minutes"></span> Minutes</li>
+                                    <li><span class="seconds"></span> Seconds</li>
+                                </ul>
+                            </div>
                         </div>
+                        <div class="bottom-content"></div>
                     </div>
+                </div>
                 </div>
             <?php
             }
