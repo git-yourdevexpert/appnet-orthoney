@@ -394,6 +394,21 @@ class OAM_AFFILIATE_Ajax{
         // Verify nonce for security
         check_ajax_referer('oam_nonce', 'security');
 
+
+        $today = current_time('m/d/Y H:i:s');
+        $season_start_date = get_field('season_start_date', 'option');
+        $season_end_date = get_field('season_end_date', 'option');
+
+        $current_timestamp      = strtotime($today);
+        $season_start_timestamp = strtotime($season_start_date);
+        $season_end_timestamp   = strtotime($season_end_date);
+
+        $is_within_range = ( $current_timestamp >= $season_start_timestamp && $current_timestamp <= $season_end_timestamp );
+
+        if ($is_within_range ) {
+            wp_send_json(['success' => false, 'message' => 'Updating the selling price during the season is not allowed.']);
+            wp_die();
+        }
         if (!is_user_logged_in()) {
             wp_send_json(['success' => false, 'message' => 'You must be logged in to update your profile.']);
             wp_die();
