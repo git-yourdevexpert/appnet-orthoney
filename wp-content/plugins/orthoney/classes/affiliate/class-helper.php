@@ -610,7 +610,7 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Dist Unit Profit <div class="tooltip" data-tippy="(Dist Unit Price - Dist Unit Cost )"></div></span><span>'.wc_price($unit_price - $unit_cost).'</span></li>
                                      <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Wholesale Qty * Dist Unit Price )"></div></span><span>'.wc_price($wholesale_qty * $unit_cost).'</span></li>
                                      <li><span>Wholesale Total <div class="tooltip" data-tippy="(Wholesale Qty * Dist Unit Price )"></div></span><span>'.wc_price($wholesale_qty * $unit_price).'</span></li>
-                                     <li class="total"><span>Wholesale Profit <div class="tooltip" data-tippy="(Wholesale Qty * Dist Unit Profit  )"></div></span><span>'.wc_price($wholesale_qty * ($unit_price - $unit_cost)).'</span></li>
+                                     <li class="total"><span>Wholesale Profit <div class="tooltip" data-tippy="(Wholesale Qty * Dist Unit Profit  )"></div></span><span>'.wc_price('00.00').'</span></li>
                                 </ul>
                             </div>
                         </div>
