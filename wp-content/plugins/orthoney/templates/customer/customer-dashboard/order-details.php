@@ -201,7 +201,7 @@ $dashboard_link_label = 'Return to Dashboard';
             <strong>Total Jars in Order: </strong><?php echo esc_html($quantity); ?><br>
                 <strong>Total Price: </strong><?php echo wc_price($order->get_total()); ?><br>
                 <strong>Shipping: </strong><?php echo wc_price($order->get_shipping_total()); ?><br>
-                <strong>Delivered Type: </strong><?php echo (!empty($recipientResult) ? "Ship to Multi Address" : "Ship to Single Address") ?>
+                
             </div>
         </div>
     
