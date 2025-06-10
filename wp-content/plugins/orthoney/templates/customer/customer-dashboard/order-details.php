@@ -119,8 +119,8 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
         // Combine with $organization name (assuming it's defined)
         // echo $organization_data = $organization . ' , ' . $city. ', '.$state;
 
-        $merged_address = implode(', ', array_filter(['['.$token.']',$organization,$city, $state ]));
-        $organization_data = trim($merged_address);
+        $merged_address = implode(', ', array_filter([$organization,$city, $state ]));
+        $organization_data = trim($merged_address).' (Code : '.$token.')';
     }
 }
 
