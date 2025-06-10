@@ -145,6 +145,21 @@
     }
 }
 
+.season_start_end_message_box .notify-card {
+    background: #572C7C;
+    border-radius: 15px;
+    margin: 35px 0;
+    padding: 1.5rem;
+    background-image: url(https://orthoney.appnet-projects.com/wp-content/uploads/2025/06/honeyfromtheheart_newlogo-1.png);
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: right center;
+}
+.season_start_end_message_box .notify-card .notify-card-content {
+    width: 100%;
+    max-width: 550px;
+    margin: 0 auto;
+}
 .season_start_end_message_box .popupbox {
     display: flex;
     top: 0;
@@ -238,32 +253,59 @@
 }
 
 .season_start_end_message_box .popupbox .border-top-bottom {
-    font-family: Yesteryear;
+    /* font-family: Yesteryear;
     padding: 20px 0;
     margin: 20px 0;
     border-top: 1px solid #a4afb3;
-    border-bottom: 1px solid #a4afb3;
-    font-size: 35px;
+    border-bottom: 1px solid #a4afb3; */
+    font-size: 30px;
     line-height: 1.2;
-    color: var(--color-content-secondary);
+    color: #ffffff;
+    font-weight: 300;
+    margin-bottom: 10px;
 }
 
 .season_start_end_message_box .popupbox .notifyme {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: #f0f0f0;
-    margin-bottom: 20px;
-    padding: 10px 30px;
-    gap: 20px;
+    gap: 15px;
+    text-transform: uppercase;
 }
-
+.season_start_end_message_box .popupbox .notifyme p{
+    letter-spacing: 1px;
+}
+.season_start_end_message_box .popupbox .notifyme .w-btn{
+  padding: 8px 13px !important;
+  background: #fff !important;
+  color: #572C7C !important;
+}
+.season_start_end_message_box .popupbox .notifyme .w-btn:hover {
+    background: var(--color-content-link) !important;
+    color: #fff !important;
+}
 .season_start_end_message_box .popupbox .notifyme span {
-    font-size: 16px;
+    font-size: 14px;
     font-family: Open Sans;
     font-weight: 500;
-    font-style: italic;
+    /* font-style: italic; */
     padding: 0;
     margin: 0;
+    text-transform: capitalize;
+    
+}
+@media(max-width: 600px) {
+    .season_start_end_message_box .notify-card {
+        padding: 1rem;
+    }
+
+    .season_start_end_message_box .popupbox .border-top-bottom {
+        font-size: 22px;
+        margin-bottom: 10px;
+    }
+
+    .season_start_end_message_box .popupbox p {
+        font-size: 14px;
+    }
 }

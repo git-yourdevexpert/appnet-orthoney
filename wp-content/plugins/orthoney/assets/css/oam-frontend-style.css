@@ -3852,6 +3852,9 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   color: #fff !important;
 }
 
+.orthoney-datatable-warraper tr:not(.group-header):nth-child(even) {
+    background: #f8f8f8!important;
+}
 .orthoney-datatable-warraper
   .dataTables_wrapper
   .paging_simple_numbers
