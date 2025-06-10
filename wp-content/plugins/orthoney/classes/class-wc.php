@@ -48,7 +48,16 @@ class OAM_WC_Customizer {
         if ($email_id === 'customer_processing_order') { // Target "Processing Order" email
             $upload_dir = wp_upload_dir();
             
-            $pdf_path = $upload_dir['basedir'] . '/order-' . $order->get_id() . '.pdf';
+            // Define custom directory path under wp-content/order-invoice/
+            $pdf_dir = WP_CONTENT_DIR . '/order-invoice/';
+
+            // Create the directory if it doesn't exist
+            if ( ! file_exists( $pdf_dir ) ) {
+                wp_mkdir_p( $pdf_dir );
+            }
+
+            // Define the full PDF path
+            $pdf_path = $pdf_dir . 'order-' . $order_id . '.pdf';
                 
             // Generate PDF of the order email
             if (method_exists($this, 'generate_pdf_from_order_email')) {
