@@ -2057,16 +2057,11 @@ jQuery(document).ready(function ($) {
 jQuery(document).ready(function ($) {
   const table = new DataTable("#admin-organizations-table", {
     pageLength: 50,
-    lengthMenu: [
-      [10, 25, 50, 100],
-      [10, 25, 50, 100]
-    ],
+    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
     ajax: {
       url: oam_ajax.ajax_url,
       type: "POST",
-      data: {
-        action: "orthoney_admin_get_organizations_data"
-      }
+      data: { action: "orthoney_admin_get_organizations_data" }
     },
     columns: [
       { data: "code" },
@@ -2080,28 +2075,28 @@ jQuery(document).ready(function ($) {
       { data: "login" }
     ],
     columnDefs: [
-      {
-        targets: -1,
-        orderable: false
-      }
+      { targets: 0, width: "80px" },
+      { targets: 1, width: "200px" },
+      { targets: 2, width: "200px" },
+      { targets: -1, orderable: false, width: "100px" }
     ],
     language: {
       processing: `
-                <div class="loader multiStepForm" style="display:block">
-                    <div>
-                        <h2 class="swal2-title">Processing...</h2>
-                        <div class="swal2-html-container">Please wait while we process your request.</div>
-                        <div class="loader-5"></div>
-                    </div>
-                </div>
-            `
+        <div class="loader multiStepForm" style="display:block">
+          <div>
+            <h2 class="swal2-title">Processing...</h2>
+            <div class="swal2-html-container">Please wait while we process your request.</div>
+            <div class="loader-5"></div>
+          </div>
+        </div>`
     },
-     processing: true,
+    processing: true,
     serverSide: true,
     paging: true,
     searching: true,
-    responsive: true,
-     scrollX: true
+    responsive: false,
+    scrollX: false,
+    autoWidth: false
   });
 });
 
@@ -2951,7 +2946,7 @@ jQuery(function ($) {
 
         const yearSelect = document.getElementById("select-year");
         const startYear = new Date().getFullYear();
-        const endYear = 2018;
+        const endYear = 2024;
         const customYear = ""; // Optional custom year to prioritize
         const defaultSelected = 2025;
 
@@ -3391,7 +3386,7 @@ jQuery(function ($) {
 
         const yearSelect = document.getElementById("jars-select-year");
         const startYear = new Date().getFullYear();
-        const endYear = 2018;
+        const endYear = 2024;
         const defaultSelected = 2025;
         const addedYears = new Set();
 
