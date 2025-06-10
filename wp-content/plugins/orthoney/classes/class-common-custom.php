@@ -160,17 +160,19 @@ class OAM_COMMON_Custom
                                         <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="https://www.orthoney.com/sign-up/"><span class="w-btn-label">Notify Me</span></a>
                                     </div>
                                 </div>
+
+                                <div id="countdown" class="countdown" data-date="<?php echo $next_year_formatted_numeric ?>" data-currentdate="<?php echo $today ?>">
+                                    <ul>
+                                        <li><span class="days"></span> Days</li>
+                                        <li><span class="hours"></span> Hours</li>
+                                        <li><span class="minutes"></span> Minutes</li>
+                                        <li><span class="seconds"></span> Seconds</li>
+                                    </ul>
+                                </div>
                             </div>
-                            <div id="countdown" class="countdown" data-date="<?php echo $next_year_formatted_numeric ?>" data-currentdate="<?php echo $today ?>">
-                                <ul>
-                                    <li><span class="days"></span> Days</li>
-                                    <li><span class="hours"></span> Hours</li>
-                                    <li><span class="minutes"></span> Minutes</li>
-                                    <li><span class="seconds"></span> Seconds</li>
-                                </ul>
-                            </div>
+
+                            <div class="bottom-content"></div>
                         </div>
-                        <div class="bottom-content"></div>
                     </div>
                 </div>
 
