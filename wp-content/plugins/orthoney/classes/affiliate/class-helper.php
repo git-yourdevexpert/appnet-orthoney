@@ -163,7 +163,41 @@ class OAM_AFFILIATE_Helper
         if (empty($details['orders'])) {
             return '';
         }
+       
+        $total_commission = 0;
         $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
+
+        $exclude_coupon = EXCLUDE_COUPON;
+        $total_all_quantity = 0;
+        $total_orders = 0;
+        $fundraising_qty = 0;
+        $wholesale_qty = 0;
+        $wholesale_order = 0;
+        $fundraising_orders = 0;
+        $unit_price = 0;
+        $unit_cost = 0;
+        foreach ($commission_array as $key => $data) {
+            if ($data['affiliate_account_status'] == 1) {
+                $unit_price = $data['par_jar'];
+                $unit_cost = $data['minimum_price'];
+                 $total_all_quantity += $data['total_quantity'];
+                 $total_orders++;
+                $common = [];
+                $coupon_array = !empty($data['is_voucher_used']) ? explode(",", $data['is_voucher_used']) : [];
+                if(count($coupon_array) > 0){
+                    $coupon_array = array_diff($coupon_array, $exclude_coupon);
+                    $coupon_array = array_values($coupon_array);
+                }
+                if(count($coupon_array) == 0){
+                    $total_commission += $data['commission'];
+                }else{
+                    $wholesale_qty += $data['total_quantity'];
+                     $wholesale_order++;
+                }
+            }
+        }
+        $fundraising_qty = $total_all_quantity - $wholesale_qty;
+        $fundraising_orders = $total_orders - $wholesale_order;
         $html = '';
         // rsort($details['orders']);
         $orders = $details['orders'];
@@ -176,11 +210,12 @@ class OAM_AFFILIATE_Helper
                     <table >
                         <thead>
                             <tr>
-                               <th>Order ID</th>
+                                <th>Order ID</th>
                                 <th>Billing Name</th>
                                 <th>Qty</th>
-                                <th>Price</th>
-                                <th>Commission</th>
+                                <th>Type</th>
+                                <th>Fundrs total<br><small>(Fundraising Qty * Dist Unit Price )</small></th>
+                                <th>Distributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></th>
                                 <th>Order Date</th>
                             </tr>
                         </thead>
@@ -215,15 +250,17 @@ class OAM_AFFILIATE_Helper
             }
             
             if ($commission_array[$custom_order_id]['affiliate_account_status'] == 1) {
-                $html .= '<tr>
-                            <td><div class="thead-data">Order ID</div>#' . esc_html($custom_order_id) . '</td>
-                            <td><div class="thead-data">Billing Name</div>' . esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()) . '</td>
-                            <td><div class="thead-data">Qty</div>' . esc_html($quantity) . '</td>
-                            <td><div class="thead-data">Price</div>' . wc_price($order->get_total()) . '</td>
-                            <td><div class="thead-data">Commission</div>' . $commission_price . '</td>
-                            <td><div class="thead-data">Date</div>' . date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order->get_date_created())) . '</td>
-                        </tr>';
-                }
+            $html .= '<tr>
+                        <td><div class="thead-data">Order ID</div>#' . esc_html($custom_order_id) . '</td>
+                        <td><div class="thead-data">Billing Name</div>' . esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()) . '</td>
+                        <td><div class="thead-data">Qty</div>' . esc_html($quantity) . '</td>
+                        <td><div class="thead-data">Type</div>' . esc_html('Wholesale') . '</td>
+                        <td><div class="thead-data">Fundrs total<br><small>(Fundraising Qty * Dist Unit Price )</small></div>' . wc_price($order->get_total()) . '<br><small>('.$fundraising_qty.' * '.wc_price($unit_price).')</small></td>
+                        
+                        <td><div class="thead-data">CommDistributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></div>' . $commission_price . '<br><small>('.$quantity.' * '.wc_price(($unit_price - $unit_cost)).')</small></td>
+                        <td><div class="thead-data">Date</div>' . date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order->get_date_created())) . '</td>
+                    </tr>';
+            }
         }
         if ($count === 0) {
             $html .= '<tr><td colspan="4" class="no-available-msg">Order not found!</td></tr>';
@@ -291,8 +328,7 @@ class OAM_AFFILIATE_Helper
                     <div class="">
                         <div class="recipient-lists-block custom-table orthoney-datatable-warraper table-with-search-block" id="affiliate-orderlist-table">';
 
-        $html .=  '
-                    <table >
+        $html .=  '<table >
                         <thead>
                             <tr>
                                 <th>Order ID</th>
