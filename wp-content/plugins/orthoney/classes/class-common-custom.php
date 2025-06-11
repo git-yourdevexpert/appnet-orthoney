@@ -51,7 +51,8 @@ class OAM_COMMON_Custom {
         
     }
         
-    public function season_start_end_message_box_shortcode($atts) {
+    public function season_start_end_message_box_shortcode($atts)
+    {
         $atts = shortcode_atts(array(
             'type' => '',
             'popup' => '',
@@ -59,17 +60,19 @@ class OAM_COMMON_Custom {
         ), $atts);
 
         if ($atts['type'] === 'order') {
-            ?>
+?>
             <style>
-                #page-content{
-                background:#ddd;
+                #page-content {
+                    background: #ddd;
                 }
+
                 .us_custom_76d41440 {
                     padding-top: 0rem !important;
                     padding-bottom: 1rem !important;
                 }
-                .l-section.wpb_row.us_custom_19737bc8 .g-cols.vc_row{
-                    display:none;
+
+                .l-section.wpb_row.us_custom_19737bc8 .g-cols.vc_row {
+                    display: none;
                 }
             </style>
             <?php
@@ -84,98 +87,109 @@ class OAM_COMMON_Custom {
         $season_start_timestamp = strtotime($season_start_date);
         $season_end_timestamp   = strtotime($season_end_date);
 
-        $is_within_range = ( $current_timestamp >= $season_start_timestamp && $current_timestamp <= $season_end_timestamp );
+        $is_within_range = ($current_timestamp >= $season_start_timestamp && $current_timestamp <= $season_end_timestamp);
 
-        if ( ! $is_within_range ) {
-        $seasonStartDate = new DateTime($season_start_date);
+        if (! $is_within_range) {
+            $seasonStartDate = new DateTime($season_start_date);
 
-        // Format as MM/DD/YYYY
-        $formatted_numeric = $seasonStartDate->format('m/d/Y H:i:s');
+            // Format as MM/DD/YYYY
+            $formatted_numeric = $seasonStartDate->format('m/d/Y H:i:s');
 
-        // Format as "June 12, 2025"
-        $startDay = $seasonStartDate->format('j');
-        $formatted_text = $seasonStartDate->format("F {$startDay}, Y");
+            // Format as "June 12, 2025"
+            $startDay = $seasonStartDate->format('j');
+            $formatted_text = $seasonStartDate->format("F {$startDay}, Y");
 
-        if ($current_timestamp <= $season_start_timestamp){
-        ?>
-            <div class="season_start_end_message_box <?php echo $atts['popup'] ?>" style="<?php echo $atts['popup'] === 'withpopup' ? 'display:none' : '' ?>">
-                <div class="popupbox <?php echo $atts['popup'] ?>">
-                    <div class="content-wrapper">
-                        <div class="bee-animation"><img decoding="async" width="72" height="72" src="/wp-content/uploads/2025/06/bee.png" class="attachment-full size-full" alt="Bee" loading="lazy"></div>
-                        <div class="close-popup" onclick="this.closest('.popupbox').style.display='none'">x</div>
-                        <div class="top-content">
-                            <h2>The Hive’s Just Waking Up… Get Ready for the Buzz!</h2>
-                            <div class="subtext">We’re almost ready to launch this season’s buzz-worthy tradition and trust us, it’s going to bee amazing!</div>
-                            <p>Our honey isn’t flowing just yet, but the hive opens for gifting on <strong class="green-text"><?php echo $formatted_text ?></strong></p>
-                            <div class="border-top-bottom">Please come back soon to Send Honey. Share Hope. Spread Joy.</div>
-                            <div class="notifyme">
-                                <span>Your friends at Honey From The Heart</span>
-                                <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="#mailchimp-form-manage-popup"><span class="w-btn-label">Notify Me</span></a>
-                            </div>
-                            <div id="countdown" class="countdown" data-date="<?php echo $formatted_numeric ?>" data-currentdate="<?php echo $today ?>">
-                                <ul>
-                                    <li><span class="days"></span> Days</li>
-                                    <li><span class="hours"></span> Hours</li>
-                                    <li><span class="minutes"></span> Minutes</li>
-                                    <li><span class="seconds"></span> Seconds</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="bottom-content"></div>
-                    </div>
-                </div>
-            </div>
-        <?php
-        }
-
-        $next_year_season_start_date = get_field('next_year_season_start_date', 'option');
-
-        $nextYearSeasonStartDate = new DateTime($next_year_season_start_date);
-
-        // Format as MM/DD/YYYY
-        $next_year_formatted_numeric = $nextYearSeasonStartDate->format('m/d/Y H:i:s');
-
-        // Format as "June 12, 2025"
-        $nextYearStartDay = $nextYearSeasonStartDate->format('j');
-        $next_year_formatted_text = $nextYearSeasonStartDate->format("F {$nextYearStartDay}, Y");
-        
-        if ($current_timestamp >= $season_end_timestamp) {
+            if ($current_timestamp <= $season_start_timestamp) {
             ?>
-            <div class="season_start_end_message_box <?php echo $atts['popup'] ?>" style="<?php echo $atts['popup'] === 'withpopup' ? 'display:none' : '' ?>">
-                <div class="popupbox <?php echo $atts['popup'] ?>">
-                    <div class="content-wrapper">
-                        <div class="bee-animation"><img decoding="async" width="72" height="72" src="/wp-content/uploads/2025/06/bee.png" class="attachment-full size-full" alt="Bee" loading="lazy"></div>
-                        <div class="close-popup" onclick="this.closest('.popupbox').style.display='none'">x</div>
-                        <div class="top-content">
-                            <h2>The Hive Is Slowing Down… But the Sweetness Will Return!</h2>
-                            <div class="subtext">As the honey season is now closed, we’re filled with gratitude for the kindness you’ve shared. </div>
-                            <p>We’ll be buzzing again in <strong class="green-text"><?php echo $next_year_formatted_text ?>,</strong> and we can’t wait to share the sweetness with you once more.</strong></p>
-                            <div class="border-top-bottom">Until then — thank you for helping us Send Honey. Share Hope. Spread Joy.</div>
-                            <div class="message-txt">
-                                With heartfelt appreciation,<br>
-                                Your friends at Honey From The Heart<br><br>
+                <div class="season_start_end_message_box <?php echo $atts['popup'] ?>" style="<?php echo $atts['popup'] === 'withpopup' ? 'display:none' : '' ?>">
+                    <div class="popupbox <?php echo $atts['popup'] ?>">
+                        <div class="content-wrapper">
+                            <div class="bee-animation"><img decoding="async" width="72" height="72" src="/wp-content/uploads/2025/06/bee.png" class="attachment-full size-full" alt="Bee" loading="lazy"></div>
+                            <div class="close-popup" onclick="this.closest('.popupbox').style.display='none'">x</div>
+                            <div class="top-content">
+                                <h2>The Hive’s Just Waking Up… Get Ready for the Buzz!</h2>
+                                <div class="subtext">We’re almost ready to launch this season’s buzz-worthy tradition and trust us, it’s going to bee amazing!</div>
+                                <p>Our honey isn’t flowing just yet, but the hive opens for gifting on <strong class="green-text"><?php echo $formatted_text ?></strong></p>
+
+                                <div class="notify-card">
+                                    <div class="notify-card-content">
+                                        <div class="border-top-bottom">Please come back soon to Send Honey. Share Hope. Spread Joy.</div>
+                                        <div class="notifyme">
+                                            <p>Your friends at Honey From The Heart</p>
+                                            <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="#mailchimp-form-manage-popup" data-lity><i class="fas fa-bell"></i> <span class="w-btn-label">Notify Me</span></a>
+                                        </div>
+                                    </div>
                                 </div>
-                            <div class="notifyme">
-                                <span>Be the first to know when the season opens!</span>
-                                <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="#mailchimp-form-manage-popup"><span class="w-btn-label">Notify Me</span></a>
+                                <div id="countdown" class="countdown" data-date="<?php echo $formatted_numeric ?>" data-currentdate="<?php echo $today ?>">
+                                    <ul>
+                                        <li><span class="days"></span> Days</li>
+                                        <li><span class="hours"></span> Hours</li>
+                                        <li><span class="minutes"></span> Minutes</li>
+                                        <li><span class="seconds"></span> Seconds</li>
+                                    </ul>
+                                </div>
                             </div>
-                            <div id="countdown" class="countdown" data-date="<?php echo $next_year_formatted_numeric ?>" data-currentdate="<?php echo $today ?>">
-                                 <ul>
-                                    <li><span class="days"></span> Days</li>
-                                    <li><span class="hours"></span> Hours</li>
-                                    <li><span class="minutes"></span> Minutes</li>
-                                    <li><span class="seconds"></span> Seconds</li>
-                                </ul>
-                            </div>
+                            <div class="bottom-content"></div>
                         </div>
-                        <div class="bottom-content"></div>
                     </div>
                 </div>
-            </div>
+            <?php
+            }
+
+            $next_year_season_start_date = get_field('next_year_season_start_date', 'option');
+
+            $nextYearSeasonStartDate = new DateTime($next_year_season_start_date);
+
+            // Format as MM/DD/YYYY
+            $next_year_formatted_numeric = $nextYearSeasonStartDate->format('m/d/Y H:i:s');
+
+            // Format as "June 12, 2025"
+            $nextYearStartDay = $nextYearSeasonStartDate->format('j');
+            $next_year_formatted_text = $nextYearSeasonStartDate->format("F {$nextYearStartDay}, Y");
+
+            if ($current_timestamp >= $season_end_timestamp) {
+            ?>
+                <div class="season_start_end_message_box <?php echo $atts['popup'] ?>" style="<?php echo $atts['popup'] === 'withpopup' ? 'display:none' : '' ?>">
+                    <div class="popupbox <?php echo $atts['popup'] ?>">
+                        <div class="content-wrapper">
+                            <div class="bee-animation"><img decoding="async" width="72" height="72" src="/wp-content/uploads/2025/06/bee.png" class="attachment-full size-full" alt="Bee" loading="lazy"></div>
+                            <div class="close-popup" onclick="this.closest('.popupbox').style.display='none'">x</div>
+                            <div class="top-content end-season">
+                                <h2>The Hive Is Slowing Down… But the Sweetness Will Return!</h2>
+                                <div class="subtext ">As the honey season is now closed, we’re filled with gratitude for the kindness you’ve shared. </div>
+                                <p class="end-season-content">We’ll be buzzing again in <strong class="green-text"><?php echo $next_year_formatted_text ?>,</strong> and we can’t wait to share the sweetness with you once more.</strong></p>
+                                <div class="notify-card">
+                                    <div class="notify-card-content"></div>
+                                    <div class="border-top-bottom">Until then — thank you for helping us Send Honey. Share Hope. Spread Joy.</div>
+                                    <div class="message-txt">
+                                        With heartfelt appreciation,<br>
+                                        Your friends at Honey From The Heart
+                                    </div>
+                                    <div class="notifyme">
+                                        <p>Be the first to know when the season opens!</p>
+                                        <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="#mailchimp-form-manage-popup" data-lity><span class="w-btn-label">Notify Me</span></a>
+                                    </div>
+                                </div>
+
+                                <div id="countdown" class="countdown" data-date="<?php echo $next_year_formatted_numeric ?>" data-currentdate="<?php echo $today ?>">
+                                    <ul>
+                                        <li><span class="days"></span> Days</li>
+                                        <li><span class="hours"></span> Hours</li>
+                                        <li><span class="minutes"></span> Minutes</li>
+                                        <li><span class="seconds"></span> Seconds</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="bottom-content"></div>
+                        </div>
+                    </div>
+                </div>
+
             <?php
             }
         }
-    
+
         return ob_get_clean();
     }
 
