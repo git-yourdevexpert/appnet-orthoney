@@ -169,7 +169,7 @@ function affiliateDatatable() {
         searching: true,
         responsive: true,
         deferRender: false,
-        order: [[lastColIndex, "asc"]],
+        order: [[lastColIndex, "desc"]],
         lengthChange: false,
         language: {
           search: "",
