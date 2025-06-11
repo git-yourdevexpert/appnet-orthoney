@@ -34,22 +34,12 @@ class OAM_COMMON_Custom {
         // add_action( 'woocommerce_created_customer', array($this,'custom_redirect_after_registration_based_on_role' ));
         add_shortcode( 'registration_success_msg', array($this, 'show_success_message_on_login') );
         add_action( 'wp_ajax_oam_ajax_logout',array($this, 'oam_ajax_logout') );
-        add_action('wp_footer', [$this, 'mailchimp_form_popup']);
+      
 
     }
 
     public static function init() {}
-    public function mailchimp_form_popup() {
-        ?>
-        <div id="mailchimp-form-manage-popup" class="lity-popup-normal lity-hide">
-            <div class="popup-show order-process-block orthoney-datatable-warraper">
-                <h3 class="popup-title">Subscribe for I Want to Buy Honey</h3>
-                <?php echo do_shortcode("[mailchimpsf_form]") ?>
-            </div>
-        </div>
-        <?php
-        
-    }
+
         
     public function season_start_end_message_box_shortcode($atts)
     {
@@ -116,7 +106,7 @@ class OAM_COMMON_Custom {
                                         <div class="border-top-bottom">Please come back soon to Send Honey. Share Hope. Spread Joy.</div>
                                         <div class="notifyme">
                                             <p>Your friends at Honey From The Heart</p>
-                                            <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="#mailchimp-form-manage-popup" data-lity><i class="fas fa-bell"></i> <span class="w-btn-label">Notify Me</span></a>
+                                            <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="<?php echo home_url('/sign-up/')  ?>"><i class="fas fa-bell"></i> <span class="w-btn-label">Notify Me</span></a>
                                         </div>
                                     </div>
                                 </div>
@@ -167,7 +157,7 @@ class OAM_COMMON_Custom {
                                     </div>
                                     <div class="notifyme">
                                         <p>Be the first to know when the season opens!</p>
-                                        <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="#mailchimp-form-manage-popup" data-lity><span class="w-btn-label">Notify Me</span></a>
+                                        <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="<?php echo home_url('/sign-up/');  ?>"><span class="w-btn-label">Notify Me</span></a>
                                     </div>
                                 </div>
 
