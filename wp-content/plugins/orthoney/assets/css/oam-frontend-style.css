@@ -1787,7 +1787,7 @@ body.user-registration-page .login-register-block .user-registration:not(.user-r
 .user-registration .ur-frontend-form.login .ur-form-grid {
   padding: 0;
 }
-
+.notify-form form .mc4wp-form-fields label,
 body .user-registration .ur-frontend-form.login label {
   margin-top: 0 !important;
   font-size: 16px !important;
@@ -4300,7 +4300,17 @@ table#customer-orders-table thead tr th:last-child,
 table#customer-jar-orders-table thead tr th:last-child{
    width:110px !important
 }
-
+.notify-form form .mc4wp-form-fields label{
+    margin-bottom: 12px;
+    display: inline-block;
+}
+.notify-form form .mc4wp-form-fields input{
+    min-height: 39px !important;
+    height: 100%;
+}
+.notify-form form .mc4wp-form-fields > p {
+    margin-bottom: 24px;
+}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
