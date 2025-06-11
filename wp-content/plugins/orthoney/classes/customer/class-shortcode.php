@@ -158,11 +158,10 @@ class OAM_Shortcode
 
                        $affiliate_code = 'Honey from the Heart';
                        
-                       if($order->affiliate_code == 'Orthoney' && $order->affiliate_code == ''){
+                       if (!isset($order->affiliate_code) || $order->affiliate_code === '' || $order->affiliate_code === 'Orthoney') {
                            $affiliate_code = 'Honey from the Heart';
                         }else{
                            $affiliate_code =  $order->affiliate_code;
-
                        }
                        if($affiliate_code == ''){
                         $affiliate_code = 'Honey from the Heart';
