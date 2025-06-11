@@ -43,7 +43,7 @@ class OAM_COMMON_Custom {
         ?>
         <div id="mailchimp-form-manage-popup" class="lity-popup-normal lity-hide">
             <div class="popup-show order-process-block orthoney-datatable-warraper">
-                <h3 class="popup-title"><span></span> Order Details</h3>
+                <h3 class="popup-title">Subscribe for I Want to Buy Honey</h3>
                 <?php echo do_shortcode("[mailchimpsf_form]") ?>
             </div>
         </div>
