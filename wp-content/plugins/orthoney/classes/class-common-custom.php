@@ -106,7 +106,7 @@ class OAM_COMMON_Custom {
                                         <div class="border-top-bottom">Please come back soon to Send Honey. Share Hope. Spread Joy.</div>
                                         <div class="notifyme">
                                             <p>Your friends at Honey From The Heart</p>
-                                            <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="<?php echo home_url('/sign-up/')  ?>"><i class="fas fa-bell"></i> <span class="w-btn-label">Notify Me</span></a>
+                                            <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="<?php echo get_permalink(47757)  ?>"><i class="fas fa-bell"></i> <span class="w-btn-label">Notify Me</span></a>
                                         </div>
                                     </div>
                                 </div>
@@ -157,7 +157,7 @@ class OAM_COMMON_Custom {
                                     </div>
                                     <div class="notifyme">
                                         <p>Be the first to know when the season opens!</p>
-                                        <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="<?php echo home_url('/sign-up/');  ?>"><span class="w-btn-label">Notify Me</span></a>
+                                        <a class="w-btn us-btn-style_2 us_custom_29a0f245" href="<?php echo get_permalink(47757);  ?>"><span class="w-btn-label">Notify Me</span></a>
                                     </div>
                                 </div>
 
