@@ -56,6 +56,9 @@ class OAM_WC_Customizer {
                 wp_mkdir_p( $pdf_dir );
             }
 
+            // Get the order ID
+            $order_id = $order->get_id();
+            
             // Define the full PDF path
             $pdf_path = $pdf_dir . 'order-' . $order_id . '.pdf';
                 
