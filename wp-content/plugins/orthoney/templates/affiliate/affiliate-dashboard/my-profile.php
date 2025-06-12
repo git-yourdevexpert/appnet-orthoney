@@ -149,10 +149,17 @@
             <div class="affiliate-profile" id="update-price-affiliate-form">
                 <form id="affiliate-update-price-form">
                     <div class="form-row gfield--width-half">
-                        <label for="product_price">Product Price <span class="error-message"><strong>Honey jars price cannot be less than <?php echo wc_price($selling_minimum_price ) ?>.</strong></span></label>
+                        <label for="product_price">Product Price <span class="error-message"><strong>Honey jar price cannot be less than <?php echo wc_price($selling_minimum_price ) ?>.</strong></span></label>
+
+                        <?php 
+                        $show_price = $selling_minimum_price;
+                        if($product_price >= $selling_minimum_price){
+                            $show_price = $product_price;
+                        }
+                        ?>
 
                         <div class="product-price-box textarea-div form-row gfield--width-full update-price">
-                            <input type="text" name="product_price" id="product_price" value="<?php echo esc_attr($product_price ?:$selling_minimum_price); ?>" data-error-message="Please enter a product price">
+                            <input type="text" name="product_price" id="product_price" value="<?php echo esc_attr($show_price); ?>" data-error-message="Please enter a product price">
                             <span class="error-message"></span>
                             <input type="hidden" name="selling_minimum_price" value="<?php echo $selling_minimum_price ?>">
                         
