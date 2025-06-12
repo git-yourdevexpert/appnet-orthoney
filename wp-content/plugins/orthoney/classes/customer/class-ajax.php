@@ -3140,7 +3140,7 @@ class OAM_Ajax{
         global $wpdb;
         foreach ($order_id_array as $order_id) {
             // if (!$order) continue;
-    
+            $distName = 'Honey from the Heart';
             
             // $sub_order_id =  OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID')?: $order_id;
             $sub_order_id =  $order_id;
@@ -3210,7 +3210,7 @@ class OAM_Ajax{
             
 
             // Final full address
-           
+          
             if(!empty($distAddressParts)){
                 $distAddress = implode(' ', $distAddressParts);
 
@@ -3219,9 +3219,11 @@ class OAM_Ajax{
             }
             if(!empty($distAddressParts)){
                 $distName = implode(' ', $distNameParts);
-            }else{
-                $distName = 'Honey from the Heart';
             }
+            if(trim($distName) == ''){
+               $distName = 'Honey from the Heart';
+            }
+
             $affiliate_org_name = 'Honey from the Heart';
             if (!empty($orderdata['suborderdata'])) {
                 $affiliate_org_name = $orderdata['suborderdata'][0]['suborder_affiliate_org_name'];
@@ -3231,9 +3233,8 @@ class OAM_Ajax{
             $suborder_affiliate_token = 'Honey from the Heart';
             $refersite = site_url();
             if (!empty($orderdata['suborderdata'])) {
-
+                $suborder_affiliate_token = $orderdata['suborderdata'][0]['suborder_affiliate_token'];
                 if( !in_array($suborder_affiliate_token, $ex_words)){
-                    $suborder_affiliate_token = $orderdata['suborderdata'][0]['suborder_affiliate_token'];
                     $refersite = site_url().'?ref='.$suborder_affiliate_token;
                 }
             }
@@ -3265,7 +3266,7 @@ class OAM_Ajax{
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
                     <p>Shipping is FREE for orders submitted online through $shipStartDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
                     <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='".esc_url($refersite)."'>".esc_url($refersite)."</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $sub_order_id . " when prompted.</p>
-                    <p>If you are unable to order online, update this form with any additions, deletions or corrections, fill out the payment section and mail it to {$distName} {$distAddress}. Mail orders must be received by $shipEndDate or shipping charges will be added and charged to you.</p>";
+                    <p>If you are unable to order online, update this form with any additions, deletions or corrections, fill out the payment section and mail it to $distName $distAddress. Mail orders must be received by $shipEndDate or shipping charges will be added and charged to you.</p>";
             } else {
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey.</p>
