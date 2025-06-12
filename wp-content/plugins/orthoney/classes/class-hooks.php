@@ -78,7 +78,9 @@ class OAM_Hooks {
 
         // Default token
         $affiliate_token = 'N/A';
-       
+        $organization_name = '';
+        $yith_first_name= '';
+        $yith_last_name= '';
         // Try to get affiliate token from user meta
         if ($user_id) {
             $organization_name = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true)?: '';

@@ -50,8 +50,50 @@
             "bidirectional_target": []
         },
         {
+            "key": "field_6849a5bbde1a7",
+            "label": "All Organization Bypass for Season Date",
+            "name": "all_organization_bypass",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "message": "",
+            "default_value": 0,
+            "allow_in_bindings": 0,
+            "ui_on_text": "",
+            "ui_off_text": "",
+            "ui": 1
+        },
+        {
+            "key": "field_6849a5ccde1a8",
+            "label": "All Admin Bypass for Season Date",
+            "name": "all_admin_bypass",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "message": "",
+            "default_value": 0,
+            "allow_in_bindings": 0,
+            "ui_on_text": "",
+            "ui_off_text": "",
+            "ui": 1
+        },
+        {
             "key": "field_6846cf59825ce",
-            "label": "Bypass to Season Date",
+            "label": "Bypass users for Season Date",
             "name": "ort_bypass_user",
             "aria-label": "",
             "type": "user",
@@ -611,5 +653,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1749480590
+    "modified": 1749658506
 }

@@ -163,6 +163,7 @@ class OAM_Shortcode
                         }else{
                            $affiliate_code =  $order->affiliate_code;
                        }
+                       
                        if($affiliate_code == ''){
                         $affiliate_code = 'Honey from the Heart';
                        }

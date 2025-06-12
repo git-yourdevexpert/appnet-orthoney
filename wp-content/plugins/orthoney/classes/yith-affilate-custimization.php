@@ -67,6 +67,24 @@ class OAM_YITH_Affilate {
    public  function custom_token_validation($user_id) {
         global $wpdb;
         $token = $_POST['yith_wcaf_affiliate_meta']['token'];
+        
+
+        // First, check if an entry already exists with this user_id and token
+        $existing_token_id = $wpdb->get_var( $wpdb->prepare(
+            "SELECT ID FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id = %d AND token = %s",
+            $user_id,
+            ''
+        ));
+
+        // If exists, update the token
+        if ( $existing_token_id ) {
+            $wpdb->update(
+                $wpdb->prefix . 'yith_wcaf_affiliates',
+                ['token' => $token],
+                ['ID' => $existing_token_id]
+            );
+        }
+
         $token_error = '';
         $token = str_replace("-1", "", $token);
     
@@ -111,27 +129,27 @@ class OAM_YITH_Affilate {
         if ($token_error != '') {
             ?>
             <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            setTimeout(function() {
-                // Function to get and decode a cookie value by name
-                function getCookie(name) {
-                    let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                    return match ? decodeURIComponent(match[2]) : null; // Decode the cookie value
-                }
+                document.addEventListener("DOMContentLoaded", function() {
+                    setTimeout(function() {
+                        // Function to get and decode a cookie value by name
+                        function getCookie(name) {
+                            let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+                            return match ? decodeURIComponent(match[2]) : null; // Decode the cookie value
+                        }
 
-                
-                    var targetElement = document.querySelector('#yith_wcaf_affiliate_meta_token-container');
+                        
+                            var targetElement = document.querySelector('#yith_wcaf_affiliate_meta_token-container');
 
-                    if (targetElement) {
-                        var noticeDiv = document.createElement('div');
-                        noticeDiv.className = 'notice notice-error 111';
-                        noticeDiv.innerHTML = '<p><?php echo $token_error ?></p>';
-                        targetElement.appendChild(noticeDiv);
-                    }
-                
-            }, 1000); // Delay execution by 1 second
-        });
-        </script>
+                            if (targetElement) {
+                                var noticeDiv = document.createElement('div');
+                                noticeDiv.className = 'notice notice-error 111';
+                                noticeDiv.innerHTML = '<p><?php echo $token_error ?></p>';
+                                targetElement.appendChild(noticeDiv);
+                            }
+                        
+                    }, 1000); // Delay execution by 1 second
+                });
+            </script>
             <?php
         }
     }

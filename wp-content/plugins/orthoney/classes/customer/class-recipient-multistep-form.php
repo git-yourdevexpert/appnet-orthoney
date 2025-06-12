@@ -57,8 +57,27 @@ class OAM_RECIPIENT_MULTISTEP_FORM
 
        $current_date = current_time('Y-m-d H:i:s');
 
-        $ort_bypass_user = get_field('ort_bypass_user', 'option');
-        if(!in_array(get_current_user_id(), $ort_bypass_user)){
+        $ort_bypass_user = get_field('ort_bypass_user', 'option')?:[];
+        $status = false;
+
+        $all_admin_bypass = get_field('all_admin_bypass', 'option')?: 0;
+        $all_organization_bypass = get_field('all_organization_bypass', 'option')?: 0;
+        // If administrator and admin bypass is enabled
+        if ( $all_admin_bypass == 1 && in_array('administrator', $roles)) {
+            $status = true;
+        }
+
+        // If organization user and org bypass is enabled
+        if ($all_organization_bypass == 1 && in_array('yith_affiliate', $roles)) {
+            $status = true;
+        }
+
+        // If user ID is in the bypass user list
+        if (in_array(get_current_user_id(), $ort_bypass_user)) {
+            $status = true;
+        }
+
+        if($status === false){
             $season_start_date = get_field('season_start_date', 'option');
             $season_end_date   = get_field('season_end_date', 'option');
 

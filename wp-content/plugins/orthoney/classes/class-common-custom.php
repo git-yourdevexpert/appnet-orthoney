@@ -468,6 +468,19 @@ class OAM_COMMON_Custom {
         if ($affiliate_dashboard_id) {
             $classes[] = 'affiliate-dashboard';
         }
+       
+        $dashboard_array = array('organization-dashboard', 'sales-representative-dashboard', 'dashboard', 'administrator-dashboard');
+
+        $uri = $_SERVER['REQUEST_URI'];
+        $path = trim(parse_url($uri, PHP_URL_PATH), '/');
+        $segments = explode('/', $path);
+
+        $first_segment = isset($segments[0]) ? $segments[0] : '';
+
+        if (in_array($first_segment, $dashboard_array)) {
+            $classes[] = $first_segment . '-active';
+        }
+        
         if (is_user_logged_in()) {
             $user = wp_get_current_user();
             if (!empty($user->roles)) {
@@ -475,11 +488,11 @@ class OAM_COMMON_Custom {
                     $classes[] = 'role-' . sanitize_html_class($role);
                 }
             }
-        } 
+        }
 
-    
         return $classes;
     }
+
     public static function sub_order_error_log($message, $order_id = null) {
         // Fallback to generic file if order_id not provided
         $log_filename = $order_id ? "sub_order_{$order_id}.log" : "sub-order-error.log";
@@ -715,8 +728,6 @@ class OAM_COMMON_Custom {
         
        $endpoint = get_query_var('administrator');
 
-        print_r($endpoint);
-
         $output = '<ul>';
         
         if (is_user_logged_in()) {
@@ -724,13 +735,13 @@ class OAM_COMMON_Custom {
             if (in_array('administrator', $roles)) {
                 $output .= '<li class="customer-dashboard"><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Area</a></li>';
                 $output .= '<li class="organization-dashboard"><a href="' . ORGANIZATION_DASHBOARD_LINK . '">Organization Area</a></li>';
-                $output .= '<li><a href="' . SALES_REPRESENTATIVE_DASHBOARD_LINK . '">Sales Representative Area</a></li>';
-                $output .= '<li><a href="' . ADMINISTRATOR_DASHBOARD_LINK . '">Administrator Area</a></li>';
+                $output .= '<li class="sales-representative-dashboard-link"><a href="' . SALES_REPRESENTATIVE_DASHBOARD_LINK . '">Sales Representative Area</a></li>';
+                $output .= '<li class="administrator-dashboard-link"><a href="' . ADMINISTRATOR_DASHBOARD_LINK . '">Administrator Area</a></li>';
                 
             } 
             elseif(in_array('sales_representative', $roles) && in_array('customer', $roles)){
                     $output .= '<li class="customer-dashboard"><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Area</a></li>';
-                    $output .= '<li><a href="' . SALES_REPRESENTATIVE_DASHBOARD_LINK . '">Sales Representative Area</a></li>';
+                    $output .= '<li class="sales-representative-dashboard-link"><a href="' . SALES_REPRESENTATIVE_DASHBOARD_LINK . '">Sales Representative Area</a></li>';
             }  else {
                 // Check for customer without affiliate roles
                 if (in_array('customer', $roles) && !in_array('yith_affiliate', $roles) && !in_array('affiliate_team_member', $roles)) {
@@ -740,10 +751,10 @@ class OAM_COMMON_Custom {
                         $output .= '<li class="customer-dashboard"><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Area</a></li>';
                     }
                     if (in_array('yith_affiliate', $roles) || in_array('affiliate_team_member', $roles)) {
-                        $output .= '<li><a href="' . ORGANIZATION_DASHBOARD_LINK . '">Organization Area</a></li>';
+                        $output .= '<li class="organization-dashboard"><a href="' . ORGANIZATION_DASHBOARD_LINK . '">Organization Area</a></li>';
                     }
                     if (in_array('sales_representative', $roles)) {
-                        $output .= '<li><a href="' . SALES_REPRESENTATIVE_DASHBOARD_LINK . '">Sales Representative Area</a></li>';
+                        $output .= '<li class="sales-representative-dashboard-link"><a href="' . SALES_REPRESENTATIVE_DASHBOARD_LINK . '">Sales Representative Area</a></li>';
                     }
                 }
             }

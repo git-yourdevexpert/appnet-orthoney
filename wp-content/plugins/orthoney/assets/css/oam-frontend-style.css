@@ -5141,3 +5141,11 @@ table#customer-jar-orders-table thead tr th:last-child{
     right: 20px;
     top: 18px;
 }
+
+body.dashboard-active .top-bar-menu .customer-dashboard a,
+body.sales-representative-dashboard-active .top-bar-menu .sales-representative-dashboard-link a,
+body.organization-dashboard-active .top-bar-menu .organization-dashboard a,
+body.administrator-dashboard-active .top-bar-menu .administrator-dashboard-link a{
+    color:#6BBE56;
+    font-weight: 900;
+}
