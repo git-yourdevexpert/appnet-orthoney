@@ -594,7 +594,7 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Dist Unit Profit <div class="tooltip" data-tippy="(Dist Unit Price - Dist Unit Cost )"></div></span><span>'.wc_price($unit_price - $unit_cost).'</span></li>
                                      <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Price )"></div></span><span>'.wc_price($fundraising_qty * $unit_cost).'</span></li>
                                     <li ><span>Fundrs Total <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Price )"></div></span><span>'.wc_price($fundraising_qty * $unit_price).'</span></li>
-                                    <li  class="total"><span>Fundrs Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Cost )"></div></span><span>'.wc_price($fundraising_qty * ($unit_cost)).'</span></li>
+                                    <li  class="total"><span>Fundrs Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div></span><span>'.wc_price($fundraising_qty * ($unit_price - $unit_cost)).'</span></li>
                                     
                                 </ul>
                             </div>
