@@ -3229,8 +3229,10 @@ class OAM_Ajax{
             $suborder_affiliate_token = 'Honey from the Heart';
             $refersite = site_url();
             if (!empty($orderdata['suborderdata'])) {
-                $suborder_affiliate_token = $orderdata['suborderdata'][0]['suborder_affiliate_token'];
-                $refersite = site_url().'?ref='.$suborder_affiliate_token;
+                if($suborder_affiliate_token != 'Honey from the Heart' AND $suborder_affiliate_token !=  'Orthoney'){
+                    $suborder_affiliate_token = $orderdata['suborderdata'][0]['suborder_affiliate_token'];
+                    $refersite = site_url().'?ref='.$suborder_affiliate_token;
+                }
             }
         
     
@@ -3254,12 +3256,12 @@ class OAM_Ajax{
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
                     <p>Shipping is FREE for orders submitted online through $shipStartDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
-                    <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='.$refersite.'>$refersite</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $sub_order_id . " when prompted.</p>";
+                    <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='".esc_url($refersite)."'>".esc_url($refersite)."</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $sub_order_id . " when prompted.</p>";
             } elseif ($custom_order_pdf_type == "2p") {
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
-                    <p>Shipping is FREE for orders submitted online through $shipEndDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
-                    <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='.$refersite.'>$refersite</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $sub_order_id . " when prompted.</p>
+                    <p>Shipping is FREE for orders submitted online through $shipStartDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
+                    <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='".esc_url($refersite)."'>".esc_url($refersite)."</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $sub_order_id . " when prompted.</p>
                     <p>If you are unable to order online, update this form with any additions, deletions or corrections, fill out the payment section and mail it to {$distName} {$distAddress}. Mail orders must be received by $shipEndDate or shipping charges will be added and charged to you.</p>";
             } else {
                 $pdftypepdfcontent = "
@@ -3343,7 +3345,7 @@ class OAM_Ajax{
             }
             $html .= '</div>';
 
-            if($suborder_affiliate_token != 'Honey from the Heart' ){
+            if($suborder_affiliate_token != 'Honey from the Heart' AND $suborder_affiliate_token !=  'Orthoney'){
                 $html .= '<p>Code : '.$suborder_affiliate_token.'</p>';
             }
             $html .= '<div style="page-break-after: always;"></div>';
