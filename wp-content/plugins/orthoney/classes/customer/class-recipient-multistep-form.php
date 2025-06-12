@@ -58,6 +58,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
        $current_date = current_time('Y-m-d H:i:s');
 
         $ort_bypass_user = get_field('ort_bypass_user', 'option')?:[];
+        $user = wp_get_current_user();
+        $roles = $user->roles;
         $status = false;
 
         $all_admin_bypass = get_field('all_admin_bypass', 'option')?: 0;
