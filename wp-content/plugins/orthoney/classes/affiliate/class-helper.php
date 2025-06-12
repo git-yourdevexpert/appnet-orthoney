@@ -494,6 +494,13 @@ class OAM_AFFILIATE_Helper
                         </div>
                     </div>
                 </div>
+                <div class="dashboard-heading block-row">
+                    <div class="item" style="padding: 10px 20px;background-color: rgba(255, 0, 0, 0.5);">
+                        <div class="row-block">
+                            <p style="color: white;">' . (($details['total_quantity'] > 50)  ?  '<button data-orgid="' . $affiliate_id . '"  class="w-btn us-btn-style_1 org_account_statement">Account Statement</button>' : 'A minimum of 50 jars is required. You still need ' . (50 - $details['total_quantity']) . ' more jars.') . '</p style="color: white;">
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="block-row three-block-col">
                     <div class="place-order item" style="display:none">
@@ -564,7 +571,7 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Total Cost <div class="tooltip" data-tippy="(Fundrs Total + Wholesale Total )"></div> </span><span>'.wc_price(($fundraising_qty * $unit_price) + ($wholesale_qty * $unit_price)).'</span></li>
                                    
                                     <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Total Qty * Dist Unit Cost )"></div></span><span>'.wc_price($total_all_quantity * $unit_cost).'</span></li>
-                                    <li class="total"><span>Distributor Sales Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div> </span><span>'.wc_price($fundraising_qty * ($unit_price - $unit_cost)).'</span></li>
+                                    <li class="total"><span>Distributor Sales Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div> </span><span>'.(($details['total_quantity'] > 50) ? wc_price($fundraising_qty * ($unit_price - $unit_cost)) :  wc_price(0)).'</span></li>
                                 </ul>
                             </div>
                         </div>
@@ -587,7 +594,8 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Dist Unit Profit <div class="tooltip" data-tippy="(Dist Unit Price - Dist Unit Cost )"></div></span><span>'.wc_price($unit_price - $unit_cost).'</span></li>
                                      <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Price )"></div></span><span>'.wc_price($fundraising_qty * $unit_cost).'</span></li>
                                     <li ><span>Fundrs Total <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Price )"></div></span><span>'.wc_price($fundraising_qty * $unit_price).'</span></li>
-                                    <li  class="total"><span>Fundrs Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div></span><span>'.wc_price($fundraising_qty * ($unit_price - $unit_cost)).'</span></li>
+                                    <li  class="total"><span>Fundrs Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Cost )"></div></span><span>'.wc_price($fundraising_qty * ($unit_cost)).'</span></li>
+                                    
                                 </ul>
                             </div>
                         </div>
@@ -740,6 +748,8 @@ class OAM_AFFILIATE_Helper
             $affiliate_id
         ));
 
+         
+
 
 
         $total_exclude_quantity = $wpdb->get_var($wpdb->prepare(
@@ -760,7 +770,7 @@ class OAM_AFFILIATE_Helper
 
 
         if (!empty($commission_year_results)) {
-            if ($total_quantity >= 50) {
+            // if ($total_quantity >= 50) {
                 $total_all_quantity = 0;
                 $wholesale_qty = 0;
                
@@ -840,7 +850,7 @@ class OAM_AFFILIATE_Helper
                 //  Start
                 
                 //  end
-            }
+            // }
         }
 
         if ($affiliate_id_attr == '') {
