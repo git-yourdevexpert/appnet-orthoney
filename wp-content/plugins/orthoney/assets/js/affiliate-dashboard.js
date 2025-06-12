@@ -772,6 +772,6 @@ document.addEventListener('click', async function (event) {
 });
 
 jQuery(function ($) {
-	
 	$('#profile_consent_field input').prop('checked', true);
+	$('#profile_privacy_policy_text_field input').prop('checked', true);
 });
