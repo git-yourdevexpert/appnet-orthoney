@@ -830,6 +830,14 @@ class OAM_COMMON_Custom {
     }
 
     function check_userrole_update_meta($user_id) {
+
+        $user = new WP_User($user_id);
+
+        // Add role if not already assigned
+        if (!$user->has_role('customer')) {
+            $user->add_role('customer');
+        }
+        
         $user = get_user_by('id', $user_id);
         // Get the role set at creation time (from $_POST)
         if (isset($_POST['role']) && $_POST['role'] === 'sales_representative') {
