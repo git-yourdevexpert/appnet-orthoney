@@ -8,6 +8,24 @@ $dashboard_link = ADMINISTRATOR_DASHBOARD_LINK;
 
 
 ?>
+<style>
+
+    #admin-organizations-results table.dataTable tbody th, table.dataTable tbody td:nth-child(2) {
+        width: 90px !important;
+        max-width: 90px !important;
+        word-break: break-word;
+    }
+    #admin-organizations-results table.dataTable tbody th, table.dataTable tbody td:nth-child(1) {
+        width: 40px !important;
+        max-width: 40px !important;
+        word-break: break-word;
+    }
+    #admin-organizations-results table.dataTable tbody th, table.dataTable tbody td:nth-child(9) {
+        width: 220px !important;
+        max-width: 220px !important;
+        word-break: break-word;
+    }
+</style>
 <div class="affiliate-dashboard order-process-block">
     <div class="heading-title">
         <h3 class="block-title">Manage Organizations</h3>

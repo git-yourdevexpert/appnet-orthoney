@@ -2075,9 +2075,9 @@ jQuery(document).ready(function ($) {
       { data: "login" }
     ],
     columnDefs: [
-      { targets: 0, width: "80px" },
-      { targets: 1, width: "200px" },
-      { targets: 2, width: "200px" },
+      { targets: 0, width: "50px" },
+      { targets: 1, width: "150px" },
+      { targets: 2, },
       { targets: -1, orderable: false, width: "100px" }
     ],
     language: {
@@ -2094,7 +2094,7 @@ jQuery(document).ready(function ($) {
     serverSide: true,
     paging: true,
     searching: true,
-    responsive: false,
+    responsive: true,
     scrollX: false,
     autoWidth: false
   });
