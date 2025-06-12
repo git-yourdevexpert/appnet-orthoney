@@ -3089,6 +3089,8 @@ class OAM_Ajax{
         $custom_order_pdf_type = $_REQUEST['custom_order_pdf_type'];
         $current_user = wp_get_current_user();
         $current_user_email = $current_user->user_email;
+
+        $ex_words = ['Honey from the Heart', 'Orthoney'];
     
         // Load Dompdf
         if (!class_exists('\Dompdf\Dompdf')) {
@@ -3229,7 +3231,8 @@ class OAM_Ajax{
             $suborder_affiliate_token = 'Honey from the Heart';
             $refersite = site_url();
             if (!empty($orderdata['suborderdata'])) {
-                if($suborder_affiliate_token != 'Honey from the Heart' AND $suborder_affiliate_token !=  'Orthoney'){
+
+                if( !in_array($suborder_affiliate_token, $ex_words)){
                     $suborder_affiliate_token = $orderdata['suborderdata'][0]['suborder_affiliate_token'];
                     $refersite = site_url().'?ref='.$suborder_affiliate_token;
                 }
@@ -3345,7 +3348,7 @@ class OAM_Ajax{
             }
             $html .= '</div>';
 
-            if($suborder_affiliate_token != 'Honey from the Heart' AND $suborder_affiliate_token !=  'Orthoney'){
+            if( !in_array($suborder_affiliate_token, $ex_words)){
                 $html .= '<p>Code : '.$suborder_affiliate_token.'</p>';
             }
             $html .= '<div style="page-break-after: always;"></div>';
