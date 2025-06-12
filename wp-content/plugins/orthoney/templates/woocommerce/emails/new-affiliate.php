@@ -39,13 +39,6 @@ $oam_heart = get_user_meta($user_id, '_yith_wcaf_oam_heart', true)?: '';
 
 do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
-<p>
-	<?php
-	// translators: 1. Affiliate formatted name.
-	echo esc_html( sprintf( _x( 'Hello %s,', '[EMAILS] New Affiliate email', 'yith-woocommerce-affiliates' ), $display_name ) );
-	?>
-</p>
-
 <p>Dear, <?php echo $first_name .' '.$last_name ?></p>
 <p>Thank you for your interest in bringing <strong>Honey From The Heart</strong> to <?php echo esc_html($organization); ?>! </p>
 <p>While you await approval, here’s a little more about how this sweet program can benefit your community and cause:</p>
