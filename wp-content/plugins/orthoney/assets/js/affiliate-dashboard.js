@@ -287,12 +287,27 @@ document.addEventListener('click', function (event) {
         });
     }
     if (event.target.id === 'affiliate-product-price-profile') {
-        process_group_popup();
+        
         event.preventDefault();
        
 
         const form = document.querySelector('#affiliate-update-price-form');
         const formData = new FormData(form);
+
+        // Correct way to access form data
+        const selling_minimum_price = parseFloat(formData.get('selling_minimum_price'));
+        const product_price = parseFloat(formData.get('product_price'));
+
+        if (selling_minimum_price > product_price) {
+            Swal.close();
+            Swal.fire({
+                title: "Organization selling price cannot be lower than the product's standard selling price.",
+                icon: "error",
+            });
+            return;
+        }
+        process_group_popup();
+
         formData.append('action', 'update_price_affiliate_profile');
         formData.append("security", oam_ajax.nonce);  // nonce.
 

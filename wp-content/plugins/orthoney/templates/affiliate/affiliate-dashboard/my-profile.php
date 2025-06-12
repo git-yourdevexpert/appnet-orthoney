@@ -142,8 +142,6 @@
 
 <div class="two-col-grid two-column-block">
     <div class="cl-left">
-
-
         <div class="order-process-block  form-deisgn">
             <div class="heading-title">
                 <h3 class="block-title">Update Product Price</h3>
@@ -151,11 +149,12 @@
             <div class="affiliate-profile" id="update-price-affiliate-form">
                 <form id="affiliate-update-price-form">
                     <div class="form-row gfield--width-half">
-                        <label for="city">Product Price <span class="error-message"><strong>Please set the minimum honey jar price to <?php echo wc_price($selling_minimum_price ) ?>.</strong></span></label>
+                        <label for="product_price">Product Price <span class="error-message"><strong>Honey jars price cannot be less than <?php echo wc_price($selling_minimum_price ) ?>.</strong></span></label>
 
                         <div class="product-price-box textarea-div form-row gfield--width-full update-price">
                             <input type="text" name="product_price" id="product_price" value="<?php echo esc_attr($product_price ?:$selling_minimum_price); ?>" data-error-message="Please enter a product price">
                             <span class="error-message"></span>
+                            <input type="hidden" name="selling_minimum_price" value="<?php echo $selling_minimum_price ?>">
                         
                             <button type="button" class="add-user w-btn us-btn-style_1" id="affiliate-product-price-profile">Update Price</button>
                         </div>
@@ -164,8 +163,6 @@
                 </form>
             </div>
         </div>
-
-
     </div>
     <div class="cl-right">
         <div class="order-process-block">
