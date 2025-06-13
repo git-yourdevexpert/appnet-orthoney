@@ -176,6 +176,7 @@ class OAM_AFFILIATE_Helper
         $fundraising_orders = 0;
         $unit_price = 0;
         $unit_cost = 0;
+        $dist_unit_profit = 0;
         foreach ($commission_array as $key => $data) {
             if ($data['affiliate_account_status'] == 1) {
                 $unit_price = $data['par_jar'];
@@ -198,6 +199,24 @@ class OAM_AFFILIATE_Helper
         }
         $fundraising_qty = $total_all_quantity - $wholesale_qty;
         $fundraising_orders = $total_orders - $wholesale_order;
+
+        $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
+        if ($unit_price >= $selling_minimum_price) {
+            if (OAM_AFFILIATE_Helper::is_user_created_this_year(get_current_user_id())) {
+                if ($total_all_quantity < 99) {
+                    $dist_unit_profit = get_field('new_minimum_price_50', 'option');
+                } else {
+                    $dist_unit_profit = get_field('new_minimum_price_100', 'option');
+                }
+            } else {
+                if ($total_all_quantity < 99) {
+                    $dist_unit_profit = get_field('ex_minimum_price_50', 'option');
+                } else {
+                    $dist_unit_profit = get_field('ex_minimum_price_100', 'option');
+                }
+            }
+        }
+        
         $html = '';
         // rsort($details['orders']);
         $orders = $details['orders'];
@@ -241,7 +260,7 @@ class OAM_AFFILIATE_Helper
                 $coupon_array = array_diff($coupon_array, $exclude_coupon);
 
                 if (empty($coupon_array)) {
-                    $commission_price = wc_price($quantity * ($unit_price - $unit_cost));
+                    $commission_price = wc_price($quantity * ($unit_price - $dist_unit_profit));
                 } else {
                     $commission_price = wc_price(0) . ' <span style="color:red">(used voucher: '.implode(",", $coupon_array).')</span>';
                 }
@@ -257,7 +276,7 @@ class OAM_AFFILIATE_Helper
                         <td><div class="thead-data">Type</div>' . esc_html('Wholesale') . '</td>
                         <td><div class="thead-data">Fundrs total<br><small>(Fundraising Qty * Dist Unit Price )</small></div>' . wc_price($order->get_total()) . '<br><small>('.$quantity.' * '.wc_price($unit_price).')</small></td>
                         
-                        <td><div class="thead-data">Distributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></div>' . $commission_price . '<br><small>('.$quantity.' * '.wc_price(($unit_price - $unit_cost)).')</small></td>
+                        <td><div class="thead-data">Distributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></div>' . $commission_price . '<br><small>('.$quantity.' * '.wc_price(($unit_price - $dist_unit_profit)).')</small></td>
                         <td><div class="thead-data">Date</div>' . date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order->get_date_created())) . '</td>
                     </tr>';
             }
@@ -293,6 +312,7 @@ class OAM_AFFILIATE_Helper
         $fundraising_orders = 0;
         $unit_price = 0;
         $unit_cost = 0;
+        $dist_unit_profit  = 0;
         foreach ($commission_array as $key => $data) {
             if ($data['affiliate_account_status'] == 1) {
                 $unit_price = $data['par_jar'];
@@ -316,6 +336,22 @@ class OAM_AFFILIATE_Helper
         $fundraising_qty = $total_all_quantity - $wholesale_qty;
         $fundraising_orders = $total_orders - $wholesale_order;
 
+        $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
+        if ($unit_price >= $selling_minimum_price) {
+            if (OAM_AFFILIATE_Helper::is_user_created_this_year(get_current_user_id())) {
+                if ($total_all_quantity < 99) {
+                    $dist_unit_profit = get_field('new_minimum_price_50', 'option');
+                } else {
+                    $dist_unit_profit = get_field('new_minimum_price_100', 'option');
+                }
+            } else {
+                if ($total_all_quantity < 99) {
+                    $dist_unit_profit = get_field('ex_minimum_price_50', 'option');
+                } else {
+                    $dist_unit_profit = get_field('ex_minimum_price_100', 'option');
+                }
+            }
+        }
         $html = '';
         $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
 
@@ -362,7 +398,7 @@ class OAM_AFFILIATE_Helper
                 $coupon_array = array_diff($coupon_array, $exclude_coupon);
 
                 if (empty($coupon_array)) {
-                    $commission_price = wc_price($quantity * ($unit_price - $unit_cost));
+                    $commission_price = wc_price($quantity * ($unit_price - $dist_unit_profit));
                 } else {
                     $commission_price = wc_price(0) . ' <span style="color:red">(used voucher: '.implode(",", $coupon_array).')</span>';
                 }
@@ -386,7 +422,7 @@ class OAM_AFFILIATE_Helper
                         <td><div class="thead-data">Type</div>' . esc_html('Wholesale') . '</td>
                         <td><div class="thead-data">Fundrs total<br><small>(Fundraising Qty * Dist Unit Price )</small></div>' . wc_price($order->get_total()) . '<br><small>('.$quantity.' * '.wc_price($unit_price).')</small></td>
                         
-                        <td><div class="thead-data">CommDistributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></div>' . $commission_price . '<br><small>('.$quantity.' * '.wc_price(($unit_price - $unit_cost)).')</small></td>
+                        <td><div class="thead-data">CommDistributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></div>' . $commission_price . '<br><small>('.$quantity.' * '.wc_price(($unit_price - $dist_unit_profit)).')</small></td>
                         <td><div class="thead-data">Date</div>' . date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order->get_date_created())) . '</td>
                     </tr>';
             }
