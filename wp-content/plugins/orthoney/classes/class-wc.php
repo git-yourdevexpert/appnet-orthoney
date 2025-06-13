@@ -27,6 +27,8 @@ class OAM_WC_Customizer {
 
         add_filter( 'woocommerce_package_rates', array($this,'conditional_shipping_based_on_acf_date'), 10, 2 );
 
+        add_filter( 'woocommerce_email_headers', array($this,'add_cc_to_new_order_email'), 10, 3 );
+
         // add_filter('woocommerce_email_enabled_new_order', array($this,'disable_wc_order_mail'), 10, 2);
         // add_filter('woocommerce_email_enabled_customer_processing_order', array($this,'disable_wc_order_mail'), 10, 2);
         // add_filter('woocommerce_email_enabled_cancelled_order', array($this,'disable_wc_order_mail'), 10, 2);
@@ -44,6 +46,27 @@ class OAM_WC_Customizer {
 
     }
 
+    
+    public function add_cc_to_new_order_email( $headers, $email_id, $order ) {
+
+        $email_array = ['affiliate_disabled', 'affiliate_enabled', 'affiliate_banned', 'new_affiliate'];
+    
+        $organizations_cc_mails = get_field('organizations_cc_mails', 'option');
+
+        if ( $organizations_cc_mails && in_array($email_id, $email_array) ) {
+            // Clean and format email list
+            $emails = array_map('trim', explode(',', $organizations_cc_mails));
+            $emails = array_filter($emails, function($email) {
+                return is_email($email); // ensure valid email addresses
+            });
+
+            if (!empty($emails)) {
+                $headers .= 'Cc: ' . implode(', ', $emails) . "\r\n";
+            }
+        }
+
+        return $headers;
+    }
     public function attach_pdf_order_email($attachments, $email_id, $order) {
         if ($email_id === 'customer_processing_order') { // Target "Processing Order" email
             $upload_dir = wp_upload_dir();
