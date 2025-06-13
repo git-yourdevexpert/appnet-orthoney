@@ -261,7 +261,7 @@ document.addEventListener('click', function (event) {
             const messageDiv = document.querySelector('#profile-message');
             if (data.success) {
                 Swal.fire({
-                    title: data.message || "Affiliate Profile updated successfully!",
+                    title: data.message || "Your profile has been updated successfully.",
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false,

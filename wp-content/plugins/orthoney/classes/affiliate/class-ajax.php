@@ -508,7 +508,7 @@ class OAM_AFFILIATE_Ajax{
         update_user_meta($user_id, '_yith_wcaf_tax_id', $tax_id);
 
 
-        wp_send_json(['success' => true, 'message' => 'Affiliate Profile updated successfully!']);
+        wp_send_json(['success' => true, 'message' => 'Your profile has been updated successfully.']);
         wp_die();
 
     }
