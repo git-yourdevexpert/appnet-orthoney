@@ -5149,3 +5149,26 @@ body.administrator-dashboard-active .top-bar-menu .administrator-dashboard-link 
     color:#6BBE56;
     font-weight: 900;
 }
+
+
+.wc-block-components-form.wc-block-checkout__form.show-message{
+  margin-top: 110px;
+  padding-top: 30px;
+}
+
+.wc-block-components-form.wc-block-checkout__form.show-message.errorbox2{
+  margin-top: 220px;
+}
+
+.wc-block-components-form.wc-block-checkout__form.show-message .organization-not-active-error-message{
+  position: absolute;
+  bottom: 100%;
+  
+}
+.wc-block-components-form.wc-block-checkout__form.show-message .organization-not-active-error-message .error-message-box{
+  background: #d27f7f;
+  color: #fff;
+  padding: 20px;
+  margin-bottom: 10px;
+}
+         
