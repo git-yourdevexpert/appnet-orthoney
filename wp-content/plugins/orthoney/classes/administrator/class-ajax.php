@@ -107,7 +107,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
                             $token_array = $results;
                         }
-                        $organizations_status = implode(',', $token_array);
+                        $organizations_status = implode(', ', $token_array);
                     }
 
 
