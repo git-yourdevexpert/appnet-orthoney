@@ -73,10 +73,46 @@ class OAM_ADMINISTRATOR_AJAX {
             if (in_array('sales_representative', $user->roles)) {
                 if($user->user_email != ''){
                     $admin_url = admin_url("user-edit.php?user_id={$user->ID}&wp_http_referer=%2Fwp-admin%2Fusers.php");
+
+                    $select_organization = get_user_meta($user->ID, 'select_organization', true);
+                    $choose_organization = get_user_meta($user->ID, 'choose_organization', true);
+
+                    $include_clause = '';
+                    $choose_ids_array = [];
+                    $choose_ids = '';
+                    $organizations_status = 'Assign All Organizations';
+                    if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
+                        $choose_ids_array = array_map('intval', (array)$choose_organization);
+                         $choose_ids = implode(',', $choose_ids_array);
+                    
+
+                        global $wpdb;
+
+                        $token_array = [];
+
+                        if (!empty($choose_ids)) {
+                            $ids_array = array_map('intval', explode(',', $choose_ids)); // Convert string to int array
+                            $placeholders = implode(',', array_fill(0, count($ids_array), '%d'));
+
+                            // Prepare and run query
+                            $query = $wpdb->prepare(
+                                "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id IN ($placeholders)",
+                                ...$ids_array
+                            );
+
+                            $results = $wpdb->get_col($query); // Fetch just the 'token' column
+
+                            $token_array = $results;
+                        }
+                        $organizations_status = implode(',', $token_array);
+                    }
+
+
                     $data[] = [
                         'id' => $user->ID,
                         'name' => esc_html($user->display_name),
                         'email' => esc_html($user->user_email),
+                        'organizations' => $organizations_status,
                         'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
                                         <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Sales Representative
                                     </button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Sales Representative Profile</a>'
