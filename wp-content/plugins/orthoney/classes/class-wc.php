@@ -458,12 +458,61 @@ class OAM_WC_Customizer {
                     }
                         
                     if ((int)$activate_affiliate_account !== 1) {
-                        $custom_content = '<div class="organization-not-active-error-message">The <strong>'.  $value.' </strong> organization is not active at the moment. The profit commission from this order will be allocated to Honey From The Heart.</div>';
+                        $custom_content = '<div class="error-message-box">The <strong>'.  $value.' </strong> organization is not active at the moment. The profit commission from this order will be allocated to Honey From The Heart.</div>';
                     }
                     
                 }
             }
-            return $block_content . $custom_content;
+            
+            $cart = WC()->session->get('cart', []);
+            $total_quantity = 0;
+            $table_content = '';
+            $status = false;
+            $recipients = [];
+
+            foreach ($cart as $cart_item) {
+                $custom_data = $cart_item['custom_data'] ?? [];
+                $pid = $custom_data['process_id'] ?? 0;
+                $recipients = OAM_Helper::get_recipient_by_pid($pid);
+                foreach ($recipients as $recipient) {
+                    
+                    if($recipient->address_verified == 0){
+                        $status = true;
+                        break 2;
+                    }
+                }
+
+            }
+            if( $status === true){
+                $custom_content .= '<div class="error-message-box">Some of the entered addresses are rejected. We will not be responsible for these jars of honey.</div>';
+            }
+            $html  = '';
+            if($custom_content != ''){
+                $html = '<div class="organization-not-active-error-message">'.$custom_content.'</div>';
+            
+                $html .= "<script>document.addEventListener('DOMContentLoaded', function () {
+                    setTimeout(() => {
+                        const checkoutForm = document.querySelector('.wc-block-components-form.wc-block-checkout__form');
+                        if (!checkoutForm) return;
+
+                        const errorClasses = [
+                            '.organization-not-active-error-message',
+                        ];
+
+                        const count = document.querySelectorAll('.organization-not-active-error-message .error-message-box').length;
+                        for (const selector of errorClasses) {
+                            if (document.querySelector(selector)) {
+                                checkoutForm.classList.add('show-message');
+                                checkoutForm.classList.add('errorbox' +count);
+                                break; // Only need to add once if any message exists
+                            }
+                        }
+                    }, 1000);
+                });</script>";
+            }
+
+
+            return $block_content . $html;
          }
 
         if (!is_checkout() || !isset($block['blockName']) || $block['blockName'] !== 'woocommerce/checkout-order-summary-cart-items-block') {
@@ -504,13 +553,21 @@ class OAM_WC_Customizer {
                         $recipient->state,
                         $recipient->zipcode
                     ]));
+
+                    $address_status = 'Verified Address';
+                    if($recipient->address_verified == 0){
+                        $address_status = '<div style="color:red" data-tippy="'.$recipient->reasons.'">Rejected Address</div>';
+                    }
+
     
                     $table_content .= sprintf(
-                        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+                        '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
                         esc_html($recipient->full_name ?? '-'),
                         esc_html($recipient->company_name ?? '-'),
                         esc_html($address),
-                        esc_html($recipient->quantity ?? '0')
+                        esc_html($recipient->quantity ?? '0'),
+                        $address_status
+
                     );
                 }
             } elseif ($is_single_order === 1) {
@@ -547,7 +604,7 @@ class OAM_WC_Customizer {
                         <h3>All Recipients Details</h3>
                         <div class="table-wrapper table-with-search-block">
                             <table>
-                                <thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th></tr></thead>
+                                <thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Status</th></tr></thead>
                                 <tbody>' . $table_content . '</tbody>
                             </table>
                         </div>

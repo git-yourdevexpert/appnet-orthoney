@@ -609,6 +609,7 @@ document.addEventListener("click", function (event) {
             columnDefs: [{ targets: "_all" }]
           });
         }
+        initTippy();
       }, 200);
     }
   }
@@ -3837,16 +3838,7 @@ jQuery(document).ready(function ($) {
   });
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    setTimeout(() => {
-    const errorEl = document.querySelector('.organization-not-active-error-message');
-    const checkoutForm = document.querySelector('.wc-block-components-form.wc-block-checkout__form');
 
-    if (errorEl && checkoutForm) {
-        checkoutForm.classList.add('show-message');
-    }
-    }, 1000);
-});
 
 
 document.addEventListener('DOMContentLoaded', function () {

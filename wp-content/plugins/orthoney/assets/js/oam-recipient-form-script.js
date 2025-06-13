@@ -565,11 +565,15 @@ document.addEventListener("DOMContentLoaded", function () {
             } been verified`;
           }
           console.log(verifiedButton);
-
+          
+          if (parseInt(unverifiedCount) != 0){
+            html += `<p style="color:red"><br>If the address is invalid or rejected, we cannot take responsibility for these jars of honey.</p>`;
+          }
           html += `<div class='exceptions'><ul>`;
 
           html += `<li><span>Verified Address(es): </span> ${verifiedCount}</li>`;
-          html += `<li><span>Rejected Address(es): </span> ${unverifiedCount}</li>`;
+          html += `<li><span>Rejected Address(es): </span> ${unverifiedCount}</li></ul>`;
+          
 
           // html += `<li class="total-recipients"><span>Total Recipients: </span> ${(parseInt(verifiedCount) + parseInt(unverifiedCount))}</li></ul>`;
 
