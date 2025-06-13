@@ -50,7 +50,28 @@
             "bidirectional_target": []
         },
         {
-            "key": "field_6849a5bbde1a7",
+            "key": "field_684c1122c046b",
+            "label": "Organizations CC mails",
+            "name": "organizations_cc_mails",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Please add mail with comma separate. For Example: test@test.com, test2@test.com",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_68499aeb5257c",
             "label": "All Organization Bypass for Season Date",
             "name": "all_organization_bypass",
             "aria-label": "",
@@ -71,7 +92,7 @@
             "ui": 1
         },
         {
-            "key": "field_6849a5ccde1a8",
+            "key": "field_68499b58c841c",
             "label": "All Admin Bypass for Season Date",
             "name": "all_admin_bypass",
             "aria-label": "",
@@ -653,5 +674,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1749658506
+    "modified": 1749815690
 }
