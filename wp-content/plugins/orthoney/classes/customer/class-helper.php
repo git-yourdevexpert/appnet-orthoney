@@ -1268,7 +1268,7 @@ class OAM_Helper{
                 <div class="textarea-div form-row gfield--width-full">
                     <label for="greeting">Add a Greeting</label>
                     <textarea id="greeting" name="greeting"></textarea>
-                    <div class="char-counter"><span>250</span> characters remaining</div>
+                    <div class="char-counter"><span>100</span> characters remaining</div>
                 </div>
 
                 <div class="footer-btn gfield--width-full">
@@ -1338,7 +1338,7 @@ class OAM_Helper{
                 <div class="textarea-div form-row gfield--width-full">
                     <label for="greeting">Add a Greeting</label>
                     <textarea id="greeting" name="greeting"></textarea>
-                    <div class="char-counter"><span>250</span> characters remaining</div>
+                    <div class="char-counter"><span>100</span> characters remaining</div>
                 </div>
 
                 <div class="footer-btn gfield--width-full">

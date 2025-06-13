@@ -390,7 +390,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                             <span>Add Greeting/Message:</span>
                                             <textarea name="single_address_greeting"
                                                 data-error-message="Please add a greeting."><?php echo htmlspecialchars($single_address_greeting); ?></textarea>
-                                            <div class="char-counter"><span>250</span> characters remaining</div>
+                                            <div class="char-counter"><span>100</span> characters remaining</div>
                                         </div>
                                         <div class="w-separator size_medium"></div>
                                     </div>
@@ -602,7 +602,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         <span class="title-block">Add a Universal Greeting for All Recipients</span>
                                         <textarea name="greeting"
                                             data-error-message="Type here..."><?php echo $greeting ?></textarea>
-                                        <div class="char-counter"><span>250</span> characters remaining</div>
+                                        <div class="char-counter"><span>100</span> characters remaining</div>
                                     </label>
                                     <!-- <div class="description">
                                         <p>To begin your order, please select an organization you'd like to support and then you can proceed.</p>

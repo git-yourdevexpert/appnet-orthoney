@@ -447,7 +447,7 @@ document.addEventListener("DOMContentLoaded", initTippy);
 const greetingTextareas = document.querySelectorAll(
   "#multiStepForm textarea, #recipient-manage-form form textarea, #recipient-order-manage-popup textarea, #affiliate-mission-statement-form textarea"
 );
-let maxChars = 250;
+let maxChars = 100;
 
 if (greetingTextareas.length) {
   greetingTextareas.forEach((textarea) => {
@@ -1410,7 +1410,7 @@ document.addEventListener("click", function (event) {
               form.querySelector('button[type="submit"]').innerHTML =
                 "Update Recipient Details";
               form.querySelector(".textarea-div .char-counter span").innerHTML =
-                250 - form.querySelector("#greeting").value.length;
+                100 - form.querySelector("#greeting").value.length;
               if (
                 document.querySelector("#unverified-block") ||
                 document.querySelector("#verified-block")
@@ -2026,6 +2026,7 @@ jQuery(document).ready(function ($) {
       { data: "id" },
       { data: "name" },
       { data: "email" },
+      { data: "organizations" },
       { data: "action" }
     ],
     columnDefs: [
@@ -2358,7 +2359,7 @@ document.addEventListener("click", function (event) {
         form.querySelector('button[type="submit"]').innerHTML =
           "Edit Recipient Order Details";
         document.querySelector(".textarea-div .char-counter span").innerHTML =
-          250 - d.greeting.length;
+          100 - d.greeting.length;
       }
 
       if (isView) {
