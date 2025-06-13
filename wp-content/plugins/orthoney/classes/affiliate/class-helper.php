@@ -241,7 +241,7 @@ class OAM_AFFILIATE_Helper
                 $coupon_array = array_diff($coupon_array, $exclude_coupon);
 
                 if (empty($coupon_array)) {
-                    $commission_price = wc_price($commission_array[$custom_order_id]['commission']);
+                    $commission_price = wc_price($quantity * ($unit_price - $unit_cost));
                 } else {
                     $commission_price = wc_price(0) . ' <span style="color:red">(used voucher: '.implode(",", $coupon_array).')</span>';
                 }
@@ -257,7 +257,7 @@ class OAM_AFFILIATE_Helper
                         <td><div class="thead-data">Type</div>' . esc_html('Wholesale') . '</td>
                         <td><div class="thead-data">Fundrs total<br><small>(Fundraising Qty * Dist Unit Price )</small></div>' . wc_price($order->get_total()) . '<br><small>('.$quantity.' * '.wc_price($unit_price).')</small></td>
                         
-                        <td><div class="thead-data">CommDistributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></div>' . $commission_price . '<br><small>('.$quantity.' * '.wc_price(($unit_price - $unit_cost)).')</small></td>
+                        <td><div class="thead-data">Distributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></div>' . $commission_price . '<br><small>('.$quantity.' * '.wc_price(($unit_price - $unit_cost)).')</small></td>
                         <td><div class="thead-data">Date</div>' . date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order->get_date_created())) . '</td>
                     </tr>';
             }
@@ -362,7 +362,7 @@ class OAM_AFFILIATE_Helper
                 $coupon_array = array_diff($coupon_array, $exclude_coupon);
 
                 if (empty($coupon_array)) {
-                    $commission_price = wc_price($commission_array[$custom_order_id]['commission']);
+                    $commission_price = wc_price($quantity * ($unit_price - $unit_cost));
                 } else {
                     $commission_price = wc_price(0) . ' <span style="color:red">(used voucher: '.implode(",", $coupon_array).')</span>';
                 }
@@ -494,13 +494,7 @@ class OAM_AFFILIATE_Helper
                         </div>
                     </div>
                 </div>
-                <div class="dashboard-heading block-row">
-                    <div class="item" style="padding: 10px 20px;background-color: rgba(255, 0, 0, 0.5);">
-                        <div class="row-block">
-                            <p style="color: white;">' . (($details['total_quantity'] > 50)  ?  '<button data-orgid="' . $affiliate_id . '"  class="w-btn us-btn-style_1 org_account_statement">Account Statement</button>' : 'A minimum of 50 jars is required. You still need ' . (50 - $details['total_quantity']) . ' more jars.') . '</p style="color: white;">
-                        </div>
-                    </div>
-                </div>
+                '. ( ($details['total_quantity'] > 50)  ? '' : '<div class="dashboard-heading block-row"><div class="item" style="padding: 10px 20px;background-color: rgba(255, 0, 0, 0.5);"><div class="row-block"><p style="color: white;">A minimum of 50 jars is required. You still need ' . (50 - $details['total_quantity']) . ' more jars.</p style="color: white;"></div></div></div>' ) . '
                 
                 <div class="block-row three-block-col">
                     <div class="place-order item" style="display:none">
