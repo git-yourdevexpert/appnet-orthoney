@@ -262,7 +262,7 @@ if($user->user_email != ''){
             $data[] = [
                 'code' => esc_html($row->token ?? ''),
                 'email' => esc_html($row->user_email ?? ''),
-                'organization' => esc_html(implode(', ', $organizationdata)) . ($yith_wcaf_phone_number == '' ? '' : ' (' . esc_html($yith_wcaf_phone_number) . ')'),
+                'organization' => esc_html(implode(', ', $organizationdata)) . ($yith_wcaf_phone_number == '' ? '' : ' <br>' . esc_html($yith_wcaf_phone_number) ),
                 'new_organization' => esc_html($new_organization),
                 'status' => esc_html($status),
                 'price' => wc_price($show_price),

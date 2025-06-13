@@ -404,7 +404,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
                 $data[] = [
                     'code'         => esc_html($meta['code']),
-                    'organization' => esc_html(implode(', ', $organizationdata)) . ($yith_wcaf_phone_number == '' ? '' : ' (' . esc_html($yith_wcaf_phone_number) . ')'),
+                    'organization' => esc_html(implode(', ', $organizationdata)) . ($yith_wcaf_phone_number == '' ? '' : ' <br>' . esc_html($yith_wcaf_phone_number) ),
                     'csr_name'     =>esc_html(implode(', ', $userid_keys)),
                     'email'        => esc_html($meta['email']),
                     'new_organization' => esc_html($new_organization),
