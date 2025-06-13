@@ -2055,31 +2055,35 @@ jQuery(document).ready(function ($) {
 });
 
 
-
 jQuery(document).ready(function ($) {
+  let selectedStatus = '';
+
   const table = new DataTable("#admin-organizations-table", {
     pageLength: 50,
     lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
     ajax: {
       url: oam_ajax.ajax_url,
       type: "POST",
-      data: { action: "orthoney_admin_get_organizations_data" }
+      data: function (d) {
+        d.action = "orthoney_admin_get_organizations_data";
+        d.status_filter = selectedStatus; // send selected status
+      }
     },
     columns: [
       { data: "code" },
       { data: "email" },
       { data: "organization" },
-      { data: "city" },
-      { data: "state" },
-      { data: "status" },
+      { data: "csr_name" },
+      { data: "new_organization" },
+      { data: "status" }, // index 5
       { data: "season_status" },
+      { data: "price" },
       { data: "commission" },
       { data: "login" }
     ],
     columnDefs: [
       { targets: 0, width: "50px" },
       { targets: 1, width: "150px" },
-      { targets: 2, },
       { targets: -1, orderable: false, width: "100px" }
     ],
     language: {
@@ -2097,10 +2101,42 @@ jQuery(document).ready(function ($) {
     paging: true,
     searching: true,
     responsive: true,
-    scrollX: false,
-    autoWidth: false
+    scrollX: true,
+    autoWidth: false,
+
+    initComplete: function () {
+      const api = this.api();
+      const statusColIndex = 5;
+      const statusSet = new Set();
+
+      // Extract unique values from current data only (not ideal for server-side, but works for demo)
+      api.column(statusColIndex).data().each(function (d) {
+        if (d && d.trim() !== "") {
+          statusSet.add(d);
+        }
+      });
+
+      const statusSelect = $('<select><option value="">Filter by Status</option></select>')
+        .on('change', function () {
+          selectedStatus = $(this).val(); // update global value
+          table.ajax.reload(); // reload table with new filter
+        });
+
+      Array.from(statusSet).sort().forEach(status => {
+        statusSelect.append(`<option value="${status}">${status}</option>`);
+      });
+
+      $('.dataTables_filter').prepend(statusSelect.css({ marginRight: '10px' }));
+    }
   });
+
+  setTimeout(() => {
+    table.columns.adjust().draw();
+  }, 100);
 });
+
+
+
 
 document.addEventListener("DOMContentLoaded", function () {
   // Affiliates DataTable with ordering support
