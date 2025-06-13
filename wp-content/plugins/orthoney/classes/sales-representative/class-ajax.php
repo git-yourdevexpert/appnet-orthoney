@@ -173,14 +173,101 @@ if($user->user_email != ''){
         $results = $wpdb->get_results($wpdb->prepare($sql_data, $length, $start));
 
         $data = [];
+
         foreach ($results as $row) {
+            $user_id = intval($row->user_id);
+
+        // Get basic user and pricing data
+        $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true) ?: 0;
+        $yith_wcaf_phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true) ?: '';
+        $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
+        $product_price = get_user_meta($user_id, 'DJarPrice', true);
+
+        // Set display price
+        $show_price = ($product_price >= $selling_minimum_price) ? $product_price : $selling_minimum_price;
+
+        // Check if organization is new this year
+        $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'Yes' : 'No';
+
+        // Get commission data
+        $commission_array_data = json_decode(OAM_AFFILIATE_Helper::get_commission_affiliate($user_id), true);
+        $exclude_coupon = EXCLUDE_COUPON;
+
+        // Initialize counters
+        $total_all_quantity = $fundraising_qty = $wholesale_qty = 0;
+        $total_orders = $wholesale_order = 0;
+        $unit_price = $unit_cost = 0;
+        $total_commission = 0;
+
+
+        // print_r($commission_array_data);
+
+        if (!empty($commission_array_data['data'])) {
+            foreach ($commission_array_data['data'] as $value) {
+                // Aggregate quantities
+                $fundraising_qty = $value['total_quantity'];
+                $wholesale_qty = $value['wholesale_qty'];
+
+                // Process only if affiliate account is active
+                if (!empty($value['affiliate_account_status'])) {
+                    $unit_price = $value['par_jar'];
+                    $unit_cost = $value['minimum_price'];
+                    $total_all_quantity += $value['total_quantity'];
+                    $total_orders++;
+
+                    // Handle coupon logic
+                    $coupon_array = !empty($value['is_voucher_used']) 
+                        ? array_values(array_diff(explode(",", $value['is_voucher_used']), $exclude_coupon)) 
+                        : [];
+
+                    if (empty($coupon_array)) {
+                        $total_commission += $value['commission'];
+                    } else {
+                        $wholesale_order++;
+                    }
+                }
+            }
+        }
+
+        // Final quantity and order calculations
+        $total_all_quantity = $fundraising_qty;
+        $fundraising_orders = $total_orders - $wholesale_order;
+
+        // Calculate total commission based on jar threshold
+        $total_commission = ($total_all_quantity > 50)  ? wc_price($fundraising_qty * ($unit_price - $unit_cost)) : wc_price(0);
+
+            $raw_users = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id = $row->user_id");
+
+            $user_id = intval($raw_users->user_id);
+            $enabled = intval($raw_users->enabled);
+            $banned  = intval($raw_users->banned);
+
+            $status = 'New request';
+            if ($banned === 1) {
+                $status = 'Banned';
+            } elseif ($enabled === 1) {
+                $status = 'Accepted and enabled';
+            } elseif ($enabled === -1) {
+                $status = 'Rejected';
+            }
+
+            $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true)?:0;
+            $organizationdata = [
+                $row->organization_name,
+                esc_html($row->city),
+                esc_html($row->state),
+            ];
+            $organizationdata = array_filter($organizationdata);
             $nonce = wp_create_nonce('switch_to_user_' . $row->user_id);
             $data[] = [
                 'code' => esc_html($row->token ?? ''),
                 'email' => esc_html($row->user_email ?? ''),
-                'organization' => esc_html($row->organization_name ?? ''),
-                'city' => esc_html($row->city ?? ''),
-                'state' => esc_html($row->state ?? ''),
+                'organization' => esc_html(implode(', ', $organizationdata)) . ($yith_wcaf_phone_number == '' ? '' : ' (' . esc_html($yith_wcaf_phone_number) . ')'),
+                'new_organization' => esc_html($new_organization),
+                'status' => esc_html($status),
+                'price' => wc_price($show_price),
+                'commission' => $total_commission,
+                'season_status' => esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
                 'login' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($row->user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png"> Login as Organization</button>',
             ];
         }

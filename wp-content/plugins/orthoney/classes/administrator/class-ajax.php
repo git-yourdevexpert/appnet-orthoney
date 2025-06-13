@@ -66,7 +66,10 @@ class OAM_ADMINISTRATOR_AJAX {
 
         // Security check if needed: check_ajax_referer('your-nonce')
 
-        $all_users = get_users();
+        $all_users =  get_users([
+            'role' => 'sales_representative',
+        ]);
+
         $data = [];
 
         foreach ($all_users as $user) {
@@ -128,6 +131,54 @@ class OAM_ADMINISTRATOR_AJAX {
     
     public function orthoney_admin_get_organizations_data_handler() {
         global $wpdb;
+
+        $sales_reps = get_users([
+            'role' => 'sales_representative',
+        ]);
+
+        $data = [];
+        $sales_reps_data = [];
+
+        foreach ($sales_reps as $user) {
+            if (in_array('sales_representative', $user->roles)) {
+                if($user->user_email != ''){
+                    
+
+                    $select_organization = get_user_meta($user->ID, 'select_organization', true);
+                    $choose_organization = get_user_meta($user->ID, 'choose_organization', true);
+
+                    $include_clause = '';
+                    $choose_ids_array = [];
+                    $choose_ids = '';
+                    $organizations_status = 'Assign All Organizations';
+                    if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
+                        $choose_ids_array = array_map('intval', (array)$choose_organization);
+                         $choose_ids = implode(',', $choose_ids_array);
+                    
+
+                        if (!empty($choose_ids)) {
+                            $ids_array = array_map('intval', explode(',', $choose_ids)); // Convert string to int array
+                            $placeholders = implode(',', array_fill(0, count($ids_array), '%d'));
+
+                            // Prepare and run query
+                            $query = $wpdb->prepare(
+                                "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id IN ($placeholders)",
+                                ...$ids_array
+                            );
+
+                            $results = $wpdb->get_col($query); // Fetch just the 'token' column
+
+                            $token_array = $results;
+                        }
+                        $sales_reps_data[$user->ID] = $token_array;
+                    }else{
+                        $sales_reps_data[$user->ID] = 'all';
+                    }
+                    
+                }
+            }
+        }
+   
 
         $start  = intval($_POST['start'] ?? 0);
         $length = intval($_POST['length'] ?? 10);
@@ -210,12 +261,20 @@ class OAM_ADMINISTRATOR_AJAX {
         }
 
         // Step 2: Apply search filter
-        $filtered_user_ids = array_filter($user_ids, function ($user_id) use ($search, $user_meta_cache, $user_status_map) {
+        $status_filter = sanitize_text_field($_POST['status_filter'] ?? '');
+
+        $filtered_user_ids = array_filter($user_ids, function ($user_id) use ($search, $user_meta_cache, $user_status_map, $status_filter) {
+            $status = strtolower($user_status_map[$user_id]['label']);
+
+            // Apply status filter
+            if (!empty($status_filter) && strtolower($status_filter) !== $status) {
+                return false;
+            }
+
             if (empty($search)) return true;
 
             $search_lc = strtolower($search);
             $meta      = $user_meta_cache[$user_id];
-            $status    = strtolower($user_status_map[$user_id]['label']);
 
             return (
                 strpos(strtolower($meta['organization']), $search_lc) !== false ||
@@ -264,40 +323,97 @@ class OAM_ADMINISTRATOR_AJAX {
             $total_commission = 0;
             $activate_affiliate_account = 0;
             $total_quantity = 0;
+            $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true)?:0;
+            $yith_wcaf_phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true) ?: '';
+            $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
+            $product_price = get_user_meta($user_id, 'DJarPrice', true);
+            $show_price = $selling_minimum_price;
+            if($product_price >= $selling_minimum_price){
+                $show_price = $product_price;
+            }
+
             $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate($user_id);
+
             $commission_array_data = json_decode($commission_array, true);
 
+            $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'Yes' : 'No';
+
             $exclude_coupon = EXCLUDE_COUPON;
-            if(!empty( $commission_array_data['data'])){
-                foreach ($commission_array_data['data'] as $key => $value) {
-                    if ($value['affiliate_account_status'] == 1) {
-                        $common = [];
-                        $coupon_array = !empty($value['is_voucher_used']) ? explode(",", $value['is_voucher_used']) : [];
-                        if(count($coupon_array) > 0){
-                            $coupon_array = array_diff($coupon_array, $exclude_coupon);
-                            $coupon_array = array_values($coupon_array);
-                        }
-                        if(count($coupon_array) == 0){
+
+        // Initialize counters
+            $total_all_quantity = $fundraising_qty = $wholesale_qty = 0;
+            $total_orders = $wholesale_order = 0;
+            $unit_price = $unit_cost = 0;
+            $total_commission = 0;
+
+            if (!empty($commission_array_data['data'])) {
+                foreach ($commission_array_data['data'] as $value) {
+                    // Aggregate quantities
+                    $fundraising_qty = $value['total_quantity'];
+                    $wholesale_qty = $value['wholesale_qty'];
+
+                    // Process only if affiliate account is active
+                    if (!empty($value['affiliate_account_status'])) {
+                        $unit_price = $value['par_jar'];
+                        $unit_cost = $value['minimum_price'];
+                        $total_all_quantity += $value['total_quantity'];
+                        $total_orders++;
+
+                        // Handle coupon logic
+                        $coupon_array = !empty($value['is_voucher_used']) 
+                            ? array_values(array_diff(explode(",", $value['is_voucher_used']), $exclude_coupon)) 
+                            : [];
+
+                        if (empty($coupon_array)) {
                             $total_commission += $value['commission'];
+                        } else {
+                            $wholesale_order++;
                         }
                     }
                 }
             }
 
-            $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($row->ID) . '&tab=affiliates';
+            // Final quantity and order calculations
+            $total_all_quantity = $fundraising_qty;
+            $fundraising_orders = $total_orders - $wholesale_order;
 
-            if($meta['email'] != ''){
+            // Calculate total commission based on jar threshold
+            $total_commission = ($total_all_quantity > 50)  ? wc_price($fundraising_qty * ($unit_price - $unit_cost)) : wc_price(0);
+
+            $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($row->ID) . '&tab=affiliates';
+            
+            $organizationdata = [
+                $meta['organization'],
+                esc_html($meta['city']),
+                esc_html($meta['state']),
+            ];
+            $organizationdata = array_filter($organizationdata);
+            if($meta['email'] != '' AND $meta['code'] != ''){
+
+                $search_value = $meta['code'];
+                $userid_keys = [];
+
+                foreach ($sales_reps_data as $key => $value) {
+                    if ($value === 'all' || (is_array($value) && in_array($search_value, $value))) {
+                        $first_name = get_user_meta($key, 'first_name', true);
+                        $last_name = get_user_meta($key, 'last_name', true);
+
+                        $userid_keys[] = trim("$first_name $last_name");
+                    }
+                }
+
                 $data[] = [
                     'code'         => esc_html($meta['code']),
-                    'organization' => esc_html($meta['organization']),
-                    'city'         => esc_html($meta['city']),
-                    'state'        => esc_html($meta['state']),
+                    'organization' => esc_html(implode(', ', $organizationdata)) . ($yith_wcaf_phone_number == '' ? '' : ' (' . esc_html($yith_wcaf_phone_number) . ')'),
+                    'csr_name'     =>esc_html(implode(', ', $userid_keys)),
                     'email'        => esc_html($meta['email']),
+                    'new_organization' => esc_html($new_organization),
                     'status'       => esc_html($status),
                     'season_status' => esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
-                    'commission' => wc_price($total_commission),
+                    'price' => wc_price($show_price),
+                    'commission' => $total_commission,
                     'login'        => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . intval($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As An Organization</button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Organizations Profile</a>'
-                    ];
+                ];
             }
         }
 

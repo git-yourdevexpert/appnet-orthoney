@@ -5,6 +5,20 @@ if (!defined('ABSPATH')) {
 }
 
 ?>
+<style>
+
+    #sales-representative-affiliate-table_wrapper table.dataTable tbody th, table.dataTable tbody td:nth-child(2) {
+        width: 150px !important;
+        max-width:150px !important;
+        word-break: break-word;
+    }
+    #sales-representative-affiliate-table_wrapper table.dataTable tbody th, table.dataTable tbody td:nth-child(1) {
+        width: 40px !important;
+        max-width: 40px !important;
+        word-break: break-word;
+    }
+  
+</style>
  <div class="affiliate-dashboard order-process-block">
      <h3>Assigned Organizations</h3>
 <div class="orthoney-datatable-warraper">
@@ -13,9 +27,12 @@ if (!defined('ABSPATH')) {
             <tr>
                 <th>Code</th>  
                 <th>Email</th>
-                <th>Organization Name</th>
-                <th>City</th>
-                <th>State</th>  
+                <th>Organization</th>
+                <th>New Organization</th>
+                <th>Status</th>
+                <th>Season Status</th>
+                <th>Price</th>
+                <th>Commission</th>
                 <th>Login</th>
             </tr>
         </thead>

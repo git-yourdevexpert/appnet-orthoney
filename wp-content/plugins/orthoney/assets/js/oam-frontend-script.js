@@ -2170,11 +2170,18 @@ document.addEventListener("DOMContentLoaded", function () {
       { data: "code" },
       { data: "email" },
       { data: "organization" },
-      { data: "city" },
-      { data: "state" },
+      { data: "new_organization" },
+      { data: "status" },
+      { data: "season_status" },
+      { data: "price" },
+      { data: "commission" },
       { data: "login" }
     ],
-    columnDefs: [{ targets: -1, orderable: false }],
+    columnDefs: [
+      { targets: 0, width: "50px" },
+      { targets: 1, width: "150px" },
+      { targets: -1, orderable: false }
+    ],
     language: {
       processing: `
         <div class="loader multiStepForm" style="display:block">
@@ -2184,6 +2191,30 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="loader-5"></div>
           </div>
         </div>`
+    },
+    initComplete: function () {
+      const api = this.api();
+      const statusColIndex = 5;
+      const statusSet = new Set();
+
+      // Extract unique values from current data only (not ideal for server-side, but works for demo)
+      api.column(statusColIndex).data().each(function (d) {
+        if (d && d.trim() !== "") {
+          statusSet.add(d);
+        }
+      });
+
+      const statusSelect = $('<select><option value="">Filter by Status</option></select>')
+        .on('change', function () {
+          selectedStatus = $(this).val(); // update global value
+          table.ajax.reload(); // reload table with new filter
+        });
+
+      Array.from(statusSet).sort().forEach(status => {
+        statusSelect.append(`<option value="${status}">${status}</option>`);
+      });
+
+      $('.dataTables_filter').prepend(statusSelect.css({ marginRight: '10px' }));
     }
   });
 
@@ -2289,8 +2320,8 @@ jQuery(document).ready(function ($) {
     columns: columns,
     drawCallback: function () {
       if (typeof initTippy === "function") {
-        initTippy();
-      }
+          initTippy();
+        }
     },
     language: {
       emptyTable: emptyMessage
