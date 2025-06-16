@@ -496,7 +496,6 @@ class OAM_AFFILIATE_Ajax{
         // }
 
         $user_ids = get_users([
-            'role'       => 'affiliate_team_member',
             'meta_key'   => 'associated_affiliate_id',
             'meta_value' => strval($associated_id),
             'fields'     => 'ID'
