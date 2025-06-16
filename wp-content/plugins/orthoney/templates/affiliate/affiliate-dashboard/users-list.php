@@ -7,9 +7,9 @@ if (!defined('ABSPATH')) {
 $dashboard_link = ORGANIZATION_DASHBOARD_LINK;
 $dashboard_link_label = 'Return to Dashboard';
 
-echo $current_user_id = get_current_user_id();
+$current_user_id = get_current_user_id();
 $affiliate_id = $current_user_id;
-echo $associated_id = get_user_meta($current_user_id, 'associated_affiliate_id', true);
+$associated_id = get_user_meta($current_user_id, 'associated_affiliate_id', true);
 if (!empty($associated_id)) {
     $affiliate_id = $associated_id;
 }
