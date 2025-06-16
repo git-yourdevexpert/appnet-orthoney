@@ -582,9 +582,7 @@ class OAM_AFFILIATE_Ajax{
             $user->set_role('affiliate_team_member');
             $user->add_role('customer'); // Optional
 
-            $associated_id = get_user_meta($user_id, 'associated_affiliate_id', true);
-
-            $organization_name = get_user_meta($associated_id, '_yith_wcaf_name_of_your_organization', true);
+            $organization_name = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
 
             // Send welcome email
             $from_name  = get_bloginfo('name');
