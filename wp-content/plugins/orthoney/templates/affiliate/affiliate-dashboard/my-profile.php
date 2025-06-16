@@ -4,25 +4,27 @@
        exit;
    }
    $user_id = get_current_user_id();
+   $affiliate_id = $user_id;
+   $associated_id = get_user_meta($user_id, 'associated_affiliate_id', true);
    
    // Fetch user meta fields
-   $first_name = get_user_meta($user_id, '_yith_wcaf_first_name', true) ?: get_user_meta($user_id, 'first_name', true);
-   $last_name = get_user_meta($user_id, '_yith_wcaf_last_name', true) ?: get_user_meta($user_id, 'last_name', true);
-   $user = get_userdata($user_id);
+   $first_name = get_user_meta($associated_id, '_yith_wcaf_first_name', true) ?: get_user_meta($associated_id, 'first_name', true);
+   $last_name = get_user_meta($associated_id, '_yith_wcaf_last_name', true) ?: get_user_meta($associated_id, 'last_name', true);
+   $user = get_userdata($associated_id);
    $email = $user->user_email;
    
    //TODO description
-   $name_of_your_organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
-   $your_organizations_website = get_user_meta($user_id, '_yith_wcaf_your_organizations_website', true);
-   $phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true);
-   $address = get_user_meta($user_id, '_yith_wcaf_address', true);
-   $mission_statement = get_user_meta($user_id, 'mission_statement', true);
-   $gift_card = get_user_meta($user_id, 'gift_card', true);
-   $city = get_user_meta($user_id, '_yith_wcaf_city', true);
-   $product_price = get_user_meta($user_id, 'DJarPrice', true);
-   $state = get_user_meta($user_id, '_yith_wcaf_state', true);
-   $zipcode = get_user_meta($user_id, '_yith_wcaf_zipcode', true);
-   $tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true);
+   $name_of_your_organization = get_user_meta($associated_id, '_yith_wcaf_name_of_your_organization', true);
+   $your_organizations_website = get_user_meta($associated_id, '_yith_wcaf_your_organizations_website', true);
+   $phone_number = get_user_meta($associated_id, '_yith_wcaf_phone_number', true);
+   $address = get_user_meta($associated_id, '_yith_wcaf_address', true);
+   $mission_statement = get_user_meta($associated_id, 'mission_statement', true);
+   $gift_card = get_user_meta($associated_id, 'gift_card', true);
+   $city = get_user_meta($associated_id, '_yith_wcaf_city', true);
+   $product_price = get_user_meta($associated_id, 'DJarPrice', true);
+   $state = get_user_meta($associated_id, '_yith_wcaf_state', true);
+   $zipcode = get_user_meta($associated_id, '_yith_wcaf_zipcode', true);
+   $tax_id = get_user_meta($associated_id, '_yith_wcaf_tax_id', true);
    
    $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
    //TODO
@@ -31,9 +33,8 @@
    ?>
 
    <?php 
-    $activate_affiliate_account = get_user_meta($affiliate_id, 'activate_affiliate_account', true);
-    $tax_id = get_user_meta($affiliate_id, '_yith_wcaf_tax_id', true);
-
+    $activate_affiliate_account = get_user_meta($associated_id, 'activate_affiliate_account', true);
+    
        if ((empty($activate_affiliate_account) AND $activate_affiliate_account != 1 ) ) {
             echo '<div class="dashboard-block"><div class="dashboard-heading block-row">
                         <div class="item" style="background-color: rgba(255, 0, 0, 0.5);">
@@ -59,6 +60,7 @@
     
     <div class="affiliate-profile" id="update-affiliate-form">
         <form id="affiliate-profile-form">
+             <input type="hidden" name="associated_id" id="associated_id" value="<?php echo esc_attr($associated_id); ?>" required data-error-message="Please enter a First Name.">
             <div class="profile-fields site-form grid-two-col">
                 <div class="form-row gfield--width-half">
                     <label for="first_name">First Name</label>
@@ -81,7 +83,7 @@
                 </div>
                 <div class="form-row gfield--width-half">
                     <label for="email">Email ID</label>
-                    <input type="email" name="email" id="email" value="<?php echo esc_attr($email); ?>" required
+                    <input type="email" name="email" id="email" value="<?php echo esc_attr($email); ?>" readonly required
                         data-error-message="Please enter a Email.">
                     <span class="error-message"></span>
                 </div>
@@ -125,7 +127,7 @@
                 </div>
                 <div class="form-row gfield--width-half">
                     <label for="tax_id">Tax ID</label>
-                    <input type="text" name="tax_id" id="tax_id" value="<?php echo esc_attr($tax_id); ?>" required
+                    <input type="text" name="tax_id" id="tax_id" value="<?php echo $tax_id; ?>" required
                         data-error-message="Please enter a Tax ID">
                     <span class="error-message"></span>
                 </div>
