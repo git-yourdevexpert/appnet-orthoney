@@ -96,10 +96,19 @@ class OAM_AFFILIATE_Helper
 
     public static function get_user_affiliate_form()
     {
-        ob_start(); ?>
+        ob_start(); 
+        $current_user_id = get_current_user_id();
+        $affiliate_id = $current_user_id;
+        $associated_id = get_user_meta($current_user_id, 'associated_affiliate_id', true);
+        if (!empty($associated_id)) {
+            $affiliate_id = $associated_id;
+        }
+        
+        ?>
         <div id="edit-user-form" class="edit-affiliate-form woocommerce">
             <form method="POST" class="grid-two-col" id="addUserForm">
                 <input type="hidden" id="user_id" name="user_id" required />
+                <input type="hidden" id="affiliate_id" name="affiliate_id" value="<?php echo $affiliate_id ?>" required/>
                 <div class="form-row gfield--width-half">
                     <label for="first_name"> First Name</label>
                     <input type="text" id="first_name" name="first_name" required data-error-message="Please enter a First Name." />
@@ -176,7 +185,6 @@ class OAM_AFFILIATE_Helper
         $fundraising_orders = 0;
         $unit_price = 0;
         $unit_cost = 0;
-        $dist_unit_profit = 0;
         foreach ($commission_array as $key => $data) {
             if ($data['affiliate_account_status'] == 1) {
                 $unit_price = $data['par_jar'];
@@ -199,24 +207,6 @@ class OAM_AFFILIATE_Helper
         }
         $fundraising_qty = $total_all_quantity - $wholesale_qty;
         $fundraising_orders = $total_orders - $wholesale_order;
-
-        $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
-        if ($unit_price >= $selling_minimum_price) {
-            if (OAM_AFFILIATE_Helper::is_user_created_this_year(get_current_user_id())) {
-                if ($total_all_quantity < 99) {
-                    $dist_unit_profit = get_field('new_minimum_price_50', 'option');
-                } else {
-                    $dist_unit_profit = get_field('new_minimum_price_100', 'option');
-                }
-            } else {
-                if ($total_all_quantity < 99) {
-                    $dist_unit_profit = get_field('ex_minimum_price_50', 'option');
-                } else {
-                    $dist_unit_profit = get_field('ex_minimum_price_100', 'option');
-                }
-            }
-        }
-        
         $html = '';
         // rsort($details['orders']);
         $orders = $details['orders'];
@@ -260,7 +250,7 @@ class OAM_AFFILIATE_Helper
                 $coupon_array = array_diff($coupon_array, $exclude_coupon);
 
                 if (empty($coupon_array)) {
-                    $commission_price = wc_price($quantity * ($unit_price - $dist_unit_profit));
+                    $commission_price = wc_price($quantity * ($unit_price - $unit_cost));
                 } else {
                     $commission_price = wc_price(0) . ' <span style="color:red">(used voucher: '.implode(",", $coupon_array).')</span>';
                 }
@@ -276,7 +266,7 @@ class OAM_AFFILIATE_Helper
                         <td><div class="thead-data">Type</div>' . esc_html('Wholesale') . '</td>
                         <td><div class="thead-data">Fundrs total<br><small>(Fundraising Qty * Dist Unit Price )</small></div>' . wc_price($order->get_total()) . '<br><small>('.$quantity.' * '.wc_price($unit_price).')</small></td>
                         
-                        <td><div class="thead-data">Distributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></div>' . $commission_price . '<br><small>('.$quantity.' * '.wc_price(($unit_price - $dist_unit_profit)).')</small></td>
+                        <td><div class="thead-data">Distributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></div>' . $commission_price . '<br><small>('.$quantity.' * '.wc_price(($unit_price - $unit_cost)).')</small></td>
                         <td><div class="thead-data">Date</div>' . date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order->get_date_created())) . '</td>
                     </tr>';
             }
@@ -352,6 +342,7 @@ class OAM_AFFILIATE_Helper
                 }
             }
         }
+
         $html = '';
         $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
 
@@ -777,10 +768,6 @@ class OAM_AFFILIATE_Helper
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE())",
             $affiliate_id
         ));
-
-         
-
-
 
         $total_exclude_quantity = $wpdb->get_var($wpdb->prepare(
             "SELECT 

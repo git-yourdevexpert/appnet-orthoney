@@ -484,6 +484,7 @@ if (greetingTextareas.length) {
 document.addEventListener("lity:open", function (event) {
   event.preventDefault();
   const popupOverlay = document.querySelector(".lity-wrap");
+
   if (popupOverlay) {
     popupOverlay.addEventListener("click", function (e) {
       if (e.target.classList.contains("lity-wrap")) {

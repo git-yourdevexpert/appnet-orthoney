@@ -47,7 +47,7 @@ echo OAM_AFFILIATE_Helper::manage_user_popup();
         if (!empty($affiliate_users)) {
             foreach ($affiliate_users as $user) {
                 $phone = get_user_meta($user->ID, 'billing_phone', true);
-                $affiliate_type = get_field('field_67c830a35d448', 'user_' . $user->ID);
+                $affiliate_type = get_field('user_field_type', 'user_' . $user->ID);
                 ?>
                 <tr data-userid="<?php echo $user->ID?>">
                     <td><div class='thead-data'>User Name</div><?php echo esc_html($user->first_name . ' ' . $user->last_name); ?></td>

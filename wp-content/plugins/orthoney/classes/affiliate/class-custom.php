@@ -30,7 +30,96 @@ class OAM_AFFILIATE_Custom {
                 $user->add_role('customer');
             }
         }
-        
+ 
+        if (isset($_GET['affiliate_member_import']) && $_GET['affiliate_member_import'] === 'import') {
+
+            global $wpdb;
+
+            $log_file = WP_CONTENT_DIR . '/affiliate_member_import.log';
+
+            $yith_wcaf_affiliates_table = OAM_helper::$yith_wcaf_affiliates_table;
+
+            $query = "
+                SELECT um1.user_id, um2.meta_value AS _userinfo
+                FROM {$wpdb->usermeta} um1
+                INNER JOIN {$wpdb->usermeta} um2 
+                    ON um1.user_id = um2.user_id
+                WHERE um1.meta_key = %s 
+                AND um2.meta_key = %s
+            ";
+
+            $results = $wpdb->get_results($wpdb->prepare($query, 'DJarPrice', '_userinfo'));
+
+            $contact_roles = [
+                'Primary'   => 'primary-contact',
+                'CoChair'   => 'co-chair',
+                'Alternate' => 'alternative-contact',
+            ];
+
+            foreach ($results as $row) {
+                $userinfo = maybe_unserialize($row->_userinfo);
+                if (!is_array($userinfo) || empty($userinfo['Email'])) {
+                    continue;
+                }
+
+                $main_email = strtolower($userinfo['Email']);
+
+                foreach ($contact_roles as $key => $role_meta_key) {
+
+                    $contact = $userinfo['Distributor'][$key] ?? null;
+
+                    if (!$contact || empty($contact['Email'])) {
+                        continue;
+                    }
+
+                    $contact_email = strtolower(sanitize_email($contact['Email']));
+                    if ($contact_email === $main_email) {
+                        continue; // Skip if same as main contact
+                    }
+
+                    if (email_exists($contact_email)) {
+                        $user_id = email_exists($contact_email);
+                        $user = get_user_by('id', $user_id);
+
+                        if ($user) {
+                            $roles = $user->roles;
+                            if(!in_array( 'affiliate_team_member' , $roles)){
+                                // Assign roles
+                                $user->add_role('affiliate_team_member');
+                                $user->add_role('customer');
+
+                                // Update user meta
+                                $phone          = sanitize_text_field($contact['Phone'] ?? '');
+                                $affiliate_type = sanitize_text_field($role_meta_key ?? '');
+
+                                update_user_meta($user_id, 'phone', $phone);
+                                update_user_meta($user_id, 'user_field_type', $affiliate_type);
+                                update_user_meta($user_id, 'associated_affiliate_id', $row->user_id);
+
+                                // Get affiliate token
+                                $processtoken = $wpdb->get_var(
+                                    $wpdb->prepare(
+                                        "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d",
+                                        $row->user_id
+                                    )
+                                );
+
+                                // Log info to file
+                                $formatted_message  = '[' . date('Y-m-d H:i:s') . '] ' . PHP_EOL;
+                                $formatted_message .= 'Token: ' . $processtoken . PHP_EOL;
+                                $formatted_message .= 'User ID: ' . $user_id . PHP_EOL;
+                                $formatted_message .= 'Email: ' . $contact_email . PHP_EOL;
+                                $formatted_message .= 'Affiliate Type: ' . $affiliate_type . PHP_EOL;
+                                $formatted_message .= str_repeat('-', 40) . PHP_EOL;
+
+                                error_log($formatted_message, 3, $log_file);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         if(isset($_GET['affiliate_data_import']) &&  $_GET['affiliate_data_import'] = 'import') {
             global $wpdb;
 

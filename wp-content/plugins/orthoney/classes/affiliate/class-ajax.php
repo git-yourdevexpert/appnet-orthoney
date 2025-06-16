@@ -529,6 +529,7 @@ class OAM_AFFILIATE_Ajax{
 
         // Sanitize input data
         $user_id        = isset($_POST['user_id']) ? intval($_POST['user_id']) : '';
+        $affiliate_id        = isset($_POST['affiliate_id']) ? intval($_POST['affiliate_id']) : '';
         $first_name     = sanitize_text_field($_POST['first_name']);
         $last_name      = sanitize_text_field($_POST['last_name']);
         $email          = sanitize_email($_POST['email']);
@@ -539,7 +540,7 @@ class OAM_AFFILIATE_Ajax{
         if (empty($user_id)) {
             // Check if the email is already in use
             if (email_exists($email)) {
-                wp_send_json(['success' => false, 'message' => esc_html__('Organization Users is Already Exist', 'text-domain')]);
+                wp_send_json(['success' => false, 'message' => esc_html__('Organization member is already exist', 'text-domain')]);
             }
 
             // Create a new user
@@ -595,13 +596,13 @@ class OAM_AFFILIATE_Ajax{
         // Update user meta data
         update_user_meta($user_id, 'first_name', $first_name);
         update_user_meta($user_id, 'last_name', $last_name);
-        update_user_meta($user_id, 'billing_phone', $phone);
+        update_user_meta($user_id, 'phone', $phone);
         update_user_meta($user_id, 'shipping_phone', $phone);
         update_user_meta($user_id, 'user_field_type', $affiliate_type);
-        update_user_meta($user_id, 'associated_affiliate_id', $current_user);
+        update_user_meta($user_id, 'associated_affiliate_id', $affiliate_id);
 
         // Send success response
-        $message = empty($_POST['user_id']) ? esc_html__('Affiliate Member created successfully!', 'text-domain') : esc_html__('Affiliate Member updated successfully!', 'text-domain');
+        $message = empty($_POST['user_id']) ? esc_html__('Organization member created successfully!', 'text-domain') : esc_html__('Organization member updated successfully!', 'text-domain');
         wp_send_json(['success' => true, 'message' => $message]);
     }
 
@@ -619,7 +620,7 @@ class OAM_AFFILIATE_Ajax{
         if (!empty($affiliate_users)) :
             foreach ($affiliate_users as $user) :
                 $array['userid'] =  $user->ID;
-                $array['phone'] =  get_user_meta($user->ID, 'billing_phone', true);
+                $array['phone'] =  get_user_meta($user->ID, 'phone', true);
                 $array['affiliate_type'] =  get_user_meta($user->ID, 'user_field_type', true);
                 $array['first_name'] =  $user->first_name;
                 $array['last_name'] =   $user->last_name;
@@ -628,7 +629,7 @@ class OAM_AFFILIATE_Ajax{
             endforeach;
         endif;
 
-        wp_send_json(['success' => true, 'message' => 'Affiliate Member Updated successfully!', 'data' => $array]);
+        wp_send_json(['success' => true, 'message' => 'Organization Member details update successfully!', 'data' => $array]);
     }
 
     // Delete Affiliate user 
@@ -645,6 +646,7 @@ class OAM_AFFILIATE_Ajax{
         }
     
         $user_id = intval($_POST['id']);
+        $user = get_userdata($user_id);
     
         // Check if user exists
         if (!get_userdata($user_id)) {
@@ -652,7 +654,8 @@ class OAM_AFFILIATE_Ajax{
         }
     
         // Attempt to delete user
-        $deleted = wp_delete_user($user_id);
+        delete_user_meta($user_id, 'associated_affiliate_id');
+        $user->remove_role('affiliate_team_member');
     
         if ($deleted) {
             wp_send_json_success(['message' => 'User deleted successfully.']);

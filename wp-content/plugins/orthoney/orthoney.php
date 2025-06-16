@@ -159,6 +159,7 @@ add_action('admin_head', function() {
 });
 
 function add_customer_role_to_affiliates() {
+    
 
     if( isset($_GET['add_customer_role_to_affiliates']) && $_GET['add_customer_role_to_affiliates'] == 'yes'){
         $affiliates = get_users( array(
@@ -206,6 +207,7 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
     }
 }
  
+
 
 
 // /affiliate-dashboard-user-list-menu-item

@@ -22,10 +22,11 @@ function validateForm(form) {
             errorMessage.textContent = "Please enter a valid email address.";
         } 
         else if (input.classList.contains("phone-input")) {
-            // Ensure only numbers and exactly 10 digits
-            if (!/^\d{10}$/.test(value)) {
+            // Allow formats like (818) 974-1070 or 8189741070
+            let digitsOnly = value.replace(/\D/g, '');
+            if (digitsOnly.length !== 10) {
                 isValid = false;
-                errorMessage.textContent = "Please enter a valid 10-digit phone number (numbers only).";
+                errorMessage.textContent = "Please enter a valid 10-digit phone number (e.g., (818) 974-1070).";
             }
         }
 
@@ -37,10 +38,12 @@ function validateForm(form) {
 
     return isValid;
 }
+
 // Add user
 document.addEventListener("DOMContentLoaded", function () {
     let addUserForm = document.getElementById("addUserForm");
     if (addUserForm) {
+        addUserForm.reset();
         addUserForm.setAttribute("novalidate", true);
 
         addUserForm.addEventListener("submit", function (e) {
@@ -92,6 +95,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 //edit user
 document.addEventListener('click', function (event) {
+    if (event.target.classList.contains('addnewaffiliateteammember')) {
+        const form = document.querySelector('#edit-user-form form');
+        form.reset();
+        jQuery("#affiliate_type").val(null).trigger('change');
+        const emailField = form.querySelector('#email');emailField.readOnly = false;
+    }
     if (event.target.classList.contains('edit-user-form-btn')) {
         event.preventDefault();
 
@@ -115,6 +124,8 @@ document.addEventListener('click', function (event) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    const form = document.querySelector('#edit-user-form form');
+                    form.reset();
                 
                     const userid = data.data.userid;
                     const first_name = data.data.first_name;
@@ -123,7 +134,6 @@ document.addEventListener('click', function (event) {
                     const phone = data.data.phone;
                     const affiliate_type = data.data.affiliate_type;
                  
-                    const form = document.querySelector('#edit-user-form form');
                     form.querySelector('#user_id').value = userid;
                     form.querySelector('#first_name').value = first_name;
                     form.querySelector('#last_name').value = last_name;
@@ -133,6 +143,10 @@ document.addEventListener('click', function (event) {
         
 
                     setTimeout(function() {
+                         jQuery("#affiliate_type").select2({
+                            placeholder: "Please select a type",
+                            allowClear: false
+                        });
                         lity(event.target.getAttribute('data-popup'));
                     }, 250);
                     
