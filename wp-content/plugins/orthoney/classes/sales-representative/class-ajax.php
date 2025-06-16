@@ -187,7 +187,7 @@ if($user->user_email != ''){
         $show_price = ($product_price >= $selling_minimum_price) ? $product_price : $selling_minimum_price;
 
         // Check if organization is new this year
-        $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'Yes' : 'No';
+        $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Returning';
 
         // Get commission data
         $commission_array_data = json_decode(OAM_AFFILIATE_Helper::get_commission_affiliate($user_id), true);
