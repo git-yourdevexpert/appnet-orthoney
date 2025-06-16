@@ -535,34 +535,30 @@ class OAM_AFFILIATE_Ajax{
         if (empty($_POST['email']) || !is_email($_POST['email'])) {
             wp_send_json(['success' => false, 'message' => esc_html__('Invalid email!', 'text-domain')]);
         }
-        
+
         if (empty($_POST['first_name']) || empty($_POST['last_name']) || empty($_POST['type'])) {
             wp_send_json(['success' => false, 'message' => esc_html__('All fields are required!', 'text-domain')]);
         }
 
         // Sanitize input data
-        $user_id        = isset($_POST['user_id']) ? intval($_POST['user_id']) : '';
-        $affiliate_id        = isset($_POST['affiliate_id']) ? intval($_POST['affiliate_id']) : '';
+        $user_id        = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+        $affiliate_id   = isset($_POST['affiliate_id']) ? intval($_POST['affiliate_id']) : 0;
         $first_name     = sanitize_text_field($_POST['first_name']);
         $last_name      = sanitize_text_field($_POST['last_name']);
         $email          = sanitize_email($_POST['email']);
         $phone          = sanitize_text_field($_POST['phone']);
         $affiliate_type = sanitize_text_field($_POST['type']);
-        $current_user   = get_current_user_id();
 
+       
+        // If creating new user
         if (empty($user_id)) {
             // Check if the email is already in use
             if (email_exists($email)) {
-                wp_send_json(['success' => false, 'message' => esc_html__('Organization member is already exist', 'text-domain')]);
+                wp_send_json(['success' => false, 'message' => esc_html__('Organization member already exists.', 'text-domain')]);
             }
 
-
-            $current_user_id = get_current_user_id();
-            $affiliate_id = $current_user_id;
-            $associated_id = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
-            $organization_name = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
-
-
+            // Use current user as affiliate owner
+            
             // Create a new user
             $password = wp_generate_password();
             $user_id  = wp_create_user($email, $password, $email);
@@ -570,6 +566,9 @@ class OAM_AFFILIATE_Ajax{
             if (is_wp_error($user_id)) {
                 wp_send_json(['success' => false, 'message' => esc_html__('Error creating user!', 'text-domain')]);
             }
+
+            
+           
 
             // Set user details
             wp_update_user([
@@ -581,48 +580,45 @@ class OAM_AFFILIATE_Ajax{
             // Assign role
             $user = new WP_User($user_id);
             $user->set_role('affiliate_team_member');
-            $user->add_role('customer');
+            $user->add_role('customer'); // Optional
 
-            // Email verification setup
-            
-            // $verification_token = OAM_AFFILIATE_Custom::generate_token($user_id);
-            // $verification_token = wp_generate_password(32, false);
-            update_user_meta($user_id, 'email_verification_token', $verification_token);
+            $associated_id = get_user_meta($user_id, 'associated_affiliate_id', true);
 
-            // Generate verification link
-            $verification_link = add_query_arg([
-                'action'  => 'verify_email',
-                'token'   => $verification_token,
-                'user_id' => $user_id
-            ], home_url('/'));
+            $organization_name = get_user_meta($associated_id, '_yith_wcaf_name_of_your_organization', true);
 
-            // Send verification email
+            // Send welcome email
             $from_name  = get_bloginfo('name');
             $from_email = get_option('admin_email');
             $headers    = [
                 'Content-Type: text/html; charset=UTF-8',
                 'From: ' . $from_name . ' <' . $from_email . '>'
             ];
-            
-            $subject = esc_html__('Welcome to Honey From The Heart – Your Account Details', 'text-domain');
-            $message = sprintf(
-                'Hello %s,<br><br>You have been successfully added to <strong>Honey From The Heart</strong> by <strong>'.$organization_name.'</strong><br>
-                Please log in to the organization portal using the credentials below:<br><br>
 
-                <strong>Login Here: : </strong> '.(site_url('login'))  .'<br>
-                <strong>Email : </strong> '.$email  .'<br>
-                <strong>Password : </strong>'.$password.'
-                <br><br>You can update your password anytime by visiting the <strong>My Profile </strong> section.<br><br>
-                <br><br>If you have any questions, feel free to contact us at '.(get_option('admin_email')).'.<br><br>
-                <br><br>Warm regards,<br><strong>The Honey From The Heart Team.</strong>',
+            $subject = esc_html__('Welcome to Honey From The Heart – Your Account Details', 'text-domain');
+
+            $message = sprintf(
+                'Hello %s,<br><br>You have been successfully added to <strong>Honey From The Heart</strong> by <strong>%s</strong>.<br>
+                Please log in to the organization portal using the credentials below:<br><br>
+                <strong>Login Here:</strong> <a href="%s">%s</a><br>
+                <strong>Email:</strong> %s<br>
+                <strong>Password:</strong> %s<br><br>
+                You can update your password anytime by visiting the <strong>My Profile</strong> section.<br><br>
+                If you have any questions, feel free to contact us at <a href="mailto:%s">%s</a>.<br><br>
+                Warm regards,<br><strong>The Honey From The Heart Team.</strong>',
                 esc_html($first_name),
-                esc_url($verification_link)
+                $organization_name,
+                esc_url(site_url('login')),
+                esc_url(site_url('login')),
+                esc_html($email),
+                esc_html($password),
+                esc_html($from_email),
+                esc_html($from_email)
             );
 
             wp_mail($email, $subject, $message, $headers);
         }
 
-        // Update user meta data
+        // Update user meta (for both new and existing users)
         update_user_meta($user_id, 'first_name', $first_name);
         update_user_meta($user_id, 'last_name', $last_name);
         update_user_meta($user_id, 'phone', $phone);
@@ -631,9 +627,13 @@ class OAM_AFFILIATE_Ajax{
         update_user_meta($user_id, 'associated_affiliate_id', $affiliate_id);
 
         // Send success response
-        $message = empty($_POST['user_id']) ? esc_html__('Organization member created successfully!', 'text-domain') : esc_html__('Organization member updated successfully!', 'text-domain');
+        $message = empty($_POST['user_id']) 
+            ? esc_html__('Organization member created successfully!', 'text-domain') 
+            : esc_html__('Organization member updated successfully!', 'text-domain');
+
         wp_send_json(['success' => true, 'message' => $message]);
     }
+
 
     //get Affiliate user data in form
     public function get_affiliate_team_member_by_base_id_handler() {
