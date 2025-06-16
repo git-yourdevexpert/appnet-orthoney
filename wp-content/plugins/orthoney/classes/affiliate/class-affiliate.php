@@ -11,3 +11,4 @@ require_once OH_PLUGIN_DIR_PATH . 'classes/affiliate/class-shortcode.php';
 
 
 require_once OH_PLUGIN_DIR_PATH . 'classes/affiliate/class-custom.php';
+require_once OH_PLUGIN_DIR_PATH . 'classes/affiliate/class-recaptcha_V3.php';
