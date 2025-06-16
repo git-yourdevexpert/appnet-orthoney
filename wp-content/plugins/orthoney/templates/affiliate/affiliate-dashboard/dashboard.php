@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
 $affiliate_id = get_current_user_id();
 $user_roles = OAM_COMMON_Custom::get_user_role_by_id($affiliate_id);
 
-if(in_array('affiliate_team_member', $user_roles)){
+if(in_array('affiliate_team_member', $user_roles) OR in_array('administrator', $user_roles)){
     $affiliate_id = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
 }
 OAM_COMMON_Custom::switch_back_user();

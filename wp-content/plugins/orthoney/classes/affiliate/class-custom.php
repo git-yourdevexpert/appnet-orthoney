@@ -83,36 +83,39 @@ class OAM_AFFILIATE_Custom {
 
                         if ($user) {
                             $roles = $user->roles;
-                            if(!in_array( 'affiliate_team_member' , $roles)){
-                                // Assign roles
-                                $user->add_role('affiliate_team_member');
-                                $user->add_role('customer');
+                            if(!in_array( 'administrator' , $roles)){
 
-                                // Update user meta
-                                $phone          = sanitize_text_field($contact['Phone'] ?? '');
-                                $affiliate_type = sanitize_text_field($role_meta_key ?? '');
+                                if(!in_array( 'affiliate_team_member' , $roles)){
+                                    // Assign roles
+                                    $user->add_role('affiliate_team_member');
+                                    $user->add_role('customer');
 
-                                update_user_meta($user_id, 'phone', $phone);
-                                update_user_meta($user_id, 'user_field_type', $affiliate_type);
-                                update_user_meta($user_id, 'associated_affiliate_id', $row->user_id);
+                                    // Update user meta
+                                    $phone          = sanitize_text_field($contact['Phone'] ?? '');
+                                    $affiliate_type = sanitize_text_field($role_meta_key ?? '');
 
-                                // Get affiliate token
-                                $processtoken = $wpdb->get_var(
-                                    $wpdb->prepare(
-                                        "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d",
-                                        $row->user_id
-                                    )
-                                );
+                                    update_user_meta($user_id, 'phone', $phone);
+                                    update_user_meta($user_id, 'user_field_type', $affiliate_type);
+                                    update_user_meta($user_id, 'associated_affiliate_id', $row->user_id);
 
-                                // Log info to file
-                                $formatted_message  = '[' . date('Y-m-d H:i:s') . '] ' . PHP_EOL;
-                                $formatted_message .= 'Token: ' . $processtoken . PHP_EOL;
-                                $formatted_message .= 'User ID: ' . $user_id . PHP_EOL;
-                                $formatted_message .= 'Email: ' . $contact_email . PHP_EOL;
-                                $formatted_message .= 'Affiliate Type: ' . $affiliate_type . PHP_EOL;
-                                $formatted_message .= str_repeat('-', 40) . PHP_EOL;
+                                    // Get affiliate token
+                                    $processtoken = $wpdb->get_var(
+                                        $wpdb->prepare(
+                                            "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d",
+                                            $row->user_id
+                                        )
+                                    );
 
-                                error_log($formatted_message, 3, $log_file);
+                                    // Log info to file
+                                    $formatted_message  = '[' . date('Y-m-d H:i:s') . '] ' . PHP_EOL;
+                                    $formatted_message .= 'Token: ' . $processtoken . PHP_EOL;
+                                    $formatted_message .= 'User ID: ' . $user_id . PHP_EOL;
+                                    $formatted_message .= 'Email: ' . $contact_email . PHP_EOL;
+                                    $formatted_message .= 'Affiliate Type: ' . $affiliate_type . PHP_EOL;
+                                    $formatted_message .= str_repeat('-', 40) . PHP_EOL;
+
+                                    error_log($formatted_message, 3, $log_file);
+                                }
                             }
                         }
                     }

@@ -328,7 +328,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
             $product_price = get_user_meta($user_id, 'DJarPrice', true);
             $show_price = $selling_minimum_price;
-            if($product_price >= $selling_minimum_price) {
+            if($product_price >= $selling_minimum_price){
                 $show_price = $product_price;
             }
 
@@ -374,22 +374,8 @@ class OAM_ADMINISTRATOR_AJAX {
             }
 
             // Final quantity and order calculations
-            $total_all_quantity = $fundraising_qty + $wholesale_qty;
+            $total_all_quantity = $fundraising_qty;
             $fundraising_orders = $total_orders - $wholesale_order;
-            
-            if ($new_organization == 'Yes') {
-                if ($total_all_quantity < 99) {
-                    $unit_cost = get_field('new_minimum_price_50', 'option');
-                } else {
-                    $unit_cost = get_field('new_minimum_price_100', 'option');
-                }
-            } else {
-                if ($total_all_quantity < 99) {
-                    $unit_cost = get_field('ex_minimum_price_50', 'option');
-                } else {
-                    $unit_cost = get_field('ex_minimum_price_100', 'option');
-                }
-            }
 
             // Calculate total commission based on jar threshold
             $total_commission = ($total_all_quantity > 50)  ? wc_price($fundraising_qty * ($unit_price - $unit_cost)) : wc_price(0);
