@@ -184,7 +184,7 @@
                     </p>
                 </div>
             </div>
-            <div class="affiliate-profile" id="update-price-affiliate-form">
+            <div class="affiliate-profile" id="update-price-affiliate-form" style="display:none">
                 <form id="affiliate-gift-card-form">
                     <div class="form-row gfield--width-half">
                         <div class="textarea-div form-row gfield--width-full">
@@ -205,7 +205,7 @@
         </div>
     </div>
 </div>
-<div class="order-process-block">
+<div class="order-process-block" style="display:none">
     <div class="heading-title">
         <h3 class="block-title">Mission Statement</h3>
     </div>
