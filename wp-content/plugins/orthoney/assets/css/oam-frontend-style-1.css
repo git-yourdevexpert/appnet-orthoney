@@ -363,4 +363,8 @@
         font-size: 20px;
         line-height: 20px;
     }
+    .season_start_end_message_box .popupbox.withpopup .close-popup{
+        left: -7px;
+        top: -7px;
+    }
 }
