@@ -16,7 +16,7 @@ if (!empty($associated_id)) {
 
 
 // Get users with the 'affiliate_team_member' role
-$affiliate_users = get_users([
+$all_users = get_users([
     'meta_query' => [
         [
             'key'   => 'associated_affiliate_id',
@@ -25,6 +25,11 @@ $affiliate_users = get_users([
         ]
     ]
 ]);
+
+$affiliate_users = array_filter($all_users, function($user) {
+    $roles = (array) $user->roles;
+    return in_array('affiliate_team_member', $roles) || in_array('administrator', $roles);
+});
 echo OAM_AFFILIATE_Helper::manage_user_popup();
 
 ?>
