@@ -35,7 +35,7 @@ echo OAM_AFFILIATE_Helper::manage_user_popup();
 <div class="heading-title">
     <h3 class="block-title">Team Member List</h3>
     <div>
-        <a href="#user-manage-popup" class="add-user w-btn us-btn-style_1 addnewaffiliateteammember" data-lity data-popup="#user-manage-popup">Add new user</a>
+        <a href="#user-manage-popup" class="add-user w-btn us-btn-style_1 addnewaffiliateteammember" data-lity data-popup="#user-manage-popup">Add new member</a>
         <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
     </div>
 </div>
