@@ -415,16 +415,19 @@ class OAM_AFFILIATE_Ajax{
         }
 
         $user_id = get_current_user_id();
+        $affiliate_id = $user_id;
+        $associated_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+
         $product_price = sanitize_text_field($_POST['product_price']);
 
         // Update current user's price
-        update_user_meta($user_id, 'DJarPrice', $product_price);
+        update_user_meta($associated_id, 'DJarPrice', $product_price);
 
         // Get team members associated with this user
         $user_ids = get_users([
             'role'       => 'affiliate_team_member',
             'meta_key'   => 'associated_affiliate_id',
-            'meta_value' => strval($user_id),
+            'meta_value' => strval($associated_id),
             'fields'     => 'ID'
         ]);
 
@@ -449,6 +452,8 @@ class OAM_AFFILIATE_Ajax{
         }
 
         $user_id = get_current_user_id();
+        $affiliate_id = $user_id;
+        $associated_id = get_user_meta($user_id, 'associated_affiliate_id', true);
 
         // Validate and sanitize inputs
         $first_name = sanitize_text_field($_POST['first_name']);
@@ -470,43 +475,52 @@ class OAM_AFFILIATE_Ajax{
             wp_die();
         }
 
-        if (email_exists($email) && email_exists($email) != $user_id) {
-            wp_send_json(['success' => false, 'message' => 'This email is already taken.']);
-            wp_die();
-        }
+        // if (email_exists($email) && email_exists($email) != $user_id) {
+        //     wp_send_json(['success' => false, 'message' => 'This email is already taken.']);
+        //     wp_die();
+        // }
 
         // Update user profile data (including email)
         $update_data = [
-            'ID'         => $user_id,
+            'ID'         => $associated_id,
             '_yith_wcaf_first_name' => $first_name,
             '_yith_wcaf_last_name'  => $last_name,
             'user_email' => $email, 
         ];
 
-        $user_update = wp_update_user($update_data);
+        // $user_update = wp_update_user($update_data);
 
-        if (is_wp_error($user_update)) {
-            wp_send_json(['success' => false, 'message' => 'Error updating profile.']);
-            wp_die();
+        // if (is_wp_error($user_update)) {
+        //     wp_send_json(['success' => false, 'message' => 'Error updating profile.']);
+        //     wp_die();
+        // }
+
+        $user_ids = get_users([
+            'role'       => 'affiliate_team_member',
+            'meta_key'   => 'associated_affiliate_id',
+            'meta_value' => strval($associated_id),
+            'fields'     => 'ID'
+        ]);
+
+        // Update each team member's price
+        foreach ($user_ids as $id) {
+            // Update user meta
+            update_user_meta($id, '_yith_wcaf_first_name', $first_name);
+            update_user_meta($id, '_yith_wcaf_last_name', $last_name);
+            update_user_meta($id, 'billing_phone', $billing_phone);
+
+            //affiliate Fields data update
+            // update_user_meta($id, '_yith_wcaf_first_name', $organization_name);
+            // update_user_meta($id, '_yith_wcaf_last_name', '');
+            update_user_meta($id, '_yith_wcaf_phone_number', $billing_phone);
+            update_user_meta($id, '_yith_wcaf_name_of_your_organization', $organization_name);
+            update_user_meta($id, '_yith_wcaf_your_organizations_website', $organization_website);
+            update_user_meta($id, '_yith_wcaf_address', $address);
+            update_user_meta($id, '_yith_wcaf_city', $city);
+            update_user_meta($id, '_yith_wcaf_state', $state);
+            update_user_meta($id, '_yith_wcaf_zipcode', $zipcode);
+            update_user_meta($id, '_yith_wcaf_tax_id', $tax_id);
         }
-
-        // Update user meta
-        update_user_meta($user_id, '_yith_wcaf_first_name', $first_name);
-        update_user_meta($user_id, '_yith_wcaf_last_name', $last_name);
-        update_user_meta($user_id, 'billing_phone', $billing_phone);
-
-        //affiliate Fields data update
-        // update_user_meta($user_id, '_yith_wcaf_first_name', $organization_name);
-        // update_user_meta($user_id, '_yith_wcaf_last_name', '');
-        update_user_meta($user_id, '_yith_wcaf_phone_number', $billing_phone);
-        update_user_meta($user_id, '_yith_wcaf_name_of_your_organization', $organization_name);
-        update_user_meta($user_id, '_yith_wcaf_your_organizations_website', $organization_website);
-        update_user_meta($user_id, '_yith_wcaf_address', $address);
-        update_user_meta($user_id, '_yith_wcaf_city', $city);
-        update_user_meta($user_id, '_yith_wcaf_state', $state);
-        update_user_meta($user_id, '_yith_wcaf_zipcode', $zipcode);
-        update_user_meta($user_id, '_yith_wcaf_tax_id', $tax_id);
-
 
         wp_send_json(['success' => true, 'message' => 'Your profile has been updated successfully.']);
         wp_die();
