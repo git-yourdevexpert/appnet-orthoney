@@ -171,7 +171,7 @@
             </div>
         </div>
     </div>
-    <div class="cl-right">
+    <div class="cl-right" style="display:none">
         <div class="order-process-block">
             <div class="heading-title">
                 <div>
@@ -184,7 +184,7 @@
                     </p>
                 </div>
             </div>
-            <div class="affiliate-profile" id="update-price-affiliate-form" style="display:none">
+            <div class="affiliate-profile" id="update-price-affiliate-form" >
                 <form id="affiliate-gift-card-form">
                     <div class="form-row gfield--width-half">
                         <div class="textarea-div form-row gfield--width-full">
