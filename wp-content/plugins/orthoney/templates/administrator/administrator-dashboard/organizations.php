@@ -4,51 +4,10 @@ if (!defined('ABSPATH')) {
     exit;
 }
 $dashboard_link = ADMINISTRATOR_DASHBOARD_LINK;
- $dashboard_link_label = 'Return to Dashboard';
- 
-        $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'Yes' : 'No';
+$dashboard_link_label = 'Return to Dashboard';
 
-        $exclude_coupon = EXCLUDE_COUPON;
+$new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'Yes' : 'No';
 
-    // Initialize counters
-        $total_all_quantity = $fundraising_qty = $wholesale_qty = 0;
-        $total_orders = $wholesale_order = 0;
-        $unit_price = $unit_cost = 0;
-        $total_commission = 0;
-
-        if (!empty($commission_array_data['data'])) {
-            foreach ($commission_array_data['data'] as $value) {
-                // Aggregate quantities
-                $fundraising_qty = $value['total_quantity'];
-                $wholesale_qty = $value['wholesale_qty'];
-
-                // Process only if affiliate account is active
-                if (!empty($value['affiliate_account_status'])) {
-                    $unit_price = $value['par_jar'];
-                    $unit_cost = $value['minimum_price'];
-                    $total_all_quantity += $value['total_quantity'];
-                    $total_orders++;
-
-                    // Handle coupon logic
-                    $coupon_array = !empty($value['is_voucher_used']) 
-                        ? array_values(array_diff(explode(",", $value['is_voucher_used']), $exclude_coupon)) 
-                        : [];
-
-                    if (empty($coupon_array)) {
-                        $total_commission += $value['commission'];
-                    } else {
-                        $wholesale_order++;
-                    }
-                }
-            }
-        }
-
-        // Final quantity and order calculations
-        $total_all_quantity = $fundraising_qty;
-        $fundraising_orders = $total_orders - $wholesale_order;
-
-        // Calculate total commission based on jar threshold
-        echo $total_commission = ($total_all_quantity > 50)  ? wc_price($fundraising_qty * ($unit_price - $unit_cost)) : wc_price(0);
 
 ?>
 <style>
