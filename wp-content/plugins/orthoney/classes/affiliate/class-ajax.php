@@ -681,13 +681,8 @@ class OAM_AFFILIATE_Ajax{
         delete_user_meta($user_id, 'associated_affiliate_id');
         $user->remove_role('affiliate_team_member');
     
-        if ($deleted) {
-            wp_send_json_success(['message' => 'User deleted successfully.']);
-        } else {
-            wp_send_json_error(['message' => 'Failed to delete user.']);
-        }
+        wp_send_json_success(['message' => 'User deleted successfully.']);   
     }
-    
 
 }
 

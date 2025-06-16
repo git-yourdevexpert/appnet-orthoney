@@ -336,7 +336,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
             $commission_array_data = json_decode($commission_array, true);
 
-            $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'Yes' : 'No';
+            $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Returning';
 
             $exclude_coupon = EXCLUDE_COUPON;
 
