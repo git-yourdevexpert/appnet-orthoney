@@ -18,7 +18,8 @@ class OAM_AFFILIATE_Custom {
         add_action('user_register', [$this, 'schedule_user_meta'], 10, 1);
         add_action('set_default_user_meta_after_register', [$this, 'handle_user_meta_and_email']);
     }
-
+    
+    public static function init() {}
    
     public function affiliate_import_handler() {
          if ( isset($_GET['sales_representative_data_import']) && $_GET['sales_representative_data_import'] == 'import' ) {
@@ -27,7 +28,7 @@ class OAM_AFFILIATE_Custom {
             ) );
 
             foreach ( $sales_reps as $user ) {
-                $user->add_role('customer');
+                // $user->add_role('customer');
             }
         }
  
@@ -370,4 +371,5 @@ class OAM_AFFILIATE_Custom {
     }
 }
 
+OAM_AFFILIATE_Custom::init();
 new OAM_AFFILIATE_Custom();

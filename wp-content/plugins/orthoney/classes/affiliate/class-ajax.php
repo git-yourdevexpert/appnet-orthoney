@@ -556,6 +556,13 @@ class OAM_AFFILIATE_Ajax{
                 wp_send_json(['success' => false, 'message' => esc_html__('Organization member is already exist', 'text-domain')]);
             }
 
+
+            $current_user_id = get_current_user_id();
+            $affiliate_id = $current_user_id;
+            $associated_id = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
+            $organization_name = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
+
+
             // Create a new user
             $password = wp_generate_password();
             $user_id  = wp_create_user($email, $password, $email);
@@ -578,7 +585,8 @@ class OAM_AFFILIATE_Ajax{
 
             // Email verification setup
             
-            $verification_token = wp_generate_password(32, false);
+            // $verification_token = OAM_AFFILIATE_Custom::generate_token($user_id);
+            // $verification_token = wp_generate_password(32, false);
             update_user_meta($user_id, 'email_verification_token', $verification_token);
 
             // Generate verification link
@@ -596,9 +604,17 @@ class OAM_AFFILIATE_Ajax{
                 'From: ' . $from_name . ' <' . $from_email . '>'
             ];
             
-            $subject = esc_html__('Email Verification Required', 'text-domain');
+            $subject = esc_html__('Welcome to Honey From The Heart – Your Account Details', 'text-domain');
             $message = sprintf(
-                'Hello %s,<br><br>Thank you for registering. Please verify your email by clicking the button below:<br><br><a href="%s" style="background-color:#4CAF50;color:#ffffff;padding:12px 25px;text-decoration:none;border-radius:5px;">Verify Email Address</a><br><br>If you did not create this account, please ignore this email.',
+                'Hello %s,<br><br>You have been successfully added to <strong>Honey From The Heart</strong> by <strong>'.$organization_name.'</strong><br>
+                Please log in to the organization portal using the credentials below:<br><br>
+
+                <strong>Login Here: : </strong> '.(site_url('login'))  .'<br>
+                <strong>Email : </strong> '.$email  .'<br>
+                <strong>Password : </strong>'.$password.'
+                <br><br>You can update your password anytime by visiting the <strong>My Profile </strong> section.<br><br>
+                <br><br>If you have any questions, feel free to contact us at '.(get_option('admin_email')).'.<br><br>
+                <br><br>Warm regards,<br><strong>The Honey From The Heart Team.</strong>',
                 esc_html($first_name),
                 esc_url($verification_link)
             );
