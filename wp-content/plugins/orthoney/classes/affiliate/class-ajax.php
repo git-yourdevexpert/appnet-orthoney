@@ -567,9 +567,6 @@ class OAM_AFFILIATE_Ajax{
                 wp_send_json(['success' => false, 'message' => esc_html__('Error creating user!', 'text-domain')]);
             }
 
-            
-           
-
             // Set user details
             wp_update_user([
                 'ID'         => $user_id,
