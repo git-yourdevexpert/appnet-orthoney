@@ -703,10 +703,10 @@ class OAM_COMMON_Custom {
 
     public static function custom_redirect_admin_if_has_admin_role( $user_login, $user ) {
         // Check if the user has the 'administrator' role
-        if ( in_array( 'administrator', (array) $user->roles ) ) {
-            wp_safe_redirect( ADMINISTRATOR_DASHBOARD_LINK ); // Redirect to WP Admin Dashboard
-            exit; // Stop further execution
-        }
+        // if ( in_array( 'administrator', (array) $user->roles ) ) {
+        //     wp_safe_redirect( ADMINISTRATOR_DASHBOARD_LINK ); // Redirect to WP Admin Dashboard
+        //     exit; // Stop further execution
+        // }
     }
 
     public static function add_login_link_pl_login_form() {
