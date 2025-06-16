@@ -99,7 +99,7 @@ class OAM_COMMON_Custom {
                             <div class="top-content">
                                 <h2>The Hive’s Just Waking Up… Get Ready for the Buzz!</h2>
                                 <div class="subtext">We’re almost ready to launch this season’s buzz-worthy tradition and trust us, it’s going to bee amazing!</div>
-                                <p class="season-coontent">Our honey isn’t flowing just yet, but the hive opens for gifting on <strong class="green-text"><?php echo $formatted_text ?></strong></p>
+                                <p class="season-content">Our honey isn’t flowing just yet, but the hive opens for gifting on <strong class="green-text"><?php echo $formatted_text ?></strong></p>
 
                                 <div class="notify-card">
                                     <div class="notify-card-content">
@@ -147,7 +147,7 @@ class OAM_COMMON_Custom {
                             <div class="top-content end-season">
                                 <h2>The Hive Is Slowing Down… But the Sweetness Will Return!</h2>
                                 <div class="subtext ">As the honey season is now closed, we’re filled with gratitude for the kindness you’ve shared. </div>
-                                <p class="end-season-content season-coontent">We’ll be buzzing again in <strong class="green-text"><?php echo $next_year_formatted_text ?>,</strong> and we can’t wait to share the sweetness with you once more.</strong></p>
+                                <p class="end-season-content season-content">We’ll be buzzing again in <strong class="green-text"><?php echo $next_year_formatted_text ?>,</strong> and we can’t wait to share the sweetness with you once more.</strong></p>
                                 <div class="notify-card">
                                     <div class="notify-card-content"></div>
                                     <div class="border-top-bottom">Until then — thank you for helping us Send Honey. Share Hope. Spread Joy.</div>
