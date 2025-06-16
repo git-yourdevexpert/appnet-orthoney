@@ -328,8 +328,11 @@ function getURLParam(param) {
 }
 
 jQuery("select").each(function ($) {
-  var placeholderText =
-    jQuery(this).data("error-message") || "Select an option";
+  var placeholderText = jQuery(this).data("error-message") || "Select an option";
+
+  if(jQuery(this).hasClass('gfield_select')){
+    placeholderText ="Please select a type";
+  }
 
   jQuery(this).select2({
     placeholder: placeholderText,
