@@ -238,6 +238,7 @@
     border-radius: 100%;
     border: 1px solid #000;
     cursor: pointer;
+    background: #fff;
 }
 
 .season_start_end_message_box .popupbox .subtext {
