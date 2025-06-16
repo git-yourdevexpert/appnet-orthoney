@@ -149,7 +149,7 @@
     background: #572C7C;
     border-radius: 15px;
     margin: 20px 0;
-    padding: 1.5rem 2rem;
+    padding: 1.3rem 2rem;
     background-image: url(https://orthoney.appnet-projects.com/wp-content/uploads/2025/06/honeyfromtheheart_newlogo-1.png);
     background-repeat: no-repeat;
     background-size: contain;
@@ -178,7 +178,7 @@
 }
 
 .season_start_end_message_box .popupbox .content-wrapper {
-    max-width: 950px;
+    max-width: 1000px;
     width: 100%;
     margin: 20px auto;
     position: relative;
@@ -186,7 +186,7 @@
 
 .season_start_end_message_box .popupbox .content-wrapper .top-content {
     text-align: center;
-    max-height: 80vh;
+    max-height: 85vh;
     overflow-y: auto;
     padding: 40px;
     background-color: #f1f1f1;
@@ -253,6 +253,9 @@
     margin-bottom: 0;
     padding-bottom: 0;
 }
+.season-content{
+    font-weight: 600;
+}
 
 .season_start_end_message_box .popupbox .border-top-bottom {
     /* font-family: Yesteryear;
@@ -260,7 +263,7 @@
     margin: 20px 0;
     border-top: 1px solid #a4afb3;
     border-bottom: 1px solid #a4afb3; */
-    font-size: 25px;
+    font-size: 22px;
     line-height: 1.2;
     color: #ffffff;
     font-weight: 300;
@@ -312,16 +315,9 @@
     font-size: 2.3rem;
    }
 }
-@media(max-width: 767px) {
-    .season_start_end_message_box .notify-card {
-        padding: 1.5rem;
-    }
-}
+
 
 @media(max-width: 600px) {
-    .season_start_end_message_box .notify-card {
-        padding: 1rem;
-    }
 
     .season_start_end_message_box .popupbox .border-top-bottom {
         font-size: 20px;
