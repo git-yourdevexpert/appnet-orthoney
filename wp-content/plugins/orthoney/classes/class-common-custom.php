@@ -369,15 +369,14 @@ class OAM_COMMON_Custom {
         $redirects = [
             'administrator'         => ADMINISTRATOR_DASHBOARD_LINK,
             'yith_affiliate'        => ORGANIZATION_DASHBOARD_LINK,
-            'affiliate_team_member' => ORGANIZATION_DASHBOARD_LINK,
             'sales_representative'  => SALES_REPRESENTATIVE_DASHBOARD_LINK,
-            'customer'              => CUSTOMER_DASHBOARD_LINK
+            'customer'              => CUSTOMER_DASHBOARD_LINK,
+            'affiliate_team_member' => ORGANIZATION_DASHBOARD_LINK,
         ];
 
-        foreach ($roles as $role) {
-            if (isset($redirects[$role])) {
-                return $redirects[$role];
-                exit;
+        foreach ($redirects as $role_key => $redirect_url) {
+            if (in_array($role_key, $roles)) {
+                return $redirect_url;
             }
         }
     }
@@ -673,24 +672,24 @@ class OAM_COMMON_Custom {
             }
         }
         
-        // $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
-        // $host = $_SERVER['HTTP_HOST'] ?? ''; 
-        // $uri = $_SERVER['REQUEST_URI'] ?? '';
-        // $full_page_url = $protocol . $host . $uri;
-        // // Check if the user is logged in and visiting the login page
-        // if ( is_user_logged_in() && ( 
-        //     $full_page_url ==  CUSTOMER_LOGIN_LINK  ||  
-        //     $full_page_url ==  CUSTOMER_REGISTER_LINK  ||  
-        //     $full_page_url ==  ORGANIZATION_LOGIN_LINK  ||  
-        //     $full_page_url ==  ORGANIZATION_REGISTER_LINK
-        //     ) ) {
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+        $host = $_SERVER['HTTP_HOST'] ?? ''; 
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        $full_page_url = $protocol . $host . $uri;
+        // Check if the user is logged in and visiting the login page
+        if ( is_user_logged_in() && ( 
+            $full_page_url ==  CUSTOMER_LOGIN_LINK  ||  
+            $full_page_url ==  CUSTOMER_REGISTER_LINK  ||  
+            $full_page_url ==  ORGANIZATION_LOGIN_LINK  ||  
+            $full_page_url ==  ORGANIZATION_REGISTER_LINK
+            ) ) {
 
-        //     $user = wp_get_current_user();
+            $user = wp_get_current_user();
             
-        //     wp_redirect(self::redirect_user_based_on_role($user->roles));
-        //     exit;
+            wp_redirect(self::redirect_user_based_on_role($user->roles));
+            exit;
             
-        // }
+        }
 
     }
 
@@ -703,10 +702,10 @@ class OAM_COMMON_Custom {
 
     public static function custom_redirect_admin_if_has_admin_role( $user_login, $user ) {
         // Check if the user has the 'administrator' role
-        // if ( in_array( 'administrator', (array) $user->roles ) ) {
-        //     wp_safe_redirect( ADMINISTRATOR_DASHBOARD_LINK ); // Redirect to WP Admin Dashboard
-        //     exit; // Stop further execution
-        // }
+        if ( in_array( 'administrator', (array) $user->roles ) ) {
+            wp_safe_redirect( ADMINISTRATOR_DASHBOARD_LINK ); // Redirect to WP Admin Dashboard
+            exit; // Stop further execution
+        }
     }
 
     public static function add_login_link_pl_login_form() {
@@ -742,6 +741,9 @@ class OAM_COMMON_Custom {
             elseif(in_array('sales_representative', $roles) && in_array('customer', $roles)){
                     $output .= '<li class="customer-dashboard"><a href="' . CUSTOMER_DASHBOARD_LINK . '">Customer Area</a></li>';
                     $output .= '<li class="sales-representative-dashboard-link"><a href="' . SALES_REPRESENTATIVE_DASHBOARD_LINK . '">Sales Representative Area</a></li>';
+                    if (in_array('yith_affiliate', $roles) || in_array('affiliate_team_member', $roles)) {
+                        $output .= '<li class="organization-dashboard"><a href="' . ORGANIZATION_DASHBOARD_LINK . '">Organization Area</a></li>';
+                    }
             }  else {
                 // Check for customer without affiliate roles
                 if (in_array('customer', $roles) && !in_array('yith_affiliate', $roles) && !in_array('affiliate_team_member', $roles)) {
@@ -830,14 +832,6 @@ class OAM_COMMON_Custom {
     }
 
     function check_userrole_update_meta($user_id) {
-
-        $user = new WP_User($user_id);
-
-        // Add role if not already assigned
-        if (!$user->has_role('customer')) {
-            $user->add_role('customer');
-        }
-        
         $user = get_user_by('id', $user_id);
         // Get the role set at creation time (from $_POST)
         if (isset($_POST['role']) && $_POST['role'] === 'sales_representative') {
