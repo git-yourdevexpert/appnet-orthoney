@@ -320,8 +320,8 @@
 @media(max-width: 600px) {
 
     .season_start_end_message_box .popupbox .border-top-bottom {
-        font-size: 20px;
-        margin-bottom: 10px;
+        font-size: 16px;
+        margin-bottom: 8px;
     }
 
     .season_start_end_message_box .popupbox p {
@@ -330,6 +330,7 @@
 
     .season_start_end_message_box .popupbox .notifyme p{
         font-size: 13px;
+        line-height: 1.5;
     }
     .season_start_end_message_box .popupbox .content-wrapper .top-content {
         padding: 30px 15px;
@@ -338,5 +339,28 @@
     .season_start_end_message_box .popupbox .bee-animation {
         right: -18px;
         width: 35px;
+    }
+    
+    .season_start_end_message_box .popupbox .content-wrapper .top-content h2{
+        font-size: 1.3rem;
+        margin-bottom: 0.6rem;
+    }
+    .season_start_end_message_box .popupbox .content-wrapper .top-content .subtext{
+        font-size: 15px;
+    }
+    .season_start_end_message_box .notify-card{
+        padding: 1.3rem;
+        margin: 15px 0;
+    }
+    .season_start_end_message_box .popupbox .notifyme{
+        gap: 8px;
+    }
+    .season_start_end_message_box #countdown li{
+        width: 68px;
+        font-size: 13px;
+    }
+    .season_start_end_message_box #countdown li span{
+        font-size: 20px;
+        line-height: 20px;
     }
 }
