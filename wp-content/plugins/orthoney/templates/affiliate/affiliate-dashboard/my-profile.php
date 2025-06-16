@@ -54,7 +54,7 @@
     ?>
 <div class="order-process-block form-deisgn">
     <div class="heading-title">
-        <h3 class="block-title">My Profile</h3>
+        <h3 class="block-title">Organization Profile</h3>
         <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
     </div>
     
