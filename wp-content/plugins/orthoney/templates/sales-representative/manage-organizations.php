@@ -8,8 +8,13 @@ if (!defined('ABSPATH')) {
 <style>
 
     #sales-representative-affiliate-table_wrapper table.dataTable tbody th, table.dataTable tbody td:nth-child(2) {
-        width: 200px !important;
-        max-width:200px !important;
+        width: 220px !important;
+        max-width:220px !important;
+        word-break: break-word;
+    }
+    #sales-representative-affiliate-table_wrapper table.dataTable tbody th, table.dataTable tbody td:nth-child(3) {
+        width: 220px !important;
+        max-width:220px !important;
         word-break: break-word;
     }
     #sales-representative-affiliate-table_wrapper table.dataTable tbody th, table.dataTable tbody td:nth-child(1) {

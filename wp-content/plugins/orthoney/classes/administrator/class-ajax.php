@@ -225,6 +225,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
             $user_obj = get_userdata($user_id);
 
+           
             $city = get_user_meta($user_id, '_yith_wcaf_city', true);
             if (!$city) {
                 $city = get_user_meta($user_id, 'billing_city', true);
@@ -330,7 +331,10 @@ class OAM_ADMINISTRATOR_AJAX {
             $total_commission = 0;
             $activate_affiliate_account = 0;
             $total_quantity = 0;
-            $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true)?:0;
+            
+            $associated_affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+            
+            $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true) ?: 0;
             $yith_wcaf_phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true) ?: '';
             $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
             $product_price = get_user_meta($user_id, 'DJarPrice', true);
@@ -395,6 +399,29 @@ class OAM_ADMINISTRATOR_AJAX {
                 esc_html($meta['state']),
             ];
             $organizationdata = array_filter($organizationdata);
+
+            $org_admin_user = '';
+            if ($associated_affiliate_id) {
+                $org_user = get_userdata($associated_affiliate_id);
+
+                // Fetch first and last name
+                $first_name = get_user_meta($associated_affiliate_id, 'first_name', true);
+                $last_name  = get_user_meta($associated_affiliate_id, 'last_name', true);
+                $org_user_name = trim($first_name . ' ' . $last_name);
+
+                // Fallback to display name if first/last are empty
+                if (empty($org_user_name)) {
+                    $org_user_name = $org_user->display_name;
+                }
+
+                // Get email and phone
+                $org_email = $org_user->user_email;
+                $org_phone = $yith_wcaf_phone_number;
+
+                // Combine all into a display string
+                $org_admin_user = $org_user_name . '<br>' . $org_email . '<br>' . $org_phone;
+            }
+
             if($meta['email'] != '' AND $meta['code'] != ''){
 
                 $search_value = $meta['code'];
@@ -411,9 +438,9 @@ class OAM_ADMINISTRATOR_AJAX {
 
                 $data[] = [
                     'code'         => esc_html($meta['code']),
-                    'organization' => esc_html(implode(', ', $organizationdata)) . ($yith_wcaf_phone_number == '' ? '' : ' <br>' . esc_html($yith_wcaf_phone_number) ),
+                    'organization' => esc_html(implode(', ', $organizationdata)),
                     'csr_name'     =>esc_html(implode(', ', $userid_keys)),
-                    'email'        => esc_html($meta['email']),
+                    'organization_admin'        => $org_admin_user,
                     'new_organization' => esc_html($new_organization),
                     'status'       => esc_html($status),
                     'season_status' => esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),

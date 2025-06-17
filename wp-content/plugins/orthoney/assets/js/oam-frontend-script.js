@@ -2085,8 +2085,8 @@ jQuery(document).ready(function ($) {
     },
     columns: [
       { data: "code" },
-      { data: "email" },
       { data: "organization" },
+      { data: "organization_admin" },
       { data: "csr_name" },
       { data: "new_organization" },
       { data: "status" },
@@ -2206,7 +2206,8 @@ jQuery(document).ready(function ($) {
     ],
     columnDefs: [
       { targets: 0, width: "50px" },
-      { targets: 1, width: "200px" },
+      { targets: 1, width: "220px" },
+      { targets: 2, width: "220px" },
       { targets: -1, orderable: false }
     ],
     language: {

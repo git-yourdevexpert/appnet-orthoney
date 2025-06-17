@@ -266,15 +266,22 @@ if($user->user_email != ''){
             $organizationdata = array_filter($organizationdata);
             $nonce = wp_create_nonce('switch_to_user_' . $row->user_id);
 
-            if($row->associated_affiliate_id){
-                $org_user_name =  get_user_meta($row->associated_affiliate_id, 'first_name', true)?: '';
+             $org_admin_user = '';
+            if ($row->associated_affiliate_id) {
+                $org_user = get_userdata($row->associated_affiliate_id);
+                
+                $org_user_name = get_user_meta($row->associated_affiliate_id, 'first_name', true) . ' ' . get_user_meta($row->associated_affiliate_id, 'last_name', true);
+                $org_email = $org_user->user_email;
+                $org_phone = $yith_wcaf_phone_number;
+                
+                $org_admin_user =$org_user_name .'<br>'. $org_email .'<br>'. $org_phone ;
+                
             }
-
 
             $data[] = [
                 'code' => esc_html($row->token ?? ''),
-                'organization_admin' => esc_html($row->associated_affiliate_id ?? ''),
-                'organization' => esc_html(implode(', ', $organizationdata)) . ($yith_wcaf_phone_number == '' ? '' : ' <br>' . esc_html($yith_wcaf_phone_number) ) .'<br>'.esc_html($row->user_email ?? ''),
+                'organization_admin' => $org_admin_user ?? '',
+                'organization' => esc_html(implode(', ', $organizationdata)),
                 'new_organization' => esc_html($new_organization),
                 'status' => esc_html($status),
                 'price' => wc_price($show_price),
