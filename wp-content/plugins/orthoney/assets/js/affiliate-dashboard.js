@@ -98,8 +98,10 @@ document.addEventListener('click', function (event) {
     if (event.target.classList.contains('addnewaffiliateteammember')) {
         const form = document.querySelector('#edit-user-form form');
         form.reset();
+        form.querySelector('#user_id').value = '';
         jQuery("#affiliate_type").val(null).trigger('change');
-        const emailField = form.querySelector('#email');emailField.readOnly = false;
+        const emailField = form.querySelector('#email');
+        emailField.readOnly = false;
     }
     if (event.target.classList.contains('edit-user-form-btn')) {
         event.preventDefault();
@@ -137,7 +139,8 @@ document.addEventListener('click', function (event) {
                     form.querySelector('#user_id').value = userid;
                     form.querySelector('#first_name').value = first_name;
                     form.querySelector('#last_name').value = last_name;
-                    const emailField = form.querySelector('#email');emailField.value = email; emailField.readOnly = true;
+                    const emailField = form.querySelector('#email');emailField.value = email; 
+                    emailField.readOnly = true;
                     form.querySelector('#phone').value = phone;
                     form.querySelector('#affiliate_type').value = affiliate_type;
         
