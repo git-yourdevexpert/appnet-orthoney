@@ -609,28 +609,30 @@ class OAM_AFFILIATE_Ajax{
 
         $existing_user = email_exists($email) ? get_user_by('email', $email) : false;
 
-        if ($existing_user) {
-            $existsuser_id = $existing_user->ID;
-            $existing_affiliate = get_user_meta($existsuser_id, 'associated_affiliate_id', true);
+        if($user_id != 0){
+            if ($existing_user) {
+                $existsuser_id = $existing_user->ID;
+                $existing_affiliate = get_user_meta($existsuser_id, 'associated_affiliate_id', true);
 
-            if ($existing_affiliate && $existing_affiliate != $affiliate_id) {
-                wp_send_json(['success' => false, 'message' => "This member is already associated with a different organization."]);
+                if ($existing_affiliate && $existing_affiliate != $affiliate_id) {
+                    wp_send_json(['success' => false, 'message' => "This member is already associated with a different organization."]);
+                }
+
+                // Member already exists or being added to the same organization
+                $user = new WP_User($existsuser_id);
+                $user->add_role('affiliate_team_member');
+
+                // Update missing phone
+                if (empty(get_user_meta($existsuser_id, 'phone', true))) {
+                    update_user_meta($existsuser_id, 'phone', $phone);
+                }
+
+                update_user_meta($existsuser_id, 'user_field_type', $affiliate_type);
+                update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
+
+                $message = $existing_affiliate ? "Member already belongs to your organization." : "Member successfully linked to the organization.";
+                wp_send_json(['success' => true, 'message' => $message]);
             }
-
-            // Member already exists or being added to the same organization
-            $user = new WP_User($existsuser_id);
-            $user->add_role('affiliate_team_member');
-
-            // Update missing phone
-            if (empty(get_user_meta($existsuser_id, 'phone', true))) {
-                update_user_meta($existsuser_id, 'phone', $phone);
-            }
-
-            update_user_meta($existsuser_id, 'user_field_type', $affiliate_type);
-            update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
-
-            $message = $existing_affiliate ? "Member already belongs to your organization." : "Member successfully linked to the organization.";
-            wp_send_json(['success' => true, 'message' => $message]);
         }
 
         // Create a new user if not found and $user_id not provided

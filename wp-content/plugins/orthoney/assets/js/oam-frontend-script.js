@@ -2160,36 +2160,38 @@ jQuery(document).ready(function ($) {
 
 
 
+jQuery(document).ready(function ($) {
+  let selectedStatus = '';
+  let organizationSearch = '';
 
+  // Custom Organization search input
+  const orgInput = $('<input type="text" placeholder="Search Organization" style="margin-right: 10px;">')
+    .on('keyup', function () {
+      organizationSearch = $(this).val().trim();
+      table.ajax.reload();
+    });
 
-
-document.addEventListener("DOMContentLoaded", function () {
-  // Affiliates DataTable with ordering support
-   new DataTable("#sales-representative-affiliate-table", {
+  // Init DataTable
+  const table = $('#sales-representative-affiliate-table').DataTable({
     pageLength: 50,
     lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-    serverSide: false,
+    serverSide: true,
     processing: true,
     paging: true,
     searching: true,
     ordering: true,
-    ajax: function (data, callback) {
-      const postData = {
-        action: "get_affiliates_list_ajax",
-        nonce: oam_ajax.nonce,
-      };
-
-      fetch(oam_ajax.ajax_url, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(postData)
-      })
-        .then(res => res.json())
-        .then(callback)
-        .catch(error => {
-          console.error("DataTables fetch error:", error);
-          callback({ data: [], recordsTotal: 0, recordsFiltered: 0, draw: data.draw });
-        });
+    ajax: {
+      url: oam_ajax.ajax_url,
+      type: 'POST',
+      data: function (d) {
+        d.action = 'get_affiliates_list_ajax';
+        d.nonce = oam_ajax.nonce;
+        d.organization_search = organizationSearch;
+        d.status_filter = selectedStatus;
+      },
+      error: function (xhr, error, thrown) {
+        console.error('AJAX Error:', error);
+      }
     },
     columns: [
       { data: "code" },
@@ -2208,6 +2210,8 @@ document.addEventListener("DOMContentLoaded", function () {
       { targets: -1, orderable: false }
     ],
     language: {
+      search: "",
+      searchPlaceholder: "Search...",
       processing: `
         <div class="loader multiStepForm" style="display:block">
           <div>
@@ -2219,31 +2223,33 @@ document.addEventListener("DOMContentLoaded", function () {
     },
     initComplete: function () {
       const api = this.api();
-      const statusColIndex = 5;
+      const statusColIndex = 4;
       const statusSet = new Set();
 
-      // Extract unique values from current data only (not ideal for server-side, but works for demo)
       api.column(statusColIndex).data().each(function (d) {
         if (d && d.trim() !== "") {
           statusSet.add(d);
         }
       });
 
-      const statusSelect = $('<select><option value="">Filter by Status</option></select>')
-        .on('change', function () {
-          selectedStatus = $(this).val(); // update global value
-          table.ajax.reload(); // reload table with new filter
-        });
+      // Append filters before the default search input
+      const $filterWrapper = $('.dataTables_filter');
 
-      Array.from(statusSet).sort().forEach(status => {
-        statusSelect.append(`<option value="${status}">${status}</option>`);
-      });
+      $filterWrapper.find('label').contents().filter(function () {
+        return this.nodeType === 3; // remove label text like "Search:"
+      }).remove();
 
-      $('.dataTables_filter').prepend(statusSelect.css({ marginRight: '10px' }));
+      $filterWrapper.prepend(orgInput);
+      
     }
   });
+});
 
 
+
+
+document.addEventListener("DOMContentLoaded", function ($) {
+  
 
   // Customers DataTable with ordering support
   new DataTable("#sales-representative-customer-table", {
