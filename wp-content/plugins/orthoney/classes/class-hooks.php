@@ -171,7 +171,6 @@ class OAM_Hooks {
                             'Linked Customers' => ORGANIZATION_DASHBOARD_LINK . 'link-customer/',
                             'Organization Users' => ORGANIZATION_DASHBOARD_LINK . 'users-list/',
                             'Organization Profile' => ORGANIZATION_DASHBOARD_LINK . 'my-profile/',
-                            'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account/',
                         ]
                     ],
                     'customer-menu' => [ // Menu slug
