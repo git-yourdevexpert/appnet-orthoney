@@ -616,7 +616,18 @@ class OAM_AFFILIATE_Ajax{
         if (empty($user_id)) {
             // Check if the email is already in use
             if (email_exists($email)) {
-                wp_send_json(['success' => false, 'message' => esc_html__('Organization member already exists.', 'text-domain')]);
+                $existing_meta = get_user_meta($user_id, 'associated_affiliate_id', true);
+                if (empty($existing_meta)) {
+                    update_user_meta($user_id, 'associated_affiliate_id', $affiliate_id);
+                    wp_send_json(['success' => true, 'message' => "Member successfully linked to the organization."]);
+                }else{
+                    if(get_user_meta($user_id, 'associated_affiliate_id', true) == $affiliate_id ){
+                        wp_send_json(['success' => true, 'message' => "Member already belongs to your organization."]);
+                    }else{
+                        wp_send_json(['success' => false, 'message' => "This member is already associated with a different organization."]);
+                    }
+                }
+                
             }
 
             // Use current user as affiliate owner
