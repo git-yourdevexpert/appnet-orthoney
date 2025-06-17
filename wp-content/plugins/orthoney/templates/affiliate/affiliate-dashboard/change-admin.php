@@ -29,12 +29,12 @@ $users = $wpdb->get_results($wpdb->prepare(
 <div class="affiliate-dashboard order-process-block">
    
     <div class="heading-title">
-        <h3 class="block-title">Change Organizations Access</h3>
+        <h3 class="block-title">Change Organizations Admin</h3>
         <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
     </div>
     <?php if (!empty($users)) : ?>
         <div class="filter-container">         
-            <select id="userDropdown">
+            <select id="userDropdown" data-error-message="Please select a team member">
                 <option value="">Select a User</option>
                 <?php foreach ($users as $user) : ?>
                     <option value="<?php echo esc_attr($user->ID); ?>">
@@ -42,7 +42,7 @@ $users = $wpdb->get_results($wpdb->prepare(
                     </option>
                 <?php endforeach; ?>
             </select>
-            <button id="changeRoleBtn" class="us-btn-style_1">Change Role & Logout</button>
+            <button id="changeRoleBtn" class="us-btn-style_1">Change admin & Logout</button>
         </div>
         <div id="affiliate-results"></div>
     <?php else : ?>
