@@ -448,12 +448,13 @@ document.addEventListener("DOMContentLoaded", initTippy);
 })();
 
 const greetingTextareas = document.querySelectorAll(
-  "#multiStepForm textarea, #recipient-manage-form form textarea, #recipient-order-manage-popup textarea, #affiliate-mission-statement-form textarea"
+  "#affiliate-gift-card-form textarea, #multiStepForm textarea, #recipient-manage-form form textarea, #recipient-order-manage-popup textarea, #affiliate-mission-statement-form textarea"
 );
-let maxChars = 100;
+
 
 if (greetingTextareas.length) {
   greetingTextareas.forEach((textarea) => {
+    let maxChars = 100;
     const textareaDiv = textarea.closest(".textarea-div"); // Find closest parent
     if (textareaDiv) {
       if (textarea.hasAttribute("data-limit")) {

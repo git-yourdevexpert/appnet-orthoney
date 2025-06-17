@@ -388,8 +388,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                         </div>
                                         <div class="textarea-div flex-column">
                                             <span>Add Greeting/Message:</span>
-                                            <textarea name="single_address_greeting"
-                                                data-error-message="Please add a greeting."><?php echo htmlspecialchars($single_address_greeting); ?></textarea>
+                                            <textarea name="single_address_greeting" data-error-message="Please add a greeting."><?php echo htmlspecialchars($single_address_greeting); ?></textarea>
                                             <div class="char-counter"><span>100</span> characters remaining</div>
                                         </div>
                                         <div class="w-separator size_medium"></div>

@@ -37,19 +37,19 @@
     
        if ((empty($activate_affiliate_account) AND $activate_affiliate_account != 1 ) ) {
             echo '<div class="dashboard-block"><div class="dashboard-heading block-row">
-                        <div class="item" style="background-color: rgba(255, 0, 0, 0.5);">
-                            <div class="row-block">
-                                <h6 class="block-title">Your account is inactive. Submit your Tax ID to activate your account and become eligible for this year`s commission.</h6>
-                                <div>';
-                                if (!empty($tax_id)) {
-                                     echo '<button data-userid="' . esc_attr($affiliate_id) . '" class="w-btn us-btn-style_1 activate_affiliate_account">Activate Account</button>';
-                                } else {
-                                     echo '<a href="'.ORGANIZATION_DASHBOARD_LINK.'my-profile/" class="w-btn us-btn-style_1">Update Tax ID</a>';
-                                }
-                                
-                           echo '</div></div>
-                        </div>
-                    </div></div>';
+                    <div class="item" style="background-color: rgba(255, 0, 0, 0.5);">
+                        <div class="row-block">
+                            <h6 class="block-title">Your account is inactive. Submit your Tax ID to activate your account and become eligible for this year`s commission.</h6>
+                            <div>';
+                            if (!empty($tax_id)) {
+                                    echo '<button data-userid="' . esc_attr($affiliate_id) . '" class="w-btn us-btn-style_1 activate_affiliate_account">Activate Account</button>';
+                            } else {
+                                    echo '<a href="'.ORGANIZATION_DASHBOARD_LINK.'my-profile/" class="w-btn us-btn-style_1">Update Tax ID</a>';
+                            }
+                            
+                        echo '</div></div>
+                    </div>
+                </div></div>';
         }
     ?>
 <div class="order-process-block form-deisgn">
@@ -193,8 +193,8 @@
                             <label for="gift_card">
                                 "In celebration of the New Year, a donation has been made in your name to
                             </label>
-                            <input type="text" name="gift_card" id="gift_card" value="<?php echo $gift_card ?>"
-                                data-error-message="Please enter a gift card">
+                            <textarea name="gift_card" data-error-message="Please enter a gift card"><?php echo htmlspecialchars($gift_card) ?></textarea data-limit="100">
+                            <div class="char-counter"><span>100</span> characters remaining</div>
                             <span class="error-message"></span>
                         </div>
                         <div class="form-row text-right">
