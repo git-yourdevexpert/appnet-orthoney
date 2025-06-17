@@ -15,6 +15,8 @@ class OAM_AFFILIATE_Ajax{
         // Affiliate Profile function
         add_action( 'wp_ajax_update_affiliate_profile', array( $this, 'update_affiliate_profile_handler' ) );
         add_action( 'wp_ajax_update_price_affiliate_profile', array( $this, 'update_price_affiliate_profile_handler' ) );
+        add_action( 'wp_ajax_update_gift_card_profile', array( $this, 'update_gift_card_profile_handler' ) );
+        add_action( 'wp_ajax_update_mission_statement_profile', array( $this, 'update_mission_statement_profile_handler' ) );
 
         //Manage Affiliate Team Member 
         add_action( 'wp_ajax_manage_affiliate_team_member_users', array( $this, 'manage_affiliate_team_member_users_handler' ) );
@@ -438,6 +440,66 @@ class OAM_AFFILIATE_Ajax{
 
         wp_send_json(['success' => true, 'message' => 'Product price updated successfully!']);
         wp_die();
+    }
+    public function update_gift_card_profile_handler() {
+        // Verify nonce for security
+        check_ajax_referer('oam_nonce', 'security');
+
+        $user_id = get_current_user_id();
+        $affiliate_id = $user_id;
+        $associated_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+
+        $gift_card = sanitize_text_field($_POST['gift_card']);
+
+        // Update current user's gift card
+        update_user_meta($associated_id, 'gift_card', $gift_card);
+
+        // Get team members associated with this user
+        $user_ids = get_users([
+            'role'       => 'affiliate_team_member',
+            'meta_key'   => 'associated_affiliate_id',
+            'meta_value' => strval($associated_id),
+            'fields'     => 'ID'
+        ]);
+
+        // Update each team member's gift card
+        foreach ($user_ids as $id) {
+            update_user_meta($id, 'gift_card', $gift_card);
+        }
+
+        wp_send_json(['success' => true, 'message' => 'Gift card updated successfully!']);
+        wp_die();
+    }
+
+    public function update_mission_statement_profile_handler() {
+        // Verify nonce for security
+        check_ajax_referer('oam_nonce', 'security');
+
+        $user_id = get_current_user_id();
+        $affiliate_id = $user_id;
+        $associated_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+
+        $mission_statement = sanitize_textarea_field($_POST['mission_statement']);
+
+        // Update current user's mission statement
+        update_user_meta($associated_id, 'mission_statement', $mission_statement);
+
+        // Get team members associated with this user
+        $user_ids = get_users([
+            'role'       => 'affiliate_team_member',
+            'meta_key'   => 'associated_affiliate_id',
+            'meta_value' => strval($associated_id),
+            'fields'     => 'ID'
+        ]);
+
+        // Update each team member's mission statement
+        foreach ($user_ids as $id) {
+            update_user_meta($id, 'mission_statement', $mission_statement);
+        }
+
+        wp_send_json(['success' => true, 'message' => 'Mission statement updated successfully!']);
+        wp_die();
+        
     }
 
     // Affiliate Profile function

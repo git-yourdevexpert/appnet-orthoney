@@ -360,6 +360,106 @@ document.addEventListener('click', function (event) {
             });
         });
     }
+
+    if (event.target.id === 'affiliate-gift-card-profile') {
+        
+        event.preventDefault();
+       
+
+        const form = document.querySelector('#affiliate-gift-card-form');
+        const formData = new FormData(form);
+        process_group_popup();
+
+        formData.append('action', 'update_gift_card_profile');
+        formData.append("security", oam_ajax.nonce);  // nonce.
+
+        fetch(oam_ajax.ajax_url, {
+            method: 'POST',
+            body: formData,
+        })
+
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: data.message || "Updated gift card successfully!",
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true
+                });
+                 setTimeout(function () {
+                  window.location.reload();
+                }, 750);
+
+            } else {
+                Swal.fire({
+                    title: "Error",
+                    text: data.message || "Something went wrong. Please try again",
+                    icon: "error",
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while updating the Affiliate profile.',
+                icon: 'error',
+            });
+        });
+    }
+
+    if (event.target.id === 'affiliate-mission-statement-profile') {
+        
+        event.preventDefault();
+       
+
+        const form = document.querySelector('#affiliate-mission-statement-form');
+        const formData = new FormData(form);
+  
+        process_group_popup();
+
+        formData.append('action', 'update_mission_statement_profile');
+        formData.append("security", oam_ajax.nonce);  // nonce.
+
+        fetch(oam_ajax.ajax_url, {
+            method: 'POST',
+            body: formData,
+        })
+
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: data.message || "Updated mission statement successfully!",
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true
+                });
+                 setTimeout(function () {
+                  window.location.reload();
+                }, 750);
+
+            } else {
+                Swal.fire({
+                    title: "Error",
+                    text: data.message || "Something went wrong. Please try again",
+                    icon: "error",
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while updating the Affiliate profile.',
+                icon: 'error',
+            });
+        });
+    }
+
+
+
 });
 
 //Edit my profile

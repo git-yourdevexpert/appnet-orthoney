@@ -173,7 +173,7 @@
             </div>
         </div>
     </div>
-    <div class="cl-right" style="display:none">
+    <div class="cl-right" >
         <div class="order-process-block">
             <div class="heading-title">
                 <div>
@@ -198,8 +198,7 @@
                             <span class="error-message"></span>
                         </div>
                         <div class="form-row text-right">
-                            <button type="button" class="add-user w-btn us-btn-style_1"
-                                id="affiliate-product-price-profile">Update Gift Card</button>
+                            <button type="button" class="add-user w-btn us-btn-style_1" id="affiliate-gift-card-profile">Update Gift Card</button>
                         </div>
                     </div>
                 </form>
@@ -207,7 +206,7 @@
         </div>
     </div>
 </div>
-<div class="order-process-block" style="display:none">
+<div class="order-process-block" >
     <div class="heading-title">
         <h3 class="block-title">Mission Statement</h3>
     </div>
@@ -222,8 +221,7 @@
                     <div class="char-counter"><span>700</span> characters remaining</div>
                 </div>
                 <div class="form-row text-right">
-                    <button type="button" class="add-user w-btn us-btn-style_1"
-                        id="affiliate-product-price-profile">Update Mission Statement</button>
+                    <button type="button" class="add-user w-btn us-btn-style_1" id="affiliate-mission-statement-profile">Update Mission Statement</button>
                 </div>
             </div>
         </form>
