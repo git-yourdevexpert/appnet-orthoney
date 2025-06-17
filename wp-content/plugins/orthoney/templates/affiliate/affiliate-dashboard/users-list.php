@@ -28,7 +28,7 @@ $all_users = get_users([
 
 $affiliate_users = array_filter($all_users, function($user) {
     $roles = (array) $user->roles;
-    return in_array('affiliate_team_member', $roles) || in_array('administrator', $roles) || || in_array('yith_affiliate', $roles);
+    return in_array('affiliate_team_member', $roles) || in_array('administrator', $roles) || in_array('yith_affiliate', $roles);
 });
 echo OAM_AFFILIATE_Helper::manage_user_popup();
 
@@ -64,14 +64,30 @@ echo OAM_AFFILIATE_Helper::manage_user_popup();
         if (!empty($affiliate_users)) {
             foreach ($affiliate_users as $user) {
                 $phone = get_user_meta($user->ID, 'phone', true);
+               
                 $affiliate_type = get_field('user_field_type', 'user_' . $user->ID);
+               $user_role = $roles_type[$affiliate_type];
+                if($affiliate_id == $user->ID){
+                    $phone = get_user_meta($user->ID, '_yith_wcaf_phone_number', true);
+                    $user_role = 'Organization Admin';
+                }
                 ?>
                 <tr data-userid="<?php echo $user->ID?>">
                     <td><div class='thead-data'>User Name</div><?php echo esc_html($user->first_name . ' ' . $user->last_name); ?></td>
                     <td><div class='thead-data'>Email</div><?php echo esc_html($user->user_email); ?></td>
                     <td><div class='thead-data'>Phone Number</div><?php echo esc_html($phone); ?></td>
-                    <td><div class='thead-data'>User Role</div><?php echo esc_html($roles_type[$affiliate_type]); ?></td>
-                    <td><div class='thead-data'>Action</div><button class="edit-user-form-btn far fa-edit" data-popup="#user-manage-popup" data-userid="<?php echo esc_attr($user->ID); ?>"></button><button class="delete-user far fa-trash" data-userid="<?php echo esc_attr($user->ID); ?>"></button></td>
+                    <td><div class='thead-data'>User Role</div><?php echo esc_html($user_role); ?></td>
+
+
+                    <td><div class='thead-data'>Action</div>
+                        <?php
+                        if($affiliate_id != $user->ID){ 
+                        ?>
+                        <button class="edit-user-form-btn far fa-edit" data-popup="#user-manage-popup" data-userid="<?php echo esc_attr($user->ID); ?>"></button>
+                        <button class="delete-user far fa-trash" data-userid="<?php echo esc_attr($user->ID); ?>"></button>
+                        <?php } ?>
+                    </td>
+
                 </tr>
                 <?php
                 }
