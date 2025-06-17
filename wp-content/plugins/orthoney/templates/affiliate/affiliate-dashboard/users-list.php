@@ -28,7 +28,7 @@ $all_users = get_users([
 
 $affiliate_users = array_filter($all_users, function($user) {
     $roles = (array) $user->roles;
-    return in_array('affiliate_team_member', $roles) || in_array('administrator', $roles);
+    return in_array('affiliate_team_member', $roles) || in_array('administrator', $roles) || || in_array('yith_affiliate', $roles);
 });
 echo OAM_AFFILIATE_Helper::manage_user_popup();
 
