@@ -4311,12 +4311,24 @@ table#customer-jar-orders-table thead tr th:last-child{
 .notify-form form .mc4wp-form-fields > p {
     margin-bottom: 24px;
 }
-#admin-organizations-table_filter input[type="search"]{widht:100% !important; max-width:250px !important}
+#admin-organizations-table_filter input[type="search"]{width:170px !important; }
+
+.affiliate-dashboard #sales-representative-affiliate-table_filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.affiliate-dashboard #sales-representative-affiliate-table_filter input{
+  margin-right: 0!important;
+}
 /* responsive */
 @media (min-width: 993px) {
   .order-process-block table td .thead-data,
   .custom-table table td .thead-data {
     display: none;
+  }
+  .affiliate-dashboard #sales-representative-affiliate-table_length{
+    margin-bottom: 10px;
   }
 }
 
@@ -4976,6 +4988,15 @@ table#customer-jar-orders-table thead tr th:last-child{
   .place-order .block-title {
     flex: 100% 0 0;
     margin-bottom: 16px;
+  }
+  .affiliate-dashboard #sales-representative-affiliate-table_filter {
+    flex-wrap: wrap;
+  }
+  #admin-organizations-table_filter input[type="search"]{
+    width: 100% !important;
+  }
+  .table-with-search-block .dataTables_wrapper .dataTables_filter{
+      flex-wrap: wrap;
   }
 }
 
