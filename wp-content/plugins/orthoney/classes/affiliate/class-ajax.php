@@ -590,16 +590,12 @@ class OAM_AFFILIATE_Ajax{
 
     //Manage Affiliate Team Member 
     public function manage_affiliate_team_member_users_handler() {
-        // Verify nonce for security
         check_ajax_referer('oam_nonce', 'security');
 
         // Validate required fields
-        if (empty($_POST['email']) || !is_email($_POST['email'])) {
-            wp_send_json(['success' => false, 'message' => esc_html__('Invalid email!', 'text-domain')]);
-        }
-
-        if (empty($_POST['first_name']) || empty($_POST['last_name']) || empty($_POST['type'])) {
-            wp_send_json(['success' => false, 'message' => esc_html__('All fields are required!', 'text-domain')]);
+        if (empty($_POST['email']) || !is_email($_POST['email']) ||
+            empty($_POST['first_name']) || empty($_POST['last_name']) || empty($_POST['type'])) {
+            wp_send_json(['success' => false, 'message' => esc_html__('All fields are required and email must be valid!', 'text-domain')]);
         }
 
         // Sanitize input data
@@ -611,47 +607,36 @@ class OAM_AFFILIATE_Ajax{
         $phone          = sanitize_text_field($_POST['phone']);
         $affiliate_type = sanitize_text_field($_POST['type']);
 
-        // Check if the email is already in use
-        if (email_exists($email)) {
-            $existsuser = get_user_by('email', $email);
-            $existsuser_id = $existsuser->ID;
-            $existing_meta = get_user_meta($existsuser_id, 'associated_affiliate_id', true);
-            if (empty($existing_meta)) {
-                update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
-                wp_send_json(['success' => true, 'message' => "Member successfully linked to the organization."]);
-            }else{
-                if(get_user_meta($existsuser_id, 'associated_affiliate_id', true) == $affiliate_id ){
-                    wp_send_json(['success' => true, 'message' => "Member already belongs to your organization."]);
-                }else{
+        $existing_user = email_exists($email) ? get_user_by('email', $email) : false;
+
+        if($user_id != 0){
+            if ($existing_user) {
+                $existsuser_id = $existing_user->ID;
+                $existing_affiliate = get_user_meta($existsuser_id, 'associated_affiliate_id', true);
+
+                if ($existing_affiliate && $existing_affiliate != $affiliate_id) {
                     wp_send_json(['success' => false, 'message' => "This member is already associated with a different organization."]);
                 }
-            }
-            
-        }
-       
-        // If creating new user
-        if (empty($user_id)) {
-            // Check if the email is already in use
-            if (email_exists($email)) {
-                $existsuser = get_user_by('email', $email);
-                $existsuser_id = $existsuser->ID;
-                $existing_meta = get_user_meta($existsuser_id, 'associated_affiliate_id', true);
-                if (empty($existing_meta)) {
-                    update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
-                    wp_send_json(['success' => true, 'message' => "Member successfully linked to the organization."]);
-                }else{
-                    if(get_user_meta($existsuser_id, 'associated_affiliate_id', true) == $affiliate_id ){
-                        wp_send_json(['success' => true, 'message' => "Member already belongs to your organization."]);
-                    }else{
-                        wp_send_json(['success' => false, 'message' => "This member is already associated with a different organization."]);
-                    }
-                }
-                
-            }
 
-            // Use current user as affiliate owner
-            
-            // Create a new user
+                // Member already exists or being added to the same organization
+                $user = new WP_User($existsuser_id);
+                $user->add_role('affiliate_team_member');
+
+                // Update missing phone
+                if (empty(get_user_meta($existsuser_id, 'phone', true))) {
+                    update_user_meta($existsuser_id, 'phone', $phone);
+                }
+
+                update_user_meta($existsuser_id, 'user_field_type', $affiliate_type);
+                update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
+
+                $message = $existing_affiliate ? "Member already belongs to your organization." : "Member successfully linked to the organization.";
+                wp_send_json(['success' => true, 'message' => $message]);
+            }
+        }
+
+        // Create a new user if not found and $user_id not provided
+        if (empty($user_id)) {
             $password = wp_generate_password();
             $user_id  = wp_create_user($email, $password, $email);
 
@@ -659,21 +644,18 @@ class OAM_AFFILIATE_Ajax{
                 wp_send_json(['success' => false, 'message' => esc_html__('Error creating user!', 'text-domain')]);
             }
 
-            // Set user details
             wp_update_user([
                 'ID'         => $user_id,
                 'first_name' => $first_name,
                 'last_name'  => $last_name,
             ]);
 
-            // Assign role
             $user = new WP_User($user_id);
             $user->set_role('affiliate_team_member');
-            $user->add_role('customer'); // Optional
-
-            $organization_name = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
+            $user->add_role('customer');
 
             // Send welcome email
+            $organization_name = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
             $from_name  = get_bloginfo('name');
             $from_email = get_option('admin_email');
             $headers    = [
@@ -682,7 +664,7 @@ class OAM_AFFILIATE_Ajax{
             ];
 
             $subject = esc_html__('Welcome to Honey From The Heart – Your Account Details', 'text-domain');
-
+            $login_url = esc_url(site_url('organization-login'));
             $message = sprintf(
                 'Hello %s,<br><br>You have been successfully added to <strong>Honey From The Heart</strong> by <strong>%s</strong>.<br>
                 Please log in to the organization portal using the credentials below:<br><br>
@@ -694,8 +676,8 @@ class OAM_AFFILIATE_Ajax{
                 Warm regards,<br><strong>The Honey From The Heart Team.</strong>',
                 esc_html($first_name),
                 $organization_name,
-                esc_url(site_url('organization-login')),
-                esc_url(site_url('organization-login')),
+                $login_url,
+                $login_url,
                 esc_html($email),
                 esc_html($password),
                 esc_html($from_email),
@@ -705,7 +687,7 @@ class OAM_AFFILIATE_Ajax{
             wp_mail($email, $subject, $message, $headers);
         }
 
-        // Update user meta (for both new and existing users)
+        // Common user meta updates
         update_user_meta($user_id, 'first_name', $first_name);
         update_user_meta($user_id, 'last_name', $last_name);
         update_user_meta($user_id, 'phone', $phone);
@@ -713,9 +695,8 @@ class OAM_AFFILIATE_Ajax{
         update_user_meta($user_id, 'user_field_type', $affiliate_type);
         update_user_meta($user_id, 'associated_affiliate_id', $affiliate_id);
 
-        // Send success response
-        $message = empty($_POST['user_id']) 
-            ? esc_html__('Organization member created successfully!', 'text-domain') 
+        $message = empty($_POST['user_id'])
+            ? esc_html__('Organization member created successfully!', 'text-domain')
             : esc_html__('Organization member updated successfully!', 'text-domain');
 
         wp_send_json(['success' => true, 'message' => $message]);
