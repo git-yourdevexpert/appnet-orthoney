@@ -3,12 +3,11 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-
 class YITH_Affiliate_Recaptcha_V3
 {
 
-    private $site_key   = get_option( 'recaptcha_v3_site_key' ); // Replace with your reCAPTCHA v3 Site Key
-    private $secret_key = get_option( 'recaptcha_v3_secret_key' ); // Replace with your reCAPTCHA v3 Secret Key
+    private $site_key   = '6LdxR18rAAAAAH2rovDzb6HcIT-4QU_8Wn9KxARs';   // Replace with your reCAPTCHA v3 Site Key
+    private $secret_key = '6LdxR18rAAAAAHvojZ8prxD940I07CU-cGiditKg'; // Replace with your reCAPTCHA v3 Secret Key
 
     public function __construct()
     {
