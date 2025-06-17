@@ -613,21 +613,21 @@ class OAM_AFFILIATE_Ajax{
 
         // Check if the email is already in use
         if (email_exists($email)) {
-                $existsuser = get_user_by('email', $email);
-                $existsuser_id = $existsuser->ID;
-                $existing_meta = get_user_meta($existsuser_id, 'associated_affiliate_id', true);
-                if (empty($existing_meta)) {
-                    update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
-                    wp_send_json(['success' => true, 'message' => "Member successfully linked to the organization."]);
+            $existsuser = get_user_by('email', $email);
+            $existsuser_id = $existsuser->ID;
+            $existing_meta = get_user_meta($existsuser_id, 'associated_affiliate_id', true);
+            if (empty($existing_meta)) {
+                update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
+                wp_send_json(['success' => true, 'message' => "Member successfully linked to the organization."]);
+            }else{
+                if(get_user_meta($existsuser_id, 'associated_affiliate_id', true) == $affiliate_id ){
+                    wp_send_json(['success' => true, 'message' => "Member already belongs to your organization."]);
                 }else{
-                    if(get_user_meta($existsuser_id, 'associated_affiliate_id', true) == $affiliate_id ){
-                        wp_send_json(['success' => true, 'message' => "Member already belongs to your organization."]);
-                    }else{
-                        wp_send_json(['success' => false, 'message' => "This member is already associated with a different organization."]);
-                    }
+                    wp_send_json(['success' => false, 'message' => "This member is already associated with a different organization."]);
                 }
-                
             }
+            
+        }
        
         // If creating new user
         if (empty($user_id)) {
