@@ -607,21 +607,40 @@ class OAM_AFFILIATE_Ajax{
         $affiliate_id   = isset($_POST['affiliate_id']) ? intval($_POST['affiliate_id']) : 0;
         $first_name     = sanitize_text_field($_POST['first_name']);
         $last_name      = sanitize_text_field($_POST['last_name']);
-        $email          = sanitize_email($_POST['email']);
+        $email          = trim(sanitize_email($_POST['email']));
         $phone          = sanitize_text_field($_POST['phone']);
         $affiliate_type = sanitize_text_field($_POST['type']);
 
+        // Check if the email is already in use
+        if (email_exists($email)) {
+                $existsuser = get_user_by('email', $email);
+                $existsuser_id = $existsuser->ID;
+                $existing_meta = get_user_meta($existsuser_id, 'associated_affiliate_id', true);
+                if (empty($existing_meta)) {
+                    update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
+                    wp_send_json(['success' => true, 'message' => "Member successfully linked to the organization."]);
+                }else{
+                    if(get_user_meta($existsuser_id, 'associated_affiliate_id', true) == $affiliate_id ){
+                        wp_send_json(['success' => true, 'message' => "Member already belongs to your organization."]);
+                    }else{
+                        wp_send_json(['success' => false, 'message' => "This member is already associated with a different organization."]);
+                    }
+                }
+                
+            }
        
         // If creating new user
         if (empty($user_id)) {
             // Check if the email is already in use
             if (email_exists($email)) {
-                $existing_meta = get_user_meta($user_id, 'associated_affiliate_id', true);
+                $existsuser = get_user_by('email', $email);
+                $existsuser_id = $existsuser->ID;
+                $existing_meta = get_user_meta($existsuser_id, 'associated_affiliate_id', true);
                 if (empty($existing_meta)) {
-                    update_user_meta($user_id, 'associated_affiliate_id', $affiliate_id);
+                    update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
                     wp_send_json(['success' => true, 'message' => "Member successfully linked to the organization."]);
                 }else{
-                    if(get_user_meta($user_id, 'associated_affiliate_id', true) == $affiliate_id ){
+                    if(get_user_meta($existsuser_id, 'associated_affiliate_id', true) == $affiliate_id ){
                         wp_send_json(['success' => true, 'message' => "Member already belongs to your organization."]);
                     }else{
                         wp_send_json(['success' => false, 'message' => "This member is already associated with a different organization."]);
