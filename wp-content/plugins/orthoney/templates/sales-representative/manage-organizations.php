@@ -8,8 +8,8 @@ if (!defined('ABSPATH')) {
 <style>
 
     #sales-representative-affiliate-table_wrapper table.dataTable tbody th, table.dataTable tbody td:nth-child(2) {
-        width: 150px !important;
-        max-width:150px !important;
+        width: 200px !important;
+        max-width:200px !important;
         word-break: break-word;
     }
     #sales-representative-affiliate-table_wrapper table.dataTable tbody th, table.dataTable tbody td:nth-child(1) {
@@ -26,8 +26,8 @@ if (!defined('ABSPATH')) {
         <thead>
             <tr>
                 <th>Code</th>  
-                <th>Email</th>
                 <th>Organization</th>
+                <th>Organization Admin</th>
                 <th>New Organization</th>
                 <th>Status</th>
                 <th>Season Status</th>

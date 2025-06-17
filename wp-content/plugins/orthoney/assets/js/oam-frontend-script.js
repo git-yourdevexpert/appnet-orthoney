@@ -2165,7 +2165,7 @@ jQuery(document).ready(function ($) {
   let organizationSearch = '';
 
   // Custom Organization search input
-  const orgInput = $('<input type="text" placeholder="Search Organization" style="margin-right: 10px;">')
+  const orgInput = $('<input type="text" placeholder="Search by Organization" style="margin-right: 10px;">')
     .on('keyup', function () {
       organizationSearch = $(this).val().trim();
       table.ajax.reload();
@@ -2195,8 +2195,8 @@ jQuery(document).ready(function ($) {
     },
     columns: [
       { data: "code" },
-      { data: "email" },
       { data: "organization" },
+      { data: "organization_admin" },
       { data: "new_organization" },
       { data: "status" },
       { data: "season_status" },
@@ -2206,7 +2206,7 @@ jQuery(document).ready(function ($) {
     ],
     columnDefs: [
       { targets: 0, width: "50px" },
-      { targets: 1, width: "150px" },
+      { targets: 1, width: "200px" },
       { targets: -1, orderable: false }
     ],
     language: {

@@ -265,6 +265,12 @@ if($user->user_email != ''){
             ];
             $organizationdata = array_filter($organizationdata);
             $nonce = wp_create_nonce('switch_to_user_' . $row->user_id);
+
+            if($row->associated_affiliate_id){
+                $org_user_name =  get_user_meta($row->associated_affiliate_id, 'first_name', true)?: '';
+            }
+
+
             $data[] = [
                 'code' => esc_html($row->token ?? ''),
                 'organization_admin' => esc_html($row->associated_affiliate_id ?? ''),

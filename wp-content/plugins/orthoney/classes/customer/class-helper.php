@@ -346,7 +346,7 @@ class OAM_Helper{
     }
 
 
-     public static function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
+    public static function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
         global $wpdb;
 
         $orders_table = $wpdb->prefix . 'wc_orders';
