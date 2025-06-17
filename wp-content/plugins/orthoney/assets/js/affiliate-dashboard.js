@@ -891,3 +891,49 @@ jQuery(function ($) {
 	$('#check_box_1741676093107_field input').prop('checked', true);
 	$('#check_box_1741676049_field input').prop('checked', true);
 });
+
+
+jQuery(document).ready(function ($) {
+
+    function attachPhoneAutoFormat(selectors) {
+        selectors.forEach(selector => {
+            $(selector).each(function () {
+                const $input = $(this);
+
+                // Skip if already bound
+                if ($input.data('phone-format-attached')) return;
+
+                $input.data('phone-format-attached', true);
+
+                $input.on('input', function (e) {
+                    let value = e.target.value.replace(/\D/g, '').substring(0, 10); // Only digits, max 10
+
+                    let formatted = '';
+                    if (value.length > 0) formatted = '(' + value.substring(0, 3);
+                    if (value.length >= 4) formatted += ') ' + value.substring(3, 6);
+                    if (value.length >= 7) formatted += '-' + value.substring(6, 10);
+
+                    e.target.value = formatted;
+                });
+            });
+        });
+    }
+
+    // Run immediately
+    const selectors = [
+        '#addUserForm #phone',
+        'form.register #profile_phone_number',
+        '#affiliate-profile-form #billing_phone',
+        '#billing #billing-phone'
+    ];
+    attachPhoneAutoFormat(selectors);
+
+    // Re-run every 500ms to catch dynamically loaded inputs
+    const intervalId = setInterval(() => {
+        attachPhoneAutoFormat(selectors);
+    }, 500);
+
+    // Stop checking after 10 seconds
+    setTimeout(() => clearInterval(intervalId), 10000);
+
+});
