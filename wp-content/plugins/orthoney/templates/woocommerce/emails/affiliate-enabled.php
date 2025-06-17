@@ -55,7 +55,7 @@ $oam_heart = get_user_meta($user_id, '_yith_wcaf_oam_heart', true)?: '';
 
 <p>Dear, <?php echo  $yith_first_name; echo $yith_last_name;?></p>
 <p>Welcome to the Honey From The Heart family.  Your organization has been approved!</p>
-<p>Your unique 3-digit organization code is: <strong><?php echo $affiliate_token ?> <?php echo $organization ?></strong></p>
+<p>Your unique 3-digit organization code is: <strong><?php echo $affiliate_token ?> </strong></p>
 <p>You can now log in using your email address and [<strong>initial password or instructions</strong>] (please be sure to update your password).</p>
 <p>Your dashboard is now live, giving you full access to manage orders, view reports, and engage with supporters.</p>
 <p><strong><i>Sell just 50 jars at $18 each and earn at least $2 per jar. Sell over 100 jars and earn $4 per jar!</i></strong></p>
