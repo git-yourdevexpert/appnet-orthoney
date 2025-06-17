@@ -208,11 +208,11 @@
     color: #155724;
 }                                                                                                                                   
 
-/* .season_start_end_message_box .popupbox .content-wrapper .bottom-content {
+.season_start_end_message_box .popupbox .content-wrapper .bottom-content {
     width: 100%;
     height: 100px;
     background: url(https://orthoney.appnet-projects.com/wp-content/uploads/2025/06/honey-drop-grey.png) repeat-x top center / auto 100px;
-} */
+}
 
 .season_start_end_message_box .popupbox .bee-animation {
     position: absolute;
