@@ -85,6 +85,7 @@ if($user->user_email != ''){
         $user_id = get_current_user_id();
         $select_organization = get_user_meta($user_id, 'select_organization', true);
         $choose_organization = get_user_meta($user_id, 'choose_organization', true);
+        $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
 
         // Build include clause based on user meta
         $include_clause = '';
@@ -125,6 +126,10 @@ if($user->user_email != ''){
                 OR a.token LIKE %s
             ) ", $search_like, $search_like, $search_like, $search_like);
         }
+        if (!empty($organization_search)) {
+            $search_like = '%' . $wpdb->esc_like($organization_search) . '%';
+            $search_filter .= $wpdb->prepare(" AND MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END) LIKE %s ", $search_like);
+        }
 
         // Total records count (without search)
         $sql_total = "
@@ -156,6 +161,7 @@ if($user->user_email != ''){
                 a.user_id,
                 a.token,
                 u.user_email,
+                MAX(CASE WHEN um.meta_key = 'associated_affiliate_id' THEN um.meta_value END) AS associated_affiliate_id,
                 MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END) AS organization_name,
                 MAX(CASE WHEN um.meta_key = '_yith_wcaf_city' THEN um.meta_value END) AS city,
                 MAX(CASE WHEN um.meta_key = '_yith_wcaf_state' THEN um.meta_value END) AS state
@@ -261,8 +267,8 @@ if($user->user_email != ''){
             $nonce = wp_create_nonce('switch_to_user_' . $row->user_id);
             $data[] = [
                 'code' => esc_html($row->token ?? ''),
-                'email' => esc_html($row->user_email ?? ''),
-                'organization' => esc_html(implode(', ', $organizationdata)) . ($yith_wcaf_phone_number == '' ? '' : ' <br>' . esc_html($yith_wcaf_phone_number) ),
+                'organization_admin' => esc_html($row->associated_affiliate_id ?? ''),
+                'organization' => esc_html(implode(', ', $organizationdata)) . ($yith_wcaf_phone_number == '' ? '' : ' <br>' . esc_html($yith_wcaf_phone_number) ) .'<br>'.esc_html($row->user_email ?? ''),
                 'new_organization' => esc_html($new_organization),
                 'status' => esc_html($status),
                 'price' => wc_price($show_price),
