@@ -4319,7 +4319,10 @@ table#customer-jar-orders-table thead tr th:last-child{
     gap: 10px;
 }
 .affiliate-dashboard #sales-representative-affiliate-table_filter input{
-  margin-right: 0!important;
+  margin: 0!important;
+}
+.affiliate-dashboard #sales-representative-affiliate-table_filter input[type="search"]{
+  width: 170px!important;
 }
 /* responsive */
 @media (min-width: 993px) {
@@ -4992,6 +4995,7 @@ table#customer-jar-orders-table thead tr th:last-child{
   .affiliate-dashboard #sales-representative-affiliate-table_filter {
     flex-wrap: wrap;
   }
+  .affiliate-dashboard #sales-representative-affiliate-table_filter input[type="search"],
   #admin-organizations-table_filter input[type="search"]{
     width: 100% !important;
   }
