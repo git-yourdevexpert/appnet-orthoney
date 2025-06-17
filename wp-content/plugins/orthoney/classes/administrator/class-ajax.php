@@ -262,11 +262,18 @@ class OAM_ADMINISTRATOR_AJAX {
 
         // Step 2: Apply search filter
         $status_filter = sanitize_text_field($_POST['status_filter'] ?? '');
+        $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
 
-        $filtered_user_ids = array_filter($user_ids, function ($user_id) use ($search, $user_meta_cache, $user_status_map, $status_filter) {
+        $filtered_user_ids = array_filter($user_ids, function ($user_id) use ($search, $user_meta_cache, $user_status_map, $status_filter, $organization_search) {
             $status = strtolower($user_status_map[$user_id]['label']);
+            $organization = strtolower($user_meta_cache[$user_id]['organization']);
 
-            // Apply status filter
+            // Organization filter
+            if (!empty($organization_search) && strpos($organization, strtolower($organization_search)) === false) {
+                return false;
+            }
+
+            // Status filter
             if (!empty($status_filter) && strtolower($status_filter) !== $status) {
                 return false;
             }

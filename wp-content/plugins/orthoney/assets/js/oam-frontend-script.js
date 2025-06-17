@@ -2059,10 +2059,18 @@ jQuery(document).ready(function ($) {
   });
 });
 
-
 jQuery(document).ready(function ($) {
   let selectedStatus = '';
+  let organizationSearch = '';
 
+  // Custom input for organization search
+  const orgInput = $('<input type="text" placeholder="Search by Organization" style="margin-right: 10px;">')
+    .on('keyup', function () {
+      organizationSearch = $(this).val().trim();
+      table.ajax.reload();
+    });
+
+  // Initialize DataTable
   const table = new DataTable("#admin-organizations-table", {
     pageLength: 50,
     lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
@@ -2071,7 +2079,8 @@ jQuery(document).ready(function ($) {
       type: "POST",
       data: function (d) {
         d.action = "orthoney_admin_get_organizations_data";
-        d.status_filter = selectedStatus; // send selected status
+        d.status_filter = selectedStatus;
+        d.organization_search = organizationSearch;
       }
     },
     columns: [
@@ -2080,7 +2089,7 @@ jQuery(document).ready(function ($) {
       { data: "organization" },
       { data: "csr_name" },
       { data: "new_organization" },
-      { data: "status" }, // index 5
+      { data: "status" },
       { data: "season_status" },
       { data: "price" },
       { data: "commission" },
@@ -2114,7 +2123,6 @@ jQuery(document).ready(function ($) {
       const statusColIndex = 5;
       const statusSet = new Set();
 
-      // Extract unique values from current data only (not ideal for server-side, but works for demo)
       api.column(statusColIndex).data().each(function (d) {
         if (d && d.trim() !== "") {
           statusSet.add(d);
@@ -2123,15 +2131,25 @@ jQuery(document).ready(function ($) {
 
       const statusSelect = $('<select><option value="">Filter by Status</option></select>')
         .on('change', function () {
-          selectedStatus = $(this).val(); // update global value
-          table.ajax.reload(); // reload table with new filter
+          selectedStatus = $(this).val();
+          table.ajax.reload();
         });
 
       Array.from(statusSet).sort().forEach(status => {
         statusSelect.append(`<option value="${status}">${status}</option>`);
       });
 
+      // Add filters
       $('.dataTables_filter').prepend(statusSelect.css({ marginRight: '10px' }));
+      $('.dataTables_filter').prepend(orgInput);
+
+      // ✅ Remove "Search:" label text
+      $('.dataTables_filter label').contents().filter(function () {
+        return this.nodeType === 3;
+      }).remove();
+
+      // ✅ Set placeholder on default search input
+      $('.dataTables_filter input[type="search"]').attr('placeholder', 'Search');
     }
   });
 
@@ -2139,6 +2157,8 @@ jQuery(document).ready(function ($) {
     table.columns.adjust().draw();
   }, 100);
 });
+
+
 
 
 
