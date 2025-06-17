@@ -617,10 +617,22 @@ class OAM_AFFILIATE_Ajax{
             $existsuser_id = $existsuser->ID;
             $existing_meta = get_user_meta($existsuser_id, 'associated_affiliate_id', true);
             if (empty($existing_meta)) {
-                update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
+                $existing_phone= get_user_meta($existsuser_id, 'phone', true);
+                if(empty($existing_phone)){
+                    update_user_meta($existsuser_id, 'phone', $phone);
+                }
+                update_user_meta($existsuser_id, 'user_field_type', $affiliate_type);
+                update_user_meta($existsuser_id, 'associated_affiliate_id', $existing_meta);
                 wp_send_json(['success' => true, 'message' => "Member successfully linked to the organization."]);
             }else{
                 if(get_user_meta($existsuser_id, 'associated_affiliate_id', true) == $affiliate_id ){
+                    update_user_meta($existsuser_id, 'user_field_type', $affiliate_type);
+                    $existing_phone= get_user_meta($existsuser_id, 'phone', true);
+                    if(empty($existing_phone)){
+                        update_user_meta($existsuser_id, 'phone', $phone);
+                    }
+                    $user = new WP_User($existsuser_id);
+                    $user->add_role('affiliate_team_member');
                     wp_send_json(['success' => true, 'message' => "Member already belongs to your organization."]);
                 }else{
                     wp_send_json(['success' => false, 'message' => "This member is already associated with a different organization."]);
@@ -637,10 +649,20 @@ class OAM_AFFILIATE_Ajax{
                 $existsuser_id = $existsuser->ID;
                 $existing_meta = get_user_meta($existsuser_id, 'associated_affiliate_id', true);
                 if (empty($existing_meta)) {
-                    update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
+                    $existing_phone= get_user_meta($existsuser_id, 'phone', true);
+                    if(empty($existing_phone)){
+                        update_user_meta($existsuser_id, 'phone', $phone);
+                    }
+                    update_user_meta($existsuser_id, 'associated_affiliate_id', $existing_meta);
                     wp_send_json(['success' => true, 'message' => "Member successfully linked to the organization."]);
                 }else{
                     if(get_user_meta($existsuser_id, 'associated_affiliate_id', true) == $affiliate_id ){
+                        $existing_phone= get_user_meta($existsuser_id, 'phone', true);
+                        if(empty($existing_phone)){
+                            update_user_meta($existsuser_id, 'phone', $phone);
+                        }
+                        $user = new WP_User($existsuser_id);
+                        $user->add_role('affiliate_team_member');
                         wp_send_json(['success' => true, 'message' => "Member already belongs to your organization."]);
                     }else{
                         wp_send_json(['success' => false, 'message' => "This member is already associated with a different organization."]);
