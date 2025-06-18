@@ -124,8 +124,12 @@ public function orthoney_admin_get_customers_data_handler() {
 
                 // Build name block only with available info
                 $name_block = '';
+              
                 if (!empty($full_name)) {
                     $name_block .= '<strong>' . esc_html($full_name) . '</strong><br>';
+                }
+                  if (!empty($user->user_email)) {
+                    $name_block .= $user->user_email.'</br>';
                 }
                 if (!empty($full_address)) {
                     $name_block .= esc_html($full_address) . '<br>';
