@@ -33,9 +33,51 @@ class OAM_ADMINISTRATOR_AJAX {
         wp_send_json_success(['message' => 'Your account has been successfully activated.']);
     }
 
-      public function get_affiliate_details_by_id($affiliate_id) {
-        return $affiliate_id;
+     public function get_affiliate_details_by_id($affiliate_id) {
+    global $wpdb;
+
+    $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+
+    // Step 1: Get user_id from affiliate_id
+    $user_id = $wpdb->get_var($wpdb->prepare(
+        "SELECT user_id FROM {$affiliates_table} WHERE ID = %d", $affiliate_id
+    ));
+
+    if (!$user_id) {
+        return null; // Affiliate not found
     }
+
+    // Step 2: Get user object
+    $user = get_userdata($user_id);
+    if (!$user) {
+        return null; // User not found
+    }
+
+    // Step 3: Get billing info (if WooCommerce is used)
+    $first_name  = get_user_meta($user_id, 'billing_first_name', true);
+    $last_name   = get_user_meta($user_id, 'billing_last_name', true);
+    $phone       = get_user_meta($user_id, 'billing_phone', true);
+    $address_1   = get_user_meta($user_id, 'billing_address_1', true);
+    $address_2   = get_user_meta($user_id, 'billing_address_2', true);
+    $city        = get_user_meta($user_id, 'billing_city', true);
+    $state       = get_user_meta($user_id, 'billing_state', true);
+    $postcode    = get_user_meta($user_id, 'billing_postcode', true);
+    $country     = get_user_meta($user_id, 'billing_country', true);
+
+    return [
+        'user_id'    => $user_id,
+        'email'      => $user->user_email,
+        'first_name' => $first_name ?: $user->first_name,
+        'last_name'  => $last_name ?: $user->last_name,
+        'phone'      => $phone,
+        'address'    => trim("{$address_1} {$address_2}"),
+        'city'       => $city,
+        'state'      => $state,
+        'postcode'   => $postcode,
+        'country'    => $country,
+    ];
+}
+
 
  // db changes on 18-6-2025 for the show details
 public function orthoney_admin_get_customers_data_handler() {
@@ -49,9 +91,29 @@ public function orthoney_admin_get_customers_data_handler() {
 
                 // Get WooCommerce customer object
                 $customer = new WC_Customer($user->ID);
-                $affiliate_id = get_user_meta($user->ID, 'associated_affiliate_id', true);
-                if($affiliate_id){
+                $affiliate_id = "";
+                if(get_user_meta($user->ID, 'associated_affiliate_id', true)){
                   $affiliate_data = $this->get_affiliate_details_by_id($affiliate_id);
+                  $oname_block = '';
+                if (!empty($affiliate_data['first_name']) || !empty($affiliate_data['last_name'])) {
+                    $oname_block = esc_html(trim($affiliate_data['first_name'] . ' ' . $affiliate_data['last_name']));
+                }
+
+                
+// Build organizations block (full address)
+$address_parts = array_filter([
+    $affiliate_data['address'] ?? '',
+    $affiliate_data['city'] ?? '',
+    $affiliate_data['state'] ?? '',
+    $affiliate_data['postcode'] ?? '',
+    $affiliate_data['country'] ?? '',
+]);
+
+$organization = !empty($address_parts) ? esc_html(implode(', ', $address_parts)) : '';
+
+
+
+
                 }
 
 
@@ -98,7 +160,7 @@ public function orthoney_admin_get_customers_data_handler() {
                     'id' => $user->ID,
                     'name' => $name_block,
                     'email' => esc_html($user->user_email),
-                    'organizations' => $affiliate_data,
+                    'organizations' => $organization,
                     'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
                                     <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
                                 </button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile</a>'
