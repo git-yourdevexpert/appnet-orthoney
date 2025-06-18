@@ -93,6 +93,8 @@ public function orthoney_admin_get_customers_data_handler() {
                 $customer = new WC_Customer($user->ID);
                 $affiliate_id = "";
                 if(get_user_meta($user->ID, 'associated_affiliate_id', true)){
+                    $affiliate_id = get_user_meta($user->ID, 'associated_affiliate_id', true);
+
                   $affiliate_data = $this->get_affiliate_details_by_id($affiliate_id);
                 }
 
