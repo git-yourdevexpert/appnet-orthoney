@@ -92,6 +92,51 @@ if ($first_segment == 'organization-dashboard'){
 
 }
 
+if ($first_segment == 'sales-representative-dashboard') {
+     ?>
+    <style>
+        .jar-search-by-organization,
+        .search-by-organization{
+            display:none;
+        }
+    </style>
+    <?php 
+    $dashboard_link = SALES_REPRESENTATIVE_DASHBOARD_LINK;
+    $dashboard_link_label = 'Return to Dashboard';
+
+    $user_id = get_current_user_id();
+    $select_organization = get_user_meta($user_id, 'select_organization', true);
+    $choose_organization = get_user_meta($user_id, 'choose_organization', true);
+
+    $choose_ids_array = [];
+    $affiliate_id = '';
+
+    // Default
+    $organizations_status = 'Assign All Organizations';
+
+    if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
+        // Case: User selected specific organization(s)
+        $choose_ids_array = array_map('intval', (array) $choose_organization);
+        $affiliate_token = implode(',', $choose_ids_array);
+    } else {
+        // Case: Assign all enabled and not banned organizations for this user
+        global $wpdb;
+        $yith_wcaf_affiliates_table = OAM_helper::$yith_wcaf_affiliates_table;
+
+        $results = $wpdb->get_results($wpdb->prepare("
+            SELECT token FROM {$yith_wcaf_affiliates_table} WHERE enabled = '1' AND banned = '0'
+        "));
+
+        // Extract token values from objects
+        if (!empty($results)) {
+            foreach ($results as $row) {
+                $choose_ids_array[] = sanitize_text_field($row->token);
+            }
+        }
+
+        $affiliate_token = implode(',', $choose_ids_array);
+    }
+}
 ?>
 
 <div class="customer-order-block order-process-block orthoney-datatable-warraper">

@@ -41,6 +41,8 @@ class OAM_SALES_REPRESENTATIVE_Shortcode
                     include_once $template_path . 'manage-customers.php';
                 } elseif ($endpoint === 'manage-organizations' && file_exists($template_path . 'manage-organizations.php')) {
                     include_once $template_path . 'manage-organizations.php';
+                } elseif ($endpoint === 'orders-list' && file_exists($template_path . 'orders-list.php')) {
+                    include_once $template_path . 'orders-list.php';
                 } 
                 else {
                     include_once $template_path . 'dashboard.php';
