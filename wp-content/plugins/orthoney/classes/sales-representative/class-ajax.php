@@ -72,9 +72,9 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
                     $user->ID
                 ));
 
-                echo '<pre>';
-                print_r($wpdb);
-                 echo '</pre>';
+                // echo '<pre>';
+                // print_r($wpdb);
+                //  echo '</pre>';
 
                 $oname_block = '';
 
