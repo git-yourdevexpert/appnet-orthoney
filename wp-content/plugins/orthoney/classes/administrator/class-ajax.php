@@ -34,13 +34,14 @@ class OAM_ADMINISTRATOR_AJAX {
     }
 
     public function get_affiliate_details_by_id($affiliate_id) {
+
     global $wpdb;
 
     $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
 
-    $affiliates = $wpdb->get_results($wpdb->prepare(
-        "SELECT user_id, token FROM {$affiliates_table} WHERE user_id = %d", $affiliate_id
-    ), ARRAY_A);
+    $affiliates = $wpdb->get_row($wpdb->prepare(
+        "SELECT token FROM {$affiliates_table} WHERE user_id = %d", $affiliate_id
+    ));
 
     if (empty($affiliates)) {
         return null; // No affiliates found
@@ -48,15 +49,12 @@ class OAM_ADMINISTRATOR_AJAX {
 
     $results = [];
 
-    foreach ($affiliates as $affiliate) {
-        $user_id = $affiliate['user_id'];
-        $token   = $affiliate['token'];
+    
+        $user_id = $affiliate_id;
+        $token   = $affiliates->token;
 
         $user = get_userdata($user_id);
-        if (!$user) {
-            continue;
-        }
-
+       
         // WooCommerce Billing Info
         $first_name  = get_user_meta($user_id, 'billing_first_name', true);
         $last_name   = get_user_meta($user_id, 'billing_last_name', true);
@@ -80,7 +78,7 @@ class OAM_ADMINISTRATOR_AJAX {
             'postcode'   => $postcode,
             'country'    => $country,
         ];
-    }
+    
 
     return !empty($results) ? $results : null;
 }
@@ -98,13 +96,26 @@ public function orthoney_admin_get_customers_data_handler() {
 
                 // Get WooCommerce customer object
                 $customer = new WC_Customer($user->ID);
+
+                $affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker';
+
+                $affiliates_ids = $wpdb->get_results($wpdb->prepare(
+                    "SELECT affiliate_id FROM {$affiliate_customer_linker} WHERE user_id = %d", $affiliate_id
+                ), ARRAY_A);
+
+                if(!empty($affiliates_id)){
+                    foreach ($affiliates_id as $key => $id) {
+                        # code...
+                   
                $affiliate_id = "";
-$oname_block = '';
-if (get_user_meta($user->ID, 'associated_affiliate_id', true)) {
-    $affiliate_id = get_user_meta($user->ID, 'associated_affiliate_id', true);
-$affiliate_data_list = $this->get_affiliate_details_by_id($affiliate_id);
+
 
 $oname_block = '';
+if (get_user_meta($id, 'associated_affiliate_id', true)) {
+    $affiliate_id = get_user_meta($id, 'associated_affiliate_id', true);
+    $affiliate_data_list = $this->get_affiliate_details_by_id($affiliate_id);
+
+    $oname_block = '';
 
 if (!empty($affiliate_data_list)) {
     foreach ($affiliate_data_list as $affiliate_data) {
@@ -141,7 +152,9 @@ if (!empty($affiliate_data_list)) {
             $oname_block .= esc_html(implode(', ', $address_parts)) . '<br>';
         }
 
-        $oname_block .= '<hr>'; // separator for multiple affiliates
+        $oname_block .= '<hr>'; 
+         }
+                }
     }
 }
 
