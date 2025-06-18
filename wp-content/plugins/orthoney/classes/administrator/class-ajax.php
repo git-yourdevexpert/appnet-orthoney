@@ -33,6 +33,10 @@ class OAM_ADMINISTRATOR_AJAX {
         wp_send_json_success(['message' => 'Your account has been successfully activated.']);
     }
 
+      public function get_affiliate_details_by_id($affiliate_id) {
+        return $affiliate_id;
+    }
+
  // db changes on 18-6-2025 for the show details
 public function orthoney_admin_get_customers_data_handler() {
 
@@ -45,6 +49,13 @@ public function orthoney_admin_get_customers_data_handler() {
 
                 // Get WooCommerce customer object
                 $customer = new WC_Customer($user->ID);
+                $affiliate_id = get_user_meta($user->ID, 'associated_affiliate_id', true);
+                if($affiliate_id){
+                  $affiliate_data = $this->get_affiliate_details_by_id($affiliate_id);
+                }
+
+
+                
 
                 // Get name from user profile
                 $first_name = get_user_meta($user->ID, 'first_name', true);
@@ -87,7 +98,7 @@ public function orthoney_admin_get_customers_data_handler() {
                     'id' => $user->ID,
                     'name' => $name_block,
                     'email' => esc_html($user->user_email),
-                    'organizations' => 'organizations data',
+                    'organizations' => $affiliate_data,
                     'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
                                     <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
                                 </button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile</a>'
