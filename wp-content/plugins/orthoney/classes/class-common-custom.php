@@ -576,20 +576,27 @@ class OAM_COMMON_Custom {
             );
             $userinfo = $clean($userinfo);
 
-            // Affiliate org name
+           
+
             $org_query = "
-                SELECT meta.meta_value as first_name
+                SELECT 
+                    meta.meta_value as first_name,
+                    users.user_email
                 FROM {$wpdb->prefix}yith_wcaf_affiliates affiliate
                 JOIN {$wpdb->prefix}usermeta meta ON meta.user_id = affiliate.user_id
+                JOIN {$wpdb->prefix}users users ON users.ID = affiliate.user_id
                 WHERE meta.meta_key = '_yith_wcaf_first_name'
                 AND affiliate.token = %s
                 GROUP BY affiliate.user_id
             ";
-            $affiliate_org_name = $wpdb->get_var($wpdb->prepare($org_query, $token));
-            $affiliate_org_name = $clean($affiliate_org_name);
+            $result = $wpdb->get_row($wpdb->prepare($org_query, $token));
+
+            $affiliate_org_name = $clean($result->first_name ?? '');
+            $affiliate_org_email = $clean($result->user_email ?? '');
 
             $sub[] = [
                 'suborder_affiliate_org_name'    => $affiliate_org_name,
+                'suborder_affiliate_org_email'    => $affiliate_org_email,
                 'suborder_product_id'            => $clean($suborder_data['pid'] ?? ''),
                 'suborder_affiliate_token'       => $token,
                 'suborder_affiliate_user_info'   => $userinfo,

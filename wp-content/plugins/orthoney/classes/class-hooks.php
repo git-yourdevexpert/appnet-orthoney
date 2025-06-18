@@ -167,7 +167,6 @@ class OAM_Hooks {
                         'items' => [
                             'Dashboard' => ORGANIZATION_DASHBOARD_LINK,
                             'Orders' => ORGANIZATION_DASHBOARD_LINK . 'orders-list/',
-                            'Change Organizations Admin' => ORGANIZATION_DASHBOARD_LINK . 'change-admin/',
                             'Linked Customers' => ORGANIZATION_DASHBOARD_LINK . 'link-customer/',
                             'Organization Users' => ORGANIZATION_DASHBOARD_LINK . 'users-list/',
                             'Organization Profile' => ORGANIZATION_DASHBOARD_LINK . 'my-profile/',

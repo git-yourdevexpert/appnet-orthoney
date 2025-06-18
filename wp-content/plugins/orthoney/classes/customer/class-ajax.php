@@ -3144,7 +3144,7 @@ class OAM_Ajax{
             require_once plugin_dir_path(__FILE__) . 'libs/dompdf/vendor/autoload.php';
         }
     
-        $html = '
+        $starthtml = '
         <!DOCTYPE html>
         <html>
         <head>
@@ -3183,9 +3183,17 @@ class OAM_Ajax{
             </style>
         </head>
         <body>';
+
+        $endhtml = '</body></html>';
     
         global $wpdb;
         foreach ($order_id_array as $order_id) {
+
+            $custom_order_id = $order_id;
+
+             if ($custom_order_pdf_type == "2e" || $custom_order_pdf_type == "4e") {
+                $html = '';
+             }
             // if (!$order) continue;
             $distName = 'Honey from the Heart';
             
@@ -3272,8 +3280,10 @@ class OAM_Ajax{
             }
 
             $affiliate_org_name = 'Honey from the Heart';
+            $affiliate_org_email = '';
             if (!empty($orderdata['suborderdata'])) {
                 $affiliate_org_name = $orderdata['suborderdata'][0]['suborder_affiliate_org_name'];
+                $affiliate_org_email = $orderdata['suborderdata'][0]['suborder_affiliate_org_email'];
             }
 
             $affiliate_org_name = 'Honey from the Heart';
@@ -3303,12 +3313,12 @@ class OAM_Ajax{
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
                     <p>For your ordering convenience, the details of your last order are listed below. To order, simply update this form with any additions, deletions or corrections, fill out the payment section and mail it to $distName $distAddress.</p>
                     <p>Mail orders must be received by $shipStartDate. Your order will be shipped to arrive in time for Rosh Hashanah.</p>";
-            } elseif ($custom_order_pdf_type == "4p") {
+            } elseif ($custom_order_pdf_type == "4p" OR $custom_order_pdf_type == "4e") {
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
                     <p>Shipping is FREE for orders submitted online through $shipStartDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
                     <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='".esc_url($refersite)."'>".esc_url($refersite)."</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $sub_order_id . " when prompted.</p>";
-            } elseif ($custom_order_pdf_type == "2p") {
+            } elseif ($custom_order_pdf_type == "2p" OR $custom_order_pdf_type == "2e") {
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
                     <p>Shipping is FREE for orders submitted online through $shipStartDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
@@ -3400,40 +3410,51 @@ class OAM_Ajax{
                 $html .= '<p>Code : '.$suborder_affiliate_token.'</p>';
             }
             $html .= '<div style="page-break-after: always;"></div>';
+
+
+            if ($custom_order_pdf_type == "2e" || $custom_order_pdf_type == "4e") {
+                // Generate PDF
+            $dompdf = new \Dompdf\Dompdf();
+
+            $dompdf->loadHtml($starthtml . $html . $endhtml);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+        
+            $timestamp = date('Y-m-d_h.ia');
+            $upload_dir = wp_upload_dir();
+            $pdf_filename = $custom_order_pdf_type . '_' . $timestamp . '.pdf';
+            $pdf_path = $upload_dir['path'] . '/' . $pdf_filename;
+        
+            file_put_contents($pdf_path, $dompdf->output());
+        
+            $pdf_url = $upload_dir['url'] . '/' . $pdf_filename;
+
+                $to = $current_user_email;
+                $cc = 'support@orthoney.com,'.$affiliate_org_email;
+                $subject = '#'. $custom_order_id.' Reordering Form – Honey From The Heart';
+                
+                $message = '<p>Dear ' . $name . ',</p>';
+                $message .= '<p>Thank you for your continued support of <strong>Honey From The Heart</strong>!</p>';
+                $message .= '<p>Please find your reordering form attached below.</p>';
+                $message .= '<p>We truly appreciate you being a part of our sweet tradition.</p>';
+                $message .= '<p>Regards, <br><strong>Honey From The Heart Team</strong></p>';
+                $headers = [
+                    'Content-Type: text/html; charset=UTF-8',
+                    'Cc: ' . $cc,
+                ];
+                $attachments = [$pdf_path];
+        
+                $mail_sent = wp_mail($to, $subject, $message, $headers, $attachments);
+    
+            }
+            
         }
     
-        $html .= '</body></html>';
-    
-        // Generate PDF
-        $dompdf = new \Dompdf\Dompdf();
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-    
-        $timestamp = date('Y-m-d_h.ia');
-        $upload_dir = wp_upload_dir();
-        $pdf_filename = $custom_order_pdf_type . '_' . $timestamp . '.pdf';
-        $pdf_path = $upload_dir['path'] . '/' . $pdf_filename;
-    
-        file_put_contents($pdf_path, $dompdf->output());
-    
-        $pdf_url = $upload_dir['url'] . '/' . $pdf_filename;
+       
     
         // Email or return PDF link
         if ($custom_order_pdf_type == "2e" || $custom_order_pdf_type == "4e") {
-            $to = $current_user_email;
-            $subject = 'Your Reordering Form – Honey From The Heart';
             
-            $message .= '<p>Dear ' . $name . ',</p>';
-            $message .= '<p>Thank you for your continued support of <strong>Honey From The Heart</strong>!</p>';
-            $message .= '<p>Please find your reordering form attached below.</p>';
-            $message .= '<p>We truly appreciate you being a part of our sweet tradition.</p>';
-            $message .= '<p>Regards, <strong>Honey From The Heart Team</strong></p>';
-            $headers = ['Content-Type: text/html; charset=UTF-8'];
-            $attachments = [$pdf_path];
-    
-            $mail_sent = wp_mail($to, $subject, $message, $headers, $attachments);
-    
             wp_send_json_success([
                 'message' => $mail_sent ? 'mail has been sent.' : 'mail not sent.',
                 'status' => 'success',
@@ -3441,6 +3462,20 @@ class OAM_Ajax{
                 'url' => $pdf_url,
             ]);
         } else {
+             // Generate PDF
+            $dompdf = new \Dompdf\Dompdf();
+            $dompdf->loadHtml($starthtml . $html . $endhtml);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+        
+            $timestamp = date('Y-m-d_h.ia');
+            $upload_dir = wp_upload_dir();
+            $pdf_filename = $custom_order_pdf_type . '_' . $timestamp . '.pdf';
+            $pdf_path = $upload_dir['path'] . '/' . $pdf_filename;
+        
+            file_put_contents($pdf_path, $dompdf->output());
+        
+            $pdf_url = $upload_dir['url'] . '/' . $pdf_filename;
             wp_send_json_success([
                 'url' => $pdf_url,
                 'filename' => $pdf_filename,
