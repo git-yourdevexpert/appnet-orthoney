@@ -507,7 +507,7 @@ class OAM_WC_Customizer {
 
             }
             if( $status === true){
-                $custom_content .= '<div class="error-message-box">Some of the entered addresses are rejected. We will not be responsible for these jars of honey.</div>';
+                $custom_content .= '<div class="error-message-box"><strong>WARNING:</strong> You`re proceeding with unverified address(es). Honey From The Heart cannot guarantee delivery.</div>';
             }
             $html  = '';
             if($custom_content != ''){

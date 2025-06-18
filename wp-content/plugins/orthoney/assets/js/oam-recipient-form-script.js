@@ -567,7 +567,7 @@ document.addEventListener("DOMContentLoaded", function () {
           console.log(verifiedButton);
           
           if (parseInt(unverifiedCount) != 0){
-            html += `<p style="color:red"><br>If the address is invalid or rejected, we cannot take responsibility for these jars of honey.</p>`;
+            html += `<p style="color:red"><br>Some addresses are unverified. Please correct them before proceeding. Honey From The Heart cannot guarantee delivery to unverified addresses.</p>`;
           }
           html += `<div class='exceptions'><ul>`;
 
