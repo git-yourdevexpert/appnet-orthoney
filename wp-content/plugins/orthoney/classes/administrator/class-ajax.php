@@ -539,14 +539,22 @@ class OAM_ADMINISTRATOR_AJAX {
                     }
                 }
 
+              $new_organization_block = implode('<br>', array_filter([
+                    '<strong>Organization:</strong> ' . esc_html($new_organization),
+                    '<strong>Status:</strong> ' . esc_html($status),
+                    '<strong>Season Status:</strong> ' . esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
+                ]));
+
+
+
                 $data[] = [
                     'code'         => esc_html($meta['code']),
                     'organization' => $organizationdata,
                     'csr_name'     =>esc_html(implode(', ', $userid_keys)),
                     'organization_admin'        => $org_admin_user,
-                    'new_organization' => esc_html($new_organization),
+                    'new_organization' => $new_organization_block,
                     'status'       => esc_html($status),
-                    'season_status' => esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
+                   // 'season_status' => esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
                     'price' => wc_price($show_price),
                     'commission' => $total_commission,
                     'login'        => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . intval($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As An Organization</button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Organizations Profile</a>'
