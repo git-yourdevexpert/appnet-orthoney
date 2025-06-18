@@ -245,7 +245,7 @@ class OAM_Helper{
             $params[] = $search_param;
         }
 
-        if ($tabletype == 'administrator-dashboard') {
+        if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard') {
             if ($selected_customer_id) {
                 $where_clauses[] = "user_id = %d";
                 $params[] = $selected_customer_id;
@@ -333,7 +333,19 @@ class OAM_Helper{
 
             $order['jar_tracking'] = '<a href="#view-order-tracking-popup" data-lity data-tippy="View Tracking">Tracking Numbers</a>';
 
-            $order['action'] = '<a class="far fa-eye" href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id}?recipient-order={$recipient_order_id}") . ''.(($tabletype == 'administrator-dashboard')  ? '&return_url=admin' : '&return_url=customer').'"></a>' . $editLink . $deleteLink;
+
+            $return_url = '&return_url=admin';
+            if($tabletype == 'organization-dashboard' )  {
+                $return_url = '&return_url=organization';
+
+            }elseif($tabletype == 'administrator-dashboard' )  {
+                $return_url = '&return_url=admin';
+            }else{
+            
+                $return_url = '&return_url=customer';
+            } 
+
+            $order['action'] = '<a class="far fa-eye" href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id}?recipient-order={$recipient_order_id}") . ''.$return_url.'"></a>' . $editLink . $deleteLink;
 
             $order['date'] = date_i18n(
                 OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format,
@@ -386,7 +398,7 @@ class OAM_Helper{
         }
 
         if (!empty($search_term)) {
-            if ($tabletype == 'administrator-dashboard') {
+           if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard') {
                 $join .= " LEFT JOIN {$wpdb->users} AS u ON u.ID = orders.customer_id";
                 $where_conditions[] = "(orders.id = %d OR rec.order_id = %d OR rel.wc_order_id = %d OR u.display_name LIKE %s )";
                 $where_values[] = (int) $search;
@@ -445,7 +457,7 @@ class OAM_Helper{
 
          }
 
-        if ($tabletype == 'administrator-dashboard') {
+        if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard') {
             if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
                 $where_conditions[] = "orders.customer_id = %d";
                 $where_values[] = intval($_REQUEST['selected_customer_id']);
@@ -604,10 +616,19 @@ class OAM_Helper{
                 esc_html(wc_get_order_status_name($order_data->status))
             );
         }
-    
+        
+        $return_url = '&return_url=admin';
+            if($tabletype == 'organization-dashboard' )  {
+                $return_url = '&return_url=organization';
 
+            }elseif($tabletype == 'administrator-dashboard' )  {
+                $return_url = '&return_url=admin';
+            }else{
+            
+                $return_url = '&return_url=customer';
+            } 
 
-        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id).''.(($tabletype == 'administrator-dashboard') ? '?return_url=admin' : '?return_url=customer'));
+        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id).''.$return_url);
         $total_recipient = '';
         if($jarsorder_count != 0){
            $total_recipient = "<a id='".$jar_order_id."' onclick='jarfilter_trigger(\"$jar_order_id\", \"$year\")' class='filter-jar-order-by-wc-order ".$year."' href='javascript:;'>".$jarsorder_count."</a>";
