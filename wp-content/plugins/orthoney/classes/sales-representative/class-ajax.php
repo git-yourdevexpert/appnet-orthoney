@@ -358,23 +358,53 @@ if($user->user_email != ''){
             $organizationdata = array_filter($organizationdata);
             $nonce = wp_create_nonce('switch_to_user_' . $row->user_id);
 
-             $org_admin_user = '';
+            //  $org_admin_user = '';
+            // if ($row->associated_affiliate_id) {
+            //     $org_user = get_userdata($row->associated_affiliate_id);
+                
+            //     $org_user_name = get_user_meta($row->associated_affiliate_id, 'first_name', true) . ' ' . get_user_meta($row->associated_affiliate_id, 'last_name', true);
+            //     $org_email = $org_user->user_email;
+            //     $org_phone = $yith_wcaf_phone_number;
+                
+            //     $org_admin_user =$org_user_name .'<br>'. $org_email .'<br>'. $org_phone ;
+                
+            // }
+
+            $org_admin_user = '';
             if ($row->associated_affiliate_id) {
                 $org_user = get_userdata($row->associated_affiliate_id);
-                
-                $org_user_name = get_user_meta($row->associated_affiliate_id, 'first_name', true) . ' ' . get_user_meta($row->associated_affiliate_id, 'last_name', true);
+
+                // Fetch first and last name
+                $first_name = get_user_meta($row->associated_affiliate_id, 'first_name', true);
+                $last_name  = get_user_meta($row->associated_affiliate_id, 'last_name', true);
+                $org_user_name = trim($first_name . ' ' . $last_name);
+
+                // Fallback to display name if first/last are empty
+                if (empty($org_user_name)) {
+                    $org_user_name = $org_user->display_name;
+                }
+
+                // Get email and phone
                 $org_email = $org_user->user_email;
                 $org_phone = $yith_wcaf_phone_number;
-                
-                $org_admin_user =$org_user_name .'<br>'. $org_email .'<br>'. $org_phone ;
-                
+
+                // Combine all into a display string
+                $org_admin_user = $org_user_name . '<br>' . $org_email . '<br>' . $org_phone;
             }
+
+
+                 $new_organization_block = implode('<br>', array_filter([
+                    '<strong>Organization:</strong> ' . esc_html($new_organization),
+                    '<strong>Status:</strong> ' . esc_html($status),
+                    '<strong>Season Status:</strong> ' . esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
+                ]));
+
 
             $data[] = [
                 'code' => esc_html($row->token ?? ''),
                 'organization_admin' => $org_admin_user ?? '',
                 'organization' => esc_html(implode(', ', $organizationdata)),
-                'new_organization' => esc_html($new_organization),
+                'new_organization' => $new_organization_block,
                 'status' => esc_html($status),
                 'price' => wc_price($show_price),
                 'commission' => $total_commission,
