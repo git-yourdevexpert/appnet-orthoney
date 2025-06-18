@@ -53,14 +53,20 @@ if ($first_segment == 'dashboard'){
      $dashboard_link_label = 'Return to Dashboard';
    ?>
    <style>
-     .customer-select-filter,
-     .affiliate-token-filter{display:none}
+     .customer-select-filter{display:none}
    </style>
    <?php 
 }
 
 $affiliate_id = 0;
 $affiliate_token = '';
+if ($first_segment == 'organization-dashboard'){
+    ?>
+     <style>
+     .affiliate-token-filter{display:none}
+   </style> 
+    <?php
+}
 if ($first_segment == 'organization-dashboard'){
     global $wpdb;
 
