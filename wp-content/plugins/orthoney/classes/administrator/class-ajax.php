@@ -74,14 +74,11 @@ class OAM_ADMINISTRATOR_AJAX {
                         if ($associated_id) {
                             
                             if (!empty($token)) {
-                                $oname_block .= '<strong>' .esc_html($token) . '</strong> .<br>';
+                                $oname_block .= '<strong>[' .esc_html($token) . '] '.$first_name.'</strong><br>';
                             }
                            
 
-                            if (!empty($first_name)) {
-                                $oname_block .=  esc_html(trim("{$first_name}")) . '<br>';
-                            }
-
+                          
                                 $afuser = get_userdata($affiliate_id);
                                 if ($afuser && !empty($afuser->user_email)) {
                                     $oname_block .= esc_html($afuser->user_email) . '<br>';
@@ -341,6 +338,10 @@ class OAM_ADMINISTRATOR_AJAX {
             $state = $state ?: '';
 
             $organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+                        $organization_phone = get_user_meta($user_id, '_yith_wcaf_phone_number', true);
+
+            
+
             if (!$organization) {
                 $organization = get_user_meta($user_id, 'first_name', true). ' ' .get_user_meta($user_id, 'last_name', true);
             }
@@ -350,6 +351,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 'state'        => $state,
                 'code'         => $row->token,
                 'email'        => $user_obj ? $user_obj->user_email : '',
+                'phone' => $organization_phone,
             ];
         }
 
@@ -485,12 +487,17 @@ class OAM_ADMINISTRATOR_AJAX {
 
             $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($row->ID) . '&tab=affiliates';
             
-            $organizationdata = [
-                $meta['organization'],
-                esc_html($meta['city']),
-                esc_html($meta['state']),
-            ];
-            $organizationdata = array_filter($organizationdata);
+                $organizationdata = [
+                    '<strong>'.$meta['organization'].'</strong>',
+                    esc_html($meta['city']),
+                    esc_html($meta['state']).'</br>',
+                    esc_html($meta['email']).'</br>',
+                    esc_html($meta['phone']).'</br>',
+                ];
+
+                // Combine with <br> instead of comma
+               // $organization = implode('<br>', array_filter($organizationdata));
+                  $organizationdata = array_filter($organizationdata);
 
             $org_admin_user = '';
             if ($associated_affiliate_id) {
@@ -530,7 +537,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
                 $data[] = [
                     'code'         => esc_html($meta['code']),
-                    'organization' => esc_html(implode(', ', $organizationdata)),
+                    'organization' => $organizationdata,
                     'csr_name'     =>esc_html(implode(', ', $userid_keys)),
                     'organization_admin'        => $org_admin_user,
                     'new_organization' => esc_html($new_organization),
