@@ -87,6 +87,7 @@ public function orthoney_admin_get_customers_data_handler() {
                     'id' => $user->ID,
                     'name' => $name_block,
                     'email' => esc_html($user->user_email),
+                    'organizations' => 'organizations data',
                     'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
                                     <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
                                 </button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile</a>'
