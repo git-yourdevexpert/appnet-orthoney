@@ -2898,12 +2898,14 @@ jQuery(function ($) {
           d.selected_min_qty = qtySlider[0] || 1;
           d.selected_max_qty = qtySlider[1] || 1000;
           d.search_by_recipient = $(".search-recipient-name").val();
+          
           if(tabletype == 'organization-dashboard'){
              const affiliate_token = $("#customer-orders-table").data("affiliate_token");
             d.search_by_organization = affiliate_token;
           }else{
-            d.search_by_organization = $(".search-by-organization").val();
+            d.search_by_organization = $("input.search-by-organization").val();
           }
+      
         },
         beforeSend: function () {
           process_group_popup("Please wait while we process your request.");
@@ -3350,10 +3352,10 @@ jQuery(function ($) {
           d.tabletype = tabletype;
           d.selected_customer_id = $("#jar-select-customer").val();
           if(tabletype == 'organization-dashboard'){
-            const affiliate_token = $("#customer-orders-table").data("affiliate_token");
+            const affiliate_token = $("#customer-jar-orders-table").data("affiliate_token");
             d.search_by_organization = affiliate_token;
           }else{
-            d.search_by_organization = $(".jar-search-by-organization").val();
+            d.search_by_organization = $("input.jar-search-by-organization").val();
           }
           
         },
