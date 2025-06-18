@@ -2201,7 +2201,6 @@ jQuery(document).ready(function ($) {
       { data: "organization_admin" },
       { data: "new_organization" },
       { data: "status" },
-      { data: "season_status" },
       { data: "price" },
       { data: "commission" },
       { data: "login" }
