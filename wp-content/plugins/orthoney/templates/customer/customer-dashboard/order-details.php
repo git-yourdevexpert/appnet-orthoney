@@ -129,6 +129,9 @@ $dashboard_link = CUSTOMER_DASHBOARD_LINK.'orders/';
 if(isset($_GET['return_url']) && $_GET['return_url']=='admin'){
     $dashboard_link = ADMINISTRATOR_DASHBOARD_LINK.'orders/';
 }
+if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
+    $dashboard_link = ORGANIZATION_DASHBOARD_LINK.'orders-list/';
+}
 
 $dashboard_link_label = 'Return to Dashboard';
 ?>
@@ -271,10 +274,12 @@ $dashboard_link_label = 'Return to Dashboard';
                                 <button class="far fa-eye viewRecipientOrder" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-popup="#recipient-order-edit-popup"></button>
 
                                 <?php 
-                                if($editable === true){
-                                ?>
-                                <button class="far fa-edit editRecipientOrder" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-popup="#recipient-order-manage-popup"></button>
-                                <?php
+                                if($editable === true ){
+                                    if(isset($_GET['return_url']) && $_GET['return_url'] !='organization'){
+                                    ?>
+                                    <button class="far fa-edit editRecipientOrder" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-popup="#recipient-order-manage-popup"></button>
+                                    <?php
+                                    }
                                 }
                             }
                             ?>
