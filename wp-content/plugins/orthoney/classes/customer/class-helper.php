@@ -471,6 +471,7 @@ class OAM_Helper{
             $where_conditions[] = "orders.status = %s";
             $where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
         } elseif (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] === "all") {
+            // Default behavior: show all relevant statuses when 'all' is selected or no status is specified
             $statuses = ['pending', 'processing', 'on-hold', 'completed'];
             $placeholders = implode(',', array_fill(0, count($statuses), '%s'));
             $where_conditions[] = "orders.status IN ($placeholders)";
