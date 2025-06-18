@@ -72,6 +72,10 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
                     $user->ID
                 ));
 
+                echo '<pre>';
+                print_r($wpdb);
+                 echo '</pre>';
+
                 $oname_block = '';
 
                 if (!empty($affiliates_ids)) {
