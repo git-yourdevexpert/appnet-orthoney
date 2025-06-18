@@ -42,7 +42,7 @@ $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 
                     <th>Organization</th>
                     <th>Organization Admin</th>
                     <th>CSR Name</th>
-                    <th>New Organization</th>
+                    <th>Status</th>
                     <th>Status</th>
                     <!-- <th>Season Status</th> -->
                     <th>Price</th>
