@@ -40,7 +40,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
     // Step 1: Get user_id from affiliate_id
     $user_id = $wpdb->get_var($wpdb->prepare(
-        "SELECT user_id FROM {$affiliates_table} WHERE ID = %d", $affiliate_id
+        "SELECT user_id FROM {$affiliates_table} WHERE user_id = %d", $affiliate_id
     ));
 
     if (!$user_id) {
