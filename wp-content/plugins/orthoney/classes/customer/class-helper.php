@@ -470,7 +470,13 @@ class OAM_Helper{
         if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] !== "all") {
             $where_conditions[] = "orders.status = %s";
             $where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
-        } 
+        } elseif (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] === "all") {
+            // Default behavior: show all relevant statuses when 'all' is selected or no status is specified
+            $statuses = ['wc-pending', 'wc-processing', 'wc-on-hold', 'wc-completed'];
+            $placeholders = implode(',', array_fill(0, count($statuses), '%s'));
+            $where_conditions[] = "orders.status IN ($placeholders)";
+            $where_values = array_merge($where_values, $statuses);
+        }
 
         if (
             isset($_REQUEST['selected_min_qty'], $_REQUEST['selected_max_qty']) &&
