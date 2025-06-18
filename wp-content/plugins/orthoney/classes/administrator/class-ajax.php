@@ -530,8 +530,12 @@ class OAM_ADMINISTRATOR_AJAX {
                     if ($value === 'all' || (is_array($value) && in_array($search_value, $value))) {
                         $first_name = get_user_meta($key, 'first_name', true);
                         $last_name = get_user_meta($key, 'last_name', true);
+                        $cbr_phone_number = get_user_meta($key, 'cbr_phone_number', true);
+
+
 
                         $userid_keys[] = trim("$first_name $last_name");
+                        $userid_keys[] = trim("$cbr_phone_number");
                     }
                 }
 
