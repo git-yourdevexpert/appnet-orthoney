@@ -564,7 +564,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 $data[] = [
                     'code'         => esc_html($meta['code']),
                     'organization' => $organization,
-'csr_name' => implode('<br>', array_map('esc_html', $userid_keys)),
+'csr_name' => implode('<br>', array_map('esc_html', array_filter($userid_keys))),
                     'organization_admin'        => $org_admin_user,
                     'new_organization' => $new_organization_block,
                     'status'       => esc_html($status),
