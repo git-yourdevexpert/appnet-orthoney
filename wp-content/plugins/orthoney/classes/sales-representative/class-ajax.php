@@ -55,6 +55,8 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         ";
 
         $results = $wpdb->get_results($wpdb->prepare($sql_data));
+  $affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker';
+                $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
 
         $data = [];
         foreach ($results as $user) {
@@ -63,6 +65,61 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
 
              $full_name = trim(get_user_meta($user->ID, 'first_name', true) . ' ' . get_user_meta($user->ID, 'last_name', true));
              $customer = new WC_Customer($user->ID);
+
+            
+                $affiliates_ids = $wpdb->get_results($wpdb->prepare(
+                    "SELECT affiliate_id FROM {$affiliate_customer_linker} WHERE customer_id = %d",
+                    $user->ID
+                ));
+
+                $oname_block = '';
+
+                if (!empty($affiliates_ids)) {
+                    foreach ($affiliates_ids as $affiliate) {
+                        $affiliate_id = $affiliate->affiliate_id;
+
+                        $affiliate_data  = $wpdb->get_row($wpdb->prepare(
+                            "SELECT token FROM {$affiliates_table} WHERE user_id = %d",
+                            $affiliate_id
+                        ));
+
+                        $token = $affiliate_data->token ?? '';
+
+                        $first_name  = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
+                        //$last_name   = get_user_meta($affiliate_id, 'billing_last_name', true);
+
+                        $associated_id = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
+                        if ($associated_id) {
+                            
+                            if (!empty($token)) {
+                                $oname_block .= '<strong>[' .esc_html($token) . '] '.$first_name.'</strong><br>';
+                            }
+                           
+
+                          
+                                $afuser = get_userdata($affiliate_id);
+                                if ($afuser && !empty($afuser->user_email)) {
+                                    $oname_block .= esc_html($afuser->user_email) . '<br>';
+                                }                       
+
+                                $oname_block .=  get_user_meta($affiliate_id, '_yith_wcaf_phone_number', true) . '<br>';
+                        
+                            $address_parts = array_filter([
+                                get_user_meta($affiliate_id, '_yith_wcaf_address', true),
+                                get_user_meta($affiliate_id, '_yith_wcaf_city', true),
+                                get_user_meta($affiliate_id, '_yith_wcaf_state', true),
+                                get_user_meta($affiliate_id, '_yith_wcaf_zipcode', true),
+                               // get_user_meta($affiliate_id, 'billing_country', true),
+                            ]);
+
+                            if (!empty($address_parts)) {
+                                $oname_block .= esc_html(implode(', ', $address_parts)) . '<br>';
+                            }
+
+                            $oname_block .= '<hr>';
+                        }
+                    }
+                }
 
                 $billing_address = array_filter([
                     $customer->get_billing_address_1(),
@@ -94,7 +151,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
 if($user->user_email != ''){
             $data[] = [
                 'name'   => $name_block,
-                'email'  => esc_html($user->user_email),
+                'email'  => $oname_block,
                 'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '" data-nonce="' . esc_attr($nonce) . '">
                                 <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png"> Login as Customer
                             </button>',
