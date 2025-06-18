@@ -39,7 +39,7 @@ class OAM_ADMINISTRATOR_AJAX {
     $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
 
     $affiliates = $wpdb->get_results($wpdb->prepare(
-        "SELECT user_id, token FROM {$affiliates_table} WHERE ID = %d", $affiliate_id
+        "SELECT user_id, token FROM {$affiliates_table} WHERE user_id = %d", $affiliate_id
     ), ARRAY_A);
 
     if (empty($affiliates)) {
