@@ -33,8 +33,8 @@ class OAM_ADMINISTRATOR_AJAX {
         wp_send_json_success(['message' => 'Your account has been successfully activated.']);
     }
 
-    //db changes on 18-6-2025 for the show details
-   public function orthoney_admin_get_customers_data_handler() {
+ // db changes on 18-6-2025 for the show details
+public function orthoney_admin_get_customers_data_handler() {
 
     $all_users = get_users();
     $data = [];
@@ -46,29 +46,47 @@ class OAM_ADMINISTRATOR_AJAX {
                 // Get WooCommerce customer object
                 $customer = new WC_Customer($user->ID);
 
+                // Get name from user profile
+                $first_name = get_user_meta($user->ID, 'first_name', true);
+                $last_name  = get_user_meta($user->ID, 'last_name', true);
+                $full_name  = trim("{$first_name} {$last_name}");
+
                 // Billing details
-                $billing_name    = trim($customer->get_billing_first_name() . ' ' . $customer->get_billing_last_name());
-                $billing_address = $customer->get_billing_address_1();
-                $billing_city    = $customer->get_billing_city();
-                $billing_state   = $customer->get_billing_state();
+                $billing_address  = $customer->get_billing_address_1();
+                $billing_city     = $customer->get_billing_city();
+                $billing_state    = $customer->get_billing_state();
                 $billing_postcode = $customer->get_billing_postcode();
-                $billing_country = $customer->get_billing_country();
-                $billing_phone   = $customer->get_billing_phone();
+                $billing_country  = $customer->get_billing_country();
+                $billing_phone    = $customer->get_billing_phone();
 
-                // Full address
-                $full_address = trim("{$billing_address}, {$billing_city}, {$billing_state} {$billing_postcode}, {$billing_country}");
+                // Build full address only with non-empty parts
+                $address_parts = array_filter([
+                    $billing_address,
+                    $billing_city,
+                    $billing_state,
+                    $billing_postcode,
+                    $billing_country
+                ]);
+                $full_address = implode(', ', $address_parts);
 
-                // Combined Name field (with address and phone)
-                $name_block = '<strong>' . esc_html($billing_name) . '</strong><br>'
-                            . esc_html($full_address) . '<br>'
-                            . esc_html($billing_phone);
+                // Build name block only with available info
+                $name_block = '';
+                if (!empty($full_name)) {
+                    $name_block .= '<strong>' . esc_html($full_name) . '</strong><br>';
+                }
+                if (!empty($full_address)) {
+                    $name_block .= esc_html($full_address) . '<br>';
+                }
+                if (!empty($billing_phone)) {
+                    $name_block .= esc_html($billing_phone);
+                }
 
                 $admin_url = admin_url("user-edit.php?user_id={$user->ID}&wp_http_referer=%2Fwp-admin%2Fusers.php");
 
                 $data[] = [
                     'id' => $user->ID,
                     'name' => $name_block,
-                    'email' => esc_html($user->user_email), // optional, you can remove if not needed
+                    'email' => esc_html($user->user_email),
                     'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
                                     <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
                                 </button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile</a>'
@@ -81,6 +99,7 @@ class OAM_ADMINISTRATOR_AJAX {
         'data' => $data
     ]);
 }
+
     //db end
     public function orthoney_admin_get_sales_representative_data_handler() {
 
