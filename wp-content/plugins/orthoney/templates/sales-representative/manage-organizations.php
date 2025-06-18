@@ -35,7 +35,7 @@ if (!defined('ABSPATH')) {
                 <th>Organization Admin</th>
                 <th>New Organization</th>
                 <th>Status</th>
-                <th>Season Status</th>
+                <!-- <th>Season Status</th> -->
                 <th>Price</th>
                 <th>Commission</th>
                 <th>Login</th>
