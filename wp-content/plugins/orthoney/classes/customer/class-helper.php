@@ -617,18 +617,18 @@ class OAM_Helper{
             );
         }
         
-        $return_url = '&return_url=admin';
+        $return_url = '?return_url=admin';
             if($tabletype == 'organization-dashboard' )  {
-                $return_url = '&return_url=organization';
+                $return_url = '?return_url=organization';
 
             }elseif($tabletype == 'administrator-dashboard' )  {
-                $return_url = '&return_url=admin';
+                $return_url = '?return_url=admin';
             }else{
             
-                $return_url = '&return_url=customer';
+                $return_url = '?return_url=customer';
             } 
 
-        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id).''.$return_url);
+        $resume_url = esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/". ($order_data->parent_order_id == 0 ? $order_data->id : $order_data->parent_order_id).''.$return_url );
         $total_recipient = '';
         if($jarsorder_count != 0){
            $total_recipient = "<a id='".$jar_order_id."' onclick='jarfilter_trigger(\"$jar_order_id\", \"$year\")' class='filter-jar-order-by-wc-order ".$year."' href='javascript:;'>".$jarsorder_count."</a>";
