@@ -101,9 +101,7 @@ class YITH_Affiliate_Recaptcha_V3 {
 
         $result = json_decode(wp_remote_retrieve_body($response), true);
 
-        if (empty($result['success'])) {
-            $errors->add('recaptcha_failed', __('reCAPTCHA verification failed.', 'yith-woocommerce-affiliates'));
-        } elseif (isset($result['score']) && $result['score'] < 0.5) {
+        if (isset($result['score']) && $result['score'] < 0.5) {
             $errors->add('recaptcha_score_low', __('Security score too low. Please try again.', 'yith-woocommerce-affiliates'));
         }
 

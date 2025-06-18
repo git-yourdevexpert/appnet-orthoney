@@ -470,6 +470,11 @@ class OAM_Helper{
         if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] !== "all") {
             $where_conditions[] = "orders.status = %s";
             $where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
+        } elseif (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] === "all") {
+            $statuses = ['pending', 'processing', 'on-hold', 'completed'];
+            $placeholders = implode(',', array_fill(0, count($statuses), '%s'));
+            $where_conditions[] = "orders.status IN ($placeholders)";
+            $where_values = array_merge($where_values, $statuses);
         }
 
         if (
