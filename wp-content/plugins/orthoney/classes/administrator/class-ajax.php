@@ -33,197 +33,121 @@ class OAM_ADMINISTRATOR_AJAX {
         wp_send_json_success(['message' => 'Your account has been successfully activated.']);
     }
 
-    public function get_affiliate_details_by_id($affiliate_id) {
+        // DB changes on 18-6-2025 for the show details
+    public function orthoney_admin_get_customers_data_handler() {
+        global $wpdb;
 
-    global $wpdb;
+       // $all_users = get_users(['include' => [440]]);
+        $all_users = get_users();
+        $data = [];
 
-    $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+        foreach ($all_users as $user) {
+            if (count($user->roles) === 1 && in_array('customer', $user->roles) && !empty($user->user_email)) {
 
-    $affiliates = $wpdb->get_row($wpdb->prepare(
-        "SELECT token FROM {$affiliates_table} WHERE user_id = %d", $affiliate_id
-    ));
-
-    if (empty($affiliates)) {
-        return null; // No affiliates found
-    }
-
-    $results = [];
-
-    
-        $user_id = $affiliate_id;
-        $token   = $affiliates->token;
-
-        $user = get_userdata($user_id);
-       
-        // WooCommerce Billing Info
-        $first_name  = get_user_meta($user_id, 'billing_first_name', true);
-        $last_name   = get_user_meta($user_id, 'billing_last_name', true);
-        $phone       = get_user_meta($user_id, 'billing_phone', true);
-        $address_1   = get_user_meta($user_id, 'billing_address_1', true);
-        $address_2   = get_user_meta($user_id, 'billing_address_2', true);
-        $city        = get_user_meta($user_id, 'billing_city', true);
-        $state       = get_user_meta($user_id, 'billing_state', true);
-        $postcode    = get_user_meta($user_id, 'billing_postcode', true);
-        $country     = get_user_meta($user_id, 'billing_country', true);
-
-        $results[] = [
-            'token'      => $token,
-            'email'      => $user->user_email,
-            'first_name' => $first_name ?: $user->first_name,
-            'last_name'  => $last_name ?: $user->last_name,
-            'phone'      => $phone,
-            'address'    => trim("{$address_1} {$address_2}"),
-            'city'       => $city,
-            'state'      => $state,
-            'postcode'   => $postcode,
-            'country'    => $country,
-        ];
-    
-
-    return !empty($results) ? $results : null;
-}
-
-
- // db changes on 18-6-2025 for the show details
-public function orthoney_admin_get_customers_data_handler() {
-
-    $all_users = get_users();
-    $data = [];
-
-    foreach ($all_users as $user) {
-        if (count($user->roles) === 1 && in_array('customer', $user->roles)) {
-            if ($user->user_email != '') {
-
-                // Get WooCommerce customer object
                 $customer = new WC_Customer($user->ID);
 
                 $affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker';
+                $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
 
                 $affiliates_ids = $wpdb->get_results($wpdb->prepare(
-                    "SELECT affiliate_id FROM {$affiliate_customer_linker} WHERE user_id = %d", $affiliate_id
-                ), ARRAY_A);
+                    "SELECT affiliate_id FROM {$affiliate_customer_linker} WHERE customer_id = %d",
+                    $user->ID
+                ));
 
-                if(!empty($affiliates_id)){
-                    foreach ($affiliates_id as $key => $id) {
-                        # code...
-                   
-               $affiliate_id = "";
+                $oname_block = '';
 
+                if (!empty($affiliates_ids)) {
+                    foreach ($affiliates_ids as $affiliate) {
+                        $affiliate_id = $affiliate->affiliate_id;
 
-$oname_block = '';
-if (get_user_meta($id, 'associated_affiliate_id', true)) {
-    $affiliate_id = get_user_meta($id, 'associated_affiliate_id', true);
-    $affiliate_data_list = $this->get_affiliate_details_by_id($affiliate_id);
+                        $affiliate_data  = $wpdb->get_row($wpdb->prepare(
+                            "SELECT token FROM {$affiliates_table} WHERE user_id = %d",
+                            $affiliate_id
+                        ));
 
-    $oname_block = '';
+                        $token = $affiliate_data->token ?? '';
 
-if (!empty($affiliate_data_list)) {
-    foreach ($affiliate_data_list as $affiliate_data) {
-        // Build name
-        if (!empty($affiliate_data['first_name']) || !empty($affiliate_data['last_name'])) {
-            $oname_block .= '<strong>' . esc_html(trim($affiliate_data['first_name'] . ' ' . $affiliate_data['last_name'])) . '</strong><br>';
-        }
+                        $first_name  = get_user_meta($affiliate_id, 'billing_first_name', true);
+                        $last_name   = get_user_meta($affiliate_id, 'billing_last_name', true);
 
-        // Optional token
-        if (!empty($affiliate_data['token'])) {
-            $oname_block .= esc_html($affiliate_data['token']) . '<br>';
-        }
+                        $associated_id = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
+                        if ($associated_id) {
+                            if (!empty($first_name) || !empty($last_name)) {
+                                $oname_block .= '<strong>' . esc_html(trim("{$first_name} {$last_name}")) . '</strong><br>';
+                            }
 
-        // Optional email
-        if (!empty($affiliate_data['email'])) {
-            $oname_block .= esc_html($affiliate_data['email']) . '<br>';
-        }
+                            if (!empty($token)) {
+                                $oname_block .= esc_html($token) . '<br>';
+                            }
+                           
+                                $oname_block .=  get_user_meta($affiliate_id, 'billing_email', true) . '<br>';
+                       
 
-        // Optional phone
-        if (!empty($affiliate_data['phone'])) {
-            $oname_block .= esc_html($affiliate_data['phone']) . '<br>';
-        }
+                                $oname_block .=  get_user_meta($affiliate_id, 'billing_phone', true) . '<br>';
+                        
+                            $address_parts = array_filter([
+                                get_user_meta($affiliate_id, 'billing_address_1', true),
+                                get_user_meta($affiliate_id, 'billing_city', true),
+                                get_user_meta($affiliate_id, 'billing_state', true),
+                                get_user_meta($affiliate_id, 'billing_postcode', true),
+                                get_user_meta($affiliate_id, 'billing_country', true),
+                            ]);
 
-        // Optional address
-        $address_parts = array_filter([
-            $affiliate_data['address'] ?? '',
-            $affiliate_data['city'] ?? '',
-            $affiliate_data['state'] ?? '',
-            $affiliate_data['postcode'] ?? '',
-            $affiliate_data['country'] ?? '',
-        ]);
+                            if (!empty($address_parts)) {
+                                $oname_block .= esc_html(implode(', ', $address_parts)) . '<br>';
+                            }
 
-        if (!empty($address_parts)) {
-            $oname_block .= esc_html(implode(', ', $address_parts)) . '<br>';
-        }
-
-        $oname_block .= '<hr>'; 
-         }
+                            $oname_block .= '<hr>';
+                        }
+                    }
                 }
-    }
-}
 
-}
-
-
-
-                
-
-                // Get name from user profile
-                $first_name = get_user_meta($user->ID, 'first_name', true);
-                $last_name  = get_user_meta($user->ID, 'last_name', true);
-                $full_name  = trim("{$first_name} {$last_name}");
-
-                // Billing details
-                $billing_address  = $customer->get_billing_address_1();
-                $billing_city     = $customer->get_billing_city();
-                $billing_state    = $customer->get_billing_state();
-                $billing_postcode = $customer->get_billing_postcode();
-                $billing_country  = $customer->get_billing_country();
-                $billing_phone    = $customer->get_billing_phone();
-
-                // Build full address only with non-empty parts
-                $address_parts = array_filter([
-                    $billing_address,
-                    $billing_city,
-                    $billing_state,
-                    $billing_postcode,
-                    $billing_country
+                $full_name = trim(get_user_meta($user->ID, 'first_name', true) . ' ' . get_user_meta($user->ID, 'last_name', true));
+                $billing_address = array_filter([
+                    $customer->get_billing_address_1(),
+                    $customer->get_billing_city(),
+                    $customer->get_billing_state(),
+                    $customer->get_billing_postcode(),
+                    $customer->get_billing_country()
                 ]);
-                $full_address = implode(', ', $address_parts);
+                $full_address = implode(', ', $billing_address);
 
-                // Build name block only with available info
                 $name_block = '';
-              
                 if (!empty($full_name)) {
                     $name_block .= '<strong>' . esc_html($full_name) . '</strong><br>';
                 }
-                
-                  if (!empty($user->user_email)) {
-                    $name_block .= $user->user_email.'</br>';
+
+                $name_block .= esc_html($user->user_email) . '<br>';
+
+                $billing_phone = $customer->get_billing_phone();
+                if (!empty($billing_phone)) {
+                    $name_block .= esc_html($billing_phone) . '<br>';
                 }
-                   if (!empty($billing_phone)) {
-                    $name_block .= esc_html($billing_phone);
-                }
+
                 if (!empty($full_address)) {
                     $name_block .= esc_html($full_address) . '<br>';
                 }
-             
 
                 $admin_url = admin_url("user-edit.php?user_id={$user->ID}&wp_http_referer=%2Fwp-admin%2Fusers.php");
 
                 $data[] = [
                     'id' => $user->ID,
                     'name' => $name_block,
-                  //  'email' => esc_html($user->user_email),
                     'organizations' => $oname_block,
                     'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
                                     <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
-                                </button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile</a>'
+                                </button>
+                                <a href="' . $admin_url . '" class="icon-txt-btn">
+                                    <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile
+                                </a>'
                 ];
             }
         }
+
+        wp_send_json(['data' => $data]);
     }
 
-    wp_send_json([
-        'data' => $data
-    ]);
-}
+
 
     //db end
     public function orthoney_admin_get_sales_representative_data_handler() {
