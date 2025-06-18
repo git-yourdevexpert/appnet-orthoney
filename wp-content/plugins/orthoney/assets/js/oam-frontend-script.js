@@ -2091,7 +2091,7 @@ jQuery(document).ready(function ($) {
       { data: "csr_name" },
       { data: "new_organization" },
       { data: "status" },
-      { data: "season_status" },
+      // { data: "season_status" },
       { data: "price" },
       { data: "commission" },
       { data: "login" }
@@ -2099,6 +2099,7 @@ jQuery(document).ready(function ($) {
     columnDefs: [
       { targets: 0, width: "50px" },
       { targets: 1, width: "150px" },
+       { targets: 5, visible: false,searchable: true },
       { targets: -1, orderable: false, width: "100px" }
     ],
     language: {
