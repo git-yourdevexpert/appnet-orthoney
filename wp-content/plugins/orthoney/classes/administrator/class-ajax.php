@@ -78,7 +78,7 @@ class OAM_ADMINISTRATOR_AJAX {
                             }
                            
 
-                            if (!empty($first_name) || !empty($last_name)) {
+                            if (!empty($first_name)) {
                                 $oname_block .=  esc_html(trim("{$first_name}")) . '<br>';
                             }
 
