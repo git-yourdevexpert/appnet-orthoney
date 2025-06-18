@@ -38,20 +38,22 @@ class OAM_ADMINISTRATOR_AJAX {
 
     $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
 
-    // Step 1: Get user_id from affiliate_id
-    $user_id = $wpdb->get_var($wpdb->prepare(
-        "SELECT user_id FROM {$affiliates_table} WHERE user_id = %d", $affiliate_id
-    ));
+$affiliate = $wpdb->get_row($wpdb->prepare(
+    "SELECT user_id, token FROM {$affiliates_table} WHERE ID = %d", $affiliate_id
+), ARRAY_A);
 
-    if (!$user_id) {
-        return null; // Affiliate not found
-    }
+if (!$affiliate) {
+    return null; // Affiliate not found
+}
 
-    // Step 2: Get user object
-    $user = get_userdata($user_id);
-    if (!$user) {
-        return null; // User not found
-    }
+$user_id = $affiliate['user_id'];
+$token   = $affiliate['token'];
+
+// Step 2: Get user object
+$user = get_userdata($user_id);
+if (!$user) {
+    return null; // User not found
+}
 
     // Step 3: Get billing info (if WooCommerce is used)
     $first_name  = get_user_meta($user_id, 'billing_first_name', true);
@@ -65,6 +67,7 @@ class OAM_ADMINISTRATOR_AJAX {
     $country     = get_user_meta($user_id, 'billing_country', true);
 
     return [
+        'token' => $token,
         'email'      => $user->user_email,
         'first_name' => $first_name ?: $user->first_name,
         'last_name'  => $last_name ?: $user->last_name,
@@ -74,6 +77,7 @@ class OAM_ADMINISTRATOR_AJAX {
         'state'      => $state,
         'postcode'   => $postcode,
         'country'    => $country,
+        
     ];
 }
 
@@ -102,6 +106,11 @@ if (get_user_meta($user->ID, 'associated_affiliate_id', true)) {
             $oname_block .= '<strong>' . esc_html(trim($affiliate_data['first_name'] . ' ' . $affiliate_data['last_name'])) . '</strong><br>';
         }
 
+         // Optional email
+        if (!empty($affiliate_data['token'])) {
+            $oname_block .= esc_html($affiliate_data['token']) . '<br>';
+        }
+
         // Optional email
         if (!empty($affiliate_data['email'])) {
             $oname_block .= esc_html($affiliate_data['email']) . '<br>';
@@ -122,7 +131,7 @@ if (get_user_meta($user->ID, 'associated_affiliate_id', true)) {
         ]);
 
         if (!empty($address_parts)) {
-            $oname_block .= 'Address: ' . esc_html(implode(', ', $address_parts)) . '<br>';
+            $oname_block .= esc_html(implode(', ', $address_parts)) . '<br>';
         }
     }
 }
