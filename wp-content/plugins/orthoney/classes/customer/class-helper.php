@@ -580,6 +580,7 @@ class OAM_Helper{
 
     $reorderbutton = '';
 
+    if($tabletype != 'organization-dashboard'){
         $gmt_created = is_object($order_data->date_created_gmt)  ? $order_data->date_created_gmt : new DateTime($order_data->date_created_gmt, new DateTimeZone('GMT')); 
         
         $order_year = (int) $gmt_created->format('Y');
@@ -594,6 +595,7 @@ class OAM_Helper{
             }
         }
         
+    }
         // Status HTML
         $status_html = '';
         if ($order_type === 'Multi Address' && $order_data->parent_order_id == 0) {
