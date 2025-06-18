@@ -5,8 +5,11 @@ if (!defined('ABSPATH')) {
 }
 $dashboard_link = ORGANIZATION_DASHBOARD_LINK;
 $dashboard_link_label = 'Return to Dashboard';
+
+include_once  OH_PLUGIN_DIR_PATH.'templates/woocommerce/myaccount/orders.php';
+
 ?>
-<div class="order-block-wrap">
+<div class="order-block-wrap" style="display:none">
     <div class="order-process-dashboard">
         <div class="dashboard-block">
         <div class="row-block">

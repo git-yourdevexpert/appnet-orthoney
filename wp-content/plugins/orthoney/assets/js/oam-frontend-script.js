@@ -2898,7 +2898,12 @@ jQuery(function ($) {
           d.selected_min_qty = qtySlider[0] || 1;
           d.selected_max_qty = qtySlider[1] || 1000;
           d.search_by_recipient = $(".search-recipient-name").val();
-          d.search_by_organization = $(".search-by-organization").val();
+          if(tabletype == 'organization-dashboard'){
+             const affiliate_token = $("#customer-orders-table").data("affiliate_token");
+            d.search_by_organization = affiliate_token;
+          }else{
+            d.search_by_organization = $(".search-by-organization").val();
+          }
         },
         beforeSend: function () {
           process_group_popup("Please wait while we process your request.");
@@ -2969,7 +2974,7 @@ jQuery(function ($) {
              Search Recipient Name:
              <input type="text" class="search-recipient-name" placeholder="Search Recipient Name" >
              </label>
-              <label class="customer-select-filter">
+              <label class="customer-select-filter search-by-organization">
              Search By Organization Code:
              <input type="text" class="search-by-organization" placeholder="Search By Organization Code" >
              </label>
@@ -3344,7 +3349,13 @@ jQuery(function ($) {
           d.selected_max_qty = qtySlider[1];
           d.tabletype = tabletype;
           d.selected_customer_id = $("#jar-select-customer").val();
-          d.search_by_organization = $(".jar-search-by-organization").val();
+          if(tabletype == 'organization-dashboard'){
+            const affiliate_token = $("#customer-orders-table").data("affiliate_token");
+            d.search_by_organization = affiliate_token;
+          }else{
+            d.search_by_organization = $(".jar-search-by-organization").val();
+          }
+          
         },
         beforeSend: function () {
           process_group_popup("Please wait while we process your request.");
@@ -3387,7 +3398,7 @@ jQuery(function ($) {
                     <option value="">All Years</option>
                     </select>
                 </label>
-                <label class="customer-select-filter">
+                <label class="customer-select-filter jar-search-by-organization">
                       Search By Organization Code:
                     <input type="text" class="jar-search-by-organization" placeholder="Search By Organization Code" >
                 </label>

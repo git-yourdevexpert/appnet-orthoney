@@ -47,6 +47,7 @@ if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles
 
  $dashboard_link = ADMINISTRATOR_DASHBOARD_LINK;
  $dashboard_link_label = 'Return to Dashboard';
+ 
 if ($first_segment == 'dashboard'){
     $dashboard_link = CUSTOMER_DASHBOARD_LINK;
      $dashboard_link_label = 'Return to Dashboard';
@@ -57,11 +58,45 @@ if ($first_segment == 'dashboard'){
    <?php 
 }
 
+$affiliate_id = 0;
+$affiliate_token = '';
+if ($first_segment == 'organization-dashboard'){
+    global $wpdb;
+
+    $affiliate_user_id = get_current_user_id();
+    $affiliat_user_roles = OAM_COMMON_Custom::get_user_role_by_id($affiliate_user_id);
+    if (in_array('yith_affiliate', $affiliat_user_roles) || in_array('affiliate_team_member', $affiliat_user_roles) || in_array('administrator', $affiliat_user_roles)) {
+        $affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+        if($affiliate_id == ''){
+            $affiliate_id = $affiliate_user_id;
+        }
+    }
+
+     $yith_wcaf_affiliates_table = OAM_helper::$yith_wcaf_affiliates_table;
+
+    // Correct query execution
+    $affiliate_token = $wpdb->get_var($wpdb->prepare("
+        SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d
+    ", $affiliate_id));
+
+    $dashboard_link = ORGANIZATION_DASHBOARD_LINK;
+    $dashboard_link_label = 'Return to Dashboard';
+    ?>
+    <style>
+        .jar-search-by-organization,
+        .search-by-organization{
+            display:none;
+        }
+    </style>
+    <?php 
+
+}
+
 ?>
 
 <div class="customer-order-block order-process-block orthoney-datatable-warraper">
     <div class="heading-title">
-        <h3 class="block-title">My Orders</h3>
+        <h3 class="block-title"><?php echo ($first_segment == 'organization-dashboard' ? 'All Customers Order' : 'My Orders') ?></h3>
         <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
     </div>
     <div class="order-filter-tab">
@@ -75,7 +110,7 @@ if ($first_segment == 'dashboard'){
             <span>Order list by Recipient Number </span>
         </label>
     </div>
-    <table id="customer-orders-table" data-tabletype="<?php echo $first_segment; ?>" class="display">
+    <table id="customer-orders-table" data-tabletype="<?php echo $first_segment; ?>" class="display" data-affiliate_id="<?php echo  $affiliate_id ?>" data-affiliate_token="<?php echo $affiliate_token ?>">
     <thead>
         <tr>
             <th>Select</th>
@@ -95,7 +130,7 @@ if ($first_segment == 'dashboard'){
     </thead>
 </table>
 
-<table id="customer-jar-orders-table" class="display" style="display:none" >
+<table id="customer-jar-orders-table" class="display" style="display:none" data-affiliate_id="<?php echo  $affiliate_id ?>" data-affiliate_token="<?php echo $affiliate_token ?>">
     <thead>
         <tr>
             <!-- <th>Select</th> -->
