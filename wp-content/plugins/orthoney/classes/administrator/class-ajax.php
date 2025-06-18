@@ -65,7 +65,6 @@ class OAM_ADMINISTRATOR_AJAX {
     $country     = get_user_meta($user_id, 'billing_country', true);
 
     return [
-        'user_id'    => $user_id,
         'email'      => $user->user_email,
         'first_name' => $first_name ?: $user->first_name,
         'last_name'  => $last_name ?: $user->last_name,
@@ -99,16 +98,19 @@ public function orthoney_admin_get_customers_data_handler() {
 
                   $oname_block = '';
                     if (!empty($affiliate_data['first_name']) || !empty($affiliate_data['last_name'])) {
-                        $oname_block = esc_html(trim($affiliate_data['first_name'] . ' ' . $affiliate_data['last_name']));
+                        $oname_block = '<strong>' .esc_html(trim($affiliate_data['first_name'] . ' ' . $affiliate_data['last_name'])).'</strong></br>';
                     }
 
                     // Build organizations block (full address)
                     $address_parts = array_filter([
+                        $affiliate_data['email'] ?? '',
                         $affiliate_data['address'] ?? '',
                         $affiliate_data['city'] ?? '',
                         $affiliate_data['state'] ?? '',
                         $affiliate_data['postcode'] ?? '',
                         $affiliate_data['country'] ?? '',
+                        $affiliate_data['phone'] ?? '',
+
                     ]);
 
                     $organization = !empty($address_parts) ? esc_html(implode(', ', $address_parts)) : '';
