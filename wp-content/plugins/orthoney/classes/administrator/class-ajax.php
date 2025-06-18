@@ -487,17 +487,31 @@ class OAM_ADMINISTRATOR_AJAX {
 
             $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($row->ID) . '&tab=affiliates';
             
-                $organizationdata = [
-                    '<strong>'.$meta['organization'].'</strong>',
-                    esc_html($meta['city']),
-                    esc_html($meta['state']).'</br>',
-                    esc_html($meta['email']).'</br>',
-                    esc_html($meta['phone']).'</br>',
-                ];
+             $organizationdata = [];
 
-                // Combine with <br> instead of comma
-                 $organization = implode('<br>', array_filter($organizationdata));
-                $organizationdata = array_filter($organizationdata);
+            if (!empty($meta['organization'])) {
+                $organizationdata[] = '<strong>' . esc_html($meta['organization']) . '</strong>';
+            }
+
+            $city_state = trim(esc_html($meta['city']) . (empty($meta['city']) || empty($meta['state']) ? '' : ', ') . esc_html($meta['state']));
+            if (!empty($city_state)) {
+                $organizationdata[] = $city_state;
+            }
+
+            if (!empty($meta['email'])) {
+                $organizationdata[] = esc_html($meta['email']);
+            }
+
+            if (!empty($meta['phone'])) {
+                $organizationdata[] = esc_html($meta['phone']);
+            }
+
+            $organization = implode('<br>', $organizationdata);
+
+
+                // Remove empty values and join with <br>
+                $organization = implode('<br>', array_filter($organizationdata));
+
 
             $org_admin_user = '';
             if ($associated_affiliate_id) {
@@ -549,8 +563,8 @@ class OAM_ADMINISTRATOR_AJAX {
 
                 $data[] = [
                     'code'         => esc_html($meta['code']),
-                    'organization' => $organizationdata,
-                    'csr_name'     =>esc_html(implode(', ', $userid_keys)),
+                    'organization' => $organization,
+'csr_name' => implode('<br>', array_map('esc_html', array_filter($userid_keys))),
                     'organization_admin'        => $org_admin_user,
                     'new_organization' => $new_organization_block,
                     'status'       => esc_html($status),
