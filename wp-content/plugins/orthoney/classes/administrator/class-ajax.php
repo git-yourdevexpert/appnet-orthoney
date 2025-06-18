@@ -487,13 +487,27 @@ class OAM_ADMINISTRATOR_AJAX {
 
             $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($row->ID) . '&tab=affiliates';
             
-             $organizationdata = [
-                    '<strong>' . esc_html($meta['organization']) . '</strong>',
-                    esc_html($meta['city']),
-                    esc_html($meta['state']),
-                    esc_html($meta['email']),
-                    esc_html($meta['phone']),
-                ];
+             $organizationdata = [];
+
+            if (!empty($meta['organization'])) {
+                $organizationdata[] = '<strong>' . esc_html($meta['organization']) . '</strong>';
+            }
+
+            $city_state = trim(esc_html($meta['city']) . (empty($meta['city']) || empty($meta['state']) ? '' : ', ') . esc_html($meta['state']));
+            if (!empty($city_state)) {
+                $organizationdata[] = $city_state;
+            }
+
+            if (!empty($meta['email'])) {
+                $organizationdata[] = esc_html($meta['email']);
+            }
+
+            if (!empty($meta['phone'])) {
+                $organizationdata[] = esc_html($meta['phone']);
+            }
+
+            $organization = implode('<br>', $organizationdata);
+
 
                 // Remove empty values and join with <br>
                 $organization = implode('<br>', array_filter($organizationdata));
