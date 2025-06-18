@@ -3047,24 +3047,19 @@ class OAM_Ajax{
             }
         }
 
-        if (!empty($_REQUEST['search_by_organization'])) {
-
+       if (!empty($_REQUEST['search_by_organization'])) {
             $search_org = sanitize_text_field($_REQUEST['search_by_organization']);
             $search_terms = array_filter(array_map('trim', explode(',', $search_org)));
-           
+
             $org_clauses = [];
-            $values = [];
 
             $dsr_token = (isset($_REQUEST['jar_dsr_affiliate_token']) && $_REQUEST['jar_dsr_affiliate_token'] != '') ? sanitize_text_field($_REQUEST['jar_dsr_affiliate_token']) : null;
-            if ($dsr_token) {
-                $search_terms = [];
-                $search_terms[] = $dsr_token;
+            if ($dsr_token != null) {
+                $search_terms = [$dsr_token]; // overwrite
             }
 
             foreach ($search_terms as $term) {
-                
-                $org_clauses[] = "(CAST(order_id AS CHAR) = %s OR affiliate_token LIKE %s)";
-                $values[] = $term;
+                $org_clauses[] = "(affiliate_token LIKE %s)";
                 $values[] = '%' . $wpdb->esc_like($term) . '%';
             }
 
@@ -3093,12 +3088,19 @@ class OAM_Ajax{
             $values[] = get_current_user_id();
         }
 
-        if (!empty($_REQUEST['search_by_organization'])) {
-           $where[] = "(affiliate_user_id != 0)";
-        }
+        // if (!empty($_REQUEST['search_by_organization'])) {
+        //    $where[] = "affiliate_token IS NOT NULL";
+        // }
         
         $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
         $sql = $wpdb->prepare("SELECT COUNT(id) FROM {$jar_table} $where_sql", ...$values);
+//   echo '<pre>';
+//         print_r($wpdb);
+//         echo '</pre>';
+//         die;
+
+
+        
         $total_orders = $wpdb->get_var($sql);
 
         wp_send_json([

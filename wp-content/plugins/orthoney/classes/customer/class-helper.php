@@ -234,8 +234,9 @@ class OAM_Helper{
         if (!empty($search_by_organization)) {
             $search_terms_raw = explode(',', $search_by_organization);
 
-            $dsr_token = isset($_REQUEST['jar_dsr_affiliate_token']) ? sanitize_text_field($_REQUEST['jar_dsr_affiliate_token']) : null;
-            if ($dsr_token) {
+           $dsr_token = (isset($_REQUEST['jar_dsr_affiliate_token']) && $_REQUEST['jar_dsr_affiliate_token'] != '') ? sanitize_text_field($_REQUEST['jar_dsr_affiliate_token']) : null;
+            if ($dsr_token != null) {
+            
                 $search_terms_raw = [];
                 $search_terms_raw[] = $dsr_token;
             }
@@ -276,7 +277,7 @@ class OAM_Helper{
         }
 
         if (!empty($_REQUEST['search_by_organization'])) {
-             $where_clauses[] = "(affiliate_user_id != 0)";
+             $where_clauses[] = "affiliate_token IS NOT NULL ";
         }
 
         $where_sql = '';
@@ -287,8 +288,8 @@ class OAM_Helper{
         // Add pagination
         $params[] = $limit;
         $params[] = $page;
-
-
+        
+        $jar_table = $wpdb->prefix . 'oh_recipient_order';
 
        $sql = $wpdb->prepare(
             "
@@ -301,7 +302,7 @@ class OAM_Helper{
                 affiliate_token AS affiliate_code,
                 quantity AS total_jar,
                 order_type AS type
-            FROM {$wpdb->prefix}oh_recipient_order
+            FROM {$jar_table}
             $where_sql
             LIMIT %d OFFSET %d
             ",
@@ -309,6 +310,8 @@ class OAM_Helper{
         );
 
         $jarsorder = $wpdb->get_results($sql, ARRAY_A);
+
+      
 
         // Process each order
         $filtered_orders = array_map(function($order) use ($wpdb) {
@@ -347,15 +350,13 @@ class OAM_Helper{
 
             $editable = OAM_COMMON_Custom::check_order_editable($order_created_date);
             
-               
-                // Pass WC_DateTime object to the checker
-                // $order['date'] = $order_timestamp = $order_date->getTimestamp();
+            // Pass WC_DateTime object to the checker
+            // $order['date'] = $order_timestamp = $order_date->getTimestamp();
 
-                if ($editable === true) {
-                    $editLink = '<button class="far fa-edit editRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>';
-                    // $deleteLink = '<button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>';
-                }
-            
+            if ($editable === true) {
+                $editLink = '<button class="far fa-edit editRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>';
+                // $deleteLink = '<button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>';
+            }
 
             $order['jar_tracking'] = '<a href="#view-order-tracking-popup" data-lity data-tippy="View Tracking">Tracking Numbers</a>';
 
@@ -363,11 +364,9 @@ class OAM_Helper{
             $return_url = '&return_url=admin';
             if($tabletype == 'organization-dashboard' )  {
                 $return_url = '&return_url=organization';
-
             }elseif($tabletype == 'administrator-dashboard' )  {
                 $return_url = '&return_url=admin';
             }else{
-            
                 $return_url = '&return_url=customer';
             } 
 
