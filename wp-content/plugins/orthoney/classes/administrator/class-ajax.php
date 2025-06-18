@@ -487,17 +487,17 @@ class OAM_ADMINISTRATOR_AJAX {
 
             $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($row->ID) . '&tab=affiliates';
             
-                $organizationdata = [
-                    '<strong>'.$meta['organization'].'</strong>',
+             $organizationdata = [
+                    '<strong>' . esc_html($meta['organization']) . '</strong>',
                     esc_html($meta['city']),
-                    esc_html($meta['state']).'</br>',
-                    esc_html($meta['email']).'</br>',
-                    esc_html($meta['phone']).'</br>',
+                    esc_html($meta['state']),
+                    esc_html($meta['email']),
+                    esc_html($meta['phone']),
                 ];
 
-                // Combine with <br> instead of comma
-                 $organization = implode('<br>', array_filter($organizationdata));
-                $organizationdata = array_filter($organizationdata);
+                // Remove empty values and join with <br>
+                $organization = implode('<br>', array_filter($organizationdata));
+
 
             $org_admin_user = '';
             if ($associated_affiliate_id) {
@@ -549,7 +549,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
                 $data[] = [
                     'code'         => esc_html($meta['code']),
-                    'organization' => $organizationdata,
+                    'organization' => $organization,
                     'csr_name'     =>esc_html(implode(', ', $userid_keys)),
                     'organization_admin'        => $org_admin_user,
                     'new_organization' => $new_organization_block,
