@@ -504,15 +504,57 @@ class OAM_AFFILIATE_Helper
             }
 
             $html .= '</div>
-                            </div>
-                        </div>
-                    </div>';
+            </div>
+            </div>
+            </div>';
         }
-
+        
         if ($details['token'] != '') {
-            $html .= '
-                
 
+            global $wpdb;
+
+            $sales_reps = get_users(['role' => 'sales_representative']);
+            $sales_reps_data = [];
+
+            foreach ($sales_reps as $user) {
+                if (empty($user->user_email)) continue;
+
+                $user_id = $user->ID;
+                $select_organization = get_user_meta($user_id, 'select_organization', true);
+                $choose_organization = get_user_meta($user_id, 'choose_organization', true);
+
+                if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
+                    $choose_ids_array = array_map('intval', (array) $choose_organization);
+                    
+                    if (!empty($choose_ids_array)) {
+                        $placeholders = implode(',', array_fill(0, count($choose_ids_array), '%d'));
+                        $query = $wpdb->prepare(
+                            "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id IN ($placeholders)",
+                            ...$choose_ids_array
+                        );
+                        $token_array = $wpdb->get_col($query);
+                        $sales_reps_data[$user_id] = $token_array;
+                    } else {
+                        $sales_reps_data[$user_id] = [];
+                    }
+                } else {
+                    $sales_reps_data[$user_id] = 'all';
+                }
+            }
+
+            $search_value = $details['token'];
+            $cbr_ids_array = [];
+
+            foreach ($sales_reps_data as $user_id => $tokens) {
+                if ($tokens === 'all' || (is_array($tokens) && in_array($search_value, $tokens))) {
+                    $cbr_ids_array[] = $user_id;
+                }
+            }
+
+            $cbr_ids_array = array_unique($cbr_ids_array);
+
+
+            $html .= '
                 <div class="dashboard-heading block-row">
                     <div class="item">
                         <div class="row-block">
@@ -521,9 +563,36 @@ class OAM_AFFILIATE_Helper
                         </div>
                     </div>
                 </div>
-                '. ( ($details['total_quantity'] > 50)  ? '' : '<div class="dashboard-heading block-row"><div class="item" style="padding: 10px 20px;background-color: rgba(255, 0, 0, 0.5);"><div class="row-block"><p style="color: white;">A minimum of 50 jars is required. You still need ' . (50 - $details['total_quantity']) . ' more jars.</p style="color: white;"></div></div></div>' ) . '
-                
-                <div class="block-row three-block-col">
+                '. ( ($details['total_quantity'] > 50)  ? '' : '<div class="dashboard-heading block-row"><div class="item" style="padding: 10px 20px;background-color: rgba(255, 0, 0, 0.5);"><div class="row-block"><p style="color: white;">A minimum of 50 jars is required. You still need ' . (50 - $details['total_quantity']) . ' more jars.</p style="color: white;"></div></div></div>' );
+
+                if(!empty($cbr_ids_array)){
+                     $html .= '<div class="dashboard-heading block-row"><div class="item">
+                        <div class="row-block">
+                        <h3 class="block-title">Sales Representative</h3>
+                        </div>
+                        <div class="affiliate-sales-representative-details">';
+                        foreach ($cbr_ids_array as $cbr_id) {
+                            $user_info = get_userdata($cbr_id);
+                            $first_name = get_user_meta($cbr_id, 'first_name', true);
+                            $last_name = get_user_meta($cbr_id, 'last_name', true);
+                            $phone_number = get_user_meta($cbr_id, 'cbr_phone_number', true) ?: '';
+
+                            $output_parts = array_filter([
+                                '<strong>' . (trim("$first_name $last_name") == '' ? $user_info->display_name : trim("$first_name $last_name") ) . '</strong>',
+                                trim($user_info->user_email),
+                                trim($phone_number)
+                            ]);
+                            $html .= '<div class="item-box">';
+                            $html .= implode(', <br>', $output_parts);
+                             $html .= '</div>';
+                        }
+
+                     $html .= '</div></div></div>';
+
+                }
+
+
+                 $html .= '<div class="block-row three-block-col">
                     <div class="place-order item" style="display:none">
                         <div class="row-block">
                             <h4 class="block-title">Total Customer Orders</h4>

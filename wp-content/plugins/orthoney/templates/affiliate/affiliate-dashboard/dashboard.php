@@ -19,6 +19,26 @@ if (empty($details['token'])) {
     echo '<style>#page-header .l-subheader.at_bottom{display:none !important}</style>';
 }
 ?>
+<style>
+    .affiliate-sales-representative-details{
+        margin:20px 0;
+        display: grid;
+        gap: 24px;
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .affiliate-sales-representative-details .item-box{
+
+        border :1px solid #f5f5f5;
+        background: #f6f6f6;
+        padding:15px;
+        color:#000 !important;
+        border-radius: 10px;
+    }
+     .affiliate-sales-representative-details .item-box:hover{
+         background: #eee;
+     }
+</style>
+
 
 <div class="order-block-wrap">
     <div class="order-process-dashboard">
