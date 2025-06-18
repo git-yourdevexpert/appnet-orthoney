@@ -175,7 +175,7 @@ if (get_user_meta($user->ID, 'associated_affiliate_id', true)) {
                 $data[] = [
                     'id' => $user->ID,
                     'name' => $name_block,
-                    'email' => esc_html($user->user_email),
+                  //  'email' => esc_html($user->user_email),
                     'organizations' => $oname_block,
                     'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
                                     <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
