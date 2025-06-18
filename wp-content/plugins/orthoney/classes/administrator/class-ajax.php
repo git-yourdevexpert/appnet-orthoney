@@ -92,7 +92,6 @@ public function orthoney_admin_get_customers_data_handler() {
                 $customer = new WC_Customer($user->ID);
                $affiliate_id = "";
 $oname_block = '';
-$organization = '';
 if (get_user_meta($user->ID, 'associated_affiliate_id', true)) {
     $affiliate_id = get_user_meta($user->ID, 'associated_affiliate_id', true);
     $affiliate_data = $this->get_affiliate_details_by_id($affiliate_id);
@@ -110,7 +109,7 @@ if (get_user_meta($user->ID, 'associated_affiliate_id', true)) {
 
         // Optional phone
         if (!empty($affiliate_data['phone'])) {
-            $oname_block .= 'Phone: ' . esc_html($affiliate_data['phone']) . '<br>';
+            $oname_block .=  esc_html($affiliate_data['phone']) . '<br>';
         }
 
         // Optional address
@@ -177,7 +176,7 @@ if (get_user_meta($user->ID, 'associated_affiliate_id', true)) {
                     'id' => $user->ID,
                     'name' => $name_block,
                     'email' => esc_html($user->user_email),
-                    'organizations' => $organization,
+                    'organizations' => $oname_block,
                     'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
                                     <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
                                 </button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile</a>'
