@@ -1988,6 +1988,7 @@ jQuery(document).ready(function ($) {
       { data: "id" },
       { data: "name" },
       { data: "email" },
+      { data: "organizations" },
       { data: "action" }
     ],
     columnDefs: [
