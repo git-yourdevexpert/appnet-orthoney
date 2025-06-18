@@ -3055,7 +3055,7 @@ class OAM_Ajax{
             $org_clauses = [];
             $values = [];
 
-            $dsr_token = isset($_REQUEST['jar_dsr_affiliate_token'] && $_REQUEST['jar_dsr_affiliate_token'] != '') ? sanitize_text_field($_REQUEST['jar_dsr_affiliate_token']) : null;
+            $dsr_token = (isset($_REQUEST['jar_dsr_affiliate_token']) && $_REQUEST['jar_dsr_affiliate_token'] != '') ? sanitize_text_field($_REQUEST['jar_dsr_affiliate_token']) : null;
             if ($dsr_token) {
                 $search_terms = [];
                 $search_terms[] = $dsr_token;
