@@ -230,18 +230,24 @@ class OAM_Helper{
 
        if (!empty($_REQUEST['search_by_organization'])) {
             $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
-            $search_terms = array_filter(array_map('trim', explode(',', $search_by_organization)));
 
-            if (!empty($search_terms)) {
-                $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
+            if (!empty($search_by_organization)) {
+                $search_terms_raw = explode(',', $search_by_organization);
+                if (is_array($search_terms_raw)) {
+                    $search_terms = array_filter(array_map('trim', $search_terms_raw));
 
-                $where_clauses[] = "(
-                    CAST(order_id AS CHAR) IN ($placeholders)
-                    OR affiliate_token IN ($placeholders)
-                )";
+                    if (!empty($search_terms)) {
+                        $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
 
-                // Use the same search terms for both order_id and affiliate_token
-                $params = array_merge($search_terms, $search_terms);
+                        $where_clauses[] = "(
+                            CAST(order_id AS CHAR) IN ($placeholders)
+                            OR affiliate_token IN ($placeholders)
+                        )";
+
+                        // ✅ Merge safely with existing $params
+                        $params = array_merge($params, $search_terms, $search_terms);
+                    }
+                }
             }
         }
 
