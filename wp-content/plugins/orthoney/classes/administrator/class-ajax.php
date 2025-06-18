@@ -90,32 +90,44 @@ public function orthoney_admin_get_customers_data_handler() {
 
                 // Get WooCommerce customer object
                 $customer = new WC_Customer($user->ID);
-                $affiliate_id = "";
-                if(get_user_meta($user->ID, 'associated_affiliate_id', true)){
-                    $affiliate_id = get_user_meta($user->ID, 'associated_affiliate_id', true);
+               $affiliate_id = "";
+$oname_block = '';
 
-                  $affiliate_data = $this->get_affiliate_details_by_id($affiliate_id);
+if (get_user_meta($user->ID, 'associated_affiliate_id', true)) {
+    $affiliate_id = get_user_meta($user->ID, 'associated_affiliate_id', true);
+    $affiliate_data = $this->get_affiliate_details_by_id($affiliate_id);
 
-                  $oname_block = '';
-                    if (!empty($affiliate_data['first_name']) || !empty($affiliate_data['last_name'])) {
-                        $oname_block = '<strong>' .esc_html(trim($affiliate_data['first_name'] . ' ' . $affiliate_data['last_name'])).'</strong></br>';
-                    }
+    if ($affiliate_data) {
+        // Build name
+        if (!empty($affiliate_data['first_name']) || !empty($affiliate_data['last_name'])) {
+            $oname_block .= '<strong>' . esc_html(trim($affiliate_data['first_name'] . ' ' . $affiliate_data['last_name'])) . '</strong><br>';
+        }
 
-                    // Build organizations block (full address)
-                    $address_parts = array_filter([
-                        $affiliate_data['email'] ?? '',
-                        $affiliate_data['address'] ?? '',
-                        $affiliate_data['city'] ?? '',
-                        $affiliate_data['state'] ?? '',
-                        $affiliate_data['postcode'] ?? '',
-                        $affiliate_data['country'] ?? '',
-                        $affiliate_data['phone'] ?? '',
+        // Optional email
+        if (!empty($affiliate_data['email'])) {
+            $oname_block .= esc_html($affiliate_data['email']) . '<br>';
+        }
 
-                    ]);
+        // Optional phone
+        if (!empty($affiliate_data['phone'])) {
+            $oname_block .= 'Phone: ' . esc_html($affiliate_data['phone']) . '<br>';
+        }
 
-                    $organization = !empty($address_parts) ? esc_html(implode(', ', $address_parts)) : '';
+        // Optional address
+        $address_parts = array_filter([
+            $affiliate_data['address'] ?? '',
+            $affiliate_data['city'] ?? '',
+            $affiliate_data['state'] ?? '',
+            $affiliate_data['postcode'] ?? '',
+            $affiliate_data['country'] ?? '',
+        ]);
 
-                }
+        if (!empty($address_parts)) {
+            $oname_block .= 'Address: ' . esc_html(implode(', ', $address_parts)) . '<br>';
+        }
+    }
+}
+
 
 
                 
