@@ -60,9 +60,38 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         foreach ($results as $user) {
             $nonce = wp_create_nonce('switch_to_user_' . $user->ID);
             $name  = trim($user->first_name . ' ' . $user->last_name);
+
+             $full_name = trim(get_user_meta($user->ID, 'first_name', true) . ' ' . get_user_meta($user->ID, 'last_name', true));
+                $billing_address = array_filter([
+                    $customer->get_billing_address_1(),
+                    $customer->get_billing_city(),
+                    $customer->get_billing_state(),
+                    $customer->get_billing_postcode(),
+                    $customer->get_billing_country()
+                ]);
+                $full_address = implode(', ', $billing_address);
+
+                $name_block = '';
+                if (!empty($full_name)) {
+                    $name_block .= '<strong>' . esc_html($full_name) . '</strong><br>';
+                }
+
+                $name_block .= esc_html($user->user_email) . '<br>';
+
+                $billing_phone = $customer->get_billing_phone();
+                if (!empty($billing_phone)) {
+                    $name_block .= esc_html($billing_phone) . '<br>';
+                }
+
+                if (!empty($full_address)) {
+                    $name_block .= esc_html($full_address) . '<br>';
+                }
+
+
+
 if($user->user_email != ''){
             $data[] = [
-                'name'   => esc_html($name ?: $user->display_name),
+                'name'   => $name_block,
                 'email'  => esc_html($user->user_email),
                 'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '" data-nonce="' . esc_attr($nonce) . '">
                                 <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png"> Login as Customer
