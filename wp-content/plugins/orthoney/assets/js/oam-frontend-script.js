@@ -2900,12 +2900,13 @@ jQuery(function ($) {
           d.selected_max_qty = qtySlider[1] || 1000;
           d.search_by_recipient = $(".search-recipient-name").val();
           
-          if(tabletype == 'organization-dashboard'){
+          if(tabletype == 'organization-dashboard' || tabletype == 'sales-representative-dashboard'){
              const affiliate_token = $("#customer-orders-table").data("affiliate_token");
             d.search_by_organization = affiliate_token;
           }else{
             d.search_by_organization = $("input.search-by-organization").val();
           }
+          d.dsr_affiliate_token = $("select#dsr_affiliate_token").val();
       
         },
         beforeSend: function () {
@@ -2977,6 +2978,12 @@ jQuery(function ($) {
              Search Recipient Name:
              <input type="text" class="search-recipient-name" placeholder="Search Recipient Name" >
              </label>
+             <label class="affiliate-token-filter">
+             Select organization
+              <select id="dsr_affiliate_token" class="form-control">
+                <option value="">Select organization</option>
+              </select>
+            </label>
               <label class="customer-select-filter search-by-organization">
              Search By Organization Code:
              <input type="text" class="search-by-organization" placeholder="Search By Organization Code" >
@@ -3117,6 +3124,20 @@ jQuery(function ($) {
             },
             cache: true
           }
+        });
+        const tokenString = $("#customer-orders-table").data("affiliate_token"); // e.g. "A1,BSL,XYZ"
+
+        // Step 2: Split and create option elements
+        const tokens = tokenString ? tokenString.split(",").map(t => t.trim()) : [];
+
+        tokens.forEach(token => {
+          const option = new Option(token, token, false, false); // text, value, selected, defaultSelected
+          $("#dsr_affiliate_token").append(option);
+        });
+
+         $("#dsr_affiliate_token").select2({
+          placeholder: "Select organization...",
+          allowClear: false
         });
 
         $("#select-affiliate").select2({
@@ -3324,6 +3345,7 @@ jQuery(function ($) {
       }
     });
   }
+
   function order_filter_sub_order() {
     const tabletype = $("#customer-orders-table").data("tabletype");
     var table = $("#customer-jar-orders-table").DataTable({
@@ -3352,12 +3374,13 @@ jQuery(function ($) {
           d.selected_max_qty = qtySlider[1];
           d.tabletype = tabletype;
           d.selected_customer_id = $("#jar-select-customer").val();
-          if(tabletype == 'organization-dashboard'){
+          if(tabletype == 'organization-dashboard' || tabletype == 'sales-representative-dashboard'){
             const affiliate_token = $("#customer-jar-orders-table").data("affiliate_token");
             d.search_by_organization = affiliate_token;
           }else{
             d.search_by_organization = $("input.jar-search-by-organization").val();
           }
+          d.jar_dsr_affiliate_token = $("select#jar_dsr_affiliate_token").val();
           
         },
         beforeSend: function () {
@@ -3401,6 +3424,13 @@ jQuery(function ($) {
                     <option value="">All Years</option>
                     </select>
                 </label>
+
+                 <label class="affiliate-token-filter">
+             Select organization
+              <select id="jar_dsr_affiliate_token" class="form-control">
+                <option value="">Select organization</option>
+              </select>
+            </label>
                 <label class="customer-select-filter jar-search-by-organization">
                       Search By Organization Code:
                     <input type="text" class="jar-search-by-organization" placeholder="Search By Organization Code" >
@@ -3470,6 +3500,22 @@ jQuery(function ($) {
             cache: true
           }
         });
+
+        const tokenString = $("#customer-jar-orders-table").data("affiliate_token"); // e.g. "A1,BSL,XYZ"
+
+        // Step 2: Split and create option elements
+        const tokens = tokenString ? tokenString.split(",").map(t => t.trim()) : [];
+
+        tokens.forEach(token => {
+          const option = new Option(token, token, false, false); // text, value, selected, defaultSelected
+          $("#jar_dsr_affiliate_token").append(option);
+        });
+
+         $("#jar_dsr_affiliate_token").select2({
+          placeholder: "Select organization...",
+          allowClear: false
+        });
+
 
         // $(document).on('change', '#jar-select-customer, #jars-select-year', function () {
         //     table.ajax.reload();

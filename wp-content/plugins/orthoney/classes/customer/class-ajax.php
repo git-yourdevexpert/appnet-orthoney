@@ -2898,18 +2898,27 @@ class OAM_Ajax{
 
         if (!empty($_REQUEST['search_by_organization'])) {
             $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
+            
             $search_terms = array_filter(array_map('trim', explode(',', $search_by_organization)));
 
-            if (!empty($search_terms)) {
-                // Create %s placeholders for each value
-                $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
-
-                // Add to WHERE clause using IN
-                $where[] = "(CAST(orders.id AS CHAR) IN ($placeholders) OR rel.affiliate_code IN ($placeholders))";
-
-                // Use same $search_terms for both ID and affiliate_code
-                $values = array_merge($search_terms, $search_terms);
+             $dsr_token = isset($_REQUEST['dsr_affiliate_token']) ? sanitize_text_field($_REQUEST['dsr_affiliate_token']) : null;
+            if ($dsr_token) {
+                $search_terms = [];
+                $search_terms[] = $dsr_token;
             }
+
+
+            if (!empty($search_terms)) {
+                $organization_clauses = [];
+                $count = 0;
+                foreach ($search_terms as $term) {
+                    $organization_clauses[] = "(CAST(orders.id AS CHAR) = %s OR rel.affiliate_code LIKE %s)";
+                    $values[] = $term;
+                    $values[] = '%' . $wpdb->esc_like($term) . '%';
+                }
+                $where[] = '(' . implode(' OR ', $organization_clauses) . ')';
+            }
+            
         }
 
         if (!empty($_REQUEST['search_by_recipient'])) {
@@ -2919,7 +2928,7 @@ class OAM_Ajax{
         }
 
          if (!empty($search)) {
-            if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard') {
+            if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard' || $tabletype == 'sales-representative-dashboard') {
                  $join .= " LEFT JOIN {$wpdb->users} AS u ON u.ID = orders.customer_id";
                  $where[] = "(orders.id = %d OR rec.order_id = %d OR rel.wc_order_id = %d OR u.display_name LIKE %s )";
           
@@ -2967,7 +2976,7 @@ class OAM_Ajax{
         }
 
 
-        if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard') {
+        if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard' || $tabletype == 'sales-representative-dashboard') {
             if (!empty($selected_customer_id) && is_numeric($selected_customer_id)) {
                 $where[] = "orders.customer_id = %d";
                 $values[] = (int) $selected_customer_id;
@@ -2977,13 +2986,18 @@ class OAM_Ajax{
             $values[] = $user_id;
         }
 
-        $sql = $wpdb->prepare(
+        if (!empty($_REQUEST['search_by_organization'])) {
+            $where[] = "(rel.affiliate_user_id != 0)";
+        }
+
+       $sql = $wpdb->prepare(
             "SELECT  COUNT( DISTINCT orders.id) FROM {$orders_table} AS orders
             $join
             WHERE " . implode(' AND ', $where),
             ...$values
         );
 
+        
         $total_orders = $wpdb->get_var($sql);
 
         wp_send_json([
@@ -3033,21 +3047,33 @@ class OAM_Ajax{
             }
         }
 
-       if (!empty($_REQUEST['search_by_organization'])) {
+        if (!empty($_REQUEST['search_by_organization'])) {
+
             $search_org = sanitize_text_field($_REQUEST['search_by_organization']);
             $search_terms = array_filter(array_map('trim', explode(',', $search_org)));
+           
+            $org_clauses = [];
+            $values = [];
 
-            if (!empty($search_terms)) {
-                // Prepare placeholders like %s, %s, %s...
-                $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
+            $dsr_token = isset($_REQUEST['jar_dsr_affiliate_token']) ? sanitize_text_field($_REQUEST['jar_dsr_affiliate_token']) : null;
+            if ($dsr_token) {
+                $search_terms = [];
+                $search_terms[] = $dsr_token;
+            }
 
-                // For exact match only
-                $where[] = "(CAST(order_id AS CHAR) IN ($placeholders) OR affiliate_token IN ($placeholders))";
+            foreach ($search_terms as $term) {
+                
+                $org_clauses[] = "(CAST(order_id AS CHAR) = %s OR affiliate_token LIKE %s)";
+                $values[] = $term;
+                $values[] = '%' . $wpdb->esc_like($term) . '%';
+            }
 
-                // Double the values: once for order_id, once for affiliate_token
-                $values = array_merge($search_terms, $search_terms);
+            if (!empty($org_clauses)) {
+                $where[] = '(' . implode(' OR ', $org_clauses) . ')';
             }
         }
+
+
         
         if (!empty($search_val)) {
             $where[] = "(order_id LIKE %s OR full_name LIKE %s)";
@@ -3056,7 +3082,7 @@ class OAM_Ajax{
             $values[] = $search_param;
         }
 
-        if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard') {
+        if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard' || $tabletype == 'sales-representative-dashboard') {
             if ($selected_customer_id) {
                 $where[] = "user_id = %d";
                 $values[] = $selected_customer_id;
@@ -3065,6 +3091,10 @@ class OAM_Ajax{
         } else {
             $where[] = "user_id = %d";
             $values[] = get_current_user_id();
+        }
+
+        if (!empty($_REQUEST['search_by_organization'])) {
+           $where[] = "(affiliate_user_id != 0)";
         }
         
         $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';

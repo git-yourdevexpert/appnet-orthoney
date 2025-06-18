@@ -229,27 +229,34 @@ class OAM_Helper{
         }
 
        if (!empty($_REQUEST['search_by_organization'])) {
-            $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
+        $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
 
-            if (!empty($search_by_organization)) {
-                $search_terms_raw = explode(',', $search_by_organization);
-                if (is_array($search_terms_raw)) {
-                    $search_terms = array_filter(array_map('trim', $search_terms_raw));
+        if (!empty($search_by_organization)) {
+            $search_terms_raw = explode(',', $search_by_organization);
 
-                    if (!empty($search_terms)) {
-                        $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
+            $dsr_token = isset($_REQUEST['jar_dsr_affiliate_token']) ? sanitize_text_field($_REQUEST['jar_dsr_affiliate_token']) : null;
+            if ($dsr_token) {
+                $search_terms_raw = [];
+                $search_terms_raw[] = $dsr_token;
+            }
 
-                        $where_clauses[] = "(
-                            CAST(order_id AS CHAR) IN ($placeholders)
-                            OR affiliate_token IN ($placeholders)
-                        )";
+            if (is_array($search_terms_raw)) {
+                $search_terms = array_filter(array_map('trim', $search_terms_raw));
 
-                        // ✅ Merge safely with existing $params
-                        $params = array_merge($params, $search_terms, $search_terms);
-                    }
+                if (!empty($search_terms)) {
+                    $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
+
+                    $where_clauses[] = "(
+                        affiliate_token IN ($placeholders)
+                    )";
+
+                    // ✅ Merge safely with existing $params
+                    $params = array_merge($params, $search_terms);
                 }
             }
         }
+        
+    }
 
         if (!empty($search_val)) {
             $where_clauses[] = "(recipient_order_id LIKE %s OR full_name LIKE %s)";
@@ -258,7 +265,7 @@ class OAM_Helper{
             $params[] = $search_param;
         }
 
-        if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard') {
+        if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard' || $tabletype == 'sales-representative-dashboard') {
             if ($selected_customer_id) {
                 $where_clauses[] = "user_id = %d";
                 $params[] = $selected_customer_id;
@@ -266,6 +273,10 @@ class OAM_Helper{
         } else {
             $where_clauses[] = "user_id = %d";
             $params[] = get_current_user_id();
+        }
+
+        if (!empty($_REQUEST['search_by_organization'])) {
+             $where_clauses[] = "(affiliate_user_id != 0)";
         }
 
         $where_sql = '';
@@ -276,6 +287,8 @@ class OAM_Helper{
         // Add pagination
         $params[] = $limit;
         $params[] = $page;
+
+
 
        $sql = $wpdb->prepare(
             "
@@ -394,21 +407,29 @@ class OAM_Helper{
         $join .= "INNER JOIN $order_relation AS rel ON rel.wc_order_id = orders.id";
         $join .= " LEFT JOIN $recipient_ordertable AS rec ON rec.order_id = rel.order_id";
 
-       if (!empty($_REQUEST['search_by_organization'])) {
+        
+        if (!empty($_REQUEST['search_by_organization'])) {
             $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
             $search_terms = array_filter(array_map('trim', explode(',', $search_by_organization)));
 
+            // Add dsr_affiliate_token if provided and not already in array
+            $dsr_token = isset($_REQUEST['dsr_affiliate_token']) ? sanitize_text_field($_REQUEST['dsr_affiliate_token']) : null;
+            if ($dsr_token) {
+                $search_terms = [];
+                $search_terms[] = $dsr_token;
+            }
+
             if (!empty($search_terms)) {
-                $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
+                // We split the conditions instead of duplicating placeholders in one clause
+                $id_placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
+                $code_placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
 
-                $where_conditions[] = "(
-                    CAST(orders.id AS CHAR) IN ($placeholders) 
-                    OR rel.affiliate_code IN ($placeholders)
-                )";
+                $where_conditions[] = "(CAST(orders.id AS CHAR) IN ($id_placeholders) OR rel.affiliate_code IN ($code_placeholders))";
 
-                // Use same values for both IN clauses
+                // Append values for both placeholders
                 $where_values = array_merge($search_terms, $search_terms);
             }
+           
         }
 
         if (!empty($_REQUEST['search_by_recipient'])) {
@@ -418,7 +439,7 @@ class OAM_Helper{
         }
 
         if (!empty($search_term)) {
-           if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard') {
+           if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard' || $tabletype == 'sales-representative-dashboard') {
                 $join .= " LEFT JOIN {$wpdb->users} AS u ON u.ID = orders.customer_id";
                 $where_conditions[] = "(orders.id = %d OR rec.order_id = %d OR rel.wc_order_id = %d OR u.display_name LIKE %s )";
                 $where_values[] = (int) $search;
@@ -477,7 +498,7 @@ class OAM_Helper{
 
          }
 
-        if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard') {
+        if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard' || $tabletype == 'sales-representative-dashboard' ) {
             if (!empty($_REQUEST['selected_customer_id']) && is_numeric($_REQUEST['selected_customer_id'])) {
                 $where_conditions[] = "orders.customer_id = %d";
                 $where_values[] = intval($_REQUEST['selected_customer_id']);
@@ -489,6 +510,10 @@ class OAM_Helper{
 
         $where_values[] = $limit;
         $where_values[] = $offset;
+
+        if (!empty($_REQUEST['search_by_organization'])) {
+            $where_conditions[] = "(rel.affiliate_user_id != 0 )";
+        }
 
          $sql = $wpdb->prepare(
             "SELECT orders.*, orders.customer_id, rel.order_id as rel_oid 
