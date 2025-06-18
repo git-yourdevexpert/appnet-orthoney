@@ -496,8 +496,8 @@ class OAM_ADMINISTRATOR_AJAX {
                 ];
 
                 // Combine with <br> instead of comma
-               // $organization = implode('<br>', array_filter($organizationdata));
-                  $organizationdata = array_filter($organizationdata);
+                 $organization = implode('<br>', array_filter($organizationdata));
+                $organizationdata = array_filter($organizationdata);
 
             $org_admin_user = '';
             if ($associated_affiliate_id) {
