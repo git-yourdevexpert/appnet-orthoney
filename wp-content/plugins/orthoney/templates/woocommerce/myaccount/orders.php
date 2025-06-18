@@ -147,7 +147,7 @@ if ($first_segment == 'sales-representative-dashboard') {
         }
 
         // Merge user IDs and affiliate tokens if needed (or use only one)
-        $affiliate_token = $tokens;
+        $affiliate_token = implode(',', $tokens);
 
     } else {
         // Case: Assign all enabled and not banned organizations for this user
