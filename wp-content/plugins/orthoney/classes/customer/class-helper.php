@@ -470,7 +470,7 @@ class OAM_Helper{
         if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] !== "all") {
             $where_conditions[] = "orders.status = %s";
             $where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
-        }
+        } 
 
         if (
             isset($_REQUEST['selected_min_qty'], $_REQUEST['selected_max_qty']) &&
