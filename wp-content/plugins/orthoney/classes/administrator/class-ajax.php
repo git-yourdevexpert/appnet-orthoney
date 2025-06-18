@@ -67,30 +67,34 @@ class OAM_ADMINISTRATOR_AJAX {
 
                         $token = $affiliate_data->token ?? '';
 
-                        $first_name  = get_user_meta($affiliate_id, 'billing_first_name', true);
-                        $last_name   = get_user_meta($affiliate_id, 'billing_last_name', true);
+                        $first_name  = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
+                        //$last_name   = get_user_meta($affiliate_id, 'billing_last_name', true);
 
                         $associated_id = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
                         if ($associated_id) {
-                            if (!empty($first_name) || !empty($last_name)) {
-                                $oname_block .= '<strong>' . esc_html(trim("{$first_name} {$last_name}")) . '</strong><br>';
-                            }
-
+                            
                             if (!empty($token)) {
-                                $oname_block .= esc_html($token) . '<br>';
+                                $oname_block .= '<strong>' .esc_html($token) . '</strong> .<br>';
                             }
                            
-                                $oname_block .=  get_user_meta($affiliate_id, 'billing_email', true) . '<br>';
-                       
 
-                                $oname_block .=  get_user_meta($affiliate_id, 'billing_phone', true) . '<br>';
+                            if (!empty($first_name) || !empty($last_name)) {
+                                $oname_block .=  esc_html(trim("{$first_name}")) . '<br>';
+                            }
+
+                                $afuser = get_userdata($affiliate_id);
+                                if ($afuser && !empty($afuser->user_email)) {
+                                    $oname_block .= esc_html($afuser->user_email) . '<br>';
+                                }                       
+
+                                $oname_block .=  get_user_meta($affiliate_id, '_yith_wcaf_phone_number', true) . '<br>';
                         
                             $address_parts = array_filter([
-                                get_user_meta($affiliate_id, 'billing_address_1', true),
-                                get_user_meta($affiliate_id, 'billing_city', true),
-                                get_user_meta($affiliate_id, 'billing_state', true),
-                                get_user_meta($affiliate_id, 'billing_postcode', true),
-                                get_user_meta($affiliate_id, 'billing_country', true),
+                                get_user_meta($affiliate_id, '_yith_wcaf_address', true),
+                                get_user_meta($affiliate_id, '_yith_wcaf_city', true),
+                                get_user_meta($affiliate_id, '_yith_wcaf_state', true),
+                                get_user_meta($affiliate_id, '_yith_wcaf_zipcode', true),
+                               // get_user_meta($affiliate_id, 'billing_country', true),
                             ]);
 
                             if (!empty($address_parts)) {
