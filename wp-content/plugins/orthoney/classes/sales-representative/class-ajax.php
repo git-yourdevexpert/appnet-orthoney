@@ -356,6 +356,36 @@ if($user->user_email != ''){
                 esc_html($row->state),
             ];
             $organizationdata = array_filter($organizationdata);
+
+            $organization_phone = get_user_meta($user_id, '_yith_wcaf_phone_number', true);
+             $user_obj = get_userdata($user_id);
+
+            $oemail = $user_obj ? $user_obj->user_email : '';
+
+             $organizationdata = [];
+
+            if (!empty($row->organization_name)) {
+                $organizationdata[] = '<strong>' . esc_html($row->organization_name) . '</strong>';
+            }
+
+            $city_state = trim(esc_html($row->city) . (empty($row->city) || empty($row->state) ? '' : ', ') . esc_html($row->state));
+            if (!empty($city_state)) {
+                $organizationdata[] = $city_state;
+            }
+
+            if (!empty($oemail)) {
+                $organizationdata[] = esc_html($oemail);
+            }
+
+            if (!empty($organization_phone)) {
+                $organizationdata[] = esc_html($organization_phone);
+            }
+
+            $organization = implode('<br>', $organizationdata);
+
+
+                // Remove empty values and join with <br>
+                $organization = implode('<br>', array_filter($organizationdata));
             $nonce = wp_create_nonce('switch_to_user_' . $row->user_id);
 
             //  $org_admin_user = '';
@@ -403,7 +433,7 @@ if($user->user_email != ''){
             $data[] = [
                 'code' => esc_html($row->token ?? ''),
                 'organization_admin' => $org_admin_user ?? '',
-                'organization' => esc_html(implode(', ', $organizationdata)),
+                'organization' => $organization,
                 'new_organization' => $new_organization_block,
                 'status' => esc_html($status),
                 'price' => wc_price($show_price),

@@ -338,7 +338,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $state = $state ?: '';
 
             $organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
-                        $organization_phone = get_user_meta($user_id, '_yith_wcaf_phone_number', true);
+            $organization_phone = get_user_meta($user_id, '_yith_wcaf_phone_number', true);
 
             
 
