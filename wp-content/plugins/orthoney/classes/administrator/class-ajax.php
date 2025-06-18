@@ -539,12 +539,19 @@ class OAM_ADMINISTRATOR_AJAX {
                     }
                 }
 
+                $new_organization_block = implode('<br>', array_filter([
+                    esc_html($new_organization),
+                    esc_html($status),
+                    esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
+                ]));
+
+
                 $data[] = [
                     'code'         => esc_html($meta['code']),
                     'organization' => $organizationdata,
                     'csr_name'     =>esc_html(implode(', ', $userid_keys)),
                     'organization_admin'        => $org_admin_user,
-                    'new_organization' => esc_html($new_organization),
+                    'new_organization' => $new_organization_block,
                     'status'       => esc_html($status),
                     'season_status' => esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
                     'price' => wc_price($show_price),
