@@ -228,14 +228,21 @@ class OAM_Helper{
             }
         }
 
-        if (!empty($_REQUEST['search_by_organization'])) {
+       if (!empty($_REQUEST['search_by_organization'])) {
             $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
-            $where_clauses[] = "(
-                CAST(order_id AS CHAR) = %s
-                OR affiliate_token LIKE %s
-            )";
-            $params[] = $search_by_organization;
-            $params[] = '%' . $wpdb->esc_like($search_by_organization) . '%';
+            $search_terms = array_filter(array_map('trim', explode(',', $search_by_organization)));
+
+            if (!empty($search_terms)) {
+                $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
+
+                $where_clauses[] = "(
+                    CAST(order_id AS CHAR) IN ($placeholders)
+                    OR affiliate_token IN ($placeholders)
+                )";
+
+                // Use the same search terms for both order_id and affiliate_token
+                $params = array_merge($search_terms, $search_terms);
+            }
         }
 
         if (!empty($search_val)) {
@@ -381,14 +388,21 @@ class OAM_Helper{
         $join .= "INNER JOIN $order_relation AS rel ON rel.wc_order_id = orders.id";
         $join .= " LEFT JOIN $recipient_ordertable AS rec ON rec.order_id = rel.order_id";
 
-        if (!empty($_REQUEST['search_by_organization'])) {
-            $where_conditions[] = "(
-                CAST(orders.id AS CHAR) = %s 
-                OR rel.affiliate_code LIKE %s
-            )";
+       if (!empty($_REQUEST['search_by_organization'])) {
             $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
-            $where_values[] = $search_by_organization;
-            $where_values[] = '%' . $wpdb->esc_like($search_by_organization) . '%';
+            $search_terms = array_filter(array_map('trim', explode(',', $search_by_organization)));
+
+            if (!empty($search_terms)) {
+                $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
+
+                $where_conditions[] = "(
+                    CAST(orders.id AS CHAR) IN ($placeholders) 
+                    OR rel.affiliate_code IN ($placeholders)
+                )";
+
+                // Use same values for both IN clauses
+                $where_values = array_merge($search_terms, $search_terms);
+            }
         }
 
         if (!empty($_REQUEST['search_by_recipient'])) {

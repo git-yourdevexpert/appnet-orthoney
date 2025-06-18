@@ -2898,9 +2898,18 @@ class OAM_Ajax{
 
         if (!empty($_REQUEST['search_by_organization'])) {
             $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
-            $where[] = "(CAST(orders.id AS CHAR) = %s OR rel.affiliate_code LIKE %s)";
-            $values[] = $search_by_organization;
-            $values[] = '%' . $wpdb->esc_like($search_by_organization) . '%';
+            $search_terms = array_filter(array_map('trim', explode(',', $search_by_organization)));
+
+            if (!empty($search_terms)) {
+                // Create %s placeholders for each value
+                $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
+
+                // Add to WHERE clause using IN
+                $where[] = "(CAST(orders.id AS CHAR) IN ($placeholders) OR rel.affiliate_code IN ($placeholders))";
+
+                // Use same $search_terms for both ID and affiliate_code
+                $values = array_merge($search_terms, $search_terms);
+            }
         }
 
         if (!empty($_REQUEST['search_by_recipient'])) {
@@ -3024,13 +3033,21 @@ class OAM_Ajax{
             }
         }
 
-        if (!empty($_REQUEST['search_by_organization'])) {
+       if (!empty($_REQUEST['search_by_organization'])) {
             $search_org = sanitize_text_field($_REQUEST['search_by_organization']);
-            $where[] = "(CAST(order_id AS CHAR) = %s OR affiliate_token LIKE %s)";
-            $values[] = $search_org;
-            $values[] = '%' . $wpdb->esc_like($search_org) . '%';
-        }
+            $search_terms = array_filter(array_map('trim', explode(',', $search_org)));
 
+            if (!empty($search_terms)) {
+                // Prepare placeholders like %s, %s, %s...
+                $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
+
+                // For exact match only
+                $where[] = "(CAST(order_id AS CHAR) IN ($placeholders) OR affiliate_token IN ($placeholders))";
+
+                // Double the values: once for order_id, once for affiliate_token
+                $values = array_merge($search_terms, $search_terms);
+            }
+        }
         
         if (!empty($search_val)) {
             $where[] = "(order_id LIKE %s OR full_name LIKE %s)";
