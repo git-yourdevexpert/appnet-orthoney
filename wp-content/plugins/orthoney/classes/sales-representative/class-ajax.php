@@ -62,6 +62,8 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
             $name  = trim($user->first_name . ' ' . $user->last_name);
 
              $full_name = trim(get_user_meta($user->ID, 'first_name', true) . ' ' . get_user_meta($user->ID, 'last_name', true));
+             $customer = new WC_Customer($user->ID);
+
                 $billing_address = array_filter([
                     $customer->get_billing_address_1(),
                     $customer->get_billing_city(),
