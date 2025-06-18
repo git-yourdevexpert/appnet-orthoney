@@ -60,7 +60,7 @@ if ($first_segment == 'dashboard'){
 
 $affiliate_id = 0;
 $affiliate_token = '';
-if ($first_segment == 'organization-dashboard'){
+if ($first_segment == 'administrator-dashboard'){
     ?>
      <style>
      .affiliate-token-filter{display:none}
