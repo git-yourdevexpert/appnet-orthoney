@@ -96,6 +96,23 @@ public function orthoney_admin_get_customers_data_handler() {
                     $affiliate_id = get_user_meta($user->ID, 'associated_affiliate_id', true);
 
                   $affiliate_data = $this->get_affiliate_details_by_id($affiliate_id);
+
+                  $oname_block = '';
+                    if (!empty($affiliate_data['first_name']) || !empty($affiliate_data['last_name'])) {
+                        $oname_block = esc_html(trim($affiliate_data['first_name'] . ' ' . $affiliate_data['last_name']));
+                    }
+
+                    // Build organizations block (full address)
+                    $address_parts = array_filter([
+                        $affiliate_data['address'] ?? '',
+                        $affiliate_data['city'] ?? '',
+                        $affiliate_data['state'] ?? '',
+                        $affiliate_data['postcode'] ?? '',
+                        $affiliate_data['country'] ?? '',
+                    ]);
+
+                    $organization = !empty($address_parts) ? esc_html(implode(', ', $address_parts)) : '';
+
                 }
 
 
@@ -146,7 +163,7 @@ public function orthoney_admin_get_customers_data_handler() {
                     'id' => $user->ID,
                     'name' => $name_block,
                     'email' => esc_html($user->user_email),
-                    'organizations' => $affiliate_data['first_name'],
+                    'organizations' => $organization,
                     'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
                                     <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
                                 </button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile</a>'
