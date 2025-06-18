@@ -74,7 +74,7 @@ $dashboard_link_label = 'Return to Dashboard';
                         }
                         
                         echo '<tr>
-                                <td><div class="thead-data">ID</div>' . esc_html($request->id) . '</td>
+                                <td><div class="thead-data">ID</div>' . esc_html($request->customer_id) . '</td>
                                 <td><div class="thead-data">Customer Name</div>' . $customer_name . '</td>
                                 <td><div class="thead-data">Customer Email</div>' . $customer_email . '</td>
                                 <td><div class="thead-data">Status</div>' . esc_html($status_label) . '</td>';
