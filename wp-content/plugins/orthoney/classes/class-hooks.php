@@ -157,6 +157,7 @@ class OAM_Hooks {
                         'id' => 21, // Menu ID
                         'items' => [
                             'Dashboard' => SALES_REPRESENTATIVE_DASHBOARD_LINK,
+                            'Customers Orders' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'order-list/',
                             'Assigned Customers' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-customers/',
                             'Assigned Organizations' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-organizations/',
                             'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account/',
