@@ -33,52 +33,56 @@ class OAM_ADMINISTRATOR_AJAX {
         wp_send_json_success(['message' => 'Your account has been successfully activated.']);
     }
 
-     public function get_affiliate_details_by_id($affiliate_id) {
+    public function get_affiliate_details_by_id($affiliate_id) {
     global $wpdb;
 
     $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
 
-$affiliate = $wpdb->get_row($wpdb->prepare(
-    "SELECT user_id, token FROM {$affiliates_table} WHERE ID = %d", $affiliate_id
-), ARRAY_A);
+    $affiliates = $wpdb->get_results($wpdb->prepare(
+        "SELECT user_id, token FROM {$affiliates_table} WHERE ID = %d", $affiliate_id
+    ), ARRAY_A);
 
-if (!$affiliate) {
-    return null; // Affiliate not found
-}
+    if (empty($affiliates)) {
+        return null; // No affiliates found
+    }
 
-$user_id = $affiliate['user_id'];
-$token   = $affiliate['token'];
+    $results = [];
 
-// Step 2: Get user object
-$user = get_userdata($user_id);
-if (!$user) {
-    return null; // User not found
-}
+    foreach ($affiliates as $affiliate) {
+        $user_id = $affiliate['user_id'];
+        $token   = $affiliate['token'];
 
-    // Step 3: Get billing info (if WooCommerce is used)
-    $first_name  = get_user_meta($user_id, 'billing_first_name', true);
-    $last_name   = get_user_meta($user_id, 'billing_last_name', true);
-    $phone       = get_user_meta($user_id, 'billing_phone', true);
-    $address_1   = get_user_meta($user_id, 'billing_address_1', true);
-    $address_2   = get_user_meta($user_id, 'billing_address_2', true);
-    $city        = get_user_meta($user_id, 'billing_city', true);
-    $state       = get_user_meta($user_id, 'billing_state', true);
-    $postcode    = get_user_meta($user_id, 'billing_postcode', true);
-    $country     = get_user_meta($user_id, 'billing_country', true);
+        $user = get_userdata($user_id);
+        if (!$user) {
+            continue;
+        }
 
-    return [
-        'token' => $token,
-        'email'      => $user->user_email,
-        'first_name' => $first_name ?: $user->first_name,
-        'last_name'  => $last_name ?: $user->last_name,
-        'phone'      => $phone,
-        'address'    => trim("{$address_1} {$address_2}"),
-        'city'       => $city,
-        'state'      => $state,
-        'postcode'   => $postcode,
-        'country'    => $country,
-        
-    ];
+        // WooCommerce Billing Info
+        $first_name  = get_user_meta($user_id, 'billing_first_name', true);
+        $last_name   = get_user_meta($user_id, 'billing_last_name', true);
+        $phone       = get_user_meta($user_id, 'billing_phone', true);
+        $address_1   = get_user_meta($user_id, 'billing_address_1', true);
+        $address_2   = get_user_meta($user_id, 'billing_address_2', true);
+        $city        = get_user_meta($user_id, 'billing_city', true);
+        $state       = get_user_meta($user_id, 'billing_state', true);
+        $postcode    = get_user_meta($user_id, 'billing_postcode', true);
+        $country     = get_user_meta($user_id, 'billing_country', true);
+
+        $results[] = [
+            'token'      => $token,
+            'email'      => $user->user_email,
+            'first_name' => $first_name ?: $user->first_name,
+            'last_name'  => $last_name ?: $user->last_name,
+            'phone'      => $phone,
+            'address'    => trim("{$address_1} {$address_2}"),
+            'city'       => $city,
+            'state'      => $state,
+            'postcode'   => $postcode,
+            'country'    => $country,
+        ];
+    }
+
+    return !empty($results) ? $results : null;
 }
 
 
@@ -98,15 +102,18 @@ public function orthoney_admin_get_customers_data_handler() {
 $oname_block = '';
 if (get_user_meta($user->ID, 'associated_affiliate_id', true)) {
     $affiliate_id = get_user_meta($user->ID, 'associated_affiliate_id', true);
-    $affiliate_data = $this->get_affiliate_details_by_id($affiliate_id);
+$affiliate_data_list = $this->get_affiliate_details_by_id($affiliate_id);
 
-    if ($affiliate_data) {
+$oname_block = '';
+
+if (!empty($affiliate_data_list)) {
+    foreach ($affiliate_data_list as $affiliate_data) {
         // Build name
         if (!empty($affiliate_data['first_name']) || !empty($affiliate_data['last_name'])) {
             $oname_block .= '<strong>' . esc_html(trim($affiliate_data['first_name'] . ' ' . $affiliate_data['last_name'])) . '</strong><br>';
         }
 
-         // Optional email
+        // Optional token
         if (!empty($affiliate_data['token'])) {
             $oname_block .= esc_html($affiliate_data['token']) . '<br>';
         }
@@ -118,7 +125,7 @@ if (get_user_meta($user->ID, 'associated_affiliate_id', true)) {
 
         // Optional phone
         if (!empty($affiliate_data['phone'])) {
-            $oname_block .=  esc_html($affiliate_data['phone']) . '<br>';
+            $oname_block .= esc_html($affiliate_data['phone']) . '<br>';
         }
 
         // Optional address
@@ -133,7 +140,11 @@ if (get_user_meta($user->ID, 'associated_affiliate_id', true)) {
         if (!empty($address_parts)) {
             $oname_block .= esc_html(implode(', ', $address_parts)) . '<br>';
         }
+
+        $oname_block .= '<hr>'; // separator for multiple affiliates
     }
+}
+
 }
 
 
@@ -169,15 +180,17 @@ if (get_user_meta($user->ID, 'associated_affiliate_id', true)) {
                 if (!empty($full_name)) {
                     $name_block .= '<strong>' . esc_html($full_name) . '</strong><br>';
                 }
+                
                   if (!empty($user->user_email)) {
                     $name_block .= $user->user_email.'</br>';
+                }
+                   if (!empty($billing_phone)) {
+                    $name_block .= esc_html($billing_phone);
                 }
                 if (!empty($full_address)) {
                     $name_block .= esc_html($full_address) . '<br>';
                 }
-                if (!empty($billing_phone)) {
-                    $name_block .= esc_html($billing_phone);
-                }
+             
 
                 $admin_url = admin_url("user-edit.php?user_id={$user->ID}&wp_http_referer=%2Fwp-admin%2Fusers.php");
 
