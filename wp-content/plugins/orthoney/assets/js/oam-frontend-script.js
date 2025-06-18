@@ -1987,7 +1987,7 @@ jQuery(document).ready(function ($) {
     columns: [
       { data: "id" },
       { data: "name" },
-      { data: "email" },
+      // { data: "email" },
       { data: "organizations" },
       { data: "action" }
     ],
