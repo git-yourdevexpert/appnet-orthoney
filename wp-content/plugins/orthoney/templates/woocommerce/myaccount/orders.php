@@ -53,7 +53,8 @@ if ($first_segment == 'dashboard'){
      $dashboard_link_label = 'Return to Dashboard';
    ?>
    <style>
-     .customer-select-filter{display:none}
+     .customer-select-filter,
+     .affiliate-token-filter{display:none}
    </style>
    <?php 
 }
