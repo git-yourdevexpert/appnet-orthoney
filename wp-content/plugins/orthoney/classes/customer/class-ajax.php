@@ -2910,7 +2910,7 @@ class OAM_Ajax{
         }
 
          if (!empty($search)) {
-            if ($tabletype == 'administrator-dashboard') {
+            if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard') {
                  $join .= " LEFT JOIN {$wpdb->users} AS u ON u.ID = orders.customer_id";
                  $where[] = "(orders.id = %d OR rec.order_id = %d OR rel.wc_order_id = %d OR u.display_name LIKE %s )";
           
@@ -2958,7 +2958,7 @@ class OAM_Ajax{
         }
 
 
-        if ($tabletype == 'administrator-dashboard') {
+        if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard') {
             if (!empty($selected_customer_id) && is_numeric($selected_customer_id)) {
                 $where[] = "orders.customer_id = %d";
                 $values[] = (int) $selected_customer_id;
@@ -3039,7 +3039,7 @@ class OAM_Ajax{
             $values[] = $search_param;
         }
 
-        if ($tabletype == 'administrator-dashboard') {
+        if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard') {
             if ($selected_customer_id) {
                 $where[] = "user_id = %d";
                 $values[] = $selected_customer_id;
