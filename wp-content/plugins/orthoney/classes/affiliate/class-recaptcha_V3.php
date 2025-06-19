@@ -494,9 +494,4 @@ class YITH_Affiliate_Recaptcha_V3
     }
 }
 
-// Initialize the class only if YITH WooCommerce Affiliates is active
-if (class_exists('YITH_WCAF')) {
-    new YITH_Affiliate_Recaptcha_V3();
-} else {
-    error_log('YITH_Affiliate_Recaptcha_V3: YITH WooCommerce Affiliates plugin is not active');
-}
+new YITH_Affiliate_Recaptcha_V3();
