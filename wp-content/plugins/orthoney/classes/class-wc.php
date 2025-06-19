@@ -55,18 +55,18 @@ class OAM_WC_Customizer {
 
     public function add_phone_field_to_edit_account() {
     $user_id = get_current_user_id();
-    $user_phone = get_user_meta($user_id, 'billing_phone', true);
+    $user_phone = get_user_meta($user_id, 'user_registration_customer_phone_number', true);
     ?>
     <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
         <label for="account_phone"><?php _e('Phone number', 'woocommerce'); ?>&nbsp;<span class="required">*</span></label>
-        <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="account_phone" id="account_phone" value="<?php echo esc_attr($user_phone); ?>" />
+        <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="user_registration_customer_phone_number" id="user_registration_customer_phone_number" value="<?php echo esc_attr($user_phone); ?>" />
     </p>
     <?php
 }
 
     public function save_phone_field_from_edit_account($user_id) {
-        if (isset($_POST['account_phone'])) {
-            update_user_meta($user_id, 'billing_phone', sanitize_text_field($_POST['account_phone']));
+        if (isset($_POST['user_registration_customer_phone_number'])) {
+            update_user_meta($user_id, 'user_registration_customer_phone_number', sanitize_text_field($_POST['user_registration_customer_phone_number']));
         }
     }
 
