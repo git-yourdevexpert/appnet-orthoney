@@ -760,19 +760,19 @@ public function orthoney_admin_get_customers_data_handler() {
                         trim($semail),
                     ]);
 
-                   // $combined_info = implode('<br>', $parts);
-                    $userid_keys[] = $parts;
+                    $combined_info = implode('<br>', $parts);
+                    $userid_keys[] = $combined_info;
 
         
                 }
             }
 
-          $filtered_keys = array_filter($userid_keys);
+        $filtered_keys = array_filter($userid_keys);
         $last_index = count($filtered_keys) - 1;
 
         $csr_name = implode('', array_map(function ($val, $index) use ($filtered_keys, $last_index) {
             // Escape the content, but allow HTML formatting (br, hr)
-            $output = nl2br(esc_html($val)); // escape content safely, preserve line breaks if any
+            $output = nl2br($val); // escape content safely, preserve line breaks if any
             if ($index < $last_index) {
                 $output .= '<br><hr>';
             }
