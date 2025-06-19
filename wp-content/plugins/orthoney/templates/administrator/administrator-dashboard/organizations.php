@@ -18,8 +18,8 @@ $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 
        word-wrap: break-word;
     }
     #admin-organizations-results table.dataTable tbody th, table.dataTable tbody td:nth-child(1) {
-        width: 40px !important;
-        max-width: 40px !important;
+        width: 150px !important;
+        max-width: 150px !important;
         word-break: break-word;
     }
 
