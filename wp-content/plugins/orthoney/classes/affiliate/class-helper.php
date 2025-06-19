@@ -765,10 +765,17 @@ class OAM_AFFILIATE_Helper
             $yith_table = OAM_Helper::$yith_wcaf_affiliates_table;
             $affiliate_id = 0;
             $affiliate_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$yith_table} WHERE token = %s", $affiliate_token));
-
+            $product_price = 0;
             if ($affiliate_data) {
                 $affiliate_id = $affiliate_data->ID;
+                $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
+                $product_price = get_user_meta($affiliate_data->user_id, 'DJarPrice', true);
+                if($selling_min_price >= $product_price){
+                    $product_price = $selling_min_price;
+                }
             }
+
+            
 
             $activate_affiliate_account = get_user_meta($affiliate_id, 'activate_affiliate_account', true);
 
@@ -828,14 +835,25 @@ class OAM_AFFILIATE_Helper
                     $order_id = $commission->order_id;
                     $total_qty = (int) $commission->total_quantity;
                     $par_jar = $commission->line_subtotal / $total_qty;
-                    $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
 
-                    $minimum_price = 0;
-                    if ($par_jar >= $selling_min_price) {
-                        $price_field_prefix = OAM_AFFILIATE_Helper::is_user_created_this_year($affiliate_id) ? 'new' : 'ex';
-                        $minimum_price = get_field("{$price_field_prefix}_minimum_price_" . ($total_all_quantity < 99 ? '50' : '100'), 'option');
+                    $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
+                    if ($par_jar >= $selling_minimum_price) {
+                        if (OAM_AFFILIATE_Helper::is_user_created_this_year($affiliate_data->user_id)) {
+                            if ($total_all_quantity < 99) {
+                                $minimum_price = get_field('new_minimum_price_50', 'option');
+                            } else {
+                                $minimum_price = get_field('new_minimum_price_100', 'option');
+                            }
+                        } else {
+                            if ($total_all_quantity < 99) {
+                                $minimum_price = get_field('ex_minimum_price_50', 'option');
+                            } else {
+                                $minimum_price = get_field('ex_minimum_price_100', 'option');
+                            }
+                        }
                     }
 
+                    
                     $data = [
                         'total_exclude_quantity' => $total_exclude_quantity,
                         'total_all_quantity' => $total_quantity,
@@ -846,6 +864,7 @@ class OAM_AFFILIATE_Helper
                         'line_total' => $commission->line_total,
                         'line_subtotal' => $commission->line_subtotal,
                         'par_jar' => $par_jar,
+                        'product_price' => $product_price,
                         'minimum_price' => $minimum_price,
                         'is_voucher_used' => $coupon_codes,
                         'affiliate_account_status' => (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status'),
@@ -857,10 +876,11 @@ class OAM_AFFILIATE_Helper
             }
 
             $fundraising_orders = $total_orders = $wholesale_order = $unit_price = $unit_cost = 0;
-
+            $product_price = 0;
             foreach ($commission_array as $data) {
                 if ((int)$data['affiliate_account_status'] === 1) {
                     $unit_price = $data['par_jar'];
+                    $product_price = $data['product_price'];
                     $fundraising_qty = $data['total_quantity'];
                     $wholesale_qty = $data['wholesale_qty'];
                     $total_quantity =  $data['total_all_quantity'];
@@ -880,22 +900,19 @@ class OAM_AFFILIATE_Helper
             $fundraising_orders = $total_orders - $wholesale_order;
             $total_all_quantity = $wholesale_qty + $fundraising_qty;
 
-            $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
-            if ($unit_price >= $selling_min_price) {
-                $price_field_prefix = OAM_AFFILIATE_Helper::is_user_created_this_year(get_current_user_id()) ? 'ex' : 'new';
-                $unit_cost = get_field("{$price_field_prefix}_minimum_price_" . ($total_all_quantity < 99 ? '50' : '100'), 'option')?: 0;
-            }
+           
             return [
                 'total_order' => count($commission_array),
                 'selling_min_price' => $selling_min_price,
                 'total_quantity' => $total_quantity,
                 'wholesale_qty' => $wholesale_qty,
+                'product_price' => $product_price,
                 'fundraising_qty' => $fundraising_qty,
                 'fundraising_orders' => $fundraising_orders,
                 'total_all_quantity' => $total_all_quantity,
                 'unit_cost' => $unit_cost,
-                'unit_profit' => ($unit_cost != 0 ) ? $selling_min_price - $unit_cost : 0,
-                'total_commission' => ($selling_min_price - $unit_cost) * $fundraising_qty
+                'unit_profit' => ($unit_cost != 0 ) ? $product_price - $unit_cost : 0,
+                'total_commission' => ($product_price - $unit_cost) * $fundraising_qty
             ];
         }
 
