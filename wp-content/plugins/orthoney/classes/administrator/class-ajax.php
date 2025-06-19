@@ -44,16 +44,18 @@ class OAM_ADMINISTRATOR_AJAX {
     // Get total customer count
         $capabilities_key = $wpdb->prefix . 'capabilities';
 
-        $query_total = $wpdb->get_var($wpdb->prepare("
+
+        $total_query_count = $wpdb->prepare("
             SELECT COUNT(DISTINCT u.ID)
             FROM {$wpdb->users} u
             INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
             WHERE um.meta_key = %s AND um.meta_value LIKE %s
-        ", $capabilities_key, '%customer%'));
+        ", $capabilities_key, '%customer%');
+        $query_total = $wpdb->get_var($total_query_count);
 
             $total_customers = $wpdb->get_var($query_total);
 
-            
+
         $query_ids = $wpdb->get_col($wpdb->prepare("
             SELECT DISTINCT u.ID
             FROM {$wpdb->users} u
@@ -165,7 +167,8 @@ class OAM_ADMINISTRATOR_AJAX {
     wp_send_json([
         'data' => $data,
         'recordsTotal' => $total_customers,
-        'recordsFiltered' => $total_customers
+        'recordsFiltered' => $total_customers,
+        'sql'=>$total_query_count,
     ]);
 }
 
