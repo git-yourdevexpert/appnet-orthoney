@@ -50,14 +50,18 @@ public function orthoney_admin_get_customers_data_handler() {
     if (!empty($search)) {
         $search_like = '%' . $wpdb->esc_like($search) . '%';
 
-        $matching_ids = $wpdb->get_col($wpdb->prepare(
-            "SELECT DISTINCT u.ID
-             FROM {$wpdb->users} u
-             LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
-             LEFT JOIN {$wpdb->usermeta} m2 ON u.ID = m2.user_id AND m2.meta_key = 'last_name'
-             WHERE u.user_email LIKE %s OR m1.meta_value LIKE %s OR m2.meta_value LIKE %s",
-            $search_like, $search_like, $search_like
-        ));
+       $matching_ids = $wpdb->get_col($wpdb->prepare(
+                "SELECT DISTINCT u.ID
+                FROM {$wpdb->users} u
+                LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
+                LEFT JOIN {$wpdb->usermeta} m2 ON u.ID = m2.user_id AND m2.meta_key = 'last_name'
+                WHERE u.user_email LIKE %s 
+                    OR m1.meta_value LIKE %s 
+                    OR m2.meta_value LIKE %s 
+                    OR CONCAT_WS(' ', m1.meta_value, m2.meta_value) LIKE %s",
+                $search_like, $search_like, $search_like, $search_like
+            ));
+
 
         if (empty($matching_ids)) {
             wp_send_json(['data' => [], 'recordsTotal' => 0, 'recordsFiltered' => 0]);
