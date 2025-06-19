@@ -1969,13 +1969,15 @@ jQuery(document).ready(function ($) {
     ]
   });
 });
-
 jQuery(document).ready(function ($) {
   let currentRequest = null;
 
   const table = new DataTable("#admin-customer-table", {
     pageLength: 50,
-    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+    lengthMenu: [
+      [10, 25, 50, 100],
+      [10, 25, 50, 100]
+    ],
     ajax: {
       url: oam_ajax.ajax_url,
       type: "POST",
@@ -1987,12 +1989,15 @@ jQuery(document).ready(function ($) {
           currentRequest.abort();
         }
         currentRequest = jqXHR;
+        process_group_popup("Please wait while we process your request.");
       },
       complete: function () {
         currentRequest = null;
+        setTimeout(() => {
+          Swal.close();
+        }, 1300);
       }
     },
-    searchDelay: 500, // Optional: adds delay for input
     columns: [
       { data: "id" },
       { data: "name" },
@@ -2022,8 +2027,16 @@ jQuery(document).ready(function ($) {
     serverSide: true,
     searching: true
   });
-});
 
+  // Custom search trigger for 3+ characters
+  const searchBox = $('#admin-customer-table_filter input');
+  searchBox.unbind().on('keyup', function () {
+    const value = this.value;
+    if (value.length >= 3 || value.length === 0) {
+      table.search(value).draw();
+    }
+  });
+});
 
 jQuery(document).ready(function ($) {
   const table = new DataTable("#admin-sales-representative-table", {
