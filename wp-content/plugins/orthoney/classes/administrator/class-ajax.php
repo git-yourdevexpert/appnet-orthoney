@@ -51,6 +51,9 @@ class OAM_ADMINISTRATOR_AJAX {
             WHERE um.meta_key = %s AND um.meta_value LIKE %s
         ", $capabilities_key, '%customer%'));
 
+            $total_customers = $wpdb->get_var($query_total);
+
+            
         $query_ids = $wpdb->get_col($wpdb->prepare("
             SELECT DISTINCT u.ID
             FROM {$wpdb->users} u
