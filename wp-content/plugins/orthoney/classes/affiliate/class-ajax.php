@@ -40,7 +40,7 @@ class OAM_AFFILIATE_Ajax{
 
     }
 
-    
+
 
         public function search_customers_autosuggest_handler() {
             global $wpdb;
@@ -53,14 +53,14 @@ class OAM_AFFILIATE_Ajax{
 
             $like = '%' . $wpdb->esc_like($term) . '%';
 
-            $results = $wpdb->get_results(
-                $wpdb->prepare("
-                    SELECT ID, user_email, display_name 
-                    FROM {$wpdb->users}
-                    WHERE user_email LIKE %s OR display_name LIKE %s
-                    LIMIT 10
-                ", $like, $like)
-            );
+       $results = $wpdb->get_results(
+    $wpdb->prepare("
+        SELECT ID, user_email, display_name 
+        FROM {$wpdb->users}
+        WHERE user_email LIKE %s OR display_name LIKE %s
+    ", $like, $like)
+);
+
 
             wp_send_json($results);
         }
