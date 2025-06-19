@@ -42,20 +42,22 @@ class OAM_ADMINISTRATOR_AJAX {
     $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
 
     // Get total customer count
-    $query_total = "
-        SELECT COUNT(*) FROM {$wpdb->users} u
-        INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-        WHERE um.meta_key = 'wp_capabilities' AND um.meta_value LIKE '%customer%'
-    ";
-    $total_customers = $wpdb->get_var($query_total);
+        $capabilities_key = $wpdb->prefix . 'capabilities';
 
-    // Get paginated customers
-    $query_ids = $wpdb->get_col($wpdb->prepare("
-        SELECT DISTINCT u.ID FROM {$wpdb->users} u
-        INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-        WHERE um.meta_key = 'wp_capabilities' AND um.meta_value LIKE %s
-        LIMIT %d OFFSET %d
-    ", '%customer%', $length, $start));
+        $query_total = $wpdb->get_var($wpdb->prepare("
+            SELECT COUNT(DISTINCT u.ID)
+            FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+            WHERE um.meta_key = %s AND um.meta_value LIKE %s
+        ", $capabilities_key, '%customer%'));
+
+        $query_ids = $wpdb->get_col($wpdb->prepare("
+            SELECT DISTINCT u.ID
+            FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+            WHERE um.meta_key = %s AND um.meta_value LIKE %s
+            LIMIT %d OFFSET %d
+        ", $capabilities_key, '%customer%', $length, $start));
 
     $data = [];
 
