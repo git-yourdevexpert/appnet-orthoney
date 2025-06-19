@@ -760,7 +760,7 @@ public function orthoney_admin_get_customers_data_handler() {
                         trim($semail),
                     ]);
 
-                    $combined_info = implode('<br>', $parts);
+                   // $combined_info = implode('<br>', $parts);
                     $userid_keys[] = $combined_info;
 
         
