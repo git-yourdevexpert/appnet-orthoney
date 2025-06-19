@@ -90,7 +90,7 @@ $order_by = isset($column_map[$order_column_index]) ? $column_map[$order_column_
 
         $total_customers = count($matching_ids);
 
-        $sql = "SELECT DISTINCT u.ID
+        echo $sql = "SELECT DISTINCT u.ID
         FROM {$wpdb->users} u
         INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
         LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
