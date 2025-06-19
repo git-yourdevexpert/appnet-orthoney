@@ -33,8 +33,7 @@ class OAM_ADMINISTRATOR_AJAX {
         wp_send_json_success(['message' => 'Your account has been successfully activated.']);
     }
 
-        // DB changes on 18-6-2025 for the show details
-public function get_affiliates_list_ajax_handler() {
+        public function get_affiliates_list_ajax_handler() {
     global $wpdb;
 
     $start  = intval($_POST['start'] ?? 0);
@@ -45,31 +44,36 @@ public function get_affiliates_list_ajax_handler() {
     $user_ids = [];
 
     if (!empty($search)) {
-        $like = '%' . $wpdb->esc_like($search) . '%';
+        $terms = preg_split('/\s+/', $search);
+        $collected_ids = [];
 
-        // 1. Match by email
-        $email_ids = $wpdb->get_col($wpdb->prepare("
-            SELECT ID FROM {$wpdb->users} 
-            WHERE user_email LIKE %s
-        ", $like));
+        foreach ($terms as $term) {
+            $like = '%' . $wpdb->esc_like($term) . '%';
 
-        // 2. Match by first name
-        $first_name_ids = $wpdb->get_col($wpdb->prepare("
-            SELECT user_id FROM {$wpdb->usermeta} 
-            WHERE meta_key = 'first_name' AND meta_value LIKE %s
-        ", $like));
+            // Match email
+            $email_ids = $wpdb->get_col($wpdb->prepare("
+                SELECT ID FROM {$wpdb->users} WHERE user_email LIKE %s
+            ", $like));
 
-        // 3. Match by last name
-        $last_name_ids = $wpdb->get_col($wpdb->prepare("
-            SELECT user_id FROM {$wpdb->usermeta} 
-            WHERE meta_key = 'last_name' AND meta_value LIKE %s
-        ", $like));
+            // Match first name
+            $fname_ids = $wpdb->get_col($wpdb->prepare("
+                SELECT user_id FROM {$wpdb->usermeta} 
+                WHERE meta_key = 'first_name' AND meta_value LIKE %s
+            ", $like));
 
-        // Merge and deduplicate
-        $user_ids = array_unique(array_merge($email_ids, $first_name_ids, $last_name_ids));
+            // Match last name
+            $lname_ids = $wpdb->get_col($wpdb->prepare("
+                SELECT user_id FROM {$wpdb->usermeta} 
+                WHERE meta_key = 'last_name' AND meta_value LIKE %s
+            ", $like));
+
+            $collected_ids = array_merge($collected_ids, $email_ids, $fname_ids, $lname_ids);
+        }
+
+        $user_ids = array_unique(array_map('intval', $collected_ids));
     }
 
-    // If search applied and no matches, return empty
+    // If search applied but no matches
     if (!empty($search) && empty($user_ids)) {
         wp_send_json([
             'draw' => $draw,
@@ -80,25 +84,25 @@ public function get_affiliates_list_ajax_handler() {
         wp_die();
     }
 
-    // Apply search filter to affiliate user_ids
+    // Where clause if search applied
     $user_ids_condition = '';
     if (!empty($user_ids)) {
-        $user_ids = array_map('intval', $user_ids);
         $user_ids_condition = " AND a.user_id IN (" . implode(',', $user_ids) . ")";
     }
 
-    // Count totals
+    // Total records
     $records_total = $wpdb->get_var("
         SELECT COUNT(*) 
         FROM {$wpdb->prefix}yith_wcaf_affiliates a
         WHERE a.enabled = 1 AND a.banned = 0
     ");
 
+    // Filtered records
     $records_filtered = !empty($user_ids)
         ? count($user_ids)
-        : $records_total;
+        : intval($records_total);
 
-    // Final data fetch
+    // Main data query
     $sql = "
         SELECT 
             a.user_id,
@@ -106,17 +110,17 @@ public function get_affiliates_list_ajax_handler() {
             fn.meta_value AS first_name,
             ln.meta_value AS last_name
         FROM {$wpdb->prefix}yith_wcaf_affiliates a
-        JOIN {$wpdb->users} u ON u.ID = a.user_id
+        INNER JOIN {$wpdb->users} u ON u.ID = a.user_id
         LEFT JOIN {$wpdb->usermeta} fn ON fn.user_id = a.user_id AND fn.meta_key = 'first_name'
         LEFT JOIN {$wpdb->usermeta} ln ON ln.user_id = a.user_id AND ln.meta_key = 'last_name'
         WHERE a.enabled = 1 AND a.banned = 0
         $user_ids_condition
         LIMIT %d OFFSET %d
     ";
-    $results = $wpdb->get_results($wpdb->prepare($sql, $length, $start));
+    $sql = $wpdb->prepare($sql, $length, $start);
+    $results = $wpdb->get_results($sql);
 
     $data = [];
-
     foreach ($results as $row) {
         $data[] = [
             'email'      => esc_html($row->user_email),
@@ -133,7 +137,6 @@ public function get_affiliates_list_ajax_handler() {
     ]);
     wp_die();
 }
-
 
 
 
