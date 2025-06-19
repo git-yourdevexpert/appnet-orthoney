@@ -849,7 +849,7 @@ public function orthoney_admin_get_customers_data_handler() {
 $filtered_keys = array_filter($userid_keys);
 $last_index = count($filtered_keys) - 1;
 
-            $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($associated_affiliate_id) . '&tab=affiliates';
+            $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($user_id) . '&tab=affiliates';
 
 
                 $data[] = [
