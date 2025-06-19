@@ -2375,7 +2375,7 @@ document.addEventListener("DOMContentLoaded", function ($) {
 
   // Customers DataTable with ordering support
   new DataTable("#sales-representative-customer-table", {
-    pageLength: 50,
+    pageLength: 10,
     lengthMenu: [
       [10, 25, 50, 100],
       [10, 25, 50, 100]

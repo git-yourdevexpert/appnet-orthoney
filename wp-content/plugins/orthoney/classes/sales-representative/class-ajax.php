@@ -35,7 +35,9 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
 
     if ($select_customer === 'choose_customer' && !empty($choose_ids)) {
         if (in_array('sales_representative', $user_roles)) {
-            if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
+                      //  if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
+
+            if (!empty($choose_organization)) {
                 $affiliate_ids = array_filter(array_map('intval', (array) $choose_organization));
 
                 if (!empty($affiliate_ids)) {
