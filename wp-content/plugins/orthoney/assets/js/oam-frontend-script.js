@@ -1983,27 +1983,33 @@ jQuery(document).ready(function ($) {
         d.action = "orthoney_admin_get_customers_data";
       },
       beforeSend: function (jqXHR) {
-        if (currentRequest) {
-          currentRequest.abort();
-        }
-        currentRequest = jqXHR;
+  if (currentRequest) {
+    currentRequest.abort();
+  }
+  currentRequest = jqXHR;
 
-        // Remove previous message (if any)
-        
-         $('#admin-customer-table_processing').show();
-         $('#table#admin-customer-table tbody').hide();
-      },
-        
-      complete: function () {
-        currentRequest = null;
-        setTimeout(() => {
-                          $('#table#admin-customer-table tbody').show();
+  // Hide actual rows
+  $('#admin-customer-table tbody').hide();
 
-                 $('#admin-customer-table_processing').hide();
+  // Show custom loading row
+  const colspan = $('#admin-customer-table thead th').length;
+  const loadingRow = `
+    <tr class="custom-loading-row">
+      <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
+         Loading customer data, please wait...
+      </td>
+    </tr>
+  `;
+  $('#admin-customer-table tbody').html(loadingRow).show();
+},
+complete: function () {
+  currentRequest = null;
 
-
-        }, 100);
-      }
+  setTimeout(() => {
+    // Remove loading row (actual data will be re-rendered by DataTables)
+    $('#admin-customer-table tbody').show();
+  }, 100);
+}
     },
     columns: [
       { data: "id" },
