@@ -2279,6 +2279,90 @@ jQuery(document).ready(function ($) {
   }, 100);
 });
 
+jQuery(document).ready(function ($) {
+  let selectedStatus = '';
+  let organizationSearch = '';
+
+  // Custom Organization search input
+  const orgInput = $('<input type="text" placeholder="Search by Organization Name" style="margin-right: 10px;">')
+    .on('keyup', function () {
+      organizationSearch = $(this).val().trim();
+      table.ajax.reload();
+    });
+
+  // Init DataTable
+  const table = $('#sales-representative-affiliate-commission-table').DataTable({
+    pageLength: 50,
+    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+    serverSide: true,
+    processing: true,
+    paging: true,
+    searching: true,
+    ordering: true,
+    autoWidth: false,
+    ajax: {
+      url: oam_ajax.ajax_url,
+      type: 'POST',
+      data: function (d) {
+        d.action = 'get_affiliates_commission_list_ajax';
+        d.nonce = oam_ajax.nonce;
+        d.organization_search = organizationSearch;
+        d.status_filter = selectedStatus;
+      },
+      error: function (xhr, error, thrown) {
+        console.error('AJAX Error:', error);
+      }
+    },
+    columns: [
+      { data: "organization" },
+      { data: "total_order" },
+      { data: "total_qty" },
+      { data: "cost" },
+      { data: "dist_cost" },
+      { data: "unit_profit" },
+      { data: "total_commission" },
+    ],
+    columnDefs: [
+     { targets: 0, width: "220px" },
+      
+      { targets: -1, orderable: false },
+    ],
+    language: {
+      search: "",
+      searchPlaceholder: "Search...",
+      processing: `
+        <div class="loader multiStepForm" style="display:block">
+          <div>
+            <h2 class="swal2-title">Processing...</h2>
+            <div class="swal2-html-container">Please wait while we process your request.</div>
+            <div class="loader-5"></div>
+          </div>
+        </div>`
+    },
+    initComplete: function () {
+      const api = this.api();
+      const statusColIndex = 4;
+      const statusSet = new Set();
+
+      api.column(statusColIndex).data().each(function (d) {
+        if (d && d.trim() !== "") {
+          statusSet.add(d);
+        }
+      });
+
+      // Append filters before the default search input
+      const $filterWrapper = $('.dataTables_filter');
+
+      $filterWrapper.find('label').contents().filter(function () {
+        return this.nodeType === 3; // remove label text like "Search:"
+      }).remove();
+
+      $filterWrapper.prepend(orgInput);
+      
+    }
+  });
+});
+
 
 jQuery(document).ready(function ($) {
   let selectedStatus = '';
@@ -2375,7 +2459,7 @@ document.addEventListener("DOMContentLoaded", function ($) {
 
   // Customers DataTable with ordering support
   new DataTable("#sales-representative-customer-table", {
-    pageLength: 10,
+    pageLength: 50,
     lengthMenu: [
       [10, 25, 50, 100],
       [10, 25, 50, 100]
