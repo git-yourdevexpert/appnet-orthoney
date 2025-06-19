@@ -3018,7 +3018,7 @@ body .woocommerce .order-process-block .button {
   border-color: #dee2e6;
   vertical-align: middle;
   color: #333;
-  text-transform: initial;
+  text-transform: lowercase!important;
 }
 
 .order-process-block table th:first-child,
@@ -4323,6 +4323,13 @@ table#customer-jar-orders-table thead tr th:last-child{
 }
 .affiliate-dashboard #sales-representative-affiliate-table_filter input[type="search"]{
   width: 170px!important;
+}
+.customer-login-btn{
+  padding-left: 0;
+}
+.icon-txt-btn img{
+  width: 15px;
+  height: 15px;
 }
 /* responsive */
 @media (min-width: 993px) {
