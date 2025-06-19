@@ -2121,7 +2121,7 @@ jQuery(document).ready(function ($) {
       { data: "status" },
       // { data: "season_status" },
       { data: "price" },
-      { data: "commission" },
+      // { data: "commission" },
       { data: "login" }
     ],
     columnDefs: [

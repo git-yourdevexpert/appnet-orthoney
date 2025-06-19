@@ -643,7 +643,7 @@ public function orthoney_admin_get_customers_data_handler() {
                     'status'       => esc_html($status),
                    // 'season_status' => esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
                     'price' => wc_price($show_price),
-                    'commission' => $total_commission,
+                  //  'commission' => $total_commission,
                     'login'        => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . intval($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As An Org</button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Org Prf</a>'
                 ];
             }
