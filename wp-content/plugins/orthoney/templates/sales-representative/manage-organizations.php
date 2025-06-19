@@ -37,7 +37,7 @@ if (!defined('ABSPATH')) {
                 <th>Status</th>
                 <!-- <th>Season Status</th> -->
                 <th>Price</th>
-                <th>Commission</th>
+                <!-- <th>Commission</th> -->
                 <th>Login</th>
             </tr>
         </thead>
