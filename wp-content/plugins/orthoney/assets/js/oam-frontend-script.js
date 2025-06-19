@@ -1987,22 +1987,21 @@ jQuery(document).ready(function ($) {
         }
         currentRequest = jqXHR;
 
-        // Append custom message to DataTable wrapper
-        const wrapper = $('#admin-customer-table_wrapper');
-        if (!wrapper.find('.custom-processing-msg').length) {
-          wrapper.append(`
-            <div class="custom-processing-msg" style="text-align:center; padding: 10px; font-weight: bold;">
-              Please wait while we process your request...
-            </div>
-          `);
-        }
+        // Remove previous message (if any)
+        $('#admin-customer-table_wrapper .custom-processing-msg').remove();
+
+        // Append new message
+        $('#admin-customer-table_wrapper').append(`
+          <div class="custom-processing-msg" style="text-align:center; padding: 10px; font-weight: bold;">
+            Please wait while we process your request...
+          </div>
+        `);
       },
       complete: function () {
         currentRequest = null;
-        // Remove message after delay
         setTimeout(() => {
           $('#admin-customer-table_wrapper .custom-processing-msg').remove();
-        }, 1300);
+        }, 100);
       }
     },
     columns: [
@@ -2033,6 +2032,7 @@ jQuery(document).ready(function ($) {
     }
   });
 });
+
 
 
 jQuery(document).ready(function ($) {
