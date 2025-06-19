@@ -761,7 +761,7 @@ public function orthoney_admin_get_customers_data_handler() {
                     ]);
 
                    // $combined_info = implode('<br>', $parts);
-                    $userid_keys[] = $combined_info;
+                    $userid_keys[] = $parts;
 
         
                 }
