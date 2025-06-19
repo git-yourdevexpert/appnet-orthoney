@@ -40,30 +40,59 @@ class OAM_ADMINISTRATOR_AJAX {
     // Get pagination parameters from DataTables
     $start  = isset($_POST['start']) ? intval($_POST['start']) : 0;
     $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
+$search = isset($_POST['search']['value']) ? trim($_POST['search']['value']) : '';
+$capabilities_key = $wpdb->prefix . 'capabilities';
 
-    // Get total customer count
-        $capabilities_key = $wpdb->prefix . 'capabilities';
+$search_like = '%' . $wpdb->esc_like($search) . '%';
 
+// Get total customer count with optional search
+if (!empty($search)) {
+    $total_customers = $wpdb->get_var($wpdb->prepare("
+        SELECT COUNT(DISTINCT u.ID)
+        FROM {$wpdb->users} u
+        INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+        LEFT JOIN {$wpdb->usermeta} fn ON u.ID = fn.user_id AND fn.meta_key = 'first_name'
+        LEFT JOIN {$wpdb->usermeta} ln ON u.ID = ln.user_id AND ln.meta_key = 'last_name'
+        WHERE um.meta_key = %s AND um.meta_value LIKE %s
+        AND (
+            u.user_email LIKE %s OR
+            fn.meta_value LIKE %s OR
+            ln.meta_value LIKE %s
+        )
+    ", $capabilities_key, '%customer%', $search_like, $search_like, $search_like));
 
-     $total_customers = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(DISTINCT u.ID)
-            FROM {$wpdb->users} u
-            INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-            WHERE um.meta_key = %s AND um.meta_value LIKE %s",
-            $capabilities_key, '%customer%'
-        ));
+    $query_ids = $wpdb->get_col($wpdb->prepare("
+        SELECT DISTINCT u.ID
+        FROM {$wpdb->users} u
+        INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+        LEFT JOIN {$wpdb->usermeta} fn ON u.ID = fn.user_id AND fn.meta_key = 'first_name'
+        LEFT JOIN {$wpdb->usermeta} ln ON u.ID = ln.user_id AND ln.meta_key = 'last_name'
+        WHERE um.meta_key = %s AND um.meta_value LIKE %s
+        AND (
+            u.user_email LIKE %s OR
+            fn.meta_value LIKE %s OR
+            ln.meta_value LIKE %s
+        )
+        LIMIT %d OFFSET %d
+    ", $capabilities_key, '%customer%', $search_like, $search_like, $search_like, $length, $start));
+} else {
+    // No search
+    $total_customers = $wpdb->get_var($wpdb->prepare("
+        SELECT COUNT(DISTINCT u.ID)
+        FROM {$wpdb->users} u
+        INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+        WHERE um.meta_key = %s AND um.meta_value LIKE %s
+    ", $capabilities_key, '%customer%'));
 
+    $query_ids = $wpdb->get_col($wpdb->prepare("
+        SELECT DISTINCT u.ID
+        FROM {$wpdb->users} u
+        INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+        WHERE um.meta_key = %s AND um.meta_value LIKE %s
+        LIMIT %d OFFSET %d
+    ", $capabilities_key, '%customer%', $length, $start));
+}
 
-
-        $query_ids = $wpdb->get_col($wpdb->prepare("
-            SELECT DISTINCT u.ID
-            FROM {$wpdb->users} u
-            INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-            WHERE um.meta_key = %s AND um.meta_value LIKE %s
-            LIMIT %d OFFSET %d
-        ", $capabilities_key, '%customer%', $length, $start));
-
-    $data = [];
 
     foreach ($query_ids as $user_id) {
         $user = get_userdata($user_id);
