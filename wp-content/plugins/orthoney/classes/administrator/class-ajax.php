@@ -34,160 +34,104 @@ class OAM_ADMINISTRATOR_AJAX {
     }
 
         // DB changes on 18-6-2025 for the show details
-
-public function orthoney_admin_get_customers_data_handler() {
+public function get_affiliates_list_ajax_handler() {
     global $wpdb;
 
-    $start  = isset($_POST['start']) ? intval($_POST['start']) : 0;
-    $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
-    $search = isset($_POST['search']['value']) ? trim($_POST['search']['value']) : '';
+    $start  = intval($_POST['start'] ?? 0);
+    $length = intval($_POST['length'] ?? 10);
+    $draw   = intval($_POST['draw'] ?? 1);
+    $search = sanitize_text_field($_POST['search']['value'] ?? '');
 
-    $capabilities_key = $wpdb->prefix . 'capabilities';
-    $like_customer    = '%customer%';
-
-    $matching_ids = [];
+    $user_ids = [];
 
     if (!empty($search)) {
-        $search_like = '%' . $wpdb->esc_like($search) . '%';
+        $like = '%' . $wpdb->esc_like($search) . '%';
 
-        $matching_ids = $wpdb->get_col($wpdb->prepare(
-            "SELECT DISTINCT u.ID
-             FROM {$wpdb->users} u
-             LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
-             LEFT JOIN {$wpdb->usermeta} m2 ON u.ID = m2.user_id AND m2.meta_key = 'last_name'
-             WHERE u.user_email LIKE %s OR m1.meta_value LIKE %s OR m2.meta_value LIKE %s",
-            $search_like, $search_like, $search_like
-        ));
+        // 1. Match by email
+        $email_ids = $wpdb->get_col($wpdb->prepare("
+            SELECT ID FROM {$wpdb->users} 
+            WHERE user_email LIKE %s
+        ", $like));
 
-        if (empty($matching_ids)) {
-            wp_send_json(['data' => [], 'recordsTotal' => 0, 'recordsFiltered' => 0]);
-        }
+        // 2. Match by first name
+        $first_name_ids = $wpdb->get_col($wpdb->prepare("
+            SELECT user_id FROM {$wpdb->usermeta} 
+            WHERE meta_key = 'first_name' AND meta_value LIKE %s
+        ", $like));
+
+        // 3. Match by last name
+        $last_name_ids = $wpdb->get_col($wpdb->prepare("
+            SELECT user_id FROM {$wpdb->usermeta} 
+            WHERE meta_key = 'last_name' AND meta_value LIKE %s
+        ", $like));
+
+        // Merge and deduplicate
+        $user_ids = array_unique(array_merge($email_ids, $first_name_ids, $last_name_ids));
     }
 
-    // Count total customers
-    if (!empty($matching_ids)) {
-        $placeholders = implode(',', array_fill(0, count($matching_ids), '%d'));
-        $params = array_merge([$capabilities_key, $like_customer], $matching_ids);
-
-        $total_customers = count($matching_ids);
-
-        $sql = "SELECT DISTINCT u.ID
-                FROM {$wpdb->users} u
-                INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-                WHERE um.meta_key = %s AND um.meta_value LIKE %s AND u.ID IN ($placeholders)
-                LIMIT %d OFFSET %d";
-
-        $params[] = $length;
-        $params[] = $start;
-
-        $query_ids = $wpdb->get_col($wpdb->prepare($sql, ...$params));
-    } else {
-        $total_customers = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(DISTINCT u.ID)
-             FROM {$wpdb->users} u
-             INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-             WHERE um.meta_key = %s AND um.meta_value LIKE %s",
-            $capabilities_key, $like_customer
-        ));
-
-        $query_ids = $wpdb->get_col($wpdb->prepare(
-            "SELECT DISTINCT u.ID
-             FROM {$wpdb->users} u
-             INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-             WHERE um.meta_key = %s AND um.meta_value LIKE %s
-             LIMIT %d OFFSET %d",
-            $capabilities_key, $like_customer, $length, $start
-        ));
+    // If search applied and no matches, return empty
+    if (!empty($search) && empty($user_ids)) {
+        wp_send_json([
+            'draw' => $draw,
+            'recordsTotal' => 0,
+            'recordsFiltered' => 0,
+            'data' => [],
+        ]);
+        wp_die();
     }
+
+    // Apply search filter to affiliate user_ids
+    $user_ids_condition = '';
+    if (!empty($user_ids)) {
+        $user_ids = array_map('intval', $user_ids);
+        $user_ids_condition = " AND a.user_id IN (" . implode(',', $user_ids) . ")";
+    }
+
+    // Count totals
+    $records_total = $wpdb->get_var("
+        SELECT COUNT(*) 
+        FROM {$wpdb->prefix}yith_wcaf_affiliates a
+        WHERE a.enabled = 1 AND a.banned = 0
+    ");
+
+    $records_filtered = !empty($user_ids)
+        ? count($user_ids)
+        : $records_total;
+
+    // Final data fetch
+    $sql = "
+        SELECT 
+            a.user_id,
+            u.user_email,
+            fn.meta_value AS first_name,
+            ln.meta_value AS last_name
+        FROM {$wpdb->prefix}yith_wcaf_affiliates a
+        JOIN {$wpdb->users} u ON u.ID = a.user_id
+        LEFT JOIN {$wpdb->usermeta} fn ON fn.user_id = a.user_id AND fn.meta_key = 'first_name'
+        LEFT JOIN {$wpdb->usermeta} ln ON ln.user_id = a.user_id AND ln.meta_key = 'last_name'
+        WHERE a.enabled = 1 AND a.banned = 0
+        $user_ids_condition
+        LIMIT %d OFFSET %d
+    ";
+    $results = $wpdb->get_results($wpdb->prepare($sql, $length, $start));
 
     $data = [];
 
-    foreach ($query_ids as $user_id) {
-        $user = get_userdata($user_id);
-        if (!$user || empty($user->user_email)) continue;
-
-        $customer = new WC_Customer($user_id);
-
-        $name = trim(get_user_meta($user_id, 'first_name', true) . ' ' . get_user_meta($user_id, 'last_name', true));
-        $address = array_filter([
-            $customer->get_billing_address_1(),
-            $customer->get_billing_city(),
-            $customer->get_billing_state(),
-            $customer->get_billing_postcode(),
-            $customer->get_billing_country()
-        ]);
-
-        $name_block = (!empty($name) ? '<strong>' . esc_html($name) . '</strong><br>' : '');
-        $name_block .= esc_html($user->user_email) . '<br>';
-
-        $phone = $customer->get_billing_phone();
-        if (!empty($phone)) $name_block .= esc_html($phone) . '<br>';
-        if (!empty($address)) $name_block .= esc_html(implode(', ', $address)) . '<br>';
-
-        // Cache org block
-        $cache_key = 'affiliates_for_customer_' . $user_id;
-        $oname_block = get_transient($cache_key);
-
-        if ($oname_block === false) {
-            $oname_block = '';
-            $affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker';
-            $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
-
-            $affiliates_ids = $wpdb->get_col($wpdb->prepare(
-                "SELECT affiliate_id FROM {$affiliate_customer_linker} WHERE customer_id = %d",
-                $user_id
-            ));
-
-            foreach ($affiliates_ids as $affiliate_id) {
-                $token = $wpdb->get_var($wpdb->prepare(
-                    "SELECT token FROM {$affiliates_table} WHERE user_id = %d",
-                    $affiliate_id
-                ));
-                $org_name = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
-                $associated = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
-
-                if ($associated) {
-                    if (!empty($token)) $oname_block .= '<strong>[' . esc_html($token) . '] ' . esc_html($org_name) . '</strong><br>';
-
-                    $afuser = get_userdata($affiliate_id);
-                    if ($afuser) $oname_block .= esc_html($afuser->user_email) . '<br>';
-                    $oname_block .= esc_html(get_user_meta($affiliate_id, '_yith_wcaf_phone_number', true)) . '<br>';
-
-                    $addr = array_filter([
-                        get_user_meta($affiliate_id, '_yith_wcaf_address', true),
-                        get_user_meta($affiliate_id, '_yith_wcaf_city', true),
-                        get_user_meta($affiliate_id, '_yith_wcaf_state', true),
-                        get_user_meta($affiliate_id, '_yith_wcaf_zipcode', true)
-                    ]);
-
-                    if (!empty($addr)) $oname_block .= esc_html(implode(', ', $addr)) . '<br>';
-                    $oname_block .= '<hr>';
-                }
-            }
-
-            set_transient($cache_key, $oname_block, HOUR_IN_SECONDS);
-        }
-
-        $admin_url = admin_url("user-edit.php?user_id={$user_id}&wp_http_referer=%2Fwp-admin%2Fusers.php");
-
+    foreach ($results as $row) {
         $data[] = [
-            'id' => $user_id,
-            'name' => $name_block,
-            'organizations' => $oname_block,
-            'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '">
-                            <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
-                        </button>
-                        <a href="' . $admin_url . '" class="icon-txt-btn">
-                            <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile
-                        </a>'
+            'email'      => esc_html($row->user_email),
+            'first_name' => esc_html($row->first_name),
+            'last_name'  => esc_html($row->last_name),
         ];
     }
 
     wp_send_json([
+        'draw' => $draw,
+        'recordsTotal' => intval($records_total),
+        'recordsFiltered' => intval($records_filtered),
         'data' => $data,
-        'recordsTotal' => $total_customers,
-        'recordsFiltered' => $total_customers
     ]);
+    wp_die();
 }
 
 
