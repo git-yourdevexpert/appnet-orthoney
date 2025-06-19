@@ -46,7 +46,7 @@ class OAM_WC_Customizer {
 
 
         add_action('woocommerce_edit_account_form', array($this,'add_phone_field_to_edit_account'));
-        add_action('woocommerce_save_account_details', array($this,'save_phone_field_from_edit_account', 12, 1));
+        add_action('woocommerce_save_account_details', array($this,'save_phone_field_from_edit_account'), 12, 1);
 
 
 
