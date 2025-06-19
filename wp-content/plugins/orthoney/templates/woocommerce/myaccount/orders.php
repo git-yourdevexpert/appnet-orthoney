@@ -39,7 +39,7 @@ if (!is_user_logged_in()) {
     return;
 }
 
-if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles)) {
+if (!in_array('customer', $user_roles) && !in_array('administrator', $user_roles) && !in_array('sales_representative', $user_roles)) {
     $message = 'You do not have access to this page.';
     echo OAM_COMMON_Custom::message_design_block($message);
     return;
