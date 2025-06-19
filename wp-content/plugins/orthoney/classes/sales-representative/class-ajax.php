@@ -434,8 +434,7 @@ if($user->user_email != ''){
             $data[] = [
                 'code' => esc_html($row->token ?? ''),
                 //'organization' => $organization,
-               'organization' => (!empty($row->token) ? '[' . $row->token . '] ' : '') . $organization,
-
+                'organization' => (!empty($row->token) ? '<strong>' . $row->token . '</strong><br>' : '') . $organization,
                 'organization_admin' => $org_admin_user ?? '',
                 'new_organization' => $new_organization_block,
                 'status' => esc_html($status),
