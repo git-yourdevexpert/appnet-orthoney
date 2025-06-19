@@ -170,81 +170,40 @@ if($user->user_email != ''){
             'data'            => $data,
         ]);
     }
-public function get_affiliates_list_ajax_handler() {
+    public function get_affiliates_list_ajax_handler() {
     global $wpdb;
-
-    $user_id = get_current_user_id();
-    $select_organization = get_user_meta($user_id, 'select_organization', true);
-    $choose_organization = get_user_meta($user_id, 'choose_organization', true);
-    $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
-
-    $include_clause = '';
-    if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
-        $choose_ids = array_map('intval', (array)$choose_organization);
-        if (!empty($choose_ids)) {
-            $include_clause = ' AND a.user_id IN (' . implode(',', $choose_ids) . ') ';
-        }
-    }
 
     $start  = intval($_POST['start'] ?? 0);
     $length = intval($_POST['length'] ?? 10);
     $draw   = intval($_POST['draw'] ?? 1);
     $search = sanitize_text_field($_POST['search']['value'] ?? '');
 
-    $order = $_POST['order'][0] ?? null;
-    $order_column_index = 0;
-    $order_dir = 'ASC';
-    if (is_array($order)) {
-        $order_column_index = intval($order['column'] ?? 0);
-        $order_dir = strtoupper($order['dir'] ?? 'ASC') === 'DESC' ? 'DESC' : 'ASC';
-    }
-
-    $columns = ['organization_name', 'city', 'state', 'a.token'];
-    $order_by = $columns[$order_column_index] ?? 'organization_name';
-
-    // Prepare search filter SQL
     $search_filter = '';
     if (!empty($search)) {
-        $search_like = '%' . $wpdb->esc_like($search) . '%';
+        $like = '%' . $wpdb->esc_like($search) . '%';
         $search_filter = $wpdb->prepare(" AND (
-            u.display_name LIKE %s OR
             u.user_email LIKE %s OR
             fname.meta_value LIKE %s OR
-            lname.meta_value LIKE %s OR
-            org.meta_value LIKE %s OR
-            city.meta_value LIKE %s OR
-            state.meta_value LIKE %s OR
-            a.token LIKE %s
-        )", $search_like, $search_like, $search_like, $search_like, $search_like, $search_like, $search_like, $search_like);
-    }
-
-    if (!empty($organization_search)) {
-        $search_like = '%' . $wpdb->esc_like($organization_search) . '%';
-        $search_filter .= $wpdb->prepare(" AND org.meta_value LIKE %s", $search_like);
+            lname.meta_value LIKE %s
+        )", $like, $like, $like);
     }
 
     // Total records
     $sql_total = "
         SELECT COUNT(DISTINCT a.user_id)
         FROM {$wpdb->prefix}yith_wcaf_affiliates a
-        WHERE a.enabled = '1' AND a.banned = '0'
-        $include_clause
+        INNER JOIN {$wpdb->users} u ON u.ID = a.user_id
     ";
     $records_total = $wpdb->get_var($sql_total);
 
-    // Filtered records
+    // Filtered count
     $sql_filtered = "
         SELECT COUNT(DISTINCT a.user_id)
         FROM {$wpdb->prefix}yith_wcaf_affiliates a
         INNER JOIN {$wpdb->users} u ON u.ID = a.user_id
         LEFT JOIN {$wpdb->usermeta} fname ON fname.user_id = a.user_id AND fname.meta_key = 'first_name'
         LEFT JOIN {$wpdb->usermeta} lname ON lname.user_id = a.user_id AND lname.meta_key = 'last_name'
-        LEFT JOIN {$wpdb->usermeta} org ON org.user_id = a.user_id AND org.meta_key = '_yith_wcaf_name_of_your_organization'
-        LEFT JOIN {$wpdb->usermeta} city ON city.user_id = a.user_id AND city.meta_key = '_yith_wcaf_city'
-        LEFT JOIN {$wpdb->usermeta} state ON state.user_id = a.user_id AND state.meta_key = '_yith_wcaf_state'
-        WHERE a.enabled = '1' AND a.banned = '0'
-        $include_clause
-        $search_filter
+        WHERE 1=1 $search_filter
     ";
     $records_filtered = $wpdb->get_var($sql_filtered);
 
@@ -252,55 +211,24 @@ public function get_affiliates_list_ajax_handler() {
     $sql_data = "
         SELECT 
             a.user_id,
-            a.token,
             u.user_email,
             fname.meta_value AS first_name,
-            lname.meta_value AS last_name,
-            org.meta_value AS organization_name,
-            city.meta_value AS city,
-            state.meta_value AS state
+            lname.meta_value AS last_name
         FROM {$wpdb->prefix}yith_wcaf_affiliates a
         INNER JOIN {$wpdb->users} u ON u.ID = a.user_id
         LEFT JOIN {$wpdb->usermeta} fname ON fname.user_id = a.user_id AND fname.meta_key = 'first_name'
         LEFT JOIN {$wpdb->usermeta} lname ON lname.user_id = a.user_id AND lname.meta_key = 'last_name'
-        LEFT JOIN {$wpdb->usermeta} org ON org.user_id = a.user_id AND org.meta_key = '_yith_wcaf_name_of_your_organization'
-        LEFT JOIN {$wpdb->usermeta} city ON city.user_id = a.user_id AND city.meta_key = '_yith_wcaf_city'
-        LEFT JOIN {$wpdb->usermeta} state ON state.user_id = a.user_id AND state.meta_key = '_yith_wcaf_state'
-        WHERE a.enabled = '1' AND a.banned = '0'
-        $include_clause
-        $search_filter
-        ORDER BY $order_by $order_dir
+        WHERE 1=1 $search_filter
         LIMIT %d OFFSET %d
     ";
-    $sql_data = $wpdb->prepare($sql_data, $length, $start);
-    $results = $wpdb->get_results($sql_data);
+    $results = $wpdb->get_results($wpdb->prepare($sql_data, $length, $start));
 
     $data = [];
-
     foreach ($results as $row) {
-        $user_id = intval($row->user_id);
-
-        $organization = array_filter([
-            '<strong>' . esc_html($row->organization_name) . '</strong>',
-            trim(esc_html($row->city) . (empty($row->city) || empty($row->state) ? '' : ', ') . esc_html($row->state)),
-            esc_html($row->user_email),
-            esc_html(get_user_meta($user_id, '_yith_wcaf_phone_number', true))
-        ]);
-        $organization_html = implode('<br>', $organization);
-
-        $org_user_name = trim($row->first_name . ' ' . $row->last_name) ?: get_userdata($user_id)->display_name;
-        $status = 'Accepted and enabled';
-
         $data[] = [
-            'code' => esc_html($row->token ?? ''),
-            'organization_admin' => $org_user_name,
-            'organization' => $organization_html,
-            'new_organization' => '', // Fill as needed
-            'status' => $status,
-            'price' => wc_price(18), // Replace with dynamic pricing logic if needed
-            'commission' => wc_price(0), // Replace with your commission calc
-            'season_status' => 'Activated', // Adjust based on logic
-            'login' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '">Login</button>'
+            'email' => esc_html($row->user_email),
+            'first_name' => esc_html($row->first_name),
+            'last_name' => esc_html($row->last_name),
         ];
     }
 
