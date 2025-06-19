@@ -874,7 +874,7 @@ class OAM_Helper{
                 $filtered_ids_string = implode(',', $filtered_ids);
                 $AlreadyOrderHtml = '';
                 if($alreadyOrder == 0){
-                 $AlreadyOrderHtml = (!empty($filtered_ids) ? '<button data-recipientname="'.stripslashes($data->full_name).'" data-tippy="Recipient has been verified but has already placed an order this season." style="color:red" class="alreadyOrderButton btn-underline">Already Ordered</button>' : '');
+                 $AlreadyOrderHtml = (!empty($filtered_ids) ? '<button data-recipientname="'.stripslashes($data->full_name).'" data-tippy="Recipient has been added, but we found another recent order with the same recipient." style="color:red" class="alreadyOrderButton btn-underline">Already Ordered</button>' : '');
                 }
                 if($data->verified == 0){
                     $reasonsHtml = '<div>No';
