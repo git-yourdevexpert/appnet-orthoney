@@ -300,7 +300,7 @@ public function orthoney_admin_get_customers_data_handler() {
                         }
                         $organizations_status = implode(', ', $token_array);
                     }
-                        $cbr_phone_number = get_user_meta($user->ID, 'cbr_phone_number', true);
+                        $cbr_phone_number = get_user_meta($user->ID, 'user_registration_customer_phone_number', true);
 
 
                     $data[] = [
