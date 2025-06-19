@@ -50,11 +50,11 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
                         ";
                         $customer_ids = $wpdb->get_col($wpdb->prepare($query, ...$affiliate_ids));
                     }
-                } else {
+                }
+            } else {
                     $query = "SELECT customer_id FROM {$wpdb->prefix}oh_affiliate_customer_linker";
                     $customer_ids = $wpdb->get_col($query);
                 }
-            }
         }
 
         $all_customer_ids = array_unique(array_merge($choose_ids, $customer_ids));
