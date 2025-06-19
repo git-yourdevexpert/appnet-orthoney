@@ -2011,6 +2011,7 @@ jQuery(document).ready(function ($) {
     responsive: true,
     processing: true,
     paging: true,
+    serverSide: true,
     searching: true
   });
 });
