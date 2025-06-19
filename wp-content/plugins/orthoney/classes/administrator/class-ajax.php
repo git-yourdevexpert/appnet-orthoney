@@ -591,7 +591,7 @@ public function orthoney_admin_get_customers_data_handler() {
                 $data[] = [
                     'code'         => esc_html($meta['code']),
                     //'organization' => $organization,
-                    'organization' => (!empty($meta['code']) ? '<strong>' . $meta['code'] . '</strong><br>' : '') . $organization,
+                    'organization' => (!empty($meta['code']) ? '<strong>[' . $meta['code'] . ']</strong> ' : '') . $organization,
 
 'csr_name' => implode('<br>', array_map('esc_html', array_filter($userid_keys))),
                     'organization_admin'        => $org_admin_user,
