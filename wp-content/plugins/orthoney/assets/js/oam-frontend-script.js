@@ -1974,7 +1974,7 @@ jQuery(document).ready(function ($) {
   let currentRequest = null;
 
   const table = new DataTable("#admin-customer-table", {
-    pageLength: 10,
+    pageLength: 50,
     lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
     ajax: {
       url: oam_ajax.ajax_url,
