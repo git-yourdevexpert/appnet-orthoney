@@ -583,7 +583,7 @@ class OAM_AFFILIATE_Helper
                                 trim($phone_number)
                             ]);
                             $html .= '<div class="item-box">';
-                            $html .= implode(', <br>', $output_parts);
+                            $html .= implode('<br>', $output_parts);
                              $html .= '</div>';
                         }
 
