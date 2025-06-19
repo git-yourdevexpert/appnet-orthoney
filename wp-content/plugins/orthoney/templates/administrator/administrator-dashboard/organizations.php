@@ -12,17 +12,8 @@ $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 
 ?>
 <style>
 
-    #admin-organizations-results table.dataTable tbody th, table.dataTable tbody td:nth-child(2) {
-        width: 150px !important;
-        max-width:150px !important;
-       word-wrap: break-word;
-    }
-    #admin-organizations-results table.dataTable tbody th, table.dataTable tbody td:nth-child(1) {
-        width: 150px !important;
-        max-width: 150px !important;
-        word-break: break-word;
-    }
-
+    #admin-organizations-results table.dataTable tbody th, table.dataTable tbody td:nth-child(2) ,
+    #admin-organizations-results table.dataTable tbody th, table.dataTable tbody td:nth-child(1) ,
     #admin-organizations-results table.dataTable tbody th, table.dataTable tbody td:nth-child(4) {
         width: 210px !important;
         max-width:210px !important;
