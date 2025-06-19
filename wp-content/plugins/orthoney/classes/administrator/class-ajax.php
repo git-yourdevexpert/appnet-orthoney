@@ -756,8 +756,8 @@ public function orthoney_admin_get_customers_data_handler() {
                     $cbr_phone_number = get_user_meta($key, 'user_registration_customer_phone_number', true);
                     $parts = array_filter([
                         trim("$first_name $last_name"),
-                        trim($cbr_phone_number),
                         trim($semail),
+                        trim($cbr_phone_number),
                     ]);
 
                     $combined_info = implode('<br>', $parts);
