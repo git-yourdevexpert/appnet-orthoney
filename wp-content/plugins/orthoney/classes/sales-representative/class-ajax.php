@@ -170,77 +170,288 @@ if($user->user_email != ''){
             'data'            => $data,
         ]);
     }
+
+
     public function get_affiliates_list_ajax_handler() {
-    global $wpdb;
+        global $wpdb;
 
-    $start  = intval($_POST['start'] ?? 0);
-    $length = intval($_POST['length'] ?? 10);
-    $draw   = intval($_POST['draw'] ?? 1);
-    $search = sanitize_text_field($_POST['search']['value'] ?? '');
+        $user_id = get_current_user_id();
+        $select_organization = get_user_meta($user_id, 'select_organization', true);
+        $choose_organization = get_user_meta($user_id, 'choose_organization', true);
+        $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
 
-    $search_filter = '';
-    if (!empty($search)) {
-        $like = '%' . $wpdb->esc_like($search) . '%';
-        $search_filter = $wpdb->prepare(" AND (
-            u.user_email LIKE %s OR
-            fname.meta_value LIKE %s OR
-            lname.meta_value LIKE %s
-        )", $like, $like, $like);
+        // Build include clause based on user meta
+        $include_clause = '';
+        if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
+            $choose_ids = array_map('intval', (array)$choose_organization);
+            if (!empty($choose_ids)) {
+                $include_clause = ' AND a.user_id IN (' . implode(',', $choose_ids) . ') ';
+            }
+        }
+
+        // Pagination and search parameters
+        $start  = intval($_POST['start'] ?? 0);
+        $length = intval($_POST['length'] ?? 10);
+        $draw   = intval($_POST['draw'] ?? 1);
+        $search = sanitize_text_field($_POST['search']['value'] ?? '');
+
+        // Handle ordering safely
+        $order = $_POST['order'][0] ?? null;
+        $order_column_index = 0;
+        $order_dir = 'ASC';
+        if (is_array($order)) {
+            $order_column_index = intval($order['column'] ?? 0);
+            $order_dir = strtoupper($order['dir'] ?? 'ASC') === 'DESC' ? 'DESC' : 'ASC';
+        }
+
+        // Define columns for ordering
+        $columns = ['organization_name', 'city', 'state', 'a.token'];
+        $order_by = $columns[$order_column_index] ?? 'organization_name';
+
+        // Prepare search filter SQL
+        $search_filter = '';
+        $search_like = '%' . $wpdb->esc_like($search) . '%';
+        if (!empty($search)) {
+            $search_filter = $wpdb->prepare(" AND (
+                MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END) LIKE %s
+                OR MAX(CASE WHEN um.meta_key = '_yith_wcaf_city' THEN um.meta_value END) LIKE %s
+                OR MAX(CASE WHEN um.meta_key = '_yith_wcaf_state' THEN um.meta_value END) LIKE %s
+                OR a.token LIKE %s
+            ) ", $search_like, $search_like, $search_like, $search_like);
+        }
+        if (!empty($organization_search)) {
+            $search_like = '%' . $wpdb->esc_like($organization_search) . '%';
+            $search_filter .= $wpdb->prepare(" AND MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END) LIKE %s ", $search_like);
+        }
+
+        // Total records count (without search)
+        $sql_total = "
+            SELECT COUNT(DISTINCT a.user_id)
+            FROM {$wpdb->prefix}yith_wcaf_affiliates AS a
+            WHERE a.enabled = '1' AND a.banned = '0'
+            $include_clause
+        ";
+        $records_total = $wpdb->get_var($sql_total);
+
+        // Filtered records count (with search)
+        $sql_filtered = "
+            SELECT COUNT(*) FROM (
+                SELECT a.user_id
+                FROM {$wpdb->prefix}yith_wcaf_affiliates AS a
+                LEFT JOIN {$wpdb->usermeta} um ON a.user_id = um.user_id
+                WHERE a.enabled = '1' AND a.banned = '0'
+                $include_clause
+                GROUP BY a.user_id, a.token
+                HAVING 1=1
+                $search_filter
+            ) AS subquery
+        ";
+        $records_filtered = $wpdb->get_var($sql_filtered);
+
+        // Data query
+        $sql_data = "
+            SELECT 
+                a.user_id,
+                a.token,
+                u.user_email,
+                MAX(CASE WHEN um.meta_key = 'associated_affiliate_id' THEN um.meta_value END) AS associated_affiliate_id,
+                MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END) AS organization_name,
+                MAX(CASE WHEN um.meta_key = '_yith_wcaf_city' THEN um.meta_value END) AS city,
+                MAX(CASE WHEN um.meta_key = '_yith_wcaf_state' THEN um.meta_value END) AS state
+            FROM {$wpdb->prefix}yith_wcaf_affiliates AS a
+            INNER JOIN {$wpdb->users} u ON u.ID = a.user_id
+            LEFT JOIN {$wpdb->usermeta} um ON a.user_id = um.user_id
+            WHERE a.enabled = '1' AND a.banned = '0'
+            $include_clause
+            GROUP BY a.user_id, a.token
+            HAVING 1=1
+            $search_filter
+            ORDER BY $order_by $order_dir
+        ";
+
+        $results = $wpdb->get_results($wpdb->prepare($sql_data, $length, $start));
+
+        $data = [];
+
+        foreach ($results as $row) {
+            $user_id = intval($row->user_id);
+
+        // Get basic user and pricing data
+        $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true) ?: 0;
+        $yith_wcaf_phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true) ?: '';
+        $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
+        $product_price = get_user_meta($user_id, 'DJarPrice', true);
+
+        // Set display price
+        $show_price = ($product_price >= $selling_minimum_price) ? $product_price : $selling_minimum_price;
+
+        // Check if organization is new this year
+        $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Returning';
+
+        // Get commission data
+        $commission_array_data = json_decode(OAM_AFFILIATE_Helper::get_commission_affiliate($user_id), true);
+        $exclude_coupon = EXCLUDE_COUPON;
+
+        // Initialize counters
+        $total_all_quantity = $fundraising_qty = $wholesale_qty = 0;
+        $total_orders = $wholesale_order = 0;
+        $unit_price = $unit_cost = 0;
+        $total_commission = 0;
+
+
+        // print_r($commission_array_data);
+
+        if (!empty($commission_array_data['data'])) {
+            foreach ($commission_array_data['data'] as $value) {
+                // Aggregate quantities
+                $fundraising_qty = $value['total_quantity'];
+                $wholesale_qty = $value['wholesale_qty'];
+
+                // Process only if affiliate account is active
+                if (!empty($value['affiliate_account_status'])) {
+                    $unit_price = $value['par_jar'];
+                    $unit_cost = $value['minimum_price'];
+                    $total_all_quantity += $value['total_quantity'];
+                    $total_orders++;
+
+                    // Handle coupon logic
+                    $coupon_array = !empty($value['is_voucher_used']) 
+                        ? array_values(array_diff(explode(",", $value['is_voucher_used']), $exclude_coupon)) 
+                        : [];
+
+                    if (empty($coupon_array)) {
+                        $total_commission += $value['commission'];
+                    } else {
+                        $wholesale_order++;
+                    }
+                }
+            }
+        }
+
+        // Final quantity and order calculations
+        $total_all_quantity = $fundraising_qty;
+        $fundraising_orders = $total_orders - $wholesale_order;
+
+        // Calculate total commission based on jar threshold
+        $total_commission = ($total_all_quantity > 50)  ? wc_price($fundraising_qty * ($unit_price - $unit_cost)) : wc_price(0);
+
+            $raw_users = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id = $row->user_id");
+
+            $user_id = intval($raw_users->user_id);
+            $enabled = intval($raw_users->enabled);
+            $banned  = intval($raw_users->banned);
+
+            $status = 'New request';
+            if ($banned === 1) {
+                $status = 'Banned';
+            } elseif ($enabled === 1) {
+                $status = 'Accepted and enabled';
+            } elseif ($enabled === -1) {
+                $status = 'Rejected';
+            }
+
+            $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true)?:0;
+            $organizationdata = [
+                $row->organization_name,
+                esc_html($row->city),
+                esc_html($row->state),
+            ];
+            $organizationdata = array_filter($organizationdata);
+
+            $organization_phone = get_user_meta($user_id, '_yith_wcaf_phone_number', true);
+             $user_obj = get_userdata($user_id);
+
+            $oemail = $user_obj ? $user_obj->user_email : '';
+
+             $organizationdata = [];
+
+            if (!empty($row->organization_name)) {
+                $organizationdata[] = '<strong>' . esc_html($row->organization_name) . '</strong>';
+            }
+
+            $city_state = trim(esc_html($row->city) . (empty($row->city) || empty($row->state) ? '' : ', ') . esc_html($row->state));
+            if (!empty($city_state)) {
+                $organizationdata[] = $city_state;
+            }
+
+            if (!empty($oemail)) {
+                $organizationdata[] = esc_html($oemail);
+            }
+
+            if (!empty($organization_phone)) {
+                $organizationdata[] = esc_html($organization_phone);
+            }
+
+            $organization = implode('<br>', $organizationdata);
+
+
+                // Remove empty values and join with <br>
+                $organization = implode('<br>', array_filter($organizationdata));
+            $nonce = wp_create_nonce('switch_to_user_' . $row->user_id);
+
+            //  $org_admin_user = '';
+            // if ($row->associated_affiliate_id) {
+            //     $org_user = get_userdata($row->associated_affiliate_id);
+                
+            //     $org_user_name = get_user_meta($row->associated_affiliate_id, 'first_name', true) . ' ' . get_user_meta($row->associated_affiliate_id, 'last_name', true);
+            //     $org_email = $org_user->user_email;
+            //     $org_phone = $yith_wcaf_phone_number;
+                
+            //     $org_admin_user =$org_user_name .'<br>'. $org_email .'<br>'. $org_phone ;
+                
+            // }
+
+            $org_admin_user = '';
+            if ($row->associated_affiliate_id) {
+                $org_user = get_userdata($row->associated_affiliate_id);
+
+                // Fetch first and last name
+                $first_name = get_user_meta($row->associated_affiliate_id, 'first_name', true);
+                $last_name  = get_user_meta($row->associated_affiliate_id, 'last_name', true);
+                $org_user_name = trim($first_name . ' ' . $last_name);
+
+                // Fallback to display name if first/last are empty
+                if (empty($org_user_name)) {
+                    $org_user_name = $org_user->display_name;
+                }
+
+                // Get email and phone
+                $org_email = $org_user->user_email;
+                $org_phone = $yith_wcaf_phone_number;
+
+                // Combine all into a display string
+                $org_admin_user = $org_user_name . '<br>' . $org_email . '<br>' . $org_phone;
+            }
+
+
+                 $new_organization_block = implode('<br>', array_filter([
+                    '<strong>Organization:</strong> ' . esc_html($new_organization),
+                    '<strong>Status:</strong> ' . esc_html($status),
+                    '<strong>Season Status:</strong> ' . esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
+                ]));
+
+
+            $data[] = [
+                'code' => esc_html($row->token ?? ''),
+                'organization_admin' => $org_admin_user ?? '',
+                'organization' => $organization,
+                'new_organization' => $new_organization_block,
+                'status' => esc_html($status),
+                'price' => wc_price($show_price),
+                'commission' => $total_commission,
+                'season_status' => esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
+                'login' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($row->user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png"> Login as Organization</button>',
+            ];
+        }
+
+        wp_send_json([
+            'draw' => $draw,
+            'recordsTotal' => intval($records_total),
+            'recordsFiltered' => intval($records_filtered),
+            'data' => $data,
+        ]);
+        wp_die();
     }
-
-    // Total records
-    $sql_total = "
-        SELECT COUNT(DISTINCT a.user_id)
-        FROM {$wpdb->prefix}yith_wcaf_affiliates a
-        INNER JOIN {$wpdb->users} u ON u.ID = a.user_id
-    ";
-    $records_total = $wpdb->get_var($sql_total);
-
-    // Filtered count
-    $sql_filtered = "
-        SELECT COUNT(DISTINCT a.user_id)
-        FROM {$wpdb->prefix}yith_wcaf_affiliates a
-        INNER JOIN {$wpdb->users} u ON u.ID = a.user_id
-        LEFT JOIN {$wpdb->usermeta} fname ON fname.user_id = a.user_id AND fname.meta_key = 'first_name'
-        LEFT JOIN {$wpdb->usermeta} lname ON lname.user_id = a.user_id AND lname.meta_key = 'last_name'
-        WHERE 1=1 $search_filter
-    ";
-    $records_filtered = $wpdb->get_var($sql_filtered);
-
-    // Data query
-    $sql_data = "
-        SELECT 
-            a.user_id,
-            u.user_email,
-            fname.meta_value AS first_name,
-            lname.meta_value AS last_name
-        FROM {$wpdb->prefix}yith_wcaf_affiliates a
-        INNER JOIN {$wpdb->users} u ON u.ID = a.user_id
-        LEFT JOIN {$wpdb->usermeta} fname ON fname.user_id = a.user_id AND fname.meta_key = 'first_name'
-        LEFT JOIN {$wpdb->usermeta} lname ON lname.user_id = a.user_id AND lname.meta_key = 'last_name'
-        WHERE 1=1 $search_filter
-        LIMIT %d OFFSET %d
-    ";
-    $results = $wpdb->get_results($wpdb->prepare($sql_data, $length, $start));
-
-    $data = [];
-    foreach ($results as $row) {
-        $data[] = [
-            'email' => esc_html($row->user_email),
-            'first_name' => esc_html($row->first_name),
-            'last_name' => esc_html($row->last_name),
-        ];
-    }
-
-    wp_send_json([
-        'draw' => $draw,
-        'recordsTotal' => intval($records_total),
-        'recordsFiltered' => intval($records_filtered),
-        'data' => $data,
-    ]);
-    wp_die();
-}
-
 
 
     public function update_sales_representative_handler() {

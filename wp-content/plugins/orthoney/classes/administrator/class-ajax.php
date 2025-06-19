@@ -43,17 +43,17 @@ public function orthoney_admin_get_customers_data_handler() {
     $search = isset($_POST['search']['value']) ? trim($_POST['search']['value']) : '';
 
     $order_column_index = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
-$order_dir = isset($_POST['order'][0]['dir']) && in_array($_POST['order'][0]['dir'], ['asc', 'desc']) ? $_POST['order'][0]['dir'] : 'asc';
+    $order_dir = isset($_POST['order'][0]['dir']) && in_array($_POST['order'][0]['dir'], ['asc', 'desc']) ? $_POST['order'][0]['dir'] : 'asc';
 
 
-$column_map = [
-    0 => 'u.ID',              // User ID
-    1 => 'm1.meta_value',     // First name (used for name)
-    3 => 'aff.token'          // Token (from affiliates table)
-];
+    $column_map = [
+        0 => 'u.ID',              // User ID
+        1 => 'm1.meta_value',     // First name (used for name)
+        3 => 'aff.token'          // Token (from affiliates table)
+    ];
 
-// Fallback to default
-$order_by = isset($column_map[$order_column_index]) ? $column_map[$order_column_index] : 'u.ID';
+    // Fallback to default
+    $order_by = isset($column_map[$order_column_index]) ? $column_map[$order_column_index] : 'u.ID';
 
 
 
