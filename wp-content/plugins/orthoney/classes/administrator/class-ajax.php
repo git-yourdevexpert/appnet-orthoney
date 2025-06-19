@@ -273,7 +273,7 @@ public function orthoney_admin_get_customers_data_handler() {
 
                     $data[] = [
                         'id' => $user->ID,
-                        'name' => esc_html($user->display_name),
+                        'name_email' => '<strong>' . esc_html($user->display_name) . '</strong><br>' . esc_html($user->user_email),
                         'email' => esc_html($user->user_email),
                         'organizations' => $organizations_status,
                         'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">

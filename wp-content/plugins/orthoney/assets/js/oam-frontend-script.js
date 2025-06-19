@@ -2068,7 +2068,9 @@ jQuery(document).ready(function ($) {
       {
         targets: -1,
         orderable: false
-      }
+
+      },
+      { targets: 2, visible: false,searchable: true },
     ],
     language: {
       processing: `
