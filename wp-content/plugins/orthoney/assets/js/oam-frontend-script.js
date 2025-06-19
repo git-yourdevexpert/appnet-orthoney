@@ -2149,7 +2149,7 @@ jQuery(document).ready(function ($) {
     searching: true,
     responsive: true,
     scrollX: true,
-    autoWidth: false,
+    autoWidth: true,
 
     initComplete: function () {
       const api = this.api();
