@@ -1969,6 +1969,7 @@ jQuery(document).ready(function ($) {
     ]
   });
 });
+
 jQuery(document).ready(function ($) {
   let currentRequest = null;
 
@@ -2024,13 +2025,14 @@ jQuery(document).ready(function ($) {
   });
 
   // Trigger search only after 3+ characters
-  const searchBox = $('#admin-customer-table_filter input');
-  searchBox.unbind().on('keyup', function () {
-    const value = this.value;
-    if (value.length >= 3 || value.length === 0) {
-      table.search(value).draw();
-    }
-  });
+ const searchBox = $('#admin-customer-table_filter input');
+
+searchBox.off().on('input', function () {
+  const value = this.value;
+  if (value.length >= 3 || value.length === 0) {
+    table.search(value).draw();
+  }
+});
 });
 
 
