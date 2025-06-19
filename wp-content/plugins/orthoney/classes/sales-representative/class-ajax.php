@@ -289,51 +289,51 @@ if($user->user_email != ''){
         $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Returning';
 
         // Get commission data
-        $commission_array_data = json_decode(OAM_AFFILIATE_Helper::get_commission_affiliate($user_id), true);
-        $exclude_coupon = EXCLUDE_COUPON;
+        // $commission_array_data = json_decode(OAM_AFFILIATE_Helper::get_commission_affiliate($user_id), true);
+        // $exclude_coupon = EXCLUDE_COUPON;
 
-        // Initialize counters
-        $total_all_quantity = $fundraising_qty = $wholesale_qty = 0;
-        $total_orders = $wholesale_order = 0;
-        $unit_price = $unit_cost = 0;
-        $total_commission = 0;
+        // // Initialize counters
+        // $total_all_quantity = $fundraising_qty = $wholesale_qty = 0;
+        // $total_orders = $wholesale_order = 0;
+        // $unit_price = $unit_cost = 0;
+        // $total_commission = 0;
 
 
-        // print_r($commission_array_data);
+        // // print_r($commission_array_data);
 
-        if (!empty($commission_array_data['data'])) {
-            foreach ($commission_array_data['data'] as $value) {
-                // Aggregate quantities
-                $fundraising_qty = $value['total_quantity'];
-                $wholesale_qty = $value['wholesale_qty'];
+        // if (!empty($commission_array_data['data'])) {
+        //     foreach ($commission_array_data['data'] as $value) {
+        //         // Aggregate quantities
+        //         $fundraising_qty = $value['total_quantity'];
+        //         $wholesale_qty = $value['wholesale_qty'];
 
-                // Process only if affiliate account is active
-                if (!empty($value['affiliate_account_status'])) {
-                    $unit_price = $value['par_jar'];
-                    $unit_cost = $value['minimum_price'];
-                    $total_all_quantity += $value['total_quantity'];
-                    $total_orders++;
+        //         // Process only if affiliate account is active
+        //         if (!empty($value['affiliate_account_status'])) {
+        //             $unit_price = $value['par_jar'];
+        //             $unit_cost = $value['minimum_price'];
+        //             $total_all_quantity += $value['total_quantity'];
+        //             $total_orders++;
 
-                    // Handle coupon logic
-                    $coupon_array = !empty($value['is_voucher_used']) 
-                        ? array_values(array_diff(explode(",", $value['is_voucher_used']), $exclude_coupon)) 
-                        : [];
+        //             // Handle coupon logic
+        //             $coupon_array = !empty($value['is_voucher_used']) 
+        //                 ? array_values(array_diff(explode(",", $value['is_voucher_used']), $exclude_coupon)) 
+        //                 : [];
 
-                    if (empty($coupon_array)) {
-                        $total_commission += $value['commission'];
-                    } else {
-                        $wholesale_order++;
-                    }
-                }
-            }
-        }
+        //             if (empty($coupon_array)) {
+        //                 $total_commission += $value['commission'];
+        //             } else {
+        //                 $wholesale_order++;
+        //             }
+        //         }
+        //     }
+        // }
 
-        // Final quantity and order calculations
-        $total_all_quantity = $fundraising_qty;
-        $fundraising_orders = $total_orders - $wholesale_order;
+        // // Final quantity and order calculations
+        // $total_all_quantity = $fundraising_qty;
+        // $fundraising_orders = $total_orders - $wholesale_order;
 
-        // Calculate total commission based on jar threshold
-        $total_commission = ($total_all_quantity > 50)  ? wc_price($fundraising_qty * ($unit_price - $unit_cost)) : wc_price(0);
+        // // Calculate total commission based on jar threshold
+        // $total_commission = ($total_all_quantity > 50)  ? wc_price($fundraising_qty * ($unit_price - $unit_cost)) : wc_price(0);
 
             $raw_users = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id = $row->user_id");
 
@@ -389,17 +389,7 @@ if($user->user_email != ''){
                 $organization = implode('<br>', array_filter($organizationdata));
             $nonce = wp_create_nonce('switch_to_user_' . $row->user_id);
 
-            //  $org_admin_user = '';
-            // if ($row->associated_affiliate_id) {
-            //     $org_user = get_userdata($row->associated_affiliate_id);
-                
-            //     $org_user_name = get_user_meta($row->associated_affiliate_id, 'first_name', true) . ' ' . get_user_meta($row->associated_affiliate_id, 'last_name', true);
-            //     $org_email = $org_user->user_email;
-            //     $org_phone = $yith_wcaf_phone_number;
-                
-            //     $org_admin_user =$org_user_name .'<br>'. $org_email .'<br>'. $org_phone ;
-                
-            // }
+        
 
             $org_admin_user = '';
             if ($row->associated_affiliate_id) {
@@ -425,8 +415,8 @@ if($user->user_email != ''){
 
 
                  $new_organization_block = implode('<br>', array_filter([
-                    '<strong>Organization:</strong> ' . esc_html($new_organization),
-                    '<strong>Status:</strong> ' . esc_html($status),
+                    '<strong>Org:</strong> ' . esc_html($new_organization),
+                    '<strong>'.esc_html($status),
                     '<strong>Season Status:</strong> ' . esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
                 ]));
 
@@ -439,9 +429,9 @@ if($user->user_email != ''){
                 'new_organization' => $new_organization_block,
                 'status' => esc_html($status),
                 'price' => wc_price($show_price),
-                'commission' => $total_commission,
+                //'commission' => $total_commission,
                 'season_status' => esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
-                'login' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($row->user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png"> Login as Organization</button>',
+                'login' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($row->user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png"> Login as Org</button>',
             ];
         }
 

@@ -2230,7 +2230,7 @@ jQuery(document).ready(function ($) {
       { data: "new_organization" },
       { data: "status" },
       { data: "price" },
-      { data: "commission" },
+      // { data: "commission" },
       { data: "login" }
     ],
     columnDefs: [
