@@ -42,6 +42,21 @@ public function orthoney_admin_get_customers_data_handler() {
     $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
     $search = isset($_POST['search']['value']) ? trim($_POST['search']['value']) : '';
 
+    $order_column_index = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
+$order_dir = isset($_POST['order'][0]['dir']) && in_array($_POST['order'][0]['dir'], ['asc', 'desc']) ? $_POST['order'][0]['dir'] : 'asc';
+
+
+$column_map = [
+    0 => 'u.ID',              // User ID
+    1 => 'm1.meta_value',     // First name (used for name)
+    3 => 'aff.token'          // Token (from affiliates table)
+];
+
+// Fallback to default
+$order_by = isset($column_map[$order_column_index]) ? $column_map[$order_column_index] : 'u.ID';
+
+
+
     $capabilities_key = $wpdb->prefix . 'capabilities';
     $like_customer    = '%customer%';
 
@@ -76,10 +91,15 @@ public function orthoney_admin_get_customers_data_handler() {
         $total_customers = count($matching_ids);
 
         $sql = "SELECT DISTINCT u.ID
-                FROM {$wpdb->users} u
-                INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-                WHERE um.meta_key = %s AND um.meta_value LIKE %s AND u.ID IN ($placeholders)
-                LIMIT %d OFFSET %d";
+        FROM {$wpdb->users} u
+        INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+        LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
+        LEFT JOIN {$wpdb->prefix}oh_affiliate_customer_linker linker ON u.ID = linker.customer_id
+        LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON linker.affiliate_id = aff.user_id
+        WHERE um.meta_key = %s AND um.meta_value LIKE %s AND u.ID IN ($placeholders)
+        ORDER BY {$order_by} {$order_dir}
+        LIMIT %d OFFSET %d";
+
 
         $params[] = $length;
         $params[] = $start;
