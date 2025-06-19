@@ -575,7 +575,7 @@ class OAM_AFFILIATE_Helper
                             $user_info = get_userdata($cbr_id);
                             $first_name = get_user_meta($cbr_id, 'first_name', true);
                             $last_name = get_user_meta($cbr_id, 'last_name', true);
-                            $phone_number = get_user_meta($cbr_id, 'cbr_phone_number', true) ?: '';
+                            $phone_number = get_user_meta($cbr_id, 'user_registration_customer_phone_number', true) ?: '';
 
                             $output_parts = array_filter([
                                 '<strong>' . (trim("$first_name $last_name") == '' ? $user_info->display_name : trim("$first_name $last_name") ) . '</strong>',
