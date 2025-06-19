@@ -148,7 +148,16 @@ public function orthoney_admin_get_customers_data_handler() {
         $name_block = (!empty($name) ? '<strong>' . esc_html($name) . '</strong><br>' : '');
         $name_block .= esc_html($user->user_email) . '<br>';
 
-        $phone = $customer->get_billing_phone();
+        
+
+         $phone =  get_user_meta($user_id, 'user_registration_customer_phone_number', true);
+         if($phone == ""){
+         $phone = $customer->get_billing_phone();
+
+         }
+
+
+      
         if (!empty($phone)) $name_block .= esc_html($phone) . '<br>';
         if (!empty($address)) $name_block .= esc_html(implode(', ', $address)) . '<br>';
 
