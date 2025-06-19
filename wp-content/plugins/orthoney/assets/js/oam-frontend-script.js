@@ -1971,23 +1971,31 @@ jQuery(document).ready(function ($) {
 });
 
 jQuery(document).ready(function ($) {
+  let currentRequest = null;
+
   const table = new DataTable("#admin-customer-table", {
     pageLength: 50,
-    lengthMenu: [
-      [10, 25, 50, 100],
-      [10, 25, 50, 100]
-    ],
+    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
     ajax: {
       url: oam_ajax.ajax_url,
       type: "POST",
-      data: {
-        action: "orthoney_admin_get_customers_data"
+      data: function (d) {
+        d.action = "orthoney_admin_get_customers_data";
+      },
+      beforeSend: function (jqXHR) {
+        if (currentRequest) {
+          currentRequest.abort();
+        }
+        currentRequest = jqXHR;
+      },
+      complete: function () {
+        currentRequest = null;
       }
     },
+    searchDelay: 500, // Optional: adds delay for input
     columns: [
       { data: "id" },
       { data: "name" },
-      // { data: "email" },
       { data: "organizations" },
       { data: "action" }
     ],
@@ -1999,14 +2007,14 @@ jQuery(document).ready(function ($) {
     ],
     language: {
       processing: `
-                <div class="loader multiStepForm" style="display:block">
-                    <div>
-                        <h2 class="swal2-title">Processing...</h2>
-                        <div class="swal2-html-container">Please wait while we process your request.</div>
-                        <div class="loader-5"></div>
-                    </div>
-                </div>
-            `
+        <div class="loader multiStepForm" style="display:block">
+          <div>
+            <h2 class="swal2-title">Processing...</h2>
+            <div class="swal2-html-container">Please wait while we process your request.</div>
+            <div class="loader-5"></div>
+          </div>
+        </div>
+      `
     },
     responsive: true,
     processing: true,
@@ -2015,6 +2023,7 @@ jQuery(document).ready(function ($) {
     searching: true
   });
 });
+
 
 jQuery(document).ready(function ($) {
   const table = new DataTable("#admin-sales-representative-table", {
