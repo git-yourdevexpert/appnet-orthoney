@@ -9,11 +9,11 @@ class OAM_ADMINISTRATOR_AJAX {
      * Constructor to hook into Customer template loading.
      */
     public function __construct() {
-
-         add_action('wp_ajax_orthoney_admin_get_customers_data', array($this,'orthoney_admin_get_customers_data_handler'));
-         add_action('wp_ajax_orthoney_admin_get_organizations_data', array($this,'orthoney_admin_get_organizations_data_handler'));
-         add_action('wp_ajax_orthoney_admin_get_sales_representative_data', array($this,'orthoney_admin_get_sales_representative_data_handler'));
-         add_action('wp_ajax_orthoney_activate_affiliate_account_ajax', array($this,'orthoney_orthoney_activate_affiliate_account_ajax_handler'));
+        add_action('wp_ajax_orthoney_admin_get_customers_data', array($this,'orthoney_admin_get_customers_data_handler'));
+        add_action('wp_ajax_orthoney_admin_get_organizations_data', array($this,'orthoney_admin_get_organizations_data_handler'));
+        add_action('wp_ajax_orthoney_admin_get_organizations_commission_data', array($this,'orthoney_admin_get_organizations_commission_data_handler'));
+        add_action('wp_ajax_orthoney_admin_get_sales_representative_data', array($this,'orthoney_admin_get_sales_representative_data_handler'));
+        add_action('wp_ajax_orthoney_activate_affiliate_account_ajax', array($this,'orthoney_orthoney_activate_affiliate_account_ajax_handler'));
     }
     
     /**
@@ -289,6 +289,235 @@ public function orthoney_admin_get_customers_data_handler() {
         ]);
     }
     
+    public function orthoney_admin_get_organizations_commission_data_handler() {
+     
+        global $wpdb;
+
+        $start  = intval($_POST['start'] ?? 0);
+        $length = intval($_POST['length'] ?? 10);
+        $draw   = intval($_POST['draw'] ?? 1);
+        $search = sanitize_text_field($_POST['search']['value'] ?? '');
+        $nonce  = wp_create_nonce('customer_login_nonce');
+
+        // Step 1: Get all affiliate users
+        $raw_users = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE token != '' AND user_id != 0");
+
+        if (empty($raw_users)) {
+            wp_send_json([
+                'draw'            => $draw,
+                'recordsTotal'    => 0,
+                'recordsFiltered' => 0,
+                'data'            => [],
+            ]);
+        }
+
+        $user_ids = wp_list_pluck($raw_users, 'user_id');
+
+        $user_meta_cache = [];
+        $user_status_map = [];
+
+        foreach ($raw_users as $row) {
+            $user_id = intval($row->user_id);
+            $enabled = intval($row->enabled);
+            $banned  = intval($row->banned);
+
+            $status = 'New request';
+            if ($banned === 1) {
+                $status = 'Banned';
+            } elseif ($enabled === 1) {
+                $status = 'Accepted and enabled';
+            } elseif ($enabled === -1) {
+                $status = 'Rejected';
+            }
+
+            $user_status_map[$user_id] = [
+                'enabled' => $enabled,
+                'banned'  => $banned,
+                'label'   => $status,
+            ];
+
+            $user_obj = get_userdata($user_id);
+
+           
+            $city = get_user_meta($user_id, '_yith_wcaf_city', true);
+            if (!$city) {
+                $city = get_user_meta($user_id, 'billing_city', true);
+                if (!$city) {
+                    $city = get_user_meta($user_id, 'shipping_city', true);
+                }
+            }
+            // $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true)? 'Activated' : 'Deactivated';
+
+            // Retrieve state with fallback: _yith_wcaf_state → billing_state → shipping_state
+            $state = get_user_meta($user_id, '_yith_wcaf_state', true);
+            if (!$state) {
+                $state = get_user_meta($user_id, 'billing_state', true);
+                if (!$state) {
+                    $state = get_user_meta($user_id, 'shipping_state', true);
+                }
+            }
+
+            // Ensure empty strings if no values found
+            $city  = $city ?: '';
+            $state = $state ?: '';
+
+            $organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+            $organization_phone = get_user_meta($user_id, '_yith_wcaf_phone_number', true);
+
+            
+
+            if (!$organization) {
+                $organization = get_user_meta($user_id, 'first_name', true). ' ' .get_user_meta($user_id, 'last_name', true);
+            }
+            $user_meta_cache[$user_id] = [
+                'organization' => $organization,
+                'city'         => $city,
+                'state'        => $state,
+                'code'         => $row->token,
+                'email'        => $user_obj ? $user_obj->user_email : '',
+                'phone' => $organization_phone,
+            ];
+        }
+
+        // Step 2: Apply search filter
+       
+        $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
+
+        $filtered_user_ids = array_filter($user_ids, function ($user_id) use ($search, $user_meta_cache, $user_status_map, $organization_search) {
+            $status = strtolower($user_status_map[$user_id]['label']);
+            $organization = strtolower($user_meta_cache[$user_id]['organization']);
+
+            // Organization filter
+            if (!empty($organization_search) && strpos($organization, strtolower($organization_search)) === false) {
+                return false;
+            }
+
+            if (empty($search)) return true;
+
+            $search_lc = strtolower($search);
+            $meta      = $user_meta_cache[$user_id];
+
+            return (
+                strpos(strtolower($meta['organization']), $search_lc) !== false ||
+                strpos(strtolower($meta['city']), $search_lc)         !== false ||
+                strpos(strtolower($meta['state']), $search_lc)        !== false ||
+                strpos(strtolower($meta['code']), $search_lc)         !== false ||
+                strpos(strtolower($meta['email']), $search_lc)        !== false ||
+                strpos($status, $search_lc)                           !== false
+            );
+        });
+
+        $recordsTotal    = count($user_ids);
+        $recordsFiltered = count($filtered_user_ids);
+
+        // Step 3: Apply ordering
+        $order_column_index = $_POST['order'][0]['column'] ?? 0;
+        $order_direction    = $_POST['order'][0]['dir'] ?? 'asc';
+
+        $columns = ['code', 'email', 'organization', 'city', 'state', 'status'];
+        $orderby_key = $columns[$order_column_index] ?? 'code';
+
+        usort($filtered_user_ids, function ($a, $b) use ($orderby_key, $order_direction, $user_meta_cache, $user_status_map) {
+            $a_val = $b_val = '';
+
+            if ($orderby_key === 'status') {
+                $a_val = $user_status_map[$a]['label'];
+                $b_val = $user_status_map[$b]['label'];
+            } else {
+                $a_val = $user_meta_cache[$a][$orderby_key] ?? '';
+                $b_val = $user_meta_cache[$b][$orderby_key] ?? '';
+            }
+
+            $comparison = strnatcasecmp($a_val, $b_val);
+            return $order_direction === 'asc' ? $comparison : -$comparison;
+        });
+
+        // Step 4: Apply pagination
+        $paged_user_ids = array_slice(array_values($filtered_user_ids), $start, $length);
+
+        // Step 5: Format data for DataTables
+        $data = [];
+
+        
+        foreach ($paged_user_ids as $user_id) {
+            $meta   = $user_meta_cache[$user_id];
+            $status = $user_status_map[$user_id]['label'];
+           
+             $organizationdata = [];
+
+            if (!empty($meta['organization'])) {
+                $organizationdata[] = '<strong> ['.esc_html($meta['code']).'] ' . esc_html($meta['organization']) . '</strong>';
+            }
+
+            $city_state = trim(esc_html($meta['city']) . (empty($meta['city']) || empty($meta['state']) ? '' : ', ') . esc_html($meta['state']));
+            if (!empty($city_state)) {
+                $organizationdata[] = $city_state;
+            }
+
+            if (!empty($meta['email'])) {
+                $organizationdata[] = esc_html($meta['email']);
+            }
+
+            if (!empty($meta['phone'])) {
+                $organizationdata[] = esc_html($meta['phone']);
+            }
+
+            $organization = implode('<br>', $organizationdata);
+
+            // Remove empty values and join with <br>
+            $organization = implode('<br>', array_filter($organizationdata));
+            $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate_base_token($meta['code']);
+
+            $unit_profit = wc_price(0);
+            if($commission_array['unit_profit'] != 0){
+               $unit_profit = wc_price($commission_array['unit_profit']).'<br><small>( '.wc_price($commission_array["selling_min_price"]).' - '.wc_price($commission_array["unit_cost"]).' )</small>';
+            } 
+          
+            $cost = '';
+            if($commission_array['total_order'] != 0){
+                $cost = '<strong>Total: </strong>'. wc_price(($commission_array['total_quantity'] * $commission_array['selling_min_price']));
+                $cost .= '<br><small><strong>Fundraising: </strong>'. wc_price(($commission_array['fundraising_qty'] * $commission_array['selling_min_price']));
+                $cost .= '<br><strong>Wholesale: </strong>'. wc_price(($commission_array['wholesale_qty'] * $commission_array['selling_min_price']));
+                $cost .= '</small>';
+
+            }
+            $dist_cost = '';
+            if($commission_array['total_order'] != 0){
+                $dist_cost = '<strong>Total: </strong>'. wc_price(($commission_array['total_quantity'] * $commission_array['unit_cost']));
+                $dist_cost .= '<br><small><strong>Fundraising: </strong>'. wc_price(($commission_array['fundraising_qty'] * $commission_array['unit_cost']));
+                $dist_cost .= '<br><strong>Wholesale: </strong>'. wc_price(($commission_array['wholesale_qty'] * $commission_array['unit_cost']));
+                $dist_cost .= '</small>';
+
+            }
+
+            $data[] = [
+                'organization' => $organization,
+                'new_organization' => 'Yes',
+                'status'       => esc_html($status),
+                'cost'       => $cost,
+                'dist_cost'       => $dist_cost,
+                'selling_min_price'       => esc_html($commission_array['selling_min_price']),
+                'total_order'       => esc_html($commission_array['total_order']),
+                'total_qty'       => esc_html($commission_array['total_quantity']),
+                'wholesale_qty'       => esc_html($commission_array['wholesale_qty']),
+                'fundraising_qty'       => esc_html($commission_array['fundraising_qty']),
+                'fundraising_orders'       => esc_html($commission_array['fundraising_orders']),
+                'total_all_quantity'       => esc_html($commission_array['total_all_quantity']),
+                'unit_cost'       => esc_html($commission_array['unit_cost']),
+                'unit_profit'       => $unit_profit,
+                'total_commission'       => wc_price($commission_array['total_commission']),
+            ];
+        }
+        
+        wp_send_json([
+            'draw'            => $draw,
+            'recordsTotal'    => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data'            => $data,
+        ]);
+    }
+
+
     public function orthoney_admin_get_organizations_data_handler() {
         global $wpdb;
 

@@ -2191,6 +2191,91 @@ jQuery(document).ready(function ($) {
 });
 
 
+jQuery(document).ready(function ($) {
+  let selectedStatus = '';
+  let organizationSearch = '';
+
+  // Custom input for organization search
+  const orgInput = $('<input type="text" placeholder="Search by Organization Name" style="margin-right: 10px;">')
+    .on('keyup', function () {
+      organizationSearch = $(this).val().trim();
+      table.ajax.reload();
+    });
+
+  // Initialize DataTable
+  const table = new DataTable("#admin-organizations-commission-table", {
+    pageLength: 50,
+    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+    ajax: {
+      url: oam_ajax.ajax_url,
+      type: "POST",
+      data: function (d) {
+        d.action = "orthoney_admin_get_organizations_commission_data";
+     
+        d.organization_search = organizationSearch;
+      }
+    },
+    columns: [
+      { data: "organization" },
+      { data: "total_order" },
+      { data: "total_qty" },
+      { data: "cost" },
+      { data: "dist_cost" },
+      { data: "unit_profit" },
+      { data: "total_commission" },
+   
+    ],
+    columnDefs: [
+      { targets: 0, width: "210px" ,orderable: true},
+    ],
+    language: {
+      processing: `
+        <div class="loader multiStepForm" style="display:block">
+          <div>
+            <h2 class="swal2-title">Processing...</h2>
+            <div class="swal2-html-container">Please wait while we process your request.</div>
+            <div class="loader-5"></div>
+          </div>
+        </div>`
+    },
+    processing: true,
+    serverSide: true,
+    paging: true,
+    searching: true,
+    responsive: true,
+    scrollX: true,
+    autoWidth: false,
+    orderable:  false,
+
+    initComplete: function () {
+      const api = this.api();
+      const statusColIndex = 5;
+      const statusSet = new Set();
+
+      api.column(statusColIndex).data().each(function (d) {
+        if (d && d.trim() !== "") {
+          statusSet.add(d);
+        }
+      });
+
+      
+      $('.dataTables_filter').prepend(orgInput);
+
+      // ✅ Remove "Search:" label text
+      $('.dataTables_filter label').contents().filter(function () {
+        return this.nodeType === 3;
+      }).remove();
+
+      // ✅ Set placeholder on default search input
+      $('.dataTables_filter input[type="search"]').attr('placeholder', 'Search');
+    }
+  });
+
+  setTimeout(() => {
+    table.columns.adjust().draw();
+  }, 100);
+});
+
 
 jQuery(document).ready(function ($) {
   let selectedStatus = '';

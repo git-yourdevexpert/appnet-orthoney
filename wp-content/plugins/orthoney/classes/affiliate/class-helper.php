@@ -757,6 +757,148 @@ class OAM_AFFILIATE_Helper
         return $registered_year === $current_year;
     }
 
+    public static function get_commission_affiliate_base_token($affiliate_token = '')
+        {
+            global $wpdb;
+
+            $commission_array = [];
+            $yith_table = OAM_Helper::$yith_wcaf_affiliates_table;
+            $affiliate_id = 0;
+            $affiliate_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$yith_table} WHERE token = %s", $affiliate_token));
+
+            if ($affiliate_data) {
+                $affiliate_id = $affiliate_data->ID;
+            }
+
+            $activate_affiliate_account = get_user_meta($affiliate_id, 'activate_affiliate_account', true);
+
+            // Commission details
+            $commission_year_results = $wpdb->get_results($wpdb->prepare("SELECT 
+                c.order_id,
+                SUM(CAST(qty_meta.meta_value AS UNSIGNED)) AS total_quantity,
+                SUM(CAST(line_total_meta.meta_value AS DECIMAL(10,2))) AS line_total,
+                SUM(CAST(line_subtotal_meta.meta_value AS DECIMAL(10,2))) AS line_subtotal
+                FROM {$wpdb->prefix}yith_wcaf_commissions c
+                INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+                INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_id = o.id AND oi.order_item_type = 'line_item'
+                LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta qty_meta ON qty_meta.order_item_id = oi.order_item_id AND qty_meta.meta_key = '_qty'
+                LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_total_meta ON line_total_meta.order_item_id = oi.order_item_id AND line_total_meta.meta_key = '_line_total'
+                LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_subtotal_meta ON line_subtotal_meta.order_item_id = oi.order_item_id AND line_subtotal_meta.meta_key = '_line_subtotal'
+                WHERE c.affiliate_id = %d AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
+                GROUP BY c.order_id", $affiliate_id));
+
+            $total_quantity = (int) $wpdb->get_var($wpdb->prepare("SELECT 
+                SUM(CAST(om.meta_value AS UNSIGNED))
+                FROM {$wpdb->prefix}yith_wcaf_commissions c
+                INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+                INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id AND oi.order_item_type = 'line_item'
+                INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
+                WHERE c.affiliate_id = %d AND YEAR(o.date_created_gmt) = YEAR(CURDATE())", $affiliate_id));
+
+            $total_exclude_quantity = (int) $wpdb->get_var($wpdb->prepare("SELECT 
+                SUM(CAST(om.meta_value AS UNSIGNED))
+                FROM {$wpdb->prefix}yith_wcaf_commissions c
+                INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+                INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id
+                INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id
+                INNER JOIN {$wpdb->prefix}wc_orders_meta wm ON wm.order_id = o.id
+                WHERE c.affiliate_id = %d AND om.meta_key = '_qty' AND wm.meta_key = 'affiliate_account_status' AND wm.meta_value = '1'
+                AND YEAR(o.date_created_gmt) = YEAR(CURDATE())", $affiliate_id));
+
+            $exclude_coupon = EXCLUDE_COUPON;
+            $total_all_quantity = $wholesale_qty = 0;
+
+            if (!empty($commission_year_results)) {
+                foreach ($commission_year_results as $value) {
+                    $order_id = $value->order_id;
+                    $affiliate_status = (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status');
+                    $coupon_codes = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($order_id);
+                    $coupons = array_filter(array_diff(explode(',', $coupon_codes), $exclude_coupon));
+
+                    if ($affiliate_status === 1) {
+                        if (empty($coupons)) {
+                            $total_all_quantity += $value->total_quantity;
+                        } else {
+                            $wholesale_qty += $value->total_quantity;
+                        }
+                    }
+                }
+
+                foreach ($commission_year_results as $commission) {
+                    $order_id = $commission->order_id;
+                    $total_qty = (int) $commission->total_quantity;
+                    $par_jar = $commission->line_subtotal / $total_qty;
+                    $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
+
+                    $minimum_price = 0;
+                    if ($par_jar >= $selling_min_price) {
+                        $price_field_prefix = OAM_AFFILIATE_Helper::is_user_created_this_year($affiliate_id) ? 'new' : 'ex';
+                        $minimum_price = get_field("{$price_field_prefix}_minimum_price_" . ($total_all_quantity < 99 ? '50' : '100'), 'option');
+                    }
+
+                    $data = [
+                        'total_exclude_quantity' => $total_exclude_quantity,
+                        'total_all_quantity' => $total_quantity,
+                        'wholesale_qty' => $wholesale_qty,
+                        'order_id' => $order_id,
+                        'custom_order_id' => OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID'),
+                        'total_quantity' => $total_all_quantity,
+                        'line_total' => $commission->line_total,
+                        'line_subtotal' => $commission->line_subtotal,
+                        'par_jar' => $par_jar,
+                        'minimum_price' => $minimum_price,
+                        'is_voucher_used' => $coupon_codes,
+                        'affiliate_account_status' => (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status'),
+                        'commission' => ($par_jar >= $selling_min_price ? (($par_jar - $minimum_price) * $total_all_quantity) : 0)
+                    ];
+
+                    $commission_array[$data['custom_order_id']] = $data;
+                }
+            }
+
+            $fundraising_orders = $total_orders = $wholesale_order = $unit_price = $unit_cost = 0;
+
+            foreach ($commission_array as $data) {
+                if ((int)$data['affiliate_account_status'] === 1) {
+                    $unit_price = $data['par_jar'];
+                    $fundraising_qty = $data['total_quantity'];
+                    $wholesale_qty = $data['wholesale_qty'];
+                    $total_quantity =  $data['total_all_quantity'];
+                    $unit_cost = $data['minimum_price'];
+                    $total_orders++;
+
+                    $coupons = array_filter(array_diff(explode(',', $data['is_voucher_used']), $exclude_coupon));
+
+                    if (empty($coupons)) {
+                        $total_commission += $data['commission'];
+                    } else {
+                        $wholesale_order++;
+                    }
+                }
+            }
+
+            $fundraising_orders = $total_orders - $wholesale_order;
+            $total_all_quantity = $wholesale_qty + $fundraising_qty;
+
+            $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
+            if ($unit_price >= $selling_min_price) {
+                $price_field_prefix = OAM_AFFILIATE_Helper::is_user_created_this_year(get_current_user_id()) ? 'ex' : 'new';
+                $unit_cost = get_field("{$price_field_prefix}_minimum_price_" . ($total_all_quantity < 99 ? '50' : '100'), 'option')?: 0;
+            }
+            return [
+                'total_order' => count($commission_array),
+                'selling_min_price' => $selling_min_price,
+                'total_quantity' => $total_quantity,
+                'wholesale_qty' => $wholesale_qty,
+                'fundraising_qty' => $fundraising_qty,
+                'fundraising_orders' => $fundraising_orders,
+                'total_all_quantity' => $total_all_quantity,
+                'unit_cost' => $unit_cost,
+                'unit_profit' => ($unit_cost != 0 ) ? $selling_min_price - $unit_cost : 0,
+                'total_commission' => ($selling_min_price - $unit_cost) * $fundraising_qty
+            ];
+        }
+
     public static function get_commission_affiliate($affiliate_id_attr = '')
     {
         global $wpdb;
