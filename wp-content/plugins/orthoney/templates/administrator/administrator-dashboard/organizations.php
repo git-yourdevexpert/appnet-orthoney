@@ -46,7 +46,7 @@ $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 
                     <th>Status</th>
                     <!-- <th>Season Status</th> -->
                     <th>Price</th>
-                    <th>Commission</th>
+                    <!-- <th>Commission</th> -->
                     <th>Login</th>
                 </tr>
             </thead>
