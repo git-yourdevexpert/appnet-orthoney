@@ -34,119 +34,136 @@ class OAM_ADMINISTRATOR_AJAX {
     }
 
         // DB changes on 18-6-2025 for the show details
-    public function orthoney_admin_get_customers_data_handler() {
-        global $wpdb;
+   public function orthoney_admin_get_customers_data_handler() {
+    global $wpdb;
 
-       // $all_users = get_users(['include' => [440]]);
-        $all_users = get_users();
-        $data = [];
+    // Get pagination parameters from DataTables
+    $start  = isset($_POST['start']) ? intval($_POST['start']) : 0;
+    $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
 
-        foreach ($all_users as $user) {
-            if (count($user->roles) === 1 && in_array('customer', $user->roles) && !empty($user->user_email)) {
+    // Get total customer count
+    $query_total = "
+        SELECT COUNT(*) FROM {$wpdb->users} u
+        INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+        WHERE um.meta_key = 'wp_capabilities' AND um.meta_value LIKE '%customer%'
+    ";
+    $total_customers = $wpdb->get_var($query_total);
 
-                $customer = new WC_Customer($user->ID);
+    // Get paginated customers
+    $query_ids = $wpdb->get_col($wpdb->prepare("
+        SELECT DISTINCT u.ID FROM {$wpdb->users} u
+        INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+        WHERE um.meta_key = 'wp_capabilities' AND um.meta_value LIKE %s
+        LIMIT %d OFFSET %d
+    ", '%customer%', $length, $start));
 
-                $affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker';
-                $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+    $data = [];
 
-                $affiliates_ids = $wpdb->get_results($wpdb->prepare(
-                    "SELECT affiliate_id FROM {$affiliate_customer_linker} WHERE customer_id = %d",
-                    $user->ID
+    foreach ($query_ids as $user_id) {
+        $user = get_userdata($user_id);
+        if (!$user || empty($user->user_email)) continue;
+
+        $customer = new WC_Customer($user->ID);
+
+        $affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker';
+        $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+
+        $affiliates_ids = $wpdb->get_results($wpdb->prepare(
+            "SELECT affiliate_id FROM {$affiliate_customer_linker} WHERE customer_id = %d",
+            $user->ID
+        ));
+
+        $oname_block = '';
+
+        if (!empty($affiliates_ids)) {
+            foreach ($affiliates_ids as $affiliate) {
+                $affiliate_id = $affiliate->affiliate_id;
+
+                $affiliate_data = $wpdb->get_row($wpdb->prepare(
+                    "SELECT token FROM {$affiliates_table} WHERE user_id = %d",
+                    $affiliate_id
                 ));
 
-                $oname_block = '';
+                $token = $affiliate_data->token ?? '';
+                $first_name = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
+                $associated_id = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
 
-                if (!empty($affiliates_ids)) {
-                    foreach ($affiliates_ids as $affiliate) {
-                        $affiliate_id = $affiliate->affiliate_id;
-
-                        $affiliate_data  = $wpdb->get_row($wpdb->prepare(
-                            "SELECT token FROM {$affiliates_table} WHERE user_id = %d",
-                            $affiliate_id
-                        ));
-
-                        $token = $affiliate_data->token ?? '';
-
-                        $first_name  = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
-                        //$last_name   = get_user_meta($affiliate_id, 'billing_last_name', true);
-
-                        $associated_id = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
-                        if ($associated_id) {
-                            
-                            if (!empty($token)) {
-                                $oname_block .= '<strong>[' .esc_html($token) . '] '.$first_name.'</strong><br>';
-                            }
-                           
-
-                          
-                                $afuser = get_userdata($affiliate_id);
-                                if ($afuser && !empty($afuser->user_email)) {
-                                    $oname_block .= esc_html($afuser->user_email) . '<br>';
-                                }                       
-
-                                $oname_block .=  get_user_meta($affiliate_id, '_yith_wcaf_phone_number', true) . '<br>';
-                        
-                            $address_parts = array_filter([
-                                get_user_meta($affiliate_id, '_yith_wcaf_address', true),
-                                get_user_meta($affiliate_id, '_yith_wcaf_city', true),
-                                get_user_meta($affiliate_id, '_yith_wcaf_state', true),
-                                get_user_meta($affiliate_id, '_yith_wcaf_zipcode', true),
-                               // get_user_meta($affiliate_id, 'billing_country', true),
-                            ]);
-
-                            if (!empty($address_parts)) {
-                                $oname_block .= esc_html(implode(', ', $address_parts)) . '<br>';
-                            }
-
-                            $oname_block .= '<hr>';
-                        }
+                if ($associated_id) {
+                    if (!empty($token)) {
+                        $oname_block .= '<strong>[' . esc_html($token) . '] ' . $first_name . '</strong><br>';
                     }
+
+                    $afuser = get_userdata($affiliate_id);
+                    if ($afuser && !empty($afuser->user_email)) {
+                        $oname_block .= esc_html($afuser->user_email) . '<br>';
+                    }
+
+                    $oname_block .= get_user_meta($affiliate_id, '_yith_wcaf_phone_number', true) . '<br>';
+
+                    $address_parts = array_filter([
+                        get_user_meta($affiliate_id, '_yith_wcaf_address', true),
+                        get_user_meta($affiliate_id, '_yith_wcaf_city', true),
+                        get_user_meta($affiliate_id, '_yith_wcaf_state', true),
+                        get_user_meta($affiliate_id, '_yith_wcaf_zipcode', true),
+                    ]);
+
+                    if (!empty($address_parts)) {
+                        $oname_block .= esc_html(implode(', ', $address_parts)) . '<br>';
+                    }
+
+                    $oname_block .= '<hr>';
                 }
-
-                $full_name = trim(get_user_meta($user->ID, 'first_name', true) . ' ' . get_user_meta($user->ID, 'last_name', true));
-                $billing_address = array_filter([
-                    $customer->get_billing_address_1(),
-                    $customer->get_billing_city(),
-                    $customer->get_billing_state(),
-                    $customer->get_billing_postcode(),
-                    $customer->get_billing_country()
-                ]);
-                $full_address = implode(', ', $billing_address);
-
-                $name_block = '';
-                if (!empty($full_name)) {
-                    $name_block .= '<strong>' . esc_html($full_name) . '</strong><br>';
-                }
-
-                $name_block .= esc_html($user->user_email) . '<br>';
-
-                $billing_phone = $customer->get_billing_phone();
-                if (!empty($billing_phone)) {
-                    $name_block .= esc_html($billing_phone) . '<br>';
-                }
-
-                if (!empty($full_address)) {
-                    $name_block .= esc_html($full_address) . '<br>';
-                }
-
-                $admin_url = admin_url("user-edit.php?user_id={$user->ID}&wp_http_referer=%2Fwp-admin%2Fusers.php");
-
-                $data[] = [
-                    'id' => $user->ID,
-                    'name' => $name_block,
-                    'organizations' => $oname_block,
-                    'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
-                                    <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
-                                </button>
-                                <a href="' . $admin_url . '" class="icon-txt-btn">
-                                    <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile
-                                </a>'
-                ];
             }
         }
 
-        wp_send_json(['data' => $data]);
+        $full_name = trim(get_user_meta($user->ID, 'first_name', true) . ' ' . get_user_meta($user->ID, 'last_name', true));
+        $billing_address = array_filter([
+            $customer->get_billing_address_1(),
+            $customer->get_billing_city(),
+            $customer->get_billing_state(),
+            $customer->get_billing_postcode(),
+            $customer->get_billing_country()
+        ]);
+        $full_address = implode(', ', $billing_address);
+
+        $name_block = '';
+        if (!empty($full_name)) {
+            $name_block .= '<strong>' . esc_html($full_name) . '</strong><br>';
+        }
+
+        $name_block .= esc_html($user->user_email) . '<br>';
+
+        $billing_phone = $customer->get_billing_phone();
+        if (!empty($billing_phone)) {
+            $name_block .= esc_html($billing_phone) . '<br>';
+        }
+
+        if (!empty($full_address)) {
+            $name_block .= esc_html($full_address) . '<br>';
+        }
+
+        $admin_url = admin_url("user-edit.php?user_id={$user->ID}&wp_http_referer=%2Fwp-admin%2Fusers.php");
+
+        $data[] = [
+            'id' => $user->ID,
+            'name' => $name_block,
+            'organizations' => $oname_block,
+            'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
+                            <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
+                        </button>
+                        <a href="' . $admin_url . '" class="icon-txt-btn">
+                            <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile
+                        </a>'
+        ];
     }
+
+    wp_send_json([
+        'data' => $data,
+        'recordsTotal' => $total_customers,
+        'recordsFiltered' => $total_customers
+    ]);
+}
+
 
 
 
