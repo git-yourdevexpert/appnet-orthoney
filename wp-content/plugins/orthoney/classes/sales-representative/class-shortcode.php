@@ -28,6 +28,7 @@ class OAM_SALES_REPRESENTATIVE_Shortcode
             return OAM_COMMON_Custom::message_design_block($message, $url, $btn_name);
         }
         
+        
         $user_id = get_current_user_id();
         $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
        
