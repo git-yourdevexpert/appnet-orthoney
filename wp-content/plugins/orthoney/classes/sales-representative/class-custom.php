@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) {
 class OAM_SALES_REPRESENTATIVE_Custom {
 
     public function __construct() {
+        add_action('cron_schedules', array($this, 'every_3_hours_cron_schedules'));
         add_action('init', array($this, 'sales_representative_dashboard_handler'));
         add_action('wp_head', array($this, 'remove_user_switching_footer_button'));
 
@@ -18,17 +19,28 @@ class OAM_SALES_REPRESENTATIVE_Custom {
 
         // Schedule the cron only once
         if (!wp_next_scheduled('orthoney_cron_cache_customers')) {
-            wp_schedule_event(time(), 'daily', 'orthoney_cron_cache_customers');
+            wp_schedule_event(time(), 'every_3_hours', 'orthoney_cron_cache_customers');
         }
 
         if (!wp_next_scheduled('orthoney_cron_cache_organization')) {
-            wp_schedule_event(time(), 'daily', 'orthoney_cron_cache_organization');
+            wp_schedule_event(time(), 'every_3_hours', 'orthoney_cron_cache_organization');
         }
     }
+
+   
 
     /**
      * Removes the User Switching footer button from frontend.
      */
+    public function every_3_hours_cron_schedules($schedules) {
+        $schedules['every_3_hours'] = [
+        'interval' => 3 * HOUR_IN_SECONDS, // 10800 seconds
+        'display'  => __('Every 3 Hours')
+        ];
+        return $schedules;
+
+    }
+
     public function remove_user_switching_footer_button() {
         ob_start(function ($buffer) {
             return preg_replace('/<p id="user_switching_switch_on".*?<\/p>/s', '', $buffer);
@@ -81,6 +93,15 @@ class OAM_SALES_REPRESENTATIVE_Custom {
     public function orthoney_cache_customer_data() {
         global $wpdb;
 
+        $chunk_size = 500;
+        $offset = get_option('orthoney_cache_customer_offset', 0);
+        $log_file = WP_CONTENT_DIR . '/cache_customer.log';
+
+        // Clear log file on first batch
+        if ($offset == 0) {
+            file_put_contents($log_file, '');
+        }
+
         $query = $wpdb->prepare("
             SELECT DISTINCT u.ID, u.display_name, u.user_email,
                 MAX(CASE WHEN um.meta_key = 'first_name' THEN um.meta_value END) AS first_name,
@@ -92,11 +113,13 @@ class OAM_SALES_REPRESENTATIVE_Custom {
             GROUP BY u.ID, u.display_name, u.user_email
             HAVING capabilities = %s
             ORDER BY display_name ASC
-        ", 'a:1:{s:8:"customer";b:1;}');
+            LIMIT %d OFFSET %d
+        ", 'a:1:{s:8:"customer";b:1;}', $chunk_size, $offset);
 
         $users = $wpdb->get_results($query);
+        $cached = get_transient('orthoney_cached_customers') ?: [];
 
-        $cached = [];
+        $log_entries = [];
 
         foreach ($users as $user) {
             $first_name = $user->first_name;
@@ -106,11 +129,24 @@ class OAM_SALES_REPRESENTATIVE_Custom {
                 $full_name = $user->display_name;
             }
 
-            $cached[$user->ID] = $full_name . ' [' . $user->user_email . ']';
+            $formatted = $full_name . ' [' . $user->user_email . ']';
+            $cached[$user->ID] = $formatted;
+            $log_entries[] = $user->ID . ' => ' . $formatted;
         }
 
         set_transient('orthoney_cached_customers', $cached, DAY_IN_SECONDS);
+
+        if (!empty($log_entries)) {
+            file_put_contents($log_file, implode(PHP_EOL, $log_entries) . PHP_EOL, FILE_APPEND);
+        }
+
+        if (count($users) === $chunk_size) {
+            update_option('orthoney_cache_customer_offset', $offset + $chunk_size);
+        } else {
+            delete_option('orthoney_cache_customer_offset');
+        }
     }
+
 
     /**
      * Populates the ACF select field with cached organization data.
