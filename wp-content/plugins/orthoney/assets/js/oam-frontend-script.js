@@ -1988,19 +1988,18 @@ jQuery(document).ready(function ($) {
         currentRequest = jqXHR;
 
         // Remove previous message (if any)
-        $('#admin-customer-table_wrapper .custom-processing-msg').remove();
-
-        // Append new message
-        $('#admin-customer-table_wrapper').append(`
-          <div class="custom-processing-msg" style="text-align:center; padding: 10px; font-weight: bold;">
-            Please wait while we process your request...
-          </div>
-        `);
-      },
+        
+         $('#admin-customer-table_processing').show();
+         $('#table#admin-customer-table tbody').hide();
+        
       complete: function () {
         currentRequest = null;
         setTimeout(() => {
-          $('#admin-customer-table_wrapper .custom-processing-msg').remove();
+                          $('#table#admin-customer-table tbody').show();
+
+                 $('#admin-customer-table_processing').hide();
+
+
         }, 100);
       }
     },
