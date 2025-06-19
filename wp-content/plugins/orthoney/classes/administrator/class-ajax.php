@@ -269,16 +269,17 @@ public function orthoney_admin_get_customers_data_handler() {
                         }
                         $organizations_status = implode(', ', $token_array);
                     }
+                        $cbr_phone_number = get_user_meta($user->ID, 'cbr_phone_number', true);
 
 
                     $data[] = [
                         'id' => $user->ID,
-                        'name' => esc_html($user->display_name),
+                        'name' => '<strong>' . esc_html($user->display_name) . '</strong><br>' . esc_html($user->user_email).'</br>'.$cbr_phone_number,
                         'email' => esc_html($user->user_email),
                         'organizations' => $organizations_status,
                         'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
-                                        <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Sales Representative
-                                    </button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Sales Representative Profile</a>'
+                                        <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as CSR
+                                    </button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit CSR Profile</a>'
                     ];
                 }
             }
@@ -741,7 +742,6 @@ public function orthoney_admin_get_customers_data_handler() {
 
             
 
-            $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($row->ID) . '&tab=affiliates';
             
              $organizationdata = [];
 
@@ -814,6 +814,7 @@ public function orthoney_admin_get_customers_data_handler() {
 $filtered_keys = array_filter($userid_keys);
 $last_index = count($filtered_keys) - 1;
 
+            $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($associated_affiliate_id) . '&tab=affiliates';
 
 
                 $data[] = [
@@ -828,11 +829,13 @@ $last_index = count($filtered_keys) - 1;
     return $output;
 }, $filtered_keys, array_keys($filtered_keys))),
 
+
+
                     'organization_admin'        => $org_admin_user,
                     'new_organization' => $new_organization_block,
                     'status'       => esc_html($status),
                     'price' => wc_price($show_price),
-                    'login'        => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . intval($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As Org</button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Org Prf</a>'
+                    'login'        => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . intval($associated_affiliate_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As Org</button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Org Prf</a>'
                 ];
             }
         }
