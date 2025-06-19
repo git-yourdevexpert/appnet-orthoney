@@ -44,7 +44,32 @@ class OAM_WC_Customizer {
         add_action('woocommerce_thankyou', array($this, 'add_labels_to_order_overview'), 20);
         add_filter('woocommerce_email_attachments', array($this, 'attach_pdf_order_email'), 10, 3);
 
+
+        add_action('woocommerce_edit_account_form', array($this,'add_phone_field_to_edit_account'));
+        add_action('woocommerce_save_account_details', array($this,'save_phone_field_from_edit_account', 12, 1));
+
+
+
     }
+
+
+    public function add_phone_field_to_edit_account() {
+    $user_id = get_current_user_id();
+    $user_phone = get_user_meta($user_id, 'billing_phone', true);
+    ?>
+    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+        <label for="account_phone"><?php _e('Phone number', 'woocommerce'); ?>&nbsp;<span class="required">*</span></label>
+        <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="account_phone" id="account_phone" value="<?php echo esc_attr($user_phone); ?>" />
+    </p>
+    <?php
+}
+
+    public function save_phone_field_from_edit_account($user_id) {
+        if (isset($_POST['account_phone'])) {
+            update_user_meta($user_id, 'billing_phone', sanitize_text_field($_POST['account_phone']));
+        }
+    }
+
 
     
     public function add_cc_to_new_order_email( $headers, $email_id, $order ) {
