@@ -742,7 +742,6 @@ public function orthoney_admin_get_customers_data_handler() {
 
             
 
-            $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($row->ID) . '&tab=affiliates';
             
              $organizationdata = [];
 
@@ -815,6 +814,7 @@ public function orthoney_admin_get_customers_data_handler() {
 $filtered_keys = array_filter($userid_keys);
 $last_index = count($filtered_keys) - 1;
 
+            $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($associated_affiliate_id) . '&tab=affiliates';
 
 
                 $data[] = [
@@ -828,6 +828,8 @@ $last_index = count($filtered_keys) - 1;
     }
     return $output;
 }, $filtered_keys, array_keys($filtered_keys))),
+
+
 
                     'organization_admin'        => $org_admin_user,
                     'new_organization' => $new_organization_block,
