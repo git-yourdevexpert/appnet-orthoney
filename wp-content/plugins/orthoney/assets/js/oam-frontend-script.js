@@ -1969,47 +1969,61 @@ jQuery(document).ready(function ($) {
     ]
   });
 });
-
 jQuery(document).ready(function ($) {
   let currentRequest = null;
 
   const table = new DataTable("#admin-customer-table", {
     pageLength: 10,
     lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-    ajax: {
-      url: oam_ajax.ajax_url,
-      type: "POST",
-      data: function (d) {
-        d.action = "orthoney_admin_get_customers_data";
-      },
-      beforeSend: function (jqXHR) {
-  if (currentRequest) {
-    currentRequest.abort();
-  }
-  currentRequest = jqXHR;
+    ajax: function (data, callback, settings) {
+      // Abort existing fetch
+      if (currentRequest && typeof currentRequest.abort === "function") {
+        currentRequest.abort();
+      }
 
-  // Hide actual rows
-  $('#admin-customer-table tbody').hide();
+      const controller = new AbortController();
+      currentRequest = controller;
 
-  // Show custom loading row
-  const colspan = $('#admin-customer-table thead th').length;
-  const loadingRow = `
-    <tr class="custom-loading-row">
-      <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
-         Loading customer data, please wait...
-      </td>
-    </tr>
-  `;
-  $('#admin-customer-table tbody').html(loadingRow).show();
-},
-complete: function () {
-  currentRequest = null;
+      // Hide actual rows
+      $('#admin-customer-table tbody').hide();
 
-  setTimeout(() => {
-    // Remove loading row (actual data will be re-rendered by DataTables)
-    $('#admin-customer-table tbody').show();
-  }, 100);
-}
+      // Show custom loading row
+      const colspan = $('#admin-customer-table thead th').length;
+      const loadingRow = `
+        <tr class="custom-loading-row">
+          <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
+             Loading customer data, please wait...
+          </td>
+        </tr>
+      `;
+      $('#admin-customer-table tbody').html(loadingRow).show();
+
+      fetch(oam_ajax.ajax_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        },
+        body: new URLSearchParams({
+          action: "orthoney_admin_get_customers_data",
+          ...data // this includes pagination, search, etc.
+        }),
+        signal: controller.signal
+      })
+        .then(response => response.json())
+        .then(json => {
+          callback(json);
+        })
+        .catch(err => {
+          if (err.name !== "AbortError") {
+            console.error("Fetch error:", err);
+          }
+        })
+        .finally(() => {
+          currentRequest = null;
+          setTimeout(() => {
+            $('#admin-customer-table tbody').show();
+          }, 100);
+        });
     },
     columns: [
       { data: "id" },
@@ -2031,14 +2045,13 @@ complete: function () {
   });
 
   // Trigger search only after 3+ characters
- const searchBox = $('#admin-customer-table_filter input');
-
-searchBox.off().on('input', function () {
-  const value = this.value;
-  if (value.length >= 3 || value.length === 0) {
-    table.search(value).draw();
-  }
-});
+  const searchBox = $('#admin-customer-table_filter input');
+  searchBox.off().on('input', function () {
+    const value = this.value;
+    if (value.length >= 3 || value.length === 0) {
+      table.search(value).draw();
+    }
+  });
 });
 
 
