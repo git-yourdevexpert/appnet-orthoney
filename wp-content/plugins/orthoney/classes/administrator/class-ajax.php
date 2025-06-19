@@ -819,7 +819,10 @@ public function orthoney_admin_get_customers_data_handler() {
                     //'organization' => $organization,
                     'organization' => (!empty($meta['code']) ? '<strong>[' . $meta['code'] . ']</strong> ' : '') . $organization,
 
-                    'csr_name' => '<div>' . implode('<br>', array_map('esc_html', array_filter($userid_keys))) . '</div><hr>',
+                    'csr_name' => implode('', array_map(function($val) {
+                        return esc_html($val) . '<br><hr>';
+                    }, array_filter($userid_keys))),
+
                     'organization_admin'        => $org_admin_user,
                     'new_organization' => $new_organization_block,
                     'status'       => esc_html($status),
