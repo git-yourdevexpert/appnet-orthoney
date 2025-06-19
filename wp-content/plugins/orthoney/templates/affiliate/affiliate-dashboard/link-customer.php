@@ -106,7 +106,7 @@ $dashboard_link_label = 'Return to Dashboard';
 </div>
 
 <script>
-document.getElementById('customer-search').addEventListener('input', async function(e) {
+document.getElementById('customer-email-search').addEventListener('input', async function(e) {
     const query = e.target.value.trim();
     if (query.length < 2) return;
 
