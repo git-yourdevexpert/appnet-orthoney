@@ -1974,10 +1974,7 @@ jQuery(document).ready(function ($) {
 
   const table = new DataTable("#admin-customer-table", {
     pageLength: 50,
-    lengthMenu: [
-      [10, 25, 50, 100],
-      [10, 25, 50, 100]
-    ],
+    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
     ajax: {
       url: oam_ajax.ajax_url,
       type: "POST",
@@ -1989,12 +1986,22 @@ jQuery(document).ready(function ($) {
           currentRequest.abort();
         }
         currentRequest = jqXHR;
-        process_group_popup("Please wait while we process your request.");
+
+        // Append custom message to DataTable wrapper
+        const wrapper = $('#admin-customer-table_wrapper');
+        if (!wrapper.find('.custom-processing-msg').length) {
+          wrapper.append(`
+            <div class="custom-processing-msg" style="text-align:center; padding: 10px; font-weight: bold;">
+              Please wait while we process your request...
+            </div>
+          `);
+        }
       },
       complete: function () {
         currentRequest = null;
+        // Remove message after delay
         setTimeout(() => {
-          Swal.close();
+          $('#admin-customer-table_wrapper .custom-processing-msg').remove();
         }, 1300);
       }
     },
@@ -2010,17 +2017,6 @@ jQuery(document).ready(function ($) {
         orderable: false
       }
     ],
-    language: {
-      processing: `
-        <div class="loader multiStepForm" style="display:block">
-          <div>
-            <h2 class="swal2-title">Processing...</h2>
-            <div class="swal2-html-container">Please wait while we process your request.</div>
-            <div class="loader-5"></div>
-          </div>
-        </div>
-      `
-    },
     responsive: true,
     processing: true,
     paging: true,
@@ -2028,7 +2024,7 @@ jQuery(document).ready(function ($) {
     searching: true
   });
 
-  // Custom search trigger for 3+ characters
+  // Trigger search only after 3+ characters
   const searchBox = $('#admin-customer-table_filter input');
   searchBox.unbind().on('keyup', function () {
     const value = this.value;
@@ -2037,6 +2033,7 @@ jQuery(document).ready(function ($) {
     }
   });
 });
+
 
 jQuery(document).ready(function ($) {
   const table = new DataTable("#admin-sales-representative-table", {
