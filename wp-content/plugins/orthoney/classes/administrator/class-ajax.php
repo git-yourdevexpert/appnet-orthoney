@@ -801,9 +801,6 @@ public function orthoney_admin_get_customers_data_handler() {
                         $first_name = get_user_meta($key, 'first_name', true);
                         $last_name = get_user_meta($key, 'last_name', true);
                         $cbr_phone_number = get_user_meta($key, 'cbr_phone_number', true);
-
-
-
                         $userid_keys[] = trim("$first_name $last_name");
                         $userid_keys[] = trim("$cbr_phone_number");
                     }
@@ -822,7 +819,7 @@ public function orthoney_admin_get_customers_data_handler() {
                     //'organization' => $organization,
                     'organization' => (!empty($meta['code']) ? '<strong>[' . $meta['code'] . ']</strong> ' : '') . $organization,
 
-                    'csr_name' => implode('<br>', array_map('esc_html', array_filter($userid_keys))) . '<hr>',
+                    'csr_name' => '<div>' . implode('<br>', array_map('esc_html', array_filter($userid_keys))) . '</div><hr>',
                     'organization_admin'        => $org_admin_user,
                     'new_organization' => $new_organization_block,
                     'status'       => esc_html($status),
