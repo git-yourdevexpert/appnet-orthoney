@@ -1969,23 +1969,38 @@ jQuery(document).ready(function ($) {
     ]
   });
 });
+
 jQuery(document).ready(function ($) {
   let currentRequest = null;
+
+  // Helper to flatten nested objects (DataTables uses nested keys like search[value])
+  function flattenParams(obj, prefix = '') {
+    const str = [];
+    for (let p in obj) {
+      if (!obj.hasOwnProperty(p)) continue;
+      const key = prefix ? `${prefix}[${p}]` : p;
+      const val = obj[p];
+      if (typeof val === 'object' && val !== null) {
+        str.push(...flattenParams(val, key));
+      } else {
+        str.push(`${encodeURIComponent(key)}=${encodeURIComponent(val)}`);
+      }
+    }
+    return str.join('&');
+  }
 
   const table = new DataTable("#admin-customer-table", {
     pageLength: 10,
     lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
     ajax: function (data, callback, settings) {
-      // Cancel previous fetch request if still pending
       if (currentRequest && typeof currentRequest.abort === 'function') {
         currentRequest.abort();
       }
 
-      // Create AbortController for cancellation
       const controller = new AbortController();
       currentRequest = controller;
 
-      // Show custom loading message
+      // Show custom loading row
       const $tbody = $('#admin-customer-table tbody');
       const colspan = $('#admin-customer-table thead th').length;
       const loadingRow = `
@@ -1997,25 +2012,21 @@ jQuery(document).ready(function ($) {
       `;
       $tbody.hide().html(loadingRow).show();
 
-      // Prepare fetch options
-      const fetchOptions = {
+      fetch(oam_ajax.ajax_url, {
         method: "POST",
-        body: new URLSearchParams({
+        body: flattenParams({
           ...data,
           action: "orthoney_admin_get_customers_data"
         }),
         signal: controller.signal,
-        cache: "force-cache", // enables disk caching
+        cache: "force-cache",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded"
         }
-      };
-
-      // Perform fetch request
-      fetch(oam_ajax.ajax_url, fetchOptions)
+      })
         .then(response => response.json())
         .then(json => {
-          callback(json); // pass data to DataTable
+          callback(json); // Pass the response to DataTables
         })
         .catch(error => {
           if (error.name !== 'AbortError') {
@@ -2024,7 +2035,7 @@ jQuery(document).ready(function ($) {
         })
         .finally(() => {
           setTimeout(() => {
-            $tbody.show();
+            $('#admin-customer-table tbody').show();
           }, 100);
           currentRequest = null;
         });
@@ -2048,7 +2059,7 @@ jQuery(document).ready(function ($) {
     searching: true
   });
 
-  // Trigger search only after 3+ characters
+  // Trigger search only after 3+ characters or on clear
   const searchBox = $('#admin-customer-table_filter input');
   searchBox.off().on('input', function () {
     const value = this.value;
@@ -2057,6 +2068,7 @@ jQuery(document).ready(function ($) {
     }
   });
 });
+
 
 
 jQuery(document).ready(function ($) {
