@@ -18,7 +18,8 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         add_action('wp_ajax_get_filtered_customers', array($this, 'orthoney_get_filtered_customers'));
     }
 
-    public function orthoney_get_filtered_customers() {
+    
+  public function orthoney_get_filtered_customers() {
     global $wpdb;
 
     $user_id         = get_current_user_id();
@@ -36,28 +37,23 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
 
     if ($select_customer === 'choose_customer' && !empty($choose_ids)) {
         if (in_array('sales_representative', $user_roles)) {
-              if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
+            if ($select_organization === 'choose_organization') {
+                if (!empty($choose_organization)) {
+                    $affiliate_ids = array_filter(array_map('intval', (array) $choose_organization));
 
-            //if (!empty($choose_organization)) {
-                $affiliate_ids = array_filter(array_map('intval', (array) $choose_organization));
-
-                if (!empty($affiliate_ids)) {
-                    $placeholders = implode(',', array_fill(0, count($affiliate_ids), '%d'));
-                    $query = "
-                        SELECT customer_id 
-                        FROM {$wpdb->prefix}oh_affiliate_customer_linker 
-                        WHERE affiliate_id IN ($placeholders)
-                    ";
-                    $customer_ids = $wpdb->get_col($wpdb->prepare($query, ...$affiliate_ids));
+                    if (!empty($affiliate_ids)) {
+                        $placeholders = implode(',', array_fill(0, count($affiliate_ids), '%d'));
+                        $query = "
+                            SELECT customer_id 
+                            FROM {$wpdb->prefix}oh_affiliate_customer_linker 
+                            WHERE affiliate_id IN ($placeholders)
+                        ";
+                        $customer_ids = $wpdb->get_col($wpdb->prepare($query, ...$affiliate_ids));
+                    }
+                } else {
+                    $query = "SELECT customer_id FROM {$wpdb->prefix}oh_affiliate_customer_linker";
+                    $customer_ids = $wpdb->get_col($query);
                 }
-            }else{
-
-                 $query = "
-                        SELECT customer_id 
-                        FROM {$wpdb->prefix}oh_affiliate_customer_linker
-                    ";
-                    $customer_ids = $wpdb->get_col($wpdb->prepare($query, ...$affiliate_ids));
-
             }
         }
 
@@ -86,7 +82,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         ORDER BY um_first.meta_value ASC
     ";
 
-    $results = $wpdb->get_results($wpdb->prepare($sql_data));
+    $results = $wpdb->get_results($sql_data);
 
     $affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker';
     $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
@@ -183,6 +179,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         'data'            => $data,
     ]);
 }
+
 
 public function get_affiliates_commission_list_ajax_handler() {
         global $wpdb;
