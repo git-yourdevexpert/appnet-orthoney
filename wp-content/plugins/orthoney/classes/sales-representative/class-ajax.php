@@ -386,7 +386,7 @@ if($user->user_email != ''){
 
 
                 // Remove empty values and join with <br>
-                $organization = implode('<br>', array_filter($organizationdata));
+        $organization = implode('<br>', array_filter($organizationdata));
             $nonce = wp_create_nonce('switch_to_user_' . $row->user_id);
 
         
@@ -416,7 +416,7 @@ if($user->user_email != ''){
 
                  $new_organization_block = implode('<br>', array_filter([
                     '<strong>Org:</strong> ' . esc_html($new_organization),
-                    '<strong>'.esc_html($status),
+                    esc_html($status),
                     '<strong>Season Status:</strong> ' . esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
                 ]));
 
