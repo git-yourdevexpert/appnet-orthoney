@@ -162,11 +162,13 @@ public function orthoney_admin_get_customers_data_handler() {
         if (!empty($address)) $name_block .= esc_html(implode(', ', $address)) . '<br>';
 
         // Cache org block
-        $cache_key = 'affiliates_for_customer_' . $user_id;
+        $cache_key = 'affiliates_for_customer__new' . $user_id;
         $oname_block = get_transient($cache_key);
 
         if ($oname_block === false) {
             $oname_block = '';
+            $blocks = [];
+
             $affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker';
             $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
 
@@ -184,11 +186,21 @@ public function orthoney_admin_get_customers_data_handler() {
                 $associated = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
 
                 if ($associated) {
-                    if (!empty($token)) $oname_block .= '<strong>[' . esc_html($token) . '] ' . esc_html($org_name) . '</strong><br>';
+                    $block = '';
+
+                    if (!empty($token)) {
+                        $block .= '<strong>[' . esc_html($token) . '] ' . esc_html($org_name) . '</strong><br>';
+                    }
 
                     $afuser = get_userdata($affiliate_id);
-                    if ($afuser) $oname_block .= esc_html($afuser->user_email) . '<br>';
-                    $oname_block .= esc_html(get_user_meta($affiliate_id, '_yith_wcaf_phone_number', true)) . '<br>';
+                    if ($afuser) {
+                        $block .= esc_html($afuser->user_email) . '<br>';
+                    }
+
+                    $phone = get_user_meta($affiliate_id, '_yith_wcaf_phone_number', true);
+                    if (!empty($phone)) {
+                        $block .= esc_html($phone) . '<br>';
+                    }
 
                     $addr = array_filter([
                         get_user_meta($affiliate_id, '_yith_wcaf_address', true),
@@ -197,13 +209,23 @@ public function orthoney_admin_get_customers_data_handler() {
                         get_user_meta($affiliate_id, '_yith_wcaf_zipcode', true)
                     ]);
 
-                    if (!empty($addr)) $oname_block .= esc_html(implode(', ', $addr)) . '<br>';
-                    $oname_block .= '<hr>';
+                    if (!empty($addr)) {
+                        $block .= esc_html(implode(', ', $addr)) . '<br>';
+                    }
+
+                    if (!empty($block)) {
+                        $blocks[] = $block;
+                    }
                 }
+            }
+
+            if (!empty($blocks)) {
+                $oname_block = implode('<hr>', $blocks);
             }
 
             set_transient($cache_key, $oname_block, HOUR_IN_SECONDS);
         }
+
 
         $admin_url = admin_url("user-edit.php?user_id={$user_id}&wp_http_referer=%2Fwp-admin%2Fusers.php");
 
