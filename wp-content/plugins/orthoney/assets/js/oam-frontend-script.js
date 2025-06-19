@@ -2093,7 +2093,7 @@ jQuery(document).ready(function ($) {
   let organizationSearch = '';
 
   // Custom input for organization search
-  const orgInput = $('<input type="text" placeholder="Search by Organization" style="margin-right: 10px;">')
+  const orgInput = $('<input type="text" placeholder="Search by Organization Name" style="margin-right: 10px;">')
     .on('keyup', function () {
       organizationSearch = $(this).val().trim();
       table.ajax.reload();
