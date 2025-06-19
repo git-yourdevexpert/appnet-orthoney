@@ -503,58 +503,14 @@ public function orthoney_admin_get_customers_data_handler() {
             $yith_wcaf_phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true) ?: '';
             $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
             $product_price = get_user_meta($user_id, 'DJarPrice', true);
+            $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Returning';
+
             $show_price = $selling_minimum_price;
             if($product_price >= $selling_minimum_price){
                 $show_price = $product_price;
             }
 
-            $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate($user_id);
-
-            $commission_array_data = json_decode($commission_array, true);
-
-            $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Returning';
-
-            $exclude_coupon = EXCLUDE_COUPON;
-
-        // Initialize counters
-            $total_all_quantity = $fundraising_qty = $wholesale_qty = 0;
-            $total_orders = $wholesale_order = 0;
-            $unit_price = $unit_cost = 0;
-            $total_commission = 0;
-
-            if (!empty($commission_array_data['data'])) {
-                foreach ($commission_array_data['data'] as $value) {
-                    // Aggregate quantities
-                    $fundraising_qty = $value['total_quantity'];
-                    $wholesale_qty = $value['wholesale_qty'];
-
-                    // Process only if affiliate account is active
-                    if (!empty($value['affiliate_account_status'])) {
-                        $unit_price = $value['par_jar'];
-                        $unit_cost = $value['minimum_price'];
-                        $total_all_quantity += $value['total_quantity'];
-                        $total_orders++;
-
-                        // Handle coupon logic
-                        $coupon_array = !empty($value['is_voucher_used']) 
-                            ? array_values(array_diff(explode(",", $value['is_voucher_used']), $exclude_coupon)) 
-                            : [];
-
-                        if (empty($coupon_array)) {
-                            $total_commission += $value['commission'];
-                        } else {
-                            $wholesale_order++;
-                        }
-                    }
-                }
-            }
-
-            // Final quantity and order calculations
-            $total_all_quantity = $fundraising_qty;
-            $fundraising_orders = $total_orders - $wholesale_order;
-
-            // Calculate total commission based on jar threshold
-            $total_commission = ($total_all_quantity > 50)  ? wc_price($fundraising_qty * ($unit_price - $unit_cost)) : wc_price(0);
+            
 
             $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($row->ID) . '&tab=affiliates';
             
@@ -625,7 +581,7 @@ public function orthoney_admin_get_customers_data_handler() {
                 }
 
               $new_organization_block = implode('<br>', array_filter([
-                    '<strong>Org:</strong> ' . esc_html($new_organization),
+                    '<strong>Org Status:</strong> ' . esc_html($new_organization),
                      esc_html($status),
                     '<strong>Season Status:</strong> ' . esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
                 ]));
@@ -641,10 +597,8 @@ public function orthoney_admin_get_customers_data_handler() {
                     'organization_admin'        => $org_admin_user,
                     'new_organization' => $new_organization_block,
                     'status'       => esc_html($status),
-                   // 'season_status' => esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
                     'price' => wc_price($show_price),
-                  //  'commission' => $total_commission,
-                    'login'        => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . intval($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As An Org</button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Org Prf</a>'
+                    'login'        => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . intval($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As Org</button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Org Prf</a>'
                 ];
             }
         }
