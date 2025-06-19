@@ -758,7 +758,11 @@ public function orthoney_admin_get_customers_data_handler() {
             $activate_affiliate_account = 0;
             $total_quantity = 0;
             
-            $associated_affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+          $associated_affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+            if($associated_affiliate_id ){
+                $associated_affiliate_id = $user_id;
+            }
+           
             
             $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true) ?: 0;
             $yith_wcaf_phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true) ?: '';
