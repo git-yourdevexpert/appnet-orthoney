@@ -989,8 +989,8 @@ document.addEventListener("click", function (event) {
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, I want!",
-        cancelButtonText: "No, I do not",
+        confirmButtonText: "Yes",
+        cancelButtonText: "No",
         reverseButtons: true,
         allowOutsideClick: false,
         allowEscapeKey: false,
@@ -1539,7 +1539,7 @@ document.addEventListener("click", function (event) {
       event.target.textContent = "View Already Ordered Recipients";
       event.target.setAttribute(
         "data-tippy",
-        "View all recipients who have already placed an order this season."
+        "View only the recipients that we found on another recent order."
       );
       ["successCSVData"].forEach((id) => {
         const rows = document.querySelectorAll(`#${id} tr`);
