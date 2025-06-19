@@ -32,8 +32,10 @@ $dashboard_link_label = 'Return to Dashboard';
     </div>
     <!-- Search and filter options -->
     <div class="filter-container orthoney-datatable-warraper">
-        <div class="customer-email-search linked-customer-search">       <input type="text" id="customer-email-search" required placeholder="Enter Customer Email" data-error-message="Please enter a Email.">
-        
+        <div class="customer-email-search linked-customer-search">       
+            <input type="text" id="customer-email-search" class="autocomplete-suggestions" required placeholder="Enter Customer Email" data-error-message="Please enter a Email.">
+        <div id="suggestions"></div>
+
             <span class="error-message"></span>
     <button id="search-button" class="w-btn us-btn-style_2">Find customer</button>
     <ul id="customer-email-results"></ul></div>
@@ -102,3 +104,22 @@ $dashboard_link_label = 'Return to Dashboard';
     </div>
     <!-- list -->
 </div>
+
+<script>
+document.getElementById('customer-search').addEventListener('input', async function(e) {
+    const query = e.target.value.trim();
+    if (query.length < 2) return;
+
+    const response = await fetch(ajaxurl + '?action=search_customers_autosuggest&term=' + encodeURIComponent(query));
+    const results = await response.json();
+
+    const suggestionBox = document.getElementById('suggestions');
+    suggestionBox.innerHTML = '';
+    
+    results.forEach(user => {
+        const div = document.createElement('div');
+        div.textContent = `${user.display_name} (${user.user_email})`;
+        suggestionBox.appendChild(div);
+    });
+});
+</script>

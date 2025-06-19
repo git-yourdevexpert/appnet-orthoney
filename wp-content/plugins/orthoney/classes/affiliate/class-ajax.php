@@ -40,6 +40,32 @@ class OAM_AFFILIATE_Ajax{
 
     }
 
+
+        public function search_customers_autosuggest_handler() {
+            global $wpdb;
+
+            $term = sanitize_text_field($_GET['term'] ?? '');
+
+            if (strlen($term) < 2) {
+                wp_send_json([]);
+            }
+
+            $like = '%' . $wpdb->esc_like($term) . '%';
+
+            $results = $wpdb->get_results(
+                $wpdb->prepare("
+                    SELECT ID, user_email, display_name 
+                    FROM {$wpdb->users}
+                    WHERE user_email LIKE %s OR display_name LIKE %s
+                    LIMIT 10
+                ", $like, $like)
+            );
+
+            wp_send_json($results);
+        }
+
+
+
     public function orthoney_org_account_statement_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
 
