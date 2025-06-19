@@ -76,6 +76,19 @@ if ($redirect_back_user_id) {
                         </div>
                     </div>
                 </div>
+                <div class="two-col-grid">
+                    <div class="cl-left">
+                        <div class="recipient-lists-block custom-table">
+                            <div class="row-block">
+                                <h4>Organizations Commission</h4>
+                                <div class="see-all">
+                                    <a class="w-btn us-btn-style_1" href="<?php echo esc_url(OAM_Helper::$administrator_dashboard_link.'organization-commission/'); ?>">See All</a> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
             </div>
         </div>
     </div>
