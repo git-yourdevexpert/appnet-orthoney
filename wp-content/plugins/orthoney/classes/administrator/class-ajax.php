@@ -45,15 +45,14 @@ class OAM_ADMINISTRATOR_AJAX {
         $capabilities_key = $wpdb->prefix . 'capabilities';
 
 
-        $total_query_count = $wpdb->prepare("
-            SELECT COUNT(DISTINCT u.ID)
+     $total_customers = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(DISTINCT u.ID)
             FROM {$wpdb->users} u
             INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-            WHERE um.meta_key = %s AND um.meta_value LIKE %s
-        ", $capabilities_key, '%customer%');
-        $query_total = $wpdb->get_var($total_query_count);
+            WHERE um.meta_key = %s AND um.meta_value LIKE %s",
+            $capabilities_key, '%customer%'
+        ));
 
-            $total_customers = $wpdb->get_var($query_total);
 
 
         $query_ids = $wpdb->get_col($wpdb->prepare("
