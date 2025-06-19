@@ -90,7 +90,7 @@ $order_by = isset($column_map[$order_column_index]) ? $column_map[$order_column_
 
         $total_customers = count($matching_ids);
 
-        echo $sql = "SELECT DISTINCT u.ID
+         $sql = "SELECT DISTINCT u.ID
         FROM {$wpdb->users} u
         INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
         LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
@@ -114,12 +114,16 @@ $order_by = isset($column_map[$order_column_index]) ? $column_map[$order_column_
             $capabilities_key, $like_customer
         ));
 
-        $query_ids = $wpdb->get_col($wpdb->prepare(
+       $query_ids = $wpdb->get_col($wpdb->prepare(
             "SELECT DISTINCT u.ID
-             FROM {$wpdb->users} u
-             INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-             WHERE um.meta_key = %s AND um.meta_value LIKE %s
-             LIMIT %d OFFSET %d",
+            FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+            LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
+            LEFT JOIN {$wpdb->prefix}oh_affiliate_customer_linker linker ON u.ID = linker.customer_id
+            LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON linker.affiliate_id = aff.user_id
+            WHERE um.meta_key = %s AND um.meta_value LIKE %s
+            ORDER BY {$order_by} {$order_dir}
+            LIMIT %d OFFSET %d",
             $capabilities_key, $like_customer, $length, $start
         ));
     }
