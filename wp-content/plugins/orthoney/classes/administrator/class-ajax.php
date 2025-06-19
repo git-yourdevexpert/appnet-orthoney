@@ -811,6 +811,8 @@ public function orthoney_admin_get_customers_data_handler() {
                      esc_html($status),
                     '<strong>Season Status:</strong> ' . esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
                 ]));
+$filtered_keys = array_filter($userid_keys);
+$last_index = count($filtered_keys) - 1;
 
 
 
@@ -818,10 +820,13 @@ public function orthoney_admin_get_customers_data_handler() {
                     'code'         => esc_html($meta['code']),
                     //'organization' => $organization,
                     'organization' => (!empty($meta['code']) ? '<strong>[' . $meta['code'] . ']</strong> ' : '') . $organization,
-
-                    'csr_name' => implode('', array_map(function($val) {
-                        return esc_html($val) . '<br><hr>';
-                    }, array_filter($userid_keys))),
+'csr_name' => implode('', array_map(function($val, $index) use ($filtered_keys, $last_index) {
+    $output = esc_html($val);
+    if ($index < $last_index) {
+        $output .= '<br><hr>';
+    }
+    return $output;
+}, $filtered_keys, array_keys($filtered_keys))),
 
                     'organization_admin'        => $org_admin_user,
                     'new_organization' => $new_organization_block,
