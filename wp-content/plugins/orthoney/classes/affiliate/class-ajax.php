@@ -34,12 +34,13 @@ class OAM_AFFILIATE_Ajax{
         add_action('wp_ajax_add_affiliate_request', array( $this, 'add_affiliate_request_handler' ));
         add_action('wp_ajax_nopriv_add_affiliate_link', array($this, 'add_affiliate_link_handler'));
         add_action('wp_ajax_add_affiliate_link', array( $this, 'add_affiliate_link_handler' ));
-
+        add_action('wp_ajax_search_customers_autosuggest', array($this, 'search_customers_autosuggest_handler'));
         add_action('wp_ajax_orthoney_org_account_statement_ajax', array( $this, 'orthoney_org_account_statement_ajax_handler' ));
 
 
     }
 
+    
 
         public function search_customers_autosuggest_handler() {
             global $wpdb;
