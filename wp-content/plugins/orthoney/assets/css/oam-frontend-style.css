@@ -3018,7 +3018,7 @@ body .woocommerce .order-process-block .button {
   border-color: #dee2e6;
   vertical-align: middle;
   color: #333;
-  text-transform: lowercase!important;
+  text-transform: none!important;
 }
 
 .order-process-block table th:first-child,
