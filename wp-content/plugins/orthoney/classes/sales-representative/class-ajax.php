@@ -380,7 +380,7 @@ if($user->user_email != ''){
 
 
                  $new_organization_block = implode('<br>', array_filter([
-                    '<strong>Org:</strong> ' . esc_html($new_organization),
+                    '<strong>Org Status:</strong> ' . esc_html($new_organization),
                     esc_html($status),
                     '<strong>Season Status:</strong> ' . esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
                 ]));
