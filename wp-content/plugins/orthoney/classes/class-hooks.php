@@ -159,6 +159,7 @@ class OAM_Hooks {
                             'Dashboard' => SALES_REPRESENTATIVE_DASHBOARD_LINK,
                             'Customers Orders' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'order-list/',
                             'Assigned Customers' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-customers/',
+                            'Organizations Commission' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'organization-commission/',
                             'Assigned Organizations' => SALES_REPRESENTATIVE_DASHBOARD_LINK . 'manage-organizations/',
                             'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account/',
                         ]
@@ -192,6 +193,7 @@ class OAM_Hooks {
                             'Orders' => ADMINISTRATOR_DASHBOARD_LINK . 'orders/',
                             'Manage Customers' => ADMINISTRATOR_DASHBOARD_LINK . 'customers/',
                             'Manage Organizations' => ADMINISTRATOR_DASHBOARD_LINK . 'organizations/',
+                            'Organizations Commission' => ADMINISTRATOR_DASHBOARD_LINK . 'organization-commission/',
                             'Manage Sales Representatives' => ADMINISTRATOR_DASHBOARD_LINK . 'sales-representatives/',
                             'My Profile' => CUSTOMER_DASHBOARD_LINK . 'edit-account/',
                             
