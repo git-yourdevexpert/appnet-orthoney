@@ -106,20 +106,20 @@ $dashboard_link_label = 'Return to Dashboard';
 </div>
 
 <script>
-document.getElementById('customer-email-search').addEventListener('input', async function(e) {
-    const query = e.target.value.trim();
-    if (query.length < 2) return;
+// document.getElementById('customer-email-search').addEventListener('input', async function(e) {
+//     const query = e.target.value.trim();
+//     if (query.length < 2) return;
 
-    const response = await fetch(oam_ajax.ajax_url + '?action=search_customers_autosuggest&term=' + encodeURIComponent(query));
-    const results = await response.json();
+//     const response = await fetch(oam_ajax.ajax_url + '?action=search_customers_autosuggest&term=' + encodeURIComponent(query));
+//     const results = await response.json();
 
-    const suggestionBox = document.getElementById('suggestions');
-    suggestionBox.innerHTML = '';
+//     const suggestionBox = document.getElementById('suggestions');
+//     suggestionBox.innerHTML = '';
     
-    results.forEach(user => {
-        const div = document.createElement('div');
-        div.textContent = `${user.display_name} (${user.user_email})`;
-        suggestionBox.appendChild(div);
-    });
-});
+//     results.forEach(user => {
+//         const div = document.createElement('div');
+//         div.textContent = `${user.display_name} (${user.user_email})`;
+//         suggestionBox.appendChild(div);
+//     });
+// });
 </script>
