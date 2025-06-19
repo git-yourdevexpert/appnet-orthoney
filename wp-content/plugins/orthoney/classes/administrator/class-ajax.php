@@ -767,16 +767,20 @@ public function orthoney_admin_get_customers_data_handler() {
                 }
             }
 
-            $filtered_keys = array_filter($userid_keys);
-            $last_index = count($filtered_keys) - 1;
+          $filtered_keys = array_filter($userid_keys);
+        $last_index = count($filtered_keys) - 1;
 
-            $csr_name = implode('', array_map(function ($val, $index) use ($filtered_keys, $last_index) {
-                $output = esc_html($val);
-                if ($index < $last_index) {
-                    $output .= '<br><hr>';
-                }
-                return $output;
-            }, $filtered_keys, array_keys($filtered_keys)));
+        $csr_name = implode('', array_map(function ($val, $index) use ($filtered_keys, $last_index) {
+            // Escape the content, but allow HTML formatting (br, hr)
+            $output = nl2br(esc_html($val)); // escape content safely, preserve line breaks if any
+            if ($index < $last_index) {
+                $output .= '<br><hr>';
+            }
+            return $output;
+        }, $filtered_keys, array_keys($filtered_keys)));
+
+           
+
 
             $new_organization_block = implode('<br>', array_filter([
                 '<strong>Org Status:</strong> ' . esc_html($new_organization),
