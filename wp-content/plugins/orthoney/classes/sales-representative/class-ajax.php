@@ -25,18 +25,72 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         $select_customer = get_user_meta($user_id, 'select_customer', true);
         $choose_customer = get_user_meta($user_id, 'choose_customer', true); // no trailing space
 
+
+
+
+
+        $select_organization = get_user_meta($user_id, 'select_organization', true);
+
+         $choose_organization = get_user_meta($user_id, 'choose_organization', true);
+
+        // Make sure it's an array
+        $affiliate_ids = is_array($choose_organization) ? $choose_organization : [$choose_organization];
+        $affiliate_ids = array_filter($affiliate_ids); // Remove empty values
+
+        $placeholders = implode(',', array_fill(0, count($affiliate_ids), '%d'));
+
+        $query = "
+            SELECT customer_id 
+            FROM {$wpdb->prefix}oh_affiliate_customer_linker 
+            WHERE affiliate_id IN ($placeholders)
+            ORDER BY affiliate_id ASC
+        ";
+
+        $customer_ids = $wpdb->get_col($wpdb->prepare($query, ...$affiliate_ids));
+
+
+        
+
+
         $start  = intval($_POST['start'] ?? 0);
         $length = intval($_POST['length'] ?? 10);
         $draw   = intval($_POST['draw'] ?? 1);
         $search = sanitize_text_field($_POST['search']['value'] ?? '');
 
         $include_clause = '';
+        $customer_ids = []; // default empty
+
         if ($select_customer === 'choose_customer' && !empty($choose_customer)) {
-            // make sure $choose_customer is array of integers
-            $choose_ids = array_map('intval', (array) $choose_customer);
-            if (!empty($choose_ids)) {
-                $include_clause = 'AND u.ID IN (' . implode(',', $choose_ids) . ')';
+
+            if (in_array('sales_representative', $user_roles)) {
+                if( $select_organization == "choose_organization"){
+                $affiliate_ids = (array) get_user_meta($current_user->ID, 'choose_organization', true);
+                $affiliate_ids = array_filter(array_map('intval', $affiliate_ids));
+
+                if (!empty($affiliate_ids)) {
+                    global $wpdb;
+                    $placeholders = implode(',', array_fill(0, count($affiliate_ids), '%d'));
+                    $query = "
+                        SELECT customer_id 
+                        FROM {$wpdb->prefix}oh_affiliate_customer_linker 
+                        WHERE affiliate_id IN ($placeholders)
+                    ";
+                    $customer_ids = $wpdb->get_col($wpdb->prepare($query, ...$affiliate_ids));
+                }
+                }
             }
+
+    
+            // Merge with customer_ids from affiliate mapping
+            $all_customer_ids = array_unique(array_merge($choose_ids, $customer_ids));
+
+            // Build the SQL clause
+            $include_clause = '';
+            if (!empty($all_customer_ids)) {
+                $include_clause = 'AND u.ID IN (' . implode(',', $all_customer_ids) . ')';
+            }
+
+
         }
         
 
