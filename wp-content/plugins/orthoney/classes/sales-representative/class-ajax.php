@@ -287,54 +287,6 @@ if($user->user_email != ''){
 
         // Check if organization is new this year
         $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Returning';
-
-        // Get commission data
-        // $commission_array_data = json_decode(OAM_AFFILIATE_Helper::get_commission_affiliate($user_id), true);
-        // $exclude_coupon = EXCLUDE_COUPON;
-
-        // // Initialize counters
-        // $total_all_quantity = $fundraising_qty = $wholesale_qty = 0;
-        // $total_orders = $wholesale_order = 0;
-        // $unit_price = $unit_cost = 0;
-        // $total_commission = 0;
-
-
-        // // print_r($commission_array_data);
-
-        // if (!empty($commission_array_data['data'])) {
-        //     foreach ($commission_array_data['data'] as $value) {
-        //         // Aggregate quantities
-        //         $fundraising_qty = $value['total_quantity'];
-        //         $wholesale_qty = $value['wholesale_qty'];
-
-        //         // Process only if affiliate account is active
-        //         if (!empty($value['affiliate_account_status'])) {
-        //             $unit_price = $value['par_jar'];
-        //             $unit_cost = $value['minimum_price'];
-        //             $total_all_quantity += $value['total_quantity'];
-        //             $total_orders++;
-
-        //             // Handle coupon logic
-        //             $coupon_array = !empty($value['is_voucher_used']) 
-        //                 ? array_values(array_diff(explode(",", $value['is_voucher_used']), $exclude_coupon)) 
-        //                 : [];
-
-        //             if (empty($coupon_array)) {
-        //                 $total_commission += $value['commission'];
-        //             } else {
-        //                 $wholesale_order++;
-        //             }
-        //         }
-        //     }
-        // }
-
-        // // Final quantity and order calculations
-        // $total_all_quantity = $fundraising_qty;
-        // $fundraising_orders = $total_orders - $wholesale_order;
-
-        // // Calculate total commission based on jar threshold
-        // $total_commission = ($total_all_quantity > 50)  ? wc_price($fundraising_qty * ($unit_price - $unit_cost)) : wc_price(0);
-
             $raw_users = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id = $row->user_id");
 
             $user_id = intval($raw_users->user_id);
@@ -424,7 +376,7 @@ if($user->user_email != ''){
             $data[] = [
                 'code' => esc_html($row->token ?? ''),
                 //'organization' => $organization,
-                'organization' => (!empty($row->token) ? '<strong>' . $row->token . '</strong><br>' : '') . $organization,
+                'organization' => (!empty($row->token) ? '<strong>[' . $row->token . ']</strong> ' : '') . $organization,
                 'organization_admin' => $org_admin_user ?? '',
                 'new_organization' => $new_organization_block,
                 'status' => esc_html($status),
