@@ -110,7 +110,7 @@ document.getElementById('customer-search').addEventListener('input', async funct
     const query = e.target.value.trim();
     if (query.length < 2) return;
 
-    const response = await fetch(ajaxurl + '?action=search_customers_autosuggest&term=' + encodeURIComponent(query));
+    const response = await fetch(oam_ajax.ajax_url + '?action=search_customers_autosuggest&term=' + encodeURIComponent(query));
     const results = await response.json();
 
     const suggestionBox = document.getElementById('suggestions');
