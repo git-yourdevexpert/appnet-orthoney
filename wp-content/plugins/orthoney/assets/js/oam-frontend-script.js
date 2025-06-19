@@ -1991,6 +1991,7 @@ jQuery(document).ready(function ($) {
         
          $('#admin-customer-table_processing').show();
          $('#table#admin-customer-table tbody').hide();
+      },
         
       complete: function () {
         currentRequest = null;
