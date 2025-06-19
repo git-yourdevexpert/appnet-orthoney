@@ -224,6 +224,19 @@ if($user->user_email != ''){
             $search_filter .= $wpdb->prepare(" AND MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END) LIKE %s ", $search_like);
         }
 
+        if (!empty($organization_search)) {
+            $search_like = '%' . $wpdb->esc_like($organization_search) . '%';
+            
+            $search_filter .= $wpdb->prepare("
+                AND (
+                    MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END) LIKE %s
+                    OR af.token LIKE %s
+                )
+            ", $search_like, $search_like);
+        }
+
+
+
         // Total records count (without search)
         $sql_total = "
             SELECT COUNT(DISTINCT a.user_id)
