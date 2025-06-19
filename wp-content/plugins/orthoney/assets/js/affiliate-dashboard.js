@@ -927,7 +927,8 @@ jQuery(document).ready(function ($) {
         '#addUserForm #phone',
         'form.register #profile_phone_number',
         '#affiliate-profile-form #billing_phone',
-        '#billing #billing-phone'
+        '#billing #billing-phone',
+        '#user_registration_customer_phone_number'
     ];
     attachPhoneAutoFormat(selectors);
 
