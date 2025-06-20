@@ -25,310 +25,361 @@ class OAM_ADMINISTRATOR_AJAX {
         if (!$user_id) {
             wp_send_json_error(['message' => 'Invalid user ID.']);
         }
-
         // Optionally set any user meta or status updates here
         // Example:
         update_user_meta($user_id, 'activate_affiliate_account', 1);
 
         wp_send_json_success(['message' => 'Your account has been successfully activated.']);
     }
+    
+    // DB changes on 18-6-2025 for the show details
+    public function orthoney_admin_get_customers_data_handler() {
+        global $wpdb;
 
-        // DB changes on 18-6-2025 for the show details
+        $start  = isset($_POST['start']) ? intval($_POST['start']) : 0;
+        $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
+        $search = isset($_POST['search']['value']) ? trim($_POST['search']['value']) : '';
 
-public function orthoney_admin_get_customers_data_handler() {
-    global $wpdb;
+        $order_column_index = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
+        $order_dir = isset($_POST['order'][0]['dir']) && in_array($_POST['order'][0]['dir'], ['asc', 'desc']) ? $_POST['order'][0]['dir'] : 'asc';
 
-    $start  = isset($_POST['start']) ? intval($_POST['start']) : 0;
-    $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
-    $search = isset($_POST['search']['value']) ? trim($_POST['search']['value']) : '';
+        $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
+        $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
 
-    $order_column_index = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
-    $order_dir = isset($_POST['order'][0]['dir']) && in_array($_POST['order'][0]['dir'], ['asc', 'desc']) ? $_POST['order'][0]['dir'] : 'asc';
+        $column_map = [
+            0 => 'u.ID',
+            1 => 'm1.meta_value',
+            3 => 'aff.token'
+        ];
 
-    $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
-    $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
+        $order_by = isset($column_map[$order_column_index]) ? $column_map[$order_column_index] : 'u.ID';
 
-    $column_map = [
-        0 => 'u.ID',
-        1 => 'm1.meta_value',
-        3 => 'aff.token'
-    ];
+        $capabilities_key = $wpdb->prefix . 'capabilities';
+        $like_customer    = '%customer%';
+        $matching_ids = [];
 
-    $order_by = isset($column_map[$order_column_index]) ? $column_map[$order_column_index] : 'u.ID';
+        $org_conditions = [];
+        $org_params = [];
 
-    $capabilities_key = $wpdb->prefix . 'capabilities';
-    $like_customer    = '%customer%';
-    $matching_ids = [];
-
-    $org_conditions = [];
-    $org_params = [];
-
-    if (!empty($organization_search)) {
-        $org_conditions[] = "aff.user_id IN (
-            SELECT user_id FROM {$wpdb->usermeta}
-            WHERE meta_key = '_yith_wcaf_name_of_your_organization'
-            AND meta_value LIKE %s
-        )";
-        $org_params[] = '%' . $wpdb->esc_like($organization_search) . '%';
-    }
-
-    if (!empty($organization_code_search)) {
-        $org_conditions[] = "aff.token LIKE %s";
-        $org_params[] = '%' . $wpdb->esc_like($organization_code_search) . '%';
-    }
-
-    $org_where_sql = !empty($org_conditions) ? ' AND ' . implode(' AND ', $org_conditions) : '';
-
-    if (!empty($search)) {
-        $search_like = '%' . $wpdb->esc_like($search) . '%';
-
-        $matching_ids = $wpdb->get_col($wpdb->prepare(
-            "SELECT DISTINCT u.ID
-            FROM {$wpdb->users} u
-            LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
-            LEFT JOIN {$wpdb->usermeta} m2 ON u.ID = m2.user_id AND m2.meta_key = 'last_name'
-            WHERE u.user_email LIKE %s 
-                OR m1.meta_value LIKE %s 
-                OR m2.meta_value LIKE %s 
-                OR CONCAT_WS(' ', m1.meta_value, m2.meta_value) LIKE %s",
-            $search_like, $search_like, $search_like, $search_like
-        ));
-
-        if (empty($matching_ids)) {
-            wp_send_json(['data' => [], 'recordsTotal' => 0, 'recordsFiltered' => 0]);
-        }
-    }
-
-    if (!empty($matching_ids)) {
-        $placeholders = implode(',', array_fill(0, count($matching_ids), '%d'));
-        $params = array_merge([$capabilities_key, $like_customer], $matching_ids, $org_params);
-
-        $total_customers = count($matching_ids);
-
-        $sql = "SELECT DISTINCT u.ID
-            FROM {$wpdb->users} u
-            INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-            LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
-            LEFT JOIN {$wpdb->prefix}oh_affiliate_customer_linker linker ON u.ID = linker.customer_id
-            LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON linker.affiliate_id = aff.user_id
-            WHERE um.meta_key = %s AND um.meta_value LIKE %s AND u.ID IN ($placeholders) {$org_where_sql}
-            ORDER BY {$order_by} {$order_dir}
-            LIMIT %d OFFSET %d";
-
-        $params[] = $length;
-        $params[] = $start;
-
-        $query_ids = $wpdb->get_col($wpdb->prepare($sql, ...$params));
-    } else {
-        $total_customers = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(DISTINCT u.ID)
-             FROM {$wpdb->users} u
-             INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-             LEFT JOIN {$wpdb->prefix}oh_affiliate_customer_linker linker ON u.ID = linker.customer_id
-             LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON linker.affiliate_id = aff.user_id
-             WHERE um.meta_key = %s AND um.meta_value LIKE %s {$org_where_sql}",
-            ...array_merge([$capabilities_key, $like_customer], $org_params)
-        ));
-
-        $query_ids = $wpdb->get_col($wpdb->prepare(
-            "SELECT DISTINCT u.ID
-            FROM {$wpdb->users} u
-            INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-            LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
-            LEFT JOIN {$wpdb->prefix}oh_affiliate_customer_linker linker ON u.ID = linker.customer_id
-            LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON linker.affiliate_id = aff.user_id
-            WHERE um.meta_key = %s AND um.meta_value LIKE %s {$org_where_sql}
-            ORDER BY {$order_by} {$order_dir}
-            LIMIT %d OFFSET %d",
-            ...array_merge([$capabilities_key, $like_customer], $org_params, [$length, $start])
-        ));
-    }
-
-    $data = [];
-
-    foreach ($query_ids as $user_id) {
-        $user = get_userdata($user_id);
-        if (!$user || empty($user->user_email)) continue;
-
-        $customer = new WC_Customer($user_id);
-
-        $name = trim(get_user_meta($user_id, 'first_name', true) . ' ' . get_user_meta($user_id, 'last_name', true));
-        $address = array_filter([
-            $customer->get_billing_address_1(),
-            $customer->get_billing_city(),
-            $customer->get_billing_state(),
-            $customer->get_billing_postcode(),
-            $customer->get_billing_country()
-        ]);
-
-        $name_block = (!empty($name) ? '<strong>' . esc_html($name) . '</strong><br>' : '');
-        $name_block .= esc_html($user->user_email) . '<br>';
-
-        $phone = get_user_meta($user_id, 'user_registration_customer_phone_number', true);
-        if ($phone == "") {
-            $phone = $customer->get_billing_phone();
+        if (!empty($organization_search)) {
+            $org_conditions[] = "aff.user_id IN (
+                SELECT user_id FROM {$wpdb->usermeta}
+                WHERE meta_key = '_yith_wcaf_name_of_your_organization'
+                AND meta_value LIKE %s
+            )";
+            $org_params[] = '%' . $wpdb->esc_like($organization_search) . '%';
         }
 
-        if (!empty($phone)) $name_block .= esc_html($phone) . '<br>';
-        if (!empty($address)) $name_block .= esc_html(implode(', ', $address)) . '<br>';
+        if (!empty($organization_code_search)) {
+            $org_conditions[] = "aff.token LIKE %s";
+            $org_params[] = '%' . $wpdb->esc_like($organization_code_search) . '%';
+        }
 
-        $cache_key = 'affiliates_for_customer__new' . $user_id;
-        $oname_block = get_transient($cache_key);
+        $org_where_sql = !empty($org_conditions) ? ' AND ' . implode(' AND ', $org_conditions) : '';
 
-        if ($oname_block === false) {
-            $oname_block = '';
-            $blocks = [];
+        if (!empty($search)) {
+            $search_like = '%' . $wpdb->esc_like($search) . '%';
 
-            $affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker';
-            $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
-
-            $affiliates_ids = $wpdb->get_col($wpdb->prepare(
-                "SELECT affiliate_id FROM {$affiliate_customer_linker} WHERE customer_id = %d",
-                $user_id
+            $matching_ids = $wpdb->get_col($wpdb->prepare(
+                "SELECT DISTINCT u.ID
+                FROM {$wpdb->users} u
+                LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
+                LEFT JOIN {$wpdb->usermeta} m2 ON u.ID = m2.user_id AND m2.meta_key = 'last_name'
+                WHERE u.user_email LIKE %s 
+                    OR m1.meta_value LIKE %s 
+                    OR m2.meta_value LIKE %s 
+                    OR CONCAT_WS(' ', m1.meta_value, m2.meta_value) LIKE %s",
+                $search_like, $search_like, $search_like, $search_like
             ));
 
-            foreach ($affiliates_ids as $affiliate_id) {
-                $token = $wpdb->get_var($wpdb->prepare(
-                    "SELECT token FROM {$affiliates_table} WHERE user_id = %d",
-                    $affiliate_id
-                ));
-                $org_name = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
-                $associated = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
-
-                if ($associated) {
-                    $block = '';
-
-                    if (!empty($token)) {
-                        $block .= '<strong>[' . esc_html($token) . '] ' . esc_html($org_name) . '</strong><br>';
-                    }
-
-                    $afuser = get_userdata($affiliate_id);
-                    if ($afuser) {
-                        $block .= esc_html($afuser->user_email) . '<br>';
-                    }
-
-                    $phone = get_user_meta($affiliate_id, '_yith_wcaf_phone_number', true);
-                    if (!empty($phone)) {
-                        $block .= esc_html($phone) . '<br>';
-                    }
-
-                    $addr = array_filter([
-                        get_user_meta($affiliate_id, '_yith_wcaf_address', true),
-                        get_user_meta($affiliate_id, '_yith_wcaf_city', true),
-                        get_user_meta($affiliate_id, '_yith_wcaf_state', true),
-                        get_user_meta($affiliate_id, '_yith_wcaf_zipcode', true)
-                    ]);
-
-                    if (!empty($addr)) {
-                        $block .= esc_html(implode(', ', $addr)) . '<br>';
-                    }
-
-                    if (!empty($block)) {
-                        $blocks[] = $block;
-                    }
-                }
+            if (empty($matching_ids)) {
+                wp_send_json(['data' => [], 'recordsTotal' => 0, 'recordsFiltered' => 0]);
             }
-
-            if (!empty($blocks)) {
-                $oname_block = implode('<hr>', $blocks);
-            }
-
-            set_transient($cache_key, $oname_block, HOUR_IN_SECONDS);
         }
 
-        $admin_url = admin_url("user-edit.php?user_id={$user_id}&wp_http_referer=%2Fwp-admin%2Fusers.php");
+        if (!empty($matching_ids)) {
+            $placeholders = implode(',', array_fill(0, count($matching_ids), '%d'));
+            $params = array_merge([$capabilities_key, $like_customer], $matching_ids, $org_params);
 
-        $data[] = [
-            'id' => $user_id,
-            'name' => $name_block,
-            'organizations' => $oname_block,
-            'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '">
-                            <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
-                        </button>
-                        <a href="' . $admin_url . '" class="icon-txt-btn">
-                            <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile
-                        </a>'
-        ];
-    }
+            $total_customers = count($matching_ids);
 
-    wp_send_json([
-        'data' => $data,
-        'recordsTotal' => $total_customers,
-        'recordsFiltered' => $total_customers
-    ]);
-}
+            $sql = "SELECT DISTINCT u.ID
+                FROM {$wpdb->users} u
+                INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+                LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
+                LEFT JOIN {$wpdb->prefix}oh_affiliate_customer_linker linker ON u.ID = linker.customer_id
+                LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON linker.affiliate_id = aff.user_id
+                WHERE um.meta_key = %s AND um.meta_value LIKE %s AND u.ID IN ($placeholders) {$org_where_sql}
+                ORDER BY {$order_by} {$order_dir}
+                LIMIT %d OFFSET %d";
 
+            $params[] = $length;
+            $params[] = $start;
 
+            $query_ids = $wpdb->get_col($wpdb->prepare($sql, ...$params));
+        } else {
+            $total_customers = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(DISTINCT u.ID)
+                FROM {$wpdb->users} u
+                INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+                LEFT JOIN {$wpdb->prefix}oh_affiliate_customer_linker linker ON u.ID = linker.customer_id
+                LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON linker.affiliate_id = aff.user_id
+                WHERE um.meta_key = %s AND um.meta_value LIKE %s {$org_where_sql}",
+                ...array_merge([$capabilities_key, $like_customer], $org_params)
+            ));
 
-
-    //db end
-    public function orthoney_admin_get_sales_representative_data_handler() {
-
-        // Security check if needed: check_ajax_referer('your-nonce')
-
-        $all_users =  get_users([
-            'role' => 'sales_representative',
-        ]);
+            $query_ids = $wpdb->get_col($wpdb->prepare(
+                "SELECT DISTINCT u.ID
+                FROM {$wpdb->users} u
+                INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+                LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
+                LEFT JOIN {$wpdb->prefix}oh_affiliate_customer_linker linker ON u.ID = linker.customer_id
+                LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON linker.affiliate_id = aff.user_id
+                WHERE um.meta_key = %s AND um.meta_value LIKE %s {$org_where_sql}
+                ORDER BY {$order_by} {$order_dir}
+                LIMIT %d OFFSET %d",
+                ...array_merge([$capabilities_key, $like_customer], $org_params, [$length, $start])
+            ));
+        }
 
         $data = [];
 
-        foreach ($all_users as $user) {
-            if (in_array('sales_representative', $user->roles)) {
-                if($user->user_email != ''){
-                    $admin_url = admin_url("user-edit.php?user_id={$user->ID}&wp_http_referer=%2Fwp-admin%2Fusers.php");
+        foreach ($query_ids as $user_id) {
+            $user = get_userdata($user_id);
+            if (!$user || empty($user->user_email)) continue;
 
-                    $select_organization = get_user_meta($user->ID, 'select_organization', true);
-                    $choose_organization = get_user_meta($user->ID, 'choose_organization', true);
+            $customer = new WC_Customer($user_id);
 
-                    $include_clause = '';
-                    $choose_ids_array = [];
-                    $choose_ids = '';
-                    $organizations_status = 'Assign All Organizations';
-                    if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
-                        $choose_ids_array = array_map('intval', (array)$choose_organization);
-                         $choose_ids = implode(',', $choose_ids_array);
-                    
+            $name = trim(get_user_meta($user_id, 'first_name', true) . ' ' . get_user_meta($user_id, 'last_name', true));
+            $address = array_filter([
+                $customer->get_billing_address_1(),
+                $customer->get_billing_city(),
+                $customer->get_billing_state(),
+                $customer->get_billing_postcode(),
+                $customer->get_billing_country()
+            ]);
 
-                        global $wpdb;
+            $name_block = (!empty($name) ? '<strong>' . esc_html($name) . '</strong><br>' : '');
+            $name_block .= esc_html($user->user_email) . '<br>';
 
-                        $token_array = [];
-
-                        if (!empty($choose_ids)) {
-                            $ids_array = array_map('intval', explode(',', $choose_ids)); // Convert string to int array
-                            $placeholders = implode(',', array_fill(0, count($ids_array), '%d'));
-
-                            // Prepare and run query
-                            $query = $wpdb->prepare(
-                                "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id IN ($placeholders)",
-                                ...$ids_array
-                            );
-
-                            $results = $wpdb->get_col($query); // Fetch just the 'token' column
-
-                            $token_array = $results;
-                        }
-                        $organizations_status = implode(', ', $token_array);
-                    }
-                        $cbr_phone_number = get_user_meta($user->ID, 'user_registration_customer_phone_number', true);
-
-
-                    $data[] = [
-                        'id' => $user->ID,
-                        'name' => '<strong>' . esc_html($user->display_name) . '</strong><br>' . esc_html($user->user_email).'</br>'.$cbr_phone_number,
-                        'email' => esc_html($user->user_email),
-                        'organizations' => $organizations_status,
-                        'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
-                                        <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as CSR
-                                    </button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit CSR Profile</a>'
-                    ];
-                }
+            $phone = get_user_meta($user_id, 'user_registration_customer_phone_number', true);
+            if ($phone == "") {
+                $phone = $customer->get_billing_phone();
             }
+
+            if (!empty($phone)) $name_block .= esc_html($phone) . '<br>';
+            if (!empty($address)) $name_block .= esc_html(implode(', ', $address)) . '<br>';
+
+            $cache_key = 'affiliates_for_customer__new' . $user_id;
+            $oname_block = get_transient($cache_key);
+
+            if ($oname_block === false) {
+                $oname_block = '';
+                $blocks = [];
+
+                $affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker';
+                $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+
+                $affiliates_ids = $wpdb->get_col($wpdb->prepare(
+                    "SELECT affiliate_id FROM {$affiliate_customer_linker} WHERE customer_id = %d",
+                    $user_id
+                ));
+
+                foreach ($affiliates_ids as $affiliate_id) {
+                    $token = $wpdb->get_var($wpdb->prepare(
+                        "SELECT token FROM {$affiliates_table} WHERE user_id = %d",
+                        $affiliate_id
+                    ));
+                    $org_name = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
+                    $associated = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
+
+                    if ($associated) {
+                        $block = '';
+
+                        if (!empty($token)) {
+                            $block .= '<strong>[' . esc_html($token) . '] ' . esc_html($org_name) . '</strong><br>';
+                        }
+
+                        $afuser = get_userdata($affiliate_id);
+                        if ($afuser) {
+                            $block .= esc_html($afuser->user_email) . '<br>';
+                        }
+
+                        $phone = get_user_meta($affiliate_id, '_yith_wcaf_phone_number', true);
+                        if (!empty($phone)) {
+                            $block .= esc_html($phone) . '<br>';
+                        }
+
+                        $addr = array_filter([
+                            get_user_meta($affiliate_id, '_yith_wcaf_address', true),
+                            get_user_meta($affiliate_id, '_yith_wcaf_city', true),
+                            get_user_meta($affiliate_id, '_yith_wcaf_state', true),
+                            get_user_meta($affiliate_id, '_yith_wcaf_zipcode', true)
+                        ]);
+
+                        if (!empty($addr)) {
+                            $block .= esc_html(implode(', ', $addr)) . '<br>';
+                        }
+
+                        if (!empty($block)) {
+                            $blocks[] = $block;
+                        }
+                    }
+                }
+
+                if (!empty($blocks)) {
+                    $oname_block = implode('<hr>', $blocks);
+                }
+
+                set_transient($cache_key, $oname_block, HOUR_IN_SECONDS);
+            }
+
+            $admin_url = admin_url("user-edit.php?user_id={$user_id}&wp_http_referer=%2Fwp-admin%2Fusers.php");
+
+            $data[] = [
+                'id' => $user_id,
+                'name' => $name_block,
+                'organizations' => $oname_block,
+                'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '">
+                                <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
+                            </button>
+                            <a href="' . $admin_url . '" class="icon-txt-btn">
+                                <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Customer Profile
+                            </a>'
+            ];
         }
 
         wp_send_json([
+            'data' => $data,
+            'recordsTotal' => $total_customers,
+            'recordsFiltered' => $total_customers
+        ]);
+    }
+
+    //db end
+    public function orthoney_admin_get_sales_representative_data_handler() {
+        global $wpdb;
+
+        $start = isset($_POST['start']) ? intval($_POST['start']) : 0;
+        $length = isset($_POST['length']) ? intval($_POST['length']) : 50;
+        $search_value = isset($_POST['search']['value']) ? sanitize_text_field($_POST['search']['value']) : '';
+        $organization_code_search = isset($_POST['organization_code_search']) ? sanitize_text_field($_POST['organization_code_search']) : '';
+
+        // Get all sales reps
+        $args = [
+            'role'    => 'sales_representative',
+            'number'  => -1, // get all to filter manually
+        ];
+
+        $all_users = get_users($args);
+        $filtered_users = [];
+
+        foreach ($all_users as $user) {
+            if (!in_array('sales_representative', $user->roles)) continue;
+
+            $user_email = $user->user_email;
+            $first_name = get_user_meta($user->ID, 'first_name', true);
+            $last_name  = get_user_meta($user->ID, 'last_name', true);
+
+            // Basic search filter
+            if ($search_value) {
+                $match = false;
+                if (
+                    stripos($user_email, $search_value) !== false ||
+                    stripos($first_name, $search_value) !== false ||
+                    stripos($last_name, $search_value) !== false
+                ) {
+                    $match = true;
+                }
+
+                if (!$match) continue;
+            }
+
+            // Organization token filter
+            $select_organization = get_user_meta($user->ID, 'select_organization', true);
+            $choose_organization = get_user_meta($user->ID, 'choose_organization', true);
+
+            $organizations_status = 'Assign All Organizations';
+            $matched_token = false;
+
+            if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
+                $choose_ids_array = array_map('intval', (array) $choose_organization);
+                $placeholders = implode(',', array_fill(0, count($choose_ids_array), '%d'));
+
+                $query = $wpdb->prepare(
+                    "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id IN ($placeholders)",
+                    ...$choose_ids_array
+                );
+
+                $token_array = $wpdb->get_col($query);
+                $organizations_status = implode(', ', $token_array);
+
+                // Token search filter
+                if ($organization_code_search !== '') {
+                    foreach ($token_array as $token) {
+                        if (stripos($token, $organization_code_search) !== false) {
+                            $matched_token = true;
+                            break;
+                        }
+                    }
+                    if (!$matched_token) continue; // token didn't match
+                }
+            } else {
+                if ($organization_code_search !== '') continue; // no tokens but filter required
+            }
+
+            $filtered_users[] = $user;
+        }
+
+        $total_count = count($filtered_users);
+
+        // Apply pagination
+        $paged_users = array_slice($filtered_users, $start, $length);
+
+        $data = [];
+        foreach ($paged_users as $user) {
+            $admin_url = admin_url("user-edit.php?user_id={$user->ID}&wp_http_referer=%2Fwp-admin%2Fusers.php");
+            $cbr_phone_number = get_user_meta($user->ID, 'user_registration_customer_phone_number', true);
+            $select_organization = get_user_meta($user->ID, 'select_organization', true);
+            $choose_organization = get_user_meta($user->ID, 'choose_organization', true);
+
+            $organizations_status = 'Assign All Organizations';
+
+            if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
+                $choose_ids_array = array_map('intval', (array) $choose_organization);
+                $placeholders = implode(',', array_fill(0, count($choose_ids_array), '%d'));
+
+                $query = $wpdb->prepare(
+                    "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id IN ($placeholders)",
+                    ...$choose_ids_array
+                );
+
+                $token_array = $wpdb->get_col($query);
+                $organizations_status = implode(', ', $token_array);
+            }
+
+            $data[] = [
+                'id' => $user->ID,
+                'name' => '<strong>' . esc_html($user->display_name) . '</strong><br>' . esc_html($user->user_email) . '</br>' . esc_html($cbr_phone_number),
+                'email' => esc_html($user->user_email),
+                'organizations' => esc_html($organizations_status),
+                'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
+                                <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as CSR
+                            </button><a href="' . $admin_url . '" class="icon-txt-btn">
+                                <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit CSR Profile
+                            </a>'
+            ];
+        }
+
+        wp_send_json([
+            'draw' => isset($_POST['draw']) ? intval($_POST['draw']) : 1,
+            'recordsTotal' => $total_count,
+            'recordsFiltered' => $total_count,
             'data' => $data
         ]);
     }
+
+
     
     public function orthoney_admin_get_organizations_commission_data_handler() {
      

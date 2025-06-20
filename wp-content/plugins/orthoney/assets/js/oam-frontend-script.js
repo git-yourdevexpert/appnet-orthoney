@@ -1972,10 +1972,7 @@ jQuery(document).ready(function ($) {
 
 
 
-/**
- * 
- * 
- */
+
 
 jQuery(document).ready(function ($) {
   let currentRequest = null;
@@ -2109,10 +2106,10 @@ jQuery(document).ready(function ($) {
  * 
  * 
  */
-
-
-
 jQuery(document).ready(function ($) {
+  let currentRequest = null;
+  let organizationCodeSearch = '';
+
   const table = new DataTable("#admin-sales-representative-table", {
     pageLength: 50,
     lengthMenu: [
@@ -2122,8 +2119,29 @@ jQuery(document).ready(function ($) {
     ajax: {
       url: oam_ajax.ajax_url,
       type: "POST",
-      data: {
-        action: "orthoney_admin_get_sales_representative_data"
+      data: function (d) {
+        d.action = "orthoney_admin_get_sales_representative_data";
+        d.organization_code_search = organizationCodeSearch;
+      },
+      beforeSend: function () {
+        if (currentRequest) {
+          currentRequest.abort(); // Abort previous
+        }
+      },
+      dataSrc: function (json) {
+        return json.data || [];
+      },
+      complete: function () {
+        currentRequest = null;
+      },
+      error: function (xhr, textStatus) {
+        if (textStatus !== 'abort') {
+          console.error("AJAX error: ", textStatus);
+        }
+      },
+      xhr: function () {
+        currentRequest = $.ajaxSettings.xhr();
+        return currentRequest;
       }
     },
     columns: [
@@ -2134,31 +2152,54 @@ jQuery(document).ready(function ($) {
       { data: "action" }
     ],
     columnDefs: [
-      {
-        targets: -1,
-        orderable: false
-
-      },
-      { targets: 2, visible: false,searchable: true },
+      { targets: -1, orderable: false, searchable: false },
+      { targets: 2, visible: false, searchable: true }
     ],
     language: {
       processing: `
-                <div class="loader multiStepForm" style="display:block">
-                    <div>
-                        <h2 class="swal2-title">Processing...</h2>
-                        <div class="swal2-html-container">Please wait while we process your request.</div>
-                        <div class="loader-5"></div>
-                    </div>
-                </div>
-            `
+        <div class="loader multiStepForm" style="display:block">
+            <div>
+                <h2 class="swal2-title">Processing...</h2>
+                <div class="swal2-html-container">Please wait while we process your request.</div>
+                <div class="loader-5"></div>
+            </div>
+        </div>
+      `,
+       search: ""
     },
+   
+    ordering: false,
     responsive: true,
     processing: true,
+     serverSide: true,
     paging: true,
-    searching: true
+    searching: true,
+
+    // 👇 Custom input injected here after DataTable renders
+    initComplete: function () {
+      const $filterContainer = $('#admin-sales-representative-table_filter');
+
+      // Change default search box placeholder
+      $filterContainer.find('input[type="search"]').attr('placeholder', 'Search by CSR');
+
+      // Create custom organization code search box
+      const orgCodeInput = $('<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">')
+        .on('input', function () {
+          organizationCodeSearch = $(this).val();
+          table.ajax.reload();
+        });
+
+      // Insert it before default search
+      $filterContainer.prepend(orgCodeInput);
+    }
   });
 });
 
+
+/**
+ * 
+ * 
+ */
 
 jQuery(document).ready(function ($) {
   let selectedStatus = '';
