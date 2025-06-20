@@ -48,9 +48,23 @@ echo OAM_AFFILIATE_Helper::manage_user_popup();
             foreach ($affiliate_users as $user) {
                 $phone = get_user_meta($user->ID, 'billing_phone', true);
                 $affiliate_type = get_field('user_field_type', 'user_' . $user->ID);
+
+                $first_name = get_user_meta($user->ID, 'first_name', true);
+                $last_name = get_user_meta($user->ID, 'last_name', true);
+
+                // Fallback to YITH affiliate meta if empty
+                if (empty($first_name)) {
+                    $first_name = get_user_meta($user->ID, '_yith_wcaf_first_name', true);
+                }
+                if (empty($last_name)) {
+                    $last_name = get_user_meta($user->ID, '_yith_wcaf_last_name', true);
+                }
+                $full_name = trim("$first_name $last_name");
+
+
                 ?>
                 <tr data-userid="<?php echo $user->ID?>">
-                    <td><div class='thead-data'>User Name</div><?php echo esc_html($user->first_name . ' ' . $user->last_name); ?></td>
+                    <td><div class='thead-data'>User Name</div><?php echo esc_html($full_name); ?></td>
                     <td><div class='thead-data'>Email</div><?php echo esc_html($user->user_email); ?></td>
                     <td><div class='thead-data'>Phone Number</div><?php echo esc_html($phone); ?></td>
                     <td><div class='thead-data'>User Role</div><?php echo esc_html($affiliate_type); ?></td>
