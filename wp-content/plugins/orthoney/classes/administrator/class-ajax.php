@@ -338,6 +338,12 @@ class OAM_ADMINISTRATOR_AJAX {
 
         $data = [];
         foreach ($paged_users as $user) {
+
+
+              $first_name = get_user_meta($user->ID, 'first_name', true);
+            $last_name  = get_user_meta($user->ID, 'last_name', true);
+
+
             $admin_url = admin_url("user-edit.php?user_id={$user->ID}&wp_http_referer=%2Fwp-admin%2Fusers.php");
             $cbr_phone_number = get_user_meta($user->ID, 'user_registration_customer_phone_number', true);
             $select_organization = get_user_meta($user->ID, 'select_organization', true);
@@ -360,7 +366,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
             $data[] = [
                 'id' => $user->ID,
-                'name' => '<strong>' . esc_html($user->display_name) . '</strong><br>' . esc_html($user->user_email) . '</br>' . esc_html($cbr_phone_number),
+                'name' => '<strong>' . esc_html($first_name.' '.$last_name) . '</strong><br>' . esc_html($user->user_email) . '</br>' . esc_html($cbr_phone_number),
                 'email' => esc_html($user->user_email),
                 'organizations' => esc_html($organizations_status),
                 'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '">
