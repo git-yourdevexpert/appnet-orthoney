@@ -825,15 +825,26 @@ class OAM_Ajax{
     }
 
     // Update user billing/shipping meta from order
-    private function update_user_meta_from_order($userID, $wc_order) {
+      private function update_user_meta_from_order($userID, $wc_order) {
+        if (!is_object($wc_order) || !method_exists($wc_order, 'get_billing_first_name')) {
+            return; // or throw an exception / log error
+        }
+
         $billing_fields = ['first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country', 'email', 'phone'];
         $shipping_fields = ['first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country'];
 
         foreach ($billing_fields as $field) {
-            update_user_meta($userID, "billing_{$field}", call_user_func([$wc_order, "get_billing_{$field}"]));
+            $method = "get_billing_{$field}";
+            if (method_exists($wc_order, $method)) {
+                update_user_meta($userID, "billing_{$field}", $wc_order->$method());
+            }
         }
+
         foreach ($shipping_fields as $field) {
-            update_user_meta($userID, "shipping_{$field}", call_user_func([$wc_order, "get_shipping_{$field}"]));
+            $method = "get_shipping_{$field}";
+            if (method_exists($wc_order, $method)) {
+                update_user_meta($userID, "shipping_{$field}", $wc_order->$method());
+            }
         }
     }
 
