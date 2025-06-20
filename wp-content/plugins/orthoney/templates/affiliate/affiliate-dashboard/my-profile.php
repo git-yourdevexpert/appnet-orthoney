@@ -7,11 +7,14 @@
    $affiliate_id = $user_id;
    $associated_id = get_user_meta($user_id, 'associated_affiliate_id', true);
    
+$user_info = get_userdata($affiliate_id);
+$main_email = $user_info->user_email;
+
    // Fetch user meta fields
    $first_name = get_user_meta($associated_id, '_yith_wcaf_first_name', true) ?: get_user_meta($associated_id, 'first_name', true);
    $last_name = get_user_meta($associated_id, '_yith_wcaf_last_name', true) ?: get_user_meta($associated_id, 'last_name', true);
    $user = get_userdata($associated_id);
-   $email = get_user_meta($associated_id, '_yith_wcaf_email', true);
+   $email = get_user_meta($associated_id, '_yith_wcaf_email', true)?:$main_email;
    
    //TODO description
    $name_of_your_organization = get_user_meta($associated_id, '_yith_wcaf_name_of_your_organization', true);
