@@ -552,8 +552,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         <div class="step" id="step3">
             <div class="heading-title organization_data_show">
                 <div>
-                   
-                    <strong class="organization_value test"> <?php echo self::organization_data($affiliate_select) ?></strong>
+                     <p class="organization-details">
+                        Organization: <strong class="organization_value"><?php echo self::organization_data($affiliate_select) ?></strong>
+                    </p>
 
                 </div>
                 <div></div>
