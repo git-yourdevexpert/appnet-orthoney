@@ -24,6 +24,23 @@ $users = $wpdb->get_results($wpdb->prepare(
      WHERE m2.meta_value = %d AND m2.user_id != %d" ,
     $affiliate_id,$affiliate_id
 ));
+
+$first_name = get_user_meta($user->ID, 'first_name', true);
+$last_name = get_user_meta($user->ID, 'last_name', true);
+$email = $user->user_email;
+$orgtype = get_user_meta($user->ID, 'user_field_type', true); // adjust 'orgtype' if the meta key is different
+
+// Define value-to-label map
+$orgtype_labels = [
+    'primary-contact'      => 'Primary Contact',
+    'co-chair'             => 'Co-Chair',
+    'alternative-contact'  => 'Alternative Contact',
+];
+$orgtype_label = isset($orgtype_labels[$orgtype]) ? $orgtype_labels[$orgtype] : ucfirst(str_replace('-', ' ', $orgtype));
+
+
+$display = esc_html(trim("$first_name $last_name")) . ' - ' . esc_html($email) . ' - ' . esc_html($orgtype_label);
+
 ?>
 
 <div class="affiliate-dashboard order-process-block">
@@ -38,7 +55,7 @@ $users = $wpdb->get_results($wpdb->prepare(
                 <option value="">Select a User</option>
                 <?php foreach ($users as $user) : ?>
                     <option value="<?php echo esc_attr($user->ID); ?>">
-                        <?php echo esc_html($user->display_name); ?>
+                        <?php echo $display; ?>
                     </option>
                 <?php endforeach; ?>
             </select>

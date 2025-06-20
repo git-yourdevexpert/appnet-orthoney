@@ -596,6 +596,7 @@ class OAM_AFFILIATE_Ajax{
             update_user_meta($id, '_yith_wcaf_first_name', $first_name);
             update_user_meta($id, '_yith_wcaf_last_name', $last_name);
             update_user_meta($id, 'billing_phone', $billing_phone);
+            update_user_meta($id, '_yith_wcaf_email', $email);
 
             //affiliate Fields data update
             // update_user_meta($id, '_yith_wcaf_first_name', $organization_name);
@@ -635,6 +636,8 @@ class OAM_AFFILIATE_Ajax{
         $affiliate_type = sanitize_text_field($_POST['type']);
 
         $existing_user = email_exists($email) ? get_user_by('email', $email) : false;
+        $affiliate_email = get_user_meta($affiliate_id, '_yith_wcaf_email', true);
+
 
         if($user_id != 0){
             if ($existing_user) {
@@ -651,8 +654,11 @@ class OAM_AFFILIATE_Ajax{
 
                 // Update missing phone
                 if (empty(get_user_meta($existsuser_id, 'phone', true))) {
-                    update_user_meta($existsuser_id, 'phone', $phone);
+                    update_user_meta($existsuser_id, 'user_registration_customer_phone_number', $phone);
                 }
+
+
+                  update_user_meta($existsuser_id, '_yith_wcaf_email', $affiliate_email);
 
                 update_user_meta($existsuser_id, 'user_field_type', $affiliate_type);
                 update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
@@ -680,6 +686,7 @@ class OAM_AFFILIATE_Ajax{
             $user = new WP_User($user_id);
             $user->set_role('affiliate_team_member');
             $user->add_role('customer');
+             update_user_meta($user_id, '_yith_wcaf_email', $affiliate_email);
 
             // Send welcome email
             $organization_name = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
