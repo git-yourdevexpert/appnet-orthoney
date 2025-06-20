@@ -44,63 +44,63 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         $organization_search    = sanitize_text_field($_POST['organization_search'] ?? '');
         $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
 
-       if (in_array('sales_representative', $user_roles)) {
-            if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
-                $affiliate_ids = array_filter(array_map('intval', (array) $choose_organization));
+        if ($select_customer === 'choose_customer') {
+            if (in_array('sales_representative', $user_roles)) {
+                if ($select_organization === 'choose_organization') {
+                    if (!empty($choose_organization)) {
+                        $affiliate_ids = array_filter(array_map('intval', (array) $choose_organization));
 
-                if (!empty($affiliate_ids)) {
-                    $org_conditions = [];
-                    $org_params     = [];
+                        if (!empty($affiliate_ids)) {
+                            // Build organization search filters
+                            $org_conditions = [];
+                            $org_params = [];
 
-                    if (!empty($organization_search)) {
-                        $org_conditions[] = "aff.user_id IN (
-                            SELECT user_id FROM {$wpdb->usermeta}
-                            WHERE meta_key = '_yith_wcaf_name_of_your_organization'
-                            AND meta_value LIKE %s
-                        )";
-                        $org_params[] = '%' . $wpdb->esc_like($organization_search) . '%';
+                            if (!empty($organization_search)) {
+                                $org_conditions[] = "aff.user_id IN (
+                                    SELECT user_id FROM {$wpdb->usermeta}
+                                    WHERE meta_key = '_yith_wcaf_name_of_your_organization'
+                                    AND meta_value LIKE %s
+                                )";
+                                $org_params[] = '%' . $wpdb->esc_like($organization_search) . '%';
+                            }
+
+                            if (!empty($organization_code_search)) {
+                                $org_conditions[] = "aff.token LIKE %s";
+                                $org_params[] = '%' . $wpdb->esc_like($organization_code_search) . '%';
+                            }
+
+                            $placeholders = implode(',', array_fill(0, count($affiliate_ids), '%d'));
+                            $query = "
+                                SELECT linker.customer_id
+                                FROM {$wpdb->prefix}oh_affiliate_customer_linker AS linker
+                                INNER JOIN {$wpdb->prefix}yith_wcaf_affiliates AS aff
+                                    ON aff.user_id = linker.affiliate_id
+                                WHERE linker.affiliate_id IN ($placeholders)
+                            ";
+
+                            if (!empty($org_conditions)) {
+                                $query .= ' AND ' . implode(' AND ', $org_conditions);
+                            }
+
+                            $customer_ids = $wpdb->get_col($wpdb->prepare($query, ...$affiliate_ids, ...$org_params));
+                        }
                     }
-
-                    if (!empty($organization_code_search)) {
-                        $org_conditions[] = "aff.token LIKE %s";
-                        $org_params[] = '%' . $wpdb->esc_like($organization_code_search) . '%';
-                    }
-
-                    // Base query
-                    $placeholders = implode(',', array_fill(0, count($affiliate_ids), '%d'));
-                    $query = "
-                        SELECT linker.customer_id
-                        FROM {$wpdb->prefix}oh_affiliate_customer_linker AS linker
-                        INNER JOIN {$wpdb->prefix}yith_wcaf_affiliates AS aff
-                            ON aff.user_id = linker.affiliate_id
-                        WHERE linker.affiliate_id IN ($placeholders)
-                    ";
-
-                    if (!empty($org_conditions)) {
-                        $query .= ' AND ' . implode(' AND ', $org_conditions);
-                    }
-
-                    // Merge parameters: first affiliate_ids, then conditions
-                    $prepared_query = $wpdb->prepare($query, array_merge($affiliate_ids, $org_params));
-                    $customer_ids   = $wpdb->get_col($prepared_query);
+                } else {
+                    // All affiliates, no org filter
+                    $query = "SELECT customer_id FROM {$wpdb->prefix}oh_affiliate_customer_linker";
+                    $customer_ids = $wpdb->get_col($query);
                 }
             }
-        }
 
-        // Add choose_customer filtering if set
-        $choose_ids = array_filter(array_map('intval', (array) $choose_customer));
+        
 
-        if ($select_customer === 'choose_customer' && !empty($choose_ids)) {
             $all_customer_ids = array_unique(array_merge($choose_ids, $customer_ids));
 
             if (!empty($all_customer_ids)) {
                 $include_clause = 'AND u.ID IN (' . implode(',', $all_customer_ids) . ')';
             }
-        } elseif (!empty($customer_ids)) {
-            // No choose_customer selected, but affiliate-linked customer IDs exist
-            $include_clause = 'AND u.ID IN (' . implode(',', $customer_ids) . ')';
         }
-        
+
         // Main query for customers
         $sql_data = "
             SELECT DISTINCT u.ID, u.user_email, u.display_name,
