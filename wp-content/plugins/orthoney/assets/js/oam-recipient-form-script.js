@@ -229,12 +229,10 @@ document.addEventListener("DOMContentLoaded", function () {
           const organization_data_show = document.querySelector(
             ".organization_data_show .organization_value"
           );
-//          organization_data_show.innerHTML = "Honey from the Heart";
-            organization_data_show.innerHTML = "[ATL] Atlanta Region ORT, Atlanta, Georgia ";
-        
+          organization_data_show.innerHTML = "Honey from the Heart";
 
           // Find the selected value (assuming it comes from a radio or dropdown within the form)
-          let selectedAffiliate = "447";
+          let selectedAffiliate = "Orthoney";
 
           // Update the #affiliate_select select box if a value is found
           if (selectedAffiliate) {
@@ -244,11 +242,6 @@ document.addEventListener("DOMContentLoaded", function () {
               affiliateSelect.dispatchEvent(new Event("change")); // Trigger change event if needed
             }
           }
-          console.log(selectedAffiliate);
-
-          console.log(selectedAffiliate+'testtest');
-
-
           currentStep++;
           showStep(currentStep);
           processDataSaveAjax(pid?.value || "0", currentStep);
@@ -384,7 +377,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         } else {
           console.log("5");
-          console.log(333);
+
           const affiliateSelect = document.querySelector("#affiliate_select");
 
           const selectedOption =
