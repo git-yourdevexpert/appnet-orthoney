@@ -64,7 +64,7 @@ echo OAM_AFFILIATE_Helper::manage_user_popup();
     ];
         if (!empty($affiliate_users)) {
             foreach ($affiliate_users as $user) {
-                $phone = get_user_meta($user->ID, 'phone', true);
+                //$phone = get_user_meta($user->ID, 'phone', true);
                
                 $affiliate_type = get_field('user_field_type', 'user_' . $user->ID);
                $user_role = $roles_type[$affiliate_type];
@@ -72,8 +72,8 @@ echo OAM_AFFILIATE_Helper::manage_user_popup();
 
                     
 
-                    $yphone = get_user_meta($user->ID, 'user_registration_customer_phone_number', true);
-                    if($yphone == ""){
+                    $phone = get_user_meta($user->ID, 'user_registration_customer_phone_number', true);
+                    if($phone == ""){
                     $phone = get_user_meta($user->ID, '_yith_wcaf_phone_number', true);
 
                     }
