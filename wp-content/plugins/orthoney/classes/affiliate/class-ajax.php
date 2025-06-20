@@ -369,8 +369,8 @@ class OAM_AFFILIATE_Ajax{
         }
 
          if ( in_array('yith_affiliate', $current_user_roles) ) {
-            $selected_user->remove_role('yith_affiliate');
-            $selected_user->add_role('affiliate_team_member');
+            $current_user->remove_role('yith_affiliate');
+            $current_user->add_role('affiliate_team_member');
         }
 
             $afficated_id = $current_user_id; // Replace with actual value
