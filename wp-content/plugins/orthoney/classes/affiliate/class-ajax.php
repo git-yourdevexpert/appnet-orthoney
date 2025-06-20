@@ -368,10 +368,21 @@ class OAM_AFFILIATE_Ajax{
             $selected_user->add_role('yith_affiliate');
         }
 
+        //  $contact_roles = [
+        //         'Primary'   => 'primary-contact',
+        //         'CoChair'   => 'co-chair',
+        //         'Alternate' => 'alternative-contact',
+        //     ];
+
+
          if ( in_array('yith_affiliate', $current_user_roles) ) {
             $current_user->remove_role('yith_affiliate');
             $current_user->add_role('affiliate_team_member');
+            update_field('user_field_type', 'primary-contact', 'user_' . $user_id);
+
         }
+
+
 
             $afficated_id = $current_user_id; // Replace with actual value
             $args = array(

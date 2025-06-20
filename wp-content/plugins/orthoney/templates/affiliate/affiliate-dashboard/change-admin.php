@@ -40,8 +40,23 @@ $users = $wpdb->get_results($wpdb->prepare(
                 <option value="">Select a User</option>
 
              <?php foreach ($users as $user) : 
+    // $first_name = get_user_meta($user->ID, 'first_name', true);
+    // $last_name  = get_user_meta($user->ID, 'last_name', true);
+
     $first_name = get_user_meta($user->ID, 'first_name', true);
-    $last_name  = get_user_meta($user->ID, 'last_name', true);
+$last_name = get_user_meta($user->ID, 'last_name', true);
+
+// Fallback to YITH affiliate meta if empty
+if (empty($first_name)) {
+    $first_name = get_user_meta($user->ID, '_yith_wcaf_first_name', true);
+}
+if (empty($last_name)) {
+    $last_name = get_user_meta($user->ID, '_yith_wcaf_last_name', true);
+}
+$full_name = trim("$first_name $last_name");
+
+
+
     $user_info = get_userdata($user->ID);
     $email = $user_info ? $user_info->user_email : '';
     $orgtype    = get_user_meta($user->ID, 'user_field_type', true);
@@ -58,7 +73,7 @@ $users = $wpdb->get_results($wpdb->prepare(
     $selected = selected($user->ID, $selected_user_id ?? '', false);
 ?>
     <option value="<?php echo esc_attr($user->ID); ?>" <?php echo $selected; ?>>
-        <?php echo esc_html(trim("$first_name $last_name")) . ' [' . esc_html($email) . '] [' . esc_html($orgtype_label) .']'; ?>
+        <?php echo esc_html(trim("$full_name")) . ' [' . esc_html($email) . '] [' . esc_html($orgtype_label) .']'; ?>
     </option>
 <?php endforeach; ?>
 
