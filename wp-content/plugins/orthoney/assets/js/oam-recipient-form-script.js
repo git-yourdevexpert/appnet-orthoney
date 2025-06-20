@@ -229,7 +229,9 @@ document.addEventListener("DOMContentLoaded", function () {
           const organization_data_show = document.querySelector(
             ".organization_data_show .organization_value"
           );
-          organization_data_show.innerHTML = "Honey from the Heart";
+//          organization_data_show.innerHTML = "Honey from the Heart";
+            organization_data_show.innerHTML = "ATL";
+
 
           // Find the selected value (assuming it comes from a radio or dropdown within the form)
           let selectedAffiliate = "Orthoney";
