@@ -4315,6 +4315,9 @@ table#customer-jar-orders-table thead tr th:last-child{
 .notify-form form .mc4wp-form-fields > p {
     margin-bottom: 24px;
 }
+
+#sales-representative-affiliate-commission-table_filter input[type="search"],
+#sales-representative-customer-table_filter input[type="search"],
 #admin-organizations-commission-table_filter input[type="search"],
 #admin-organizations-table_filter input[type="search"],
 #admin-sales-representative-table_filter input[type="search"],
