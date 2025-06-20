@@ -304,7 +304,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $select_organization = get_user_meta($user->ID, 'select_organization', true);
             $choose_organization = get_user_meta($user->ID, 'choose_organization', true);
 
-            $organizations_status = '-';
+            $organizations_status = '';
             $matched_token = false;
 
             if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
@@ -330,7 +330,7 @@ class OAM_ADMINISTRATOR_AJAX {
                     if (!$matched_token) continue; // token didn't match
                 }
             } else {
-                  $organizations_status = 'Assign All Organizations';
+                $organizations_status = 'Assign All Organizations';
                 if ($organization_code_search !== '') continue; // no tokens but filter required
             }
 
@@ -342,6 +342,8 @@ class OAM_ADMINISTRATOR_AJAX {
         // Apply pagination
         $paged_users = array_slice($filtered_users, $start, $length);
 
+        
+
         $data = [];
         foreach ($paged_users as $user) {
             $admin_url = admin_url("user-edit.php?user_id={$user->ID}&wp_http_referer=%2Fwp-admin%2Fusers.php");
@@ -349,7 +351,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $select_organization = get_user_meta($user->ID, 'select_organization', true);
             $choose_organization = get_user_meta($user->ID, 'choose_organization', true);
 
-            $organizations_status = 'Assign All Organizations';
+            $organizations_status = '';
 
             if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
                 $choose_ids_array = array_map('intval', (array) $choose_organization);
@@ -363,6 +365,10 @@ class OAM_ADMINISTRATOR_AJAX {
                 $token_array = $wpdb->get_col($query);
                 $organizations_status = implode(', ', $token_array);
             }
+            if ($select_organization === 'all') {
+                $organizations_status = 'Assign All Organizations';
+            }
+
 
             $data[] = [
                 'id' => $user->ID,

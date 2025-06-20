@@ -85,14 +85,16 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
                             $customer_ids = $wpdb->get_col($wpdb->prepare($query, ...$affiliate_ids, ...$org_params));
                         }
                     }
-                } else {
-                    // All affiliates, no org filter
-                    $query = "SELECT customer_id FROM {$wpdb->prefix}oh_affiliate_customer_linker";
-                    $customer_ids = $wpdb->get_col($query);
-                }
+                } 
             }
 
+
         
+           if ($select_organization === 'all') {
+                // All affiliates, no org filter
+                $query = "SELECT customer_id FROM {$wpdb->prefix}oh_affiliate_customer_linker";
+                $customer_ids = $wpdb->get_col($query);
+            }
 
             $all_customer_ids = array_unique(array_merge($choose_ids, $customer_ids));
 
@@ -427,12 +429,26 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
 
         $include_clause = '';
-        if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
+
+        $include_clause = '';
+        if ($select_organization === 'choose_organization') {
             $choose_ids = array_map('intval', (array)$choose_organization);
-            if (!empty($choose_ids)) {
-                $include_clause = ' AND a.user_id IN (' . implode(',', $choose_ids) . ') ';
+            
+            if (empty($choose_ids)) {
+                // No IDs selected, return empty DataTable response
+                wp_send_json([
+                    'draw' => intval($_POST['draw'] ?? 1),
+                    'recordsTotal' => 0,
+                    'recordsFiltered' => 0,
+                    'data' => [],
+                ]);
+                wp_die();
             }
+
+            $include_clause = ' AND a.user_id IN (' . implode(',', $choose_ids) . ') ';
         }
+
+
 
         $start  = intval($_POST['start'] ?? 0);
         $length = intval($_POST['length'] ?? 10);
@@ -478,9 +494,10 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         $sql_total = "
             SELECT COUNT(DISTINCT a.user_id)
             FROM {$wpdb->prefix}yith_wcaf_affiliates AS a
-            WHERE a.enabled = '1' AND a.banned = '0'
+            WHERE a.enabled = 1 AND a.banned = 0
             $include_clause
         ";
+
         $records_total = $wpdb->get_var($sql_total);
 
         $sql_filtered = "
@@ -488,13 +505,14 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
                 SELECT a.user_id
                 FROM {$wpdb->prefix}yith_wcaf_affiliates AS a
                 LEFT JOIN {$wpdb->usermeta} um ON a.user_id = um.user_id
-                WHERE a.enabled = '1' AND a.banned = '0'
+                WHERE a.enabled = 1 AND a.banned = 0
                 $include_clause
                 GROUP BY a.user_id, a.token
                 HAVING 1=1
                 $search_filter
             ) AS subquery
         ";
+
         $records_filtered = $wpdb->get_var($sql_filtered);
 
         $sql_data = "
@@ -553,7 +571,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
 
             $organizationdata = [];
             if (!empty($row->organization_name)) {
-                $organizationdata[] = '<strong>' . esc_html($row->organization_name) . '</strong>';
+                $organizationdata[] = '<strong>[' . $row->token . ']' . esc_html($row->organization_name) . '</strong>';
             }
             $city_state = trim(esc_html($row->city) . (empty($row->city) || empty($row->state) ? '' : ', ') . esc_html($row->state));
             if (!empty($city_state)) {
