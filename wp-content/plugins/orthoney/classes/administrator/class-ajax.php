@@ -284,10 +284,15 @@ class OAM_ADMINISTRATOR_AJAX {
             // Basic search filter
             if ($search_value) {
                 $match = false;
+
+                // Combine full name
+                $full_name = trim($first_name . ' ' . $last_name);
+
                 if (
                     stripos($user_email, $search_value) !== false ||
                     stripos($first_name, $search_value) !== false ||
-                    stripos($last_name, $search_value) !== false
+                    stripos($last_name, $search_value) !== false ||
+                    stripos($full_name, $search_value) !== false
                 ) {
                     $match = true;
                 }
