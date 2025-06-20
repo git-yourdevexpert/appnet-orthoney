@@ -625,7 +625,7 @@ class OAM_ADMINISTRATOR_AJAX {
         ]);
     }
 
-    public function orthoney_admin_get_customers_data_handler() {
+    public function orthoney_admin_get_customers_data_handler_s() {
         global $wpdb;
 
         $start  = isset($_POST['start']) ? intval($_POST['start']) : 0;
