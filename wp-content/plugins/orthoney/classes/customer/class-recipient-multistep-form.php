@@ -269,7 +269,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             // $affiliateList = json_decode($affiliateList, true);
                          
                             echo '<select name="affiliate_select" id="affiliate_select" required data-error-message="Please select an Organization.">';
-                           // echo '<option></option><option data-token="'.$data->token.'" ' . selected($affiliate, '0', false) . ' value="Orthoney">Honey from the Heart</option>';
+                           echo '<option></option><option data-token="'.$data->token.'" ' . selected($affiliate, '0', false) . ' value="Orthoney">Honey from the Heart</option>';
                             
                             if (!empty($affiliateListreordered)) {
                                 foreach ($affiliateListreordered  as $key => $data) {
@@ -317,7 +317,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             <span class="error-message"></span>
                         </div>
                     </div>
-                    <h4 class="content-title" style="display:none">Don't Have An Organization? <a href="javascript:;" class="next-with-ortHoney-affiliates">Click Here</a></h4>
+                    <h4 class="content-title">Don't Have An Organization? <a href="javascript:;" class="next-with-ortHoney-affiliates">Click Here</a></h4>
                 </div>
                 <div class="block-btn"><button type="button" class="next w-btn us-btn-style_1">Select Order Method</button></div>
             </div>
