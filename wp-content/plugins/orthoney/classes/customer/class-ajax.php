@@ -332,39 +332,45 @@ class OAM_Ajax{
     }
 
 
- public function orthoney_get_customers_autocomplete_handler() {
-        // Security check
-    
+    public function orthoney_get_customers_autocomplete_handler() {
         $customer = isset($_REQUEST['customer']) ? sanitize_text_field($_REQUEST['customer']) : '';
-    
+        $page     = isset($_REQUEST['page']) ? max(1, intval($_REQUEST['page'])) : 1;
+        $per_page = 20;
+        $offset   = ($page - 1) * $per_page;
+
         $args = [
-            'role'    => 'customer', // Only WooCommerce customers
+            'role'    => 'customer',
             'search'  => '*' . esc_attr($customer) . '*',
             'orderby' => 'display_name',
             'order'   => 'ASC',
-            'number'  => -1, // Limit results
+            'number'  => $per_page,
+            'offset'  => $offset,
             'fields'  => ['ID', 'display_name', 'user_email'],
         ];
-    
+
         $user_query = new WP_User_Query($args);
         $users = $user_query->get_results();
-    
-        $response = [];
-    
-        if (!empty($users)) {
-            foreach ($users as $user) {
-                $label = $user->display_name ? $user->display_name : $user->user_email;
-                $response[] = [
-                    'id'   => $user->ID,
-                    'label'=> $label,
-                ];
-            }
-        }
-    
-        wp_send_json($response);
-    }
-  
+        $total_users = $user_query->get_total();
 
+        $response = [];
+
+        foreach ($users as $user) {
+            $first_name = get_user_meta($user->ID, 'first_name', true);
+            $last_name  = get_user_meta($user->ID, 'last_name', true);
+            $full_name  = trim($first_name . ' ' . $last_name);
+            $label      = $full_name.' ['.$user->user_email.']' ?: ($user->display_name.' ['.$user->user_email.']' ?: $user->user_email);
+
+            $response[] = [
+                'id'    => $user->ID,
+                'label' => $label,
+            ];
+        }
+
+        wp_send_json([
+            'results'    => $response,
+            'pagination' => ['more' => ($offset + $per_page) < $total_users],
+        ]);
+    }
   /**
  * Handles AJAX request to process order to checkout with chunking support
  */

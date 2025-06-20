@@ -3733,8 +3733,12 @@ body.affiliate-dashboard.role-affiliate_team_member .affiliate-dashboard-user-li
   top: 0;
 }
 
+
 .orthoney-datatable-warraper .dataTables_wrapper label.customer-select-filter span.select2 {
   width: 250px;
+}
+.orthoney-datatable-warraper .dataTables_wrapper label.jar-select-customer {
+  width: 200px;
 }
 
 .orthoney-datatable-warraper .dataTables_wrapper label.yearblock {

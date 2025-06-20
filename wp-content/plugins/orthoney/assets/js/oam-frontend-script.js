@@ -2171,7 +2171,7 @@ jQuery(document).ready(function ($) {
     ordering: false,
     responsive: true,
     processing: true,
-     serverSide: true,
+    serverSide: true,
     paging: true,
     searching: true,
 
@@ -3220,9 +3220,11 @@ jQuery(function ($) {
       processing: false,
       serverSide: true,
       searchDelay: 350,
+      ordering: false,
       select: {
         style: "multi" // or 'single'
       },
+      
       ajax: {
         url: oam_ajax.ajax_url,
         type: "POST",
@@ -3328,8 +3330,8 @@ jQuery(function ($) {
               </select>
             </label>
               <label class="customer-select-filter search-by-organization">
-             Search By Organization Code:
-             <input type="text" class="search-by-organization" placeholder="Search By Organization Code" >
+              Search By Org Code:
+             <input type="text" class="search-by-organization" placeholder="Search By Org Code" >
              </label>
                <label>
                Order Status:
@@ -3337,7 +3339,7 @@ jQuery(function ($) {
                     <option value="all">All</option><option value="wc-processing">Processing</option>
                     <option value="wc-pending">Pending payment</option><option value="wc-on-hold">On hold</option><option value="wc-completed">Completed</option><option value="wc-cancelled">Cancelled</option><option value="wc-refunded">Refunded</option><option value="wc-failed">Failed</option><option value="wc-checkout-draft">Draft</option></select>
              </label>
-                <label>
+                <label style="display:none">
                     Shipping Type:
                     <select id="custom-order-type-filter" class="custom-select form-control">
                         <option value="all">All Shipping Types</option>
@@ -3369,9 +3371,7 @@ jQuery(function ($) {
                     <button class="filter_btton  w-btn us-btn-style_1">Filter</Button>
                     <button class="reset_btton w-btn us-btn-style_1">Reset</Button>
                 </div>
-               
-
-
+              
                 <div class="custom-pdf-export-type-wrapper">
 
                    <label>
@@ -3445,8 +3445,14 @@ jQuery(function ($) {
         });
 
         $("#select-customer").select2({
-          placeholder: "Search",
+          placeholder: "Search by Customer",
           allowClear: true,
+          minimumInputLength: 3, // Wait until user types 3 characters
+          language: {
+            loadingMore: function () {
+              return "Loading More Customer";
+            }
+          },
           ajax: {
             url: oam_ajax.ajax_url,
             type: "POST",
@@ -3455,19 +3461,25 @@ jQuery(function ($) {
             data: function (params) {
               return {
                 action: "orthoney_get_customers_autocomplete",
-                customer: params.term
+                customer: params.term || '',
+                page: params.page || 1
               };
             },
-            processResults: function (data) {
+            processResults: function (data, params) {
+              params.page = params.page || 1;
               return {
-                results: data.map(function (item) {
+                results: data.results.map(function (item) {
                   return { id: item.id, text: item.label };
-                })
+                }),
+                pagination: {
+                  more: data.pagination.more
+                }
               };
             },
             cache: true
           }
         });
+
         const tokenString = $("#customer-orders-table").data("affiliate_token"); // e.g. "A1,BSL,XYZ"
 
         // Step 2: Split and create option elements
@@ -3699,6 +3711,7 @@ jQuery(function ($) {
       ],
       processing: false,
       serverSide: true,
+      ordering: false,
       select: {
         style: "multi"
       },
@@ -3775,11 +3788,11 @@ jQuery(function ($) {
               </select>
             </label>
                 <label class="customer-select-filter jar-search-by-organization">
-                      Search By Organization Code:
-                    <input type="text" class="jar-search-by-organization" placeholder="Search By Organization Code" >
+                      Search By Org Code:
+                    <input type="text" class="jar-search-by-organization" placeholder="Search By Org Code" >
                 </label>
                 
-                <label class="customer-select-filter">
+                <label class="customer-select-filter jar-select-customer">
                     Customer:
                     <select id="jar-select-customer" class="form-control">
                         <option value="">Select Customer</option>
@@ -3819,9 +3832,16 @@ jQuery(function ($) {
         //     }
         //  });
 
+
         $("#jar-select-customer").select2({
-          placeholder: "Search",
+          placeholder: "Search by Customer",
           allowClear: true,
+          minimumInputLength: 3, // Wait until user types 3 characters
+          language: {
+            loadingMore: function () {
+              return "Loading More Customer";
+            }
+          },
           ajax: {
             url: oam_ajax.ajax_url,
             type: "POST",
@@ -3830,20 +3850,25 @@ jQuery(function ($) {
             data: function (params) {
               return {
                 action: "orthoney_get_customers_autocomplete",
-                customer: params.term
+                customer: params.term || '',
+                page: params.page || 1
               };
             },
-            processResults: function (data) {
+            processResults: function (data, params) {
+              params.page = params.page || 1;
               return {
-                results: data.map(function (item) {
+                results: data.results.map(function (item) {
                   return { id: item.id, text: item.label };
-                })
+                }),
+                pagination: {
+                  more: data.pagination.more
+                }
               };
             },
             cache: true
           }
         });
-
+        
         const tokenString = $("#customer-jar-orders-table").data("affiliate_token"); // e.g. "A1,BSL,XYZ"
 
         // Step 2: Split and create option elements
