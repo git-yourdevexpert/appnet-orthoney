@@ -3513,7 +3513,7 @@ jQuery(function ($) {
 
         const customFilter = `
               <label class="yearblock">
-                Order Year:
+                Order by Year:
                 <select id="select-year" class="form-control">
                 <option value="">All Years</option>
                 </select>
@@ -3529,8 +3529,8 @@ jQuery(function ($) {
                  <select id="select-customer" class="form-control"><option value="">Select customer</option></select>
              </label>
                   <label class="customer-select-filter">
-             Search Recipient Name:
-             <input type="text" class="search-recipient-name" placeholder="Search Recipient Name" >
+             Search by Recipient Name:
+             <input type="text" class="search-recipient-name" placeholder="Search by Recipient Name" >
              </label>
              <label class="affiliate-token-filter">
              Select organization
@@ -3543,7 +3543,7 @@ jQuery(function ($) {
              <input type="text" class="search-by-organization" placeholder="Search By Org Code" >
              </label>
                <label>
-               Order Status:
+               Order by Status:
                 <select id="order_status" name="order_status" class="" tabindex="-1" aria-hidden="true">
                     <option value="all">All</option><option value="wc-processing">Processing</option>
                     <option value="wc-pending">Pending payment</option><option value="wc-on-hold">On hold</option><option value="wc-completed">Completed</option><option value="wc-cancelled">Cancelled</option><option value="wc-refunded">Refunded</option><option value="wc-failed">Failed</option><option value="wc-checkout-draft">Draft</option></select>
@@ -3557,7 +3557,7 @@ jQuery(function ($) {
                     </select>
                 </label>
                 <label class="custom-order-status-filter-wrapper">
-                    Order Status:
+                    Order by Status:
                     <select id="custom-order-status-filter" class="custom-select form-control">
                         <option value="all">All Status</option>
                         <option value="wc-pending">Pending payment</option>
@@ -4002,7 +4002,7 @@ jQuery(function ($) {
                 </label>
                 
                 <label class="customer-select-filter jar-select-customer">
-                    Customer:
+                    Search by Customer Name:
                     <select id="jar-select-customer" class="form-control">
                         <option value="">Select Customer</option>
                     </select>
