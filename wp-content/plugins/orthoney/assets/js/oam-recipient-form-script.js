@@ -230,7 +230,7 @@ document.addEventListener("DOMContentLoaded", function () {
             ".organization_data_show .organization_value"
           );
 //          organization_data_show.innerHTML = "Honey from the Heart";
-            organization_data_show.innerHTML = "ATL";
+            organization_data_show.innerHTML = "[ATL] Atlanta Region ORT, Atlanta, Georgia";
 
 
           // Find the selected value (assuming it comes from a radio or dropdown within the form)
