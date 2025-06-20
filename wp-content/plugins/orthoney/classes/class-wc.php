@@ -48,9 +48,33 @@ class OAM_WC_Customizer {
         add_action('woocommerce_edit_account_form', array($this,'add_phone_field_to_edit_account'));
         add_action('woocommerce_save_account_details', array($this,'save_phone_field_from_edit_account'), 12, 1);
 
+        add_action( 'user_register', array($this,'aff_save_custom_email_meta'), 10, 1 );
 
 
     }
+
+    // save custom meta 
+public function aff_save_custom_email_meta( $user_id ) {
+    // Check if the user is registering via WooCommerce (i.e. it's an order registration)
+
+ if ( isset( $_REQUEST['name_of_your_organization'] ) && !empty( $_REQUEST['name_of_your_organization'] ) ) {
+    if ( isset( $_REQUEST['email'] ) && !empty( $_REQUEST['email'] ) ) {
+        // Get the email address from the form submission
+        $user_email = sanitize_email( $_REQUEST['email'] );
+        // Save the custom meta _yith_wcaf_email with the email value
+        update_user_meta( $user_id, '_yith_wcaf_email', $user_email );
+    }
+
+    if ( isset( $_REQUEST['phone_number'] ) && !empty( $_REQUEST['phone_number'] ) ) {
+        // Get the email address from the form submission
+        $phone_number = $_REQUEST['phone_number'];
+        // Save the custom meta _yith_wcaf_email with the email value
+        update_user_meta( $user_id, 'user_registration_customer_phone_number', $phone_number );
+    }    
+}
+
+}
+
 
 
     public function add_phone_field_to_edit_account() {
