@@ -379,7 +379,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         } else {
           console.log("5");
-
+          console.log(333);
           const affiliateSelect = document.querySelector("#affiliate_select");
 
           const selectedOption =
