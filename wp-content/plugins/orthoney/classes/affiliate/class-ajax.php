@@ -363,34 +363,34 @@ class OAM_AFFILIATE_Ajax{
             $selected_user_roles = $selected_user->roles;
             $current_user_roles = $current_user->roles;
 
-            // Remove all existing roles from both users
+        if (in_array('affiliate_team_member', $selected_user_roles)) {
+            $selected_user->remove_role('affiliate_team_member');
+            $selected_user->add_role('yith_affiliate');
+        }
 
-            echo '<pre>';
-            print_r($selected_user_roles);
-
-            print_r($current_user_roles);
-               echo '</pre>';
-
-
-
-            die;
+         if ( in_array('yith_affiliate', $current_user_roles) ) {
+            $selected_user->remove_role('yith_affiliate');
+            $selected_user->add_role('affiliate_team_member');
+        }
 
 
+        
 
-            foreach ($selected_user_roles as $role) {
-                $selected_user->remove_role($role);
-            }
-            foreach ($current_user_roles as $role) {
-                $current_user->remove_role($role);
-            }
 
-            // Assign the swapped roles
-            foreach ($current_user_roles as $role) {
-                $selected_user->add_role($role);
-            }
-            foreach ($selected_user_roles as $role) {
-                $current_user->add_role($role);
-            }
+            // foreach ($selected_user_roles as $role) {
+            //     $selected_user->remove_role($role);
+            // }
+            // foreach ($current_user_roles as $role) {
+            //     $current_user->remove_role($role);
+            // }
+
+            // // Assign the swapped roles
+            // foreach ($current_user_roles as $role) {
+            //     $selected_user->add_role($role);
+            // }
+            // foreach ($selected_user_roles as $role) {
+            //     $current_user->add_role($role);
+            // }
 
             $afficated_id = $current_user_id; // Replace with actual value
             $args = array(
