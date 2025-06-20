@@ -244,7 +244,11 @@ document.addEventListener("DOMContentLoaded", function () {
               affiliateSelect.dispatchEvent(new Event("change")); // Trigger change event if needed
             }
           }
-            console.log(selectedAffiliate);
+          console.log(selectedAffiliate);
+
+          console.log(selectedAffiliate+'testtest');
+
+
           currentStep++;
           showStep(currentStep);
           processDataSaveAjax(pid?.value || "0", currentStep);
