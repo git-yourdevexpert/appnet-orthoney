@@ -45,61 +45,75 @@ public function orthoney_admin_get_customers_data_handler() {
     $order_column_index = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
     $order_dir = isset($_POST['order'][0]['dir']) && in_array($_POST['order'][0]['dir'], ['asc', 'desc']) ? $_POST['order'][0]['dir'] : 'asc';
 
+    $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
+    $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
 
     $column_map = [
-        0 => 'u.ID',              // User ID
-        1 => 'm1.meta_value',     // First name (used for name)
-        3 => 'aff.token'          // Token (from affiliates table)
+        0 => 'u.ID',
+        1 => 'm1.meta_value',
+        3 => 'aff.token'
     ];
 
-    // Fallback to default
     $order_by = isset($column_map[$order_column_index]) ? $column_map[$order_column_index] : 'u.ID';
-
-
 
     $capabilities_key = $wpdb->prefix . 'capabilities';
     $like_customer    = '%customer%';
-
     $matching_ids = [];
+
+    $org_conditions = [];
+    $org_params = [];
+
+    if (!empty($organization_search)) {
+        $org_conditions[] = "aff.user_id IN (
+            SELECT user_id FROM {$wpdb->usermeta}
+            WHERE meta_key = '_yith_wcaf_name_of_your_organization'
+            AND meta_value LIKE %s
+        )";
+        $org_params[] = '%' . $wpdb->esc_like($organization_search) . '%';
+    }
+
+    if (!empty($organization_code_search)) {
+        $org_conditions[] = "aff.token LIKE %s";
+        $org_params[] = '%' . $wpdb->esc_like($organization_code_search) . '%';
+    }
+
+    $org_where_sql = !empty($org_conditions) ? ' AND ' . implode(' AND ', $org_conditions) : '';
 
     if (!empty($search)) {
         $search_like = '%' . $wpdb->esc_like($search) . '%';
 
-       $matching_ids = $wpdb->get_col($wpdb->prepare(
-                "SELECT DISTINCT u.ID
-                FROM {$wpdb->users} u
-                LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
-                LEFT JOIN {$wpdb->usermeta} m2 ON u.ID = m2.user_id AND m2.meta_key = 'last_name'
-                WHERE u.user_email LIKE %s 
-                    OR m1.meta_value LIKE %s 
-                    OR m2.meta_value LIKE %s 
-                    OR CONCAT_WS(' ', m1.meta_value, m2.meta_value) LIKE %s",
-                $search_like, $search_like, $search_like, $search_like
-            ));
-
+        $matching_ids = $wpdb->get_col($wpdb->prepare(
+            "SELECT DISTINCT u.ID
+            FROM {$wpdb->users} u
+            LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
+            LEFT JOIN {$wpdb->usermeta} m2 ON u.ID = m2.user_id AND m2.meta_key = 'last_name'
+            WHERE u.user_email LIKE %s 
+                OR m1.meta_value LIKE %s 
+                OR m2.meta_value LIKE %s 
+                OR CONCAT_WS(' ', m1.meta_value, m2.meta_value) LIKE %s",
+            $search_like, $search_like, $search_like, $search_like
+        ));
 
         if (empty($matching_ids)) {
             wp_send_json(['data' => [], 'recordsTotal' => 0, 'recordsFiltered' => 0]);
         }
     }
 
-    // Count total customers
     if (!empty($matching_ids)) {
         $placeholders = implode(',', array_fill(0, count($matching_ids), '%d'));
-        $params = array_merge([$capabilities_key, $like_customer], $matching_ids);
+        $params = array_merge([$capabilities_key, $like_customer], $matching_ids, $org_params);
 
         $total_customers = count($matching_ids);
 
-         $sql = "SELECT DISTINCT u.ID
-        FROM {$wpdb->users} u
-        INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-        LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
-        LEFT JOIN {$wpdb->prefix}oh_affiliate_customer_linker linker ON u.ID = linker.customer_id
-        LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON linker.affiliate_id = aff.user_id
-        WHERE um.meta_key = %s AND um.meta_value LIKE %s AND u.ID IN ($placeholders)
-        ORDER BY {$order_by} {$order_dir}
-        LIMIT %d OFFSET %d";
-
+        $sql = "SELECT DISTINCT u.ID
+            FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+            LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
+            LEFT JOIN {$wpdb->prefix}oh_affiliate_customer_linker linker ON u.ID = linker.customer_id
+            LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON linker.affiliate_id = aff.user_id
+            WHERE um.meta_key = %s AND um.meta_value LIKE %s AND u.ID IN ($placeholders) {$org_where_sql}
+            ORDER BY {$order_by} {$order_dir}
+            LIMIT %d OFFSET %d";
 
         $params[] = $length;
         $params[] = $start;
@@ -110,21 +124,23 @@ public function orthoney_admin_get_customers_data_handler() {
             "SELECT COUNT(DISTINCT u.ID)
              FROM {$wpdb->users} u
              INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
-             WHERE um.meta_key = %s AND um.meta_value LIKE %s",
-            $capabilities_key, $like_customer
+             LEFT JOIN {$wpdb->prefix}oh_affiliate_customer_linker linker ON u.ID = linker.customer_id
+             LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON linker.affiliate_id = aff.user_id
+             WHERE um.meta_key = %s AND um.meta_value LIKE %s {$org_where_sql}",
+            ...array_merge([$capabilities_key, $like_customer], $org_params)
         ));
 
-       $query_ids = $wpdb->get_col($wpdb->prepare(
+        $query_ids = $wpdb->get_col($wpdb->prepare(
             "SELECT DISTINCT u.ID
             FROM {$wpdb->users} u
             INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
             LEFT JOIN {$wpdb->usermeta} m1 ON u.ID = m1.user_id AND m1.meta_key = 'first_name'
             LEFT JOIN {$wpdb->prefix}oh_affiliate_customer_linker linker ON u.ID = linker.customer_id
             LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON linker.affiliate_id = aff.user_id
-            WHERE um.meta_key = %s AND um.meta_value LIKE %s
+            WHERE um.meta_key = %s AND um.meta_value LIKE %s {$org_where_sql}
             ORDER BY {$order_by} {$order_dir}
             LIMIT %d OFFSET %d",
-            $capabilities_key, $like_customer, $length, $start
+            ...array_merge([$capabilities_key, $like_customer], $org_params, [$length, $start])
         ));
     }
 
@@ -148,20 +164,14 @@ public function orthoney_admin_get_customers_data_handler() {
         $name_block = (!empty($name) ? '<strong>' . esc_html($name) . '</strong><br>' : '');
         $name_block .= esc_html($user->user_email) . '<br>';
 
-        
+        $phone = get_user_meta($user_id, 'user_registration_customer_phone_number', true);
+        if ($phone == "") {
+            $phone = $customer->get_billing_phone();
+        }
 
-         $phone =  get_user_meta($user_id, 'user_registration_customer_phone_number', true);
-         if($phone == ""){
-         $phone = $customer->get_billing_phone();
-
-         }
-
-
-      
         if (!empty($phone)) $name_block .= esc_html($phone) . '<br>';
         if (!empty($address)) $name_block .= esc_html(implode(', ', $address)) . '<br>';
 
-        // Cache org block
         $cache_key = 'affiliates_for_customer__new' . $user_id;
         $oname_block = get_transient($cache_key);
 
@@ -225,7 +235,6 @@ public function orthoney_admin_get_customers_data_handler() {
 
             set_transient($cache_key, $oname_block, HOUR_IN_SECONDS);
         }
-
 
         $admin_url = admin_url("user-edit.php?user_id={$user_id}&wp_http_referer=%2Fwp-admin%2Fusers.php");
 

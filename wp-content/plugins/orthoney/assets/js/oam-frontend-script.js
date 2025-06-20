@@ -1970,76 +1970,144 @@ jQuery(document).ready(function ($) {
   });
 });
 
+
+
+/**
+ * 
+ * 
+ */
+
 jQuery(document).ready(function ($) {
   let currentRequest = null;
+  let organizationSearch = '';
+  let organizationCodeSearch = '';
+ 
 
-  const table = new DataTable("#admin-customer-table", {
-    pageLength: 50,
-    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-    ajax: {
-      url: oam_ajax.ajax_url,
-      type: "POST",
-      data: function (d) {
-        d.action = "orthoney_admin_get_customers_data";
+  if (!$('#admin-customer-table').hasClass('dt-initialized')) {
+    $('#admin-customer-table').addClass('dt-initialized');
+
+    const table = new DataTable("#admin-customer-table", {
+      pageLength: 50,
+      lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+      ajax: {
+        url: oam_ajax.ajax_url,
+        type: "POST",
+        data: function (d) {
+          d.action = "orthoney_admin_get_customers_data";
+          d.organization_search = organizationSearch;
+          d.organization_code_search = organizationCodeSearch;
+         
+        },
+        beforeSend: function (jqXHR) {
+          if (currentRequest) {
+            currentRequest.abort();
+          }
+          currentRequest = jqXHR;
+
+          const $tbody = $('#admin-customer-table tbody');
+          const colspan = $('#admin-customer-table thead th').length;
+
+          $tbody.hide().html(`
+            <tr class="custom-loading-row">
+              <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
+                Loading customer data, please wait...
+              </td>
+            </tr>
+          `).show();
+        },
+        complete: function () {
+          currentRequest = null;
+          setTimeout(() => {
+            $('#admin-customer-table tbody').show();
+          }, 100);
+        },
+        error: function (xhr, status) {
+          if (status !== 'abort') {
+            console.error('AJAX error occurred:', status);
+          }
+        }
       },
-      beforeSend: function (jqXHR) {
-  if (currentRequest) {
-    currentRequest.abort();
-  }
-  currentRequest = jqXHR;
+      language: {
+        search: ""
+      },
+      columns: [
+        { data: "id" },
+        { data: "name" },
+        { data: "organizations" },
+        { data: "action" }
+      ],
+      columnDefs: [
+        { targets: 0, orderable: false , searchable: false},
+        { targets: 1, orderable: false },
+        { targets: 2, orderable: false, searchable: false },
+        { targets: -1, orderable: false, searchable: false}
+      ],
+      responsive: true,
+      processing: true,
+      serverSide: true,
+      paging: true,
+      searching: true,
+      orderable: false,
 
-  // Hide actual rows
-  $('#admin-customer-table tbody').hide();
+      // ✅ Use initComplete to inject custom filters
+      initComplete: function () {
+        const $filterContainer = $('#admin-customer-table_filter');
 
-  // Show custom loading row
-  const colspan = $('#admin-customer-table thead th').length;
-  const loadingRow = `
-    <tr class="custom-loading-row">
-      <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
-         Loading customer data, please wait...
-      </td>
-    </tr>
-  `;
-  $('#admin-customer-table tbody').html(loadingRow).show();
-},
-complete: function () {
-  currentRequest = null;
+        const orgInput = $('<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">')
+          .on('keyup', function () {
+            organizationSearch = $(this).val().trim();
+            if (organizationSearch.length >= 3 || organizationSearch.length === 0) {
+              if (currentRequest) currentRequest.abort();
+              table.ajax.reload();
+            }
+          });
 
-  setTimeout(() => {
-    // Remove loading row (actual data will be re-rendered by DataTables)
-    $('#admin-customer-table tbody').show();
-  }, 100);
-}
-    },
-    columns: [
-      { data: "id" },
-      { data: "name" },
-      { data: "organizations" },
-      { data: "action" }
-    ],
-    columnDefs: [
-      {
-        targets: -1,
-        orderable: false
+        const orgCodeInput = $('<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">')
+          .on('keyup', function () {
+            organizationCodeSearch = $(this).val().trim();
+            if (organizationCodeSearch.length >= 3 || organizationCodeSearch.length === 0) {
+              if (currentRequest) currentRequest.abort();
+              table.ajax.reload();
+            }
+          });
+
+        // const customerInput = $('<input type="text" placeholder="Search by Customer Name" style="margin-right: 10px;">')
+        //   .on('keyup', function () {
+        //     customerSearch = $(this).val().trim();
+        //     if (customerSearch.length >= 3 || customerSearch.length === 0) {
+        //       if (currentRequest) currentRequest.abort();
+        //       table.ajax.reload();
+        //     }
+        //   });
+
+        // Prepend inputs to the filter container
+        $filterContainer.prepend(orgCodeInput).prepend(orgInput);
+
+        // Optional: Override default search input with debounce
+        const searchBox = $filterContainer.find('input[type="search"]');
+        let typingTimer;
+
+        searchBox.off().on('input', function () {
+          clearTimeout(typingTimer);
+          const value = this.value;
+
+          typingTimer = setTimeout(() => {
+            if (value.length >= 3 || value.length === 0) {
+              if (currentRequest) currentRequest.abort();
+              table.search(value).draw();
+            }
+          }, 300);
+        });
       }
-    ],
-    responsive: true,
-    processing: true,
-    paging: true,
-    serverSide: true,
-    searching: true
-  });
-
-  // Trigger search only after 3+ characters
- const searchBox = $('#admin-customer-table_filter input');
-
-searchBox.off().on('input', function () {
-  const value = this.value;
-  if (value.length >= 3 || value.length === 0) {
-    table.search(value).draw();
+    });
   }
 });
-});
+
+
+/**
+ * 
+ * 
+ */
 
 
 
