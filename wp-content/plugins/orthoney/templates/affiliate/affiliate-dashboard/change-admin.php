@@ -58,7 +58,7 @@ $users = $wpdb->get_results($wpdb->prepare(
     $selected = selected($user->ID, $selected_user_id ?? '', false);
 ?>
     <option value="<?php echo esc_attr($user->ID); ?>" <?php echo $selected; ?>>
-        <?php echo esc_html(trim("$first_name $last_name")) . ' [' . esc_html($email) . '] ' . esc_html($orgtype_label); ?>
+        <?php echo esc_html(trim("$first_name $last_name")) . ' [' . esc_html($email) . '] [' . esc_html($orgtype_label) .']'; ?>
     </option>
 <?php endforeach; ?>
 
