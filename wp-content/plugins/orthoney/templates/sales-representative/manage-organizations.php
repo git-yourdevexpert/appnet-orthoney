@@ -27,7 +27,7 @@ if (!defined('ABSPATH')) {
 </style>
  <div class="affiliate-dashboard order-process-block">
      <h3>Assigned Organizations</h3>
-<div class="orthoney-datatable-warraper">
+<div class="orthoney-datatable-warraper table-with-search-block">
     <table id="sales-representative-affiliate-table" class="display">
         <thead>
             <tr>
@@ -36,9 +36,7 @@ if (!defined('ABSPATH')) {
                 <th>Organization Admin</th>
                 <th>New Organization</th>
                 <th>Status</th>
-                <!-- <th>Season Status</th> -->
                 <th>Price</th>
-                <!-- <th>Commission</th> -->
                 <th>Login</th>
             </tr>
         </thead>

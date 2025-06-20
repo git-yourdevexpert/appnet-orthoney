@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
     <h3>Assigned Customers</h3>
     <!-- Search and filter options -->
     
-<div class="orthoney-datatable-warraper">
+<div class="orthoney-datatable-warraper table-with-search-block">
     <table id="sales-representative-customer-table" class="display">
         <thead>
             <tr>

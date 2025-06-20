@@ -337,8 +337,9 @@ class OAM_Ajax{
         $page     = isset($_REQUEST['page']) ? max(1, intval($_REQUEST['page'])) : 1;
         $per_page = 20;
         $offset   = ($page - 1) * $per_page;
+        $user_ids = [];
 
-        $args = [
+         $args = [
             'role'    => 'customer',
             'search'  => '*' . esc_attr($customer) . '*',
             'orderby' => 'display_name',
@@ -348,8 +349,91 @@ class OAM_Ajax{
             'fields'  => ['ID', 'display_name', 'user_email'],
         ];
 
+        $uri = $_SERVER['REQUEST_URI'];
+        $path = trim(parse_url($uri, PHP_URL_PATH), '/');
+        $segments = explode('/', $path);
+
+        $first_segment = isset($segments[0]) ? $segments[0] : '';
+
+
+        if ($first_segment == 'sales-representative-dashboard') {
+            $user_id      = get_current_user_id();
+            $current_user = wp_get_current_user();
+            $user_roles   = (array) $current_user->roles;
+
+            $select_customer      = get_user_meta($user_id, 'select_customer', true);
+            $choose_customer      = get_user_meta($user_id, 'choose_customer', true);
+            $select_organization  = get_user_meta($user_id, 'select_organization', true);
+            $choose_organization  = get_user_meta($user_id, 'choose_organization', true);
+
+            $choose_ids = array_map('intval', (array) $choose_customer);
+            $customer_ids = [];
+
+            if ($select_customer === 'choose_customer') {
+                if (in_array('sales_representative', $user_roles)) {
+                    if ($select_organization === 'choose_organization') {
+                        if (!empty($choose_organization)) {
+                            $affiliate_ids = array_filter(array_map('intval', (array) $choose_organization));
+
+                            if (!empty($affiliate_ids)) {
+                                $placeholders = implode(',', array_fill(0, count($affiliate_ids), '%d'));
+                                $query = "
+                                    SELECT linker.customer_id
+                                    FROM {$wpdb->prefix}oh_affiliate_customer_linker AS linker
+                                    INNER JOIN {$wpdb->prefix}yith_wcaf_affiliates AS aff
+                                        ON aff.user_id = linker.affiliate_id
+                                    WHERE linker.affiliate_id IN ($placeholders)
+                                ";
+
+                                $customer_ids = $wpdb->get_col($wpdb->prepare($query, ...$affiliate_ids));
+                            }
+                        }
+                    } else {
+                        // All affiliates, no organization filtering
+                        $query = "SELECT customer_id FROM {$wpdb->prefix}oh_affiliate_customer_linker";
+                        $customer_ids = $wpdb->get_col($query);
+                    }
+                }
+
+                // Merge and deduplicate both chosen and linked customer IDs
+                $all_customer_ids = array_unique(array_merge($choose_ids, $customer_ids));
+            } else {
+                $all_customer_ids = $choose_ids;
+            }
+
+            if(!empty($all_customer_ids)){
+                $args['include'] = $all_customer_ids;
+            }else{
+                $args['include'] = array(0);
+            }
+        
+        }
+
+
+        if ($first_segment == 'organization-dashboard') { 
+            global $wpdb;
+
+            $all_customer_ids = [];
+
+            $affiliate_user_id = get_current_user_id();
+            $affiliat_user_roles = OAM_COMMON_Custom::get_user_role_by_id($affiliate_user_id);
+            if (in_array('yith_affiliate', $affiliat_user_roles) || in_array('affiliate_team_member', $affiliat_user_roles) || in_array('administrator', $affiliat_user_roles)) {
+                $affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+                if($affiliate_id == ''){
+                     $all_customer_ids = = $affiliate_user_id;
+                }
+            }
+            
+            if(!empty($all_customer_ids)){
+                $args['include'] = $all_customer_ids;
+            }else{
+                $args['include'] = array(0);
+            }
+        }
+
         $user_query = new WP_User_Query($args);
         $users = $user_query->get_results();
+
         $total_users = $user_query->get_total();
 
         $response = [];
@@ -371,6 +455,7 @@ class OAM_Ajax{
             'pagination' => ['more' => ($offset + $per_page) < $total_users],
         ]);
     }
+    
   /**
  * Handles AJAX request to process order to checkout with chunking support
  */
