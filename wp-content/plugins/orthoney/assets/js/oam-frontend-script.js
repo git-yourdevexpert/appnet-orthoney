@@ -2179,7 +2179,7 @@ jQuery(document).ready(function ($) {
       const $filterContainer = $('#admin-sales-representative-table_filter');
 
       // Change default search box placeholder
-      $filterContainer.find('input[type="search"]').attr('placeholder', 'Search by CSR');
+      $filterContainer.find('input[type="search"]').attr('placeholder', 'Search by CSR Name Or Email');
 
       // Create custom organization code search box
       const orgCodeInput = $('<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">')
