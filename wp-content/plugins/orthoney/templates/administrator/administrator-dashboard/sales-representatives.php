@@ -21,7 +21,7 @@ $dashboard_link = ADMINISTRATOR_DASHBOARD_LINK;
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Name</th>
+                        <th>CSR</th>
                         <th>Email</th>
                         <th>Organizations</th>
                         <th>Action</th>
