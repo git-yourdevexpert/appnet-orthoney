@@ -71,6 +71,19 @@ public function aff_save_custom_email_meta( $user_id ) {
         // Save the custom meta _yith_wcaf_email with the email value
         update_user_meta( $user_id, 'user_registration_customer_phone_number', $phone_number );
     }    
+
+        if ( isset( $_REQUEST['first_name'] ) && !empty( $_REQUEST['first_name'] ) ) {
+        // Get the email address from the form submission
+        $profile_first_name = $_REQUEST['first_name'];
+        // Save the custom meta _yith_wcaf_email with the email value
+        update_user_meta( $user_id, 'first_name', $profile_first_name );
+    }  
+        if ( isset( $_REQUEST['last_name'] ) && !empty( $_REQUEST['last_name'] ) ) {
+        // Get the email address from the form submission
+        $last_name = $_REQUEST['last_name'];
+        // Save the custom meta _yith_wcaf_email with the email value
+        update_user_meta( $user_id, 'last_name', $last_name );
+    }  
 }
 
 }

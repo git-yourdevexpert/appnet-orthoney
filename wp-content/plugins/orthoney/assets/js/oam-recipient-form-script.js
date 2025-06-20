@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
           );
 //          organization_data_show.innerHTML = "Honey from the Heart";
             organization_data_show.innerHTML = "[ATL] Atlanta Region ORT, Atlanta, Georgia ";
-
+        
 
           // Find the selected value (assuming it comes from a radio or dropdown within the form)
           let selectedAffiliate = "447";
@@ -244,6 +244,7 @@ document.addEventListener("DOMContentLoaded", function () {
               affiliateSelect.dispatchEvent(new Event("change")); // Trigger change event if needed
             }
           }
+            console.log(selectedAffiliate);
           currentStep++;
           showStep(currentStep);
           processDataSaveAjax(pid?.value || "0", currentStep);
