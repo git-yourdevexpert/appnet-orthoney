@@ -234,7 +234,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
           // Find the selected value (assuming it comes from a radio or dropdown within the form)
-          let selectedAffiliate = "Orthoney";
+          let selectedAffiliate = "447";
 
           // Update the #affiliate_select select box if a value is found
           if (selectedAffiliate) {
