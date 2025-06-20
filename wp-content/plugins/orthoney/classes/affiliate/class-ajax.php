@@ -373,25 +373,6 @@ class OAM_AFFILIATE_Ajax{
             $selected_user->add_role('affiliate_team_member');
         }
 
-
-        
-
-
-            // foreach ($selected_user_roles as $role) {
-            //     $selected_user->remove_role($role);
-            // }
-            // foreach ($current_user_roles as $role) {
-            //     $current_user->remove_role($role);
-            // }
-
-            // // Assign the swapped roles
-            // foreach ($current_user_roles as $role) {
-            //     $selected_user->add_role($role);
-            // }
-            // foreach ($selected_user_roles as $role) {
-            //     $current_user->add_role($role);
-            // }
-
             $afficated_id = $current_user_id; // Replace with actual value
             $args = array(
                 'meta_key'   => 'associated_affiliate_id',
