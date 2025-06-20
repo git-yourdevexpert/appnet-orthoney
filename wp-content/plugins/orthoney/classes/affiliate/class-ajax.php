@@ -382,9 +382,11 @@ class OAM_AFFILIATE_Ajax{
 
         }
 
+           $afficated_id = get_user_meta($current_user_id, 'associated_affiliate_id', true);
 
 
-            $afficated_id = $current_user_id; // Replace with actual value
+
+           // $afficated_id = $current_user_id; // Replace with actual value
             $args = array(
                 'meta_key'   => 'associated_affiliate_id',
                 'meta_value' => $afficated_id,
@@ -401,12 +403,12 @@ class OAM_AFFILIATE_Ajax{
             global $wpdb;
             $yith_affiliate_table = $wpdb->prefix . 'yith_wcaf_affiliates';
 
-            if ($wpdb->get_var("SHOW TABLES LIKE '{$yith_affiliate_table}'")) {
+            
                 $wpdb->query($wpdb->prepare(
                     "UPDATE {$yith_affiliate_table} SET user_id = %d WHERE user_id = %d",
-                    $selected_user_id, $current_user_id
+                    $current_user_id , $selected_user_id
                 ));
-            }
+            
 
             // Email Notification
             $to = $selected_user->user_email;
