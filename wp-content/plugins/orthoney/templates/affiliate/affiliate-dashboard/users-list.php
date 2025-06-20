@@ -69,7 +69,14 @@ echo OAM_AFFILIATE_Helper::manage_user_popup();
                 $affiliate_type = get_field('user_field_type', 'user_' . $user->ID);
                $user_role = $roles_type[$affiliate_type];
                 if($affiliate_id == $user->ID){
+
+                    
+
+                    $yphone = get_user_meta($user->ID, 'user_registration_customer_phone_number', true);
+                    if($yphone == ""){
                     $phone = get_user_meta($user->ID, '_yith_wcaf_phone_number', true);
+
+                    }
                     $user_role = 'Organization Admin';
                 }
 
