@@ -420,7 +420,7 @@ class OAM_Ajax{
             if (in_array('yith_affiliate', $affiliat_user_roles) || in_array('affiliate_team_member', $affiliat_user_roles) || in_array('administrator', $affiliat_user_roles)) {
                 $affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true);
                 if($affiliate_id == ''){
-                     $all_customer_ids = = $affiliate_user_id;
+                     $all_customer_ids = $affiliate_user_id;
                 }
             }
             
@@ -455,7 +455,7 @@ class OAM_Ajax{
             'pagination' => ['more' => ($offset + $per_page) < $total_users],
         ]);
     }
-    
+
   /**
  * Handles AJAX request to process order to checkout with chunking support
  */
