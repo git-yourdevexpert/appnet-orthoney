@@ -31,7 +31,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
         wp_send_json_success(['message' => 'Your account has been successfully activated.']);
     }
-    
+
     // DB changes on 18-6-2025 for the show details
     public function orthoney_admin_get_customers_data_handler() {
         global $wpdb;
@@ -474,13 +474,18 @@ class OAM_ADMINISTRATOR_AJAX {
         // Step 2: Apply search filter
        
         $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
+        $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
 
-        $filtered_user_ids = array_filter($user_ids, function ($user_id) use ($search, $user_meta_cache, $user_status_map, $organization_search) {
+        $filtered_user_ids = array_filter($user_ids, function ($user_id) use ($search, $user_meta_cache, $user_status_map, $organization_search, $organization_code_search) {
             $status = strtolower($user_status_map[$user_id]['label']);
             $organization = strtolower($user_meta_cache[$user_id]['organization']);
+            $organization_code = strtolower($user_meta_cache[$user_id]['code']);
 
             // Organization filter
             if (!empty($organization_search) && strpos($organization, strtolower($organization_search)) === false) {
+                return false;
+            }
+            if (!empty($organization_code_search) && strpos($organization_code, strtolower($organization_code_search)) === false) {
                 return false;
             }
 

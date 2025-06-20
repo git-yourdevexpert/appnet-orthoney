@@ -2334,89 +2334,125 @@ jQuery(document).ready(function ($) {
 
 
 jQuery(document).ready(function ($) {
-  let selectedStatus = '';
+  let currentRequest = null;
   let organizationSearch = '';
+  let organizationCodeSearch = '';
 
-  // Custom input for organization search
-  const orgInput = $('<input type="text" placeholder="Search by Organization Name" style="margin-right: 10px;">')
-    .on('keyup', function () {
-      organizationSearch = $(this).val().trim();
-      table.ajax.reload();
-    });
+  if (!$('#admin-organizations-commission-table').hasClass('dt-initialized')) {
+    $('#admin-organizations-commission-table').addClass('dt-initialized');
 
-  // Initialize DataTable
-  const table = new DataTable("#admin-organizations-commission-table", {
-    pageLength: 50,
-    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-    ajax: {
-      url: oam_ajax.ajax_url,
-      type: "POST",
-      data: function (d) {
-        d.action = "orthoney_admin_get_organizations_commission_data";
-     
-        d.organization_search = organizationSearch;
-      }
-    },
-    columns: [
-      { data: "organization" },
-      { data: "total_order" },
-      { data: "total_qty" },
-      { data: "cost" },
-      { data: "dist_cost" },
-      { data: "unit_profit" },
-      { data: "total_commission" },
-   
-    ],
-    columnDefs: [
-      { targets: 0, width: "210px" ,orderable: true},
-    ],
-    language: {
-      processing: `
-        <div class="loader multiStepForm" style="display:block">
-          <div>
-            <h2 class="swal2-title">Processing...</h2>
-            <div class="swal2-html-container">Please wait while we process your request.</div>
-            <div class="loader-5"></div>
-          </div>
-        </div>`
-    },
-    processing: true,
-    serverSide: true,
-    paging: true,
-    searching: true,
-    responsive: true,
-    scrollX: true,
-    autoWidth: false,
-    orderable:  false,
+    const table = new DataTable("#admin-organizations-commission-table", {
+      pageLength: 50,
+      lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+      ajax: {
+        url: oam_ajax.ajax_url,
+        type: "POST",
+        data: function (d) {
+          d.action = "orthoney_admin_get_organizations_commission_data";
+          d.organization_search = organizationSearch;
+          d.organization_code_search = organizationCodeSearch;
+        },
+        beforeSend: function (jqXHR) {
+          if (currentRequest) {
+            currentRequest.abort();
+          }
+          currentRequest = jqXHR;
 
-    initComplete: function () {
-      const api = this.api();
-      const statusColIndex = 5;
-      const statusSet = new Set();
+          const $tbody = $('#admin-organizations-commission-table tbody');
+          const colspan = $('#admin-organizations-commission-table thead th').length;
 
-      api.column(statusColIndex).data().each(function (d) {
-        if (d && d.trim() !== "") {
-          statusSet.add(d);
+          $tbody.hide().html(`
+            <tr class="custom-loading-row">
+              <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
+                Loading organization data, please wait...
+              </td>
+            </tr>
+          `).show();
+        },
+        complete: function () {
+          currentRequest = null;
+          setTimeout(() => {
+            $('#admin-organizations-commission-table tbody').show();
+          }, 100);
+        },
+        error: function (xhr, status) {
+          if (status !== 'abort') {
+            console.error('AJAX error occurred:', status);
+          }
         }
-      });
+      },
+      language: {
+        search: ""
+      },
+      columns: [
+        { data: "organization" },
+        { data: "total_order" },
+        { data: "total_qty" },
+        { data: "cost" },
+        { data: "dist_cost" },
+        { data: "unit_profit" },
+        { data: "total_commission" }
+      ],
+      columnDefs: [
+        { targets: 0, width: "210px", orderable: true }
+      ],
+      processing: true,
+      serverSide: true,
+      paging: true,
+      searching: true,
+      ordering: false,
+      responsive: true,
+      scrollX: true,
+      autoWidth: false,
 
-      
-      $('.dataTables_filter').prepend(orgInput);
+      initComplete: function () {
+        const $filterContainer = $('#admin-organizations-commission-table_filter');
 
-      // ✅ Remove "Search:" label text
-      $('.dataTables_filter label').contents().filter(function () {
-        return this.nodeType === 3;
-      }).remove();
+        const orgInput = $('<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">')
+          .on('keyup', function () {
+            organizationSearch = $(this).val().trim();
+            if (organizationSearch.length >= 3 || organizationSearch.length === 0) {
+              if (currentRequest) currentRequest.abort();
+              table.ajax.reload();
+            }
+          });
 
-      // ✅ Set placeholder on default search input
-      $('.dataTables_filter input[type="search"]').attr('placeholder', 'Search');
-    }
-  });
+        const orgCodeInput = $('<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">')
+          .on('keyup', function () {
+            organizationCodeSearch = $(this).val().trim();
+            if (organizationCodeSearch.length >= 3 || organizationCodeSearch.length === 0) {
+              if (currentRequest) currentRequest.abort();
+              table.ajax.reload();
+            }
+          });
 
-  setTimeout(() => {
-    table.columns.adjust().draw();
-  }, 100);
+        $filterContainer.prepend(orgCodeInput).prepend(orgInput);
+        $filterContainer.find('input[type="search"]').attr('placeholder', 'Search');
+
+        // Optional debounce for default search input
+        const searchBox = $filterContainer.find('input[type="search"]');
+        let typingTimer;
+
+        searchBox.off().on('input', function () {
+          clearTimeout(typingTimer);
+          const value = this.value;
+
+          typingTimer = setTimeout(() => {
+            if (value.length >= 3 || value.length === 0) {
+              if (currentRequest) currentRequest.abort();
+              table.search(value).draw();
+            }
+          }, 300);
+        });
+      }
+    });
+  }
 });
+
+
+
+
+
 
 jQuery(document).ready(function ($) {
   let selectedStatus = '';
