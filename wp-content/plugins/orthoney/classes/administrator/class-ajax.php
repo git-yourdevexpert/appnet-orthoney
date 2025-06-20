@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class OAM_ADMINISTRATOR_AJAX {
+class OAM_ADMINISTRATOR_AJAX_N {
     /**
      * Constructor to hook into Customer template loading.
      */
@@ -853,4 +853,4 @@ class OAM_ADMINISTRATOR_AJAX {
 }
 
 // Initialize the class
-new OAM_ADMINISTRATOR_AJAX();
+new OAM_ADMINISTRATOR_AJAX_N();
