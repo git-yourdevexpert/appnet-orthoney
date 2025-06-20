@@ -4311,7 +4311,10 @@ table#customer-jar-orders-table thead tr th:last-child{
 .notify-form form .mc4wp-form-fields > p {
     margin-bottom: 24px;
 }
-#admin-organizations-table_filter input[type="search"]{width:170px !important; }
+#admin-organizations-table_filter input[type="search"],
+#admin-customer-table_filter input[type="search"]{
+  width:170px !important; 
+}
 
 .affiliate-dashboard #sales-representative-affiliate-table_filter {
     display: flex;
