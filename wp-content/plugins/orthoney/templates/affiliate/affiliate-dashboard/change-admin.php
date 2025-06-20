@@ -38,12 +38,13 @@ $users = $wpdb->get_results($wpdb->prepare(
         <div class="filter-container">         
             <select id="userDropdown" data-error-message="Please select a team member">
                 <option value="">Select a User</option>
-                
+
              <?php foreach ($users as $user) : 
     $first_name = get_user_meta($user->ID, 'first_name', true);
     $last_name  = get_user_meta($user->ID, 'last_name', true);
-    $email      = $user->user_email;
-    $orgtype    = get_user_meta($user->ID, 'orgtype', true);
+    $user_info = get_userdata($user->ID);
+    $email = $user_info ? $user_info->user_email : '';
+    $orgtype    = get_user_meta($user->ID, 'user_field_type', true);
 
     $orgtype_labels = [
         'primary-contact'      => 'Primary Contact',
@@ -57,7 +58,7 @@ $users = $wpdb->get_results($wpdb->prepare(
     $selected = selected($user->ID, $selected_user_id ?? '', false);
 ?>
     <option value="<?php echo esc_attr($user->ID); ?>" <?php echo $selected; ?>>
-        <?php echo esc_html(trim("$first_name $last_name")) . ' - ' . esc_html($email) . ' - ' . esc_html($orgtype_label); ?>
+        <?php echo esc_html(trim("$first_name $last_name")) . ' [' . esc_html($email) . '] ' . esc_html($orgtype_label); ?>
     </option>
 <?php endforeach; ?>
 
