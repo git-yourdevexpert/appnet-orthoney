@@ -40,32 +40,47 @@ class OAM_AFFILIATE_Ajax{
 
     }
 
+    public function search_customers_autosuggest_handler() {
+        $customer = isset($_REQUEST['customer']) ? sanitize_text_field($_REQUEST['customer']) : '';
+        $page     = isset($_REQUEST['page']) ? max(1, intval($_REQUEST['page'])) : 1;
+        $per_page = 20;
+        $offset   = ($page - 1) * $per_page;
+        $user_ids = [];
 
+         $args = [
+            'role'    => 'customer',
+            'search'  => '*' . esc_attr($customer) . '*',
+            'orderby' => 'display_name',
+            'order'   => 'ASC',
+            'number'  => $per_page,
+            'offset'  => $offset,
+            'fields'  => ['ID', 'display_name', 'user_email'],
+        ];
 
-        public function search_customers_autosuggest_handler() {
-            global $wpdb;
+        $user_query = new WP_User_Query($args);
+        $users = $user_query->get_results();
 
-            $term = sanitize_text_field($_GET['term'] ?? '');
+        $total_users = $user_query->get_total();
 
-            if (strlen($term) < 2) {
-                wp_send_json([]);
-            }
+        $response = [];
 
-            $like = '%' . $wpdb->esc_like($term) . '%';
+        foreach ($users as $user) {
+            $first_name = get_user_meta($user->ID, 'first_name', true);
+            $last_name  = get_user_meta($user->ID, 'last_name', true);
+            $full_name  = trim($first_name . ' ' . $last_name);
+            $label      = $full_name.' ['.$user->user_email.']' ?: ($user->display_name.' ['.$user->user_email.']' ?: $user->user_email);
 
-       $results = $wpdb->get_results(
-    $wpdb->prepare("
-        SELECT ID, user_email, display_name 
-        FROM {$wpdb->users}
-        WHERE user_email LIKE %s OR display_name LIKE %s
-    ", $like, $like)
-);
-
-
-            wp_send_json($results);
+            $response[] = [
+                'id'    => $user->user_email,
+                'label' => $label,
+            ];
         }
 
-
+        wp_send_json([
+            'results'    => $response,
+            'pagination' => ['more' => ($offset + $per_page) < $total_users],
+        ]);
+    }
 
     public function orthoney_org_account_statement_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');

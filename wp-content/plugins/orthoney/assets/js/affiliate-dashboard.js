@@ -888,6 +888,7 @@ document.addEventListener('click', async function (event) {
     }
 });
 
+
 jQuery(function ($) {
 	$('#profile_consent_field input').prop('checked', true);
 	$('#profile_privacy_policy_text_field input').prop('checked', true);
@@ -939,5 +940,42 @@ jQuery(document).ready(function ($) {
 
     // Stop checking after 10 seconds
     setTimeout(() => clearInterval(intervalId), 10000);
+
+
+    $("#customer-email-search").select2({
+        placeholder: "Search by Customer Name or Email",
+        allowClear: false,
+        minimumInputLength: 3, // Wait until user types 3 characters
+        language: {
+        loadingMore: function () {
+            return "Loading More Customer";
+        }
+        },
+        ajax: {
+        url: oam_ajax.ajax_url,
+        type: "POST",
+        dataType: "json",
+        delay: 250,
+        data: function (params) {
+            return {
+            action: "search_customers_autosuggest",
+            customer: params.term || '',
+            page: params.page || 1
+            };
+        },
+        processResults: function (data, params) {
+            params.page = params.page || 1;
+            return {
+            results: data.results.map(function (item) {
+                return { id: item.id, text: item.label };
+            }),
+            pagination: {
+                more: data.pagination.more
+            }
+            };
+        },
+        cache: true
+        }
+    });
 
 });
