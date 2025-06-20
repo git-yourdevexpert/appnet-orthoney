@@ -364,6 +364,19 @@ class OAM_AFFILIATE_Ajax{
             $current_user_roles = $current_user->roles;
 
             // Remove all existing roles from both users
+
+            echo '<pre>';
+            print_r($selected_user);
+
+            print_r($current_user);
+               echo '</pre>';
+
+
+
+            die;
+
+
+
             foreach ($selected_user_roles as $role) {
                 $selected_user->remove_role($role);
             }
