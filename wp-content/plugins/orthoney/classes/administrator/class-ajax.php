@@ -626,7 +626,7 @@ class OAM_ADMINISTRATOR_AJAX {
     }
 
 
-    public function orthoney_admin_get_organizations_data_handler() {
+     public function orthoney_admin_get_organizations_data_handler() {
         global $wpdb;
 
         // Step 1: Prepare sales reps and their assigned organizations
@@ -638,21 +638,26 @@ class OAM_ADMINISTRATOR_AJAX {
                 $select_organization = get_user_meta($user->ID, 'select_organization', true);
                 $choose_organization = get_user_meta($user->ID, 'choose_organization', true);
 
-                if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
-                    $choose_ids_array = array_map('intval', (array) $choose_organization);
-                    $choose_ids = implode(',', $choose_ids_array);
-                    
-                    if (!empty($choose_ids)) {
-                        $ids_array = array_map('intval', explode(',', $choose_ids));
-                        $placeholders = implode(',', array_fill(0, count($ids_array), '%d'));
+                if ($select_organization === 'choose_organization' ) {
+                    if(empty($choose_organization)){
 
-                        $query = $wpdb->prepare(
-                            "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id IN ($placeholders)",
-                            ...$ids_array
-                        );
-                        $results = $wpdb->get_col($query);
-                        $sales_reps_data[$user->ID] = $results;
+                    }else{
+                        $choose_ids_array = array_map('intval', (array) $choose_organization);
+                        $choose_ids = implode(',', $choose_ids_array);
+                    
+                        if (!empty($choose_ids)) {
+                            $ids_array = array_map('intval', explode(',', $choose_ids));
+                            $placeholders = implode(',', array_fill(0, count($ids_array), '%d'));
+
+                            $query = $wpdb->prepare(
+                                "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id IN ($placeholders)",
+                                ...$ids_array
+                            );
+                            $results = $wpdb->get_col($query);
+                            $sales_reps_data[$user->ID] = $results;
+                        }
                     }
+                   
                 } else {
                     $sales_reps_data[$user->ID] = 'all';
                 }
