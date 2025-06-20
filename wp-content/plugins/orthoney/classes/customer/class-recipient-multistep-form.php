@@ -541,19 +541,19 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         $csv_dir = OAM_Helper::$process_recipients_csv_url;
         $greeting = '';
         $csvName = '';
-         $affiliate_select = 'Orthoney';
+         $affiliate_select = '[ATL] Atlanta Region ORT, Atlanta, Georgia';
         if (!empty($data)) {
             $groups = (!empty($data->groups)) ? $data->groups : '';
             $csvName = $data->csv_name != '' ? $data->csv_name : '';
             $greeting = (!empty($data->greeting)) ? $data->greeting : '';
-            $affiliate_select = (!empty($data->affiliate_select)) ? $data->affiliate_select : 'Orthoney';
+            $affiliate_select = (!empty($data->affiliate_select)) ? $data->affiliate_select : '[ATL] Atlanta Region ORT, Atlanta, Georgia';
         }
         ?>
         <div class="step" id="step3">
             <div class="heading-title organization_data_show">
                 <div>
                    
-                    <strong class="organization_value"> <?php echo self::organization_data($affiliate_select) ?></strong>
+                    <strong class="organization_value test"> <?php echo self::organization_data($affiliate_select) ?></strong>
 
                 </div>
                 <div></div>
