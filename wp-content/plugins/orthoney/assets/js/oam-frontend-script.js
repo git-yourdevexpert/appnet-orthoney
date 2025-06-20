@@ -2082,6 +2082,7 @@ jQuery(document).ready(function ($) {
 
         // Prepend inputs to the filter container
         $filterContainer.prepend(orgCodeInput).prepend(orgInput);
+        $filterContainer.find('input[type="search"]').attr('placeholder', 'Search by Customer');
 
         // Optional: Override default search input with debounce
         const searchBox = $filterContainer.find('input[type="search"]');
