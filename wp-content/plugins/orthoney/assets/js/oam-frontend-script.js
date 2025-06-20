@@ -2090,108 +2090,137 @@ jQuery(document).ready(function ($) {
   });
 });
 
+
 jQuery(document).ready(function ($) {
   let selectedStatus = '';
   let organizationSearch = '';
+  let organizationCodeSearch = '';
+  let currentAjaxRequest = null; // Track current AJAX request
 
-  // Custom input for organization search
-  const orgInput = $('<input type="text" placeholder="Search by Organization Name" style="margin-right: 10px;">')
-    .on('keyup', function () {
-      organizationSearch = $(this).val().trim();
-      table.ajax.reload();
-    });
+  // Prevent double binding
+  if (!$('#admin-organizations-table').hasClass('dt-initialized')) {
+    $('#admin-organizations-table').addClass('dt-initialized');
 
-  // Initialize DataTable
-  const table = new DataTable("#admin-organizations-table", {
-    pageLength: 50,
-    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-    ajax: {
-      url: oam_ajax.ajax_url,
-      type: "POST",
-      data: function (d) {
-        d.action = "orthoney_admin_get_organizations_data";
-        d.status_filter = selectedStatus;
-        d.organization_search = organizationSearch;
-      }
-    },
-    columns: [
-      { data: "code" },
-      { data: "organization" },
-      { data: "organization_admin" },
-      { data: "csr_name" },
-      { data: "new_organization" },
-      { data: "status" },
-      // { data: "season_status" },
-      { data: "price" },
-      // { data: "commission" },
-      { data: "login" }
-    ],
-    columnDefs: [
-    //  { targets: 0, width: "50px" },
-      { targets: 1, width: "210px" },
-        { targets: 2, width: "210px" },
-      { targets: 3, width: "210px" },
-       { targets: 5, visible: false,searchable: true },
-      { targets: -1, orderable: false, width: "100px" },
-        { targets: 0, visible: false,searchable: true },
-    ],
-    language: {
-      processing: `
-        <div class="loader multiStepForm" style="display:block">
-          <div>
-            <h2 class="swal2-title">Processing...</h2>
-            <div class="swal2-html-container">Please wait while we process your request.</div>
-            <div class="loader-5"></div>
-          </div>
-        </div>`
-    },
-    processing: true,
-    serverSide: true,
-    paging: true,
-    searching: true,
-    responsive: true,
-    scrollX: true,
-    autoWidth: true,
-
-    initComplete: function () {
-      const api = this.api();
-      const statusColIndex = 5;
-      const statusSet = new Set();
-
-      api.column(statusColIndex).data().each(function (d) {
-        if (d && d.trim() !== "") {
-          statusSet.add(d);
-        }
+    const orgInput = $('<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">')
+      .on('keyup', function () {
+        organizationSearch = $(this).val().trim();
+        table.ajax.reload();
       });
 
-      const statusSelect = $('<select><option value="">Filter by Status</option></select>')
-        .on('change', function () {
-          selectedStatus = $(this).val();
-          table.ajax.reload();
+    const orgCodeInput = $('<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">')
+      .on('keyup', function () {
+        organizationCodeSearch = $(this).val().trim();
+        table.ajax.reload();
+      });
+
+    const table = new DataTable("#admin-organizations-table", {
+      pageLength: 50,
+      lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+      ajax: {
+        url: oam_ajax.ajax_url,
+        type: "POST",
+
+        // 💡 Abort old AJAX call before sending new one
+        beforeSend: function () {
+          if (currentAjaxRequest && currentAjaxRequest.readyState !== 4) {
+            currentAjaxRequest.abort();
+          }
+        },
+
+        data: function (d) {
+          d.action = "orthoney_admin_get_organizations_data";
+          d.status_filter = selectedStatus;
+          d.organization_search = organizationSearch;
+          d.organization_code_search = organizationCodeSearch;
+        },
+
+        dataSrc: function (json) {
+          return json.data || [];
+        },
+
+        // Save reference to current request
+        xhr: function () {
+          currentAjaxRequest = $.ajaxSettings.xhr();
+          return currentAjaxRequest;
+        }
+      },
+      columns: [
+        { data: "code" },
+        { data: "organization" },
+        { data: "organization_admin" },
+        { data: "csr_name" },
+        { data: "new_organization" },
+        { data: "status" },
+        { data: "price" },
+        { data: "login" }
+      ],
+      columnDefs: [
+        { targets: 0, visible: false, searchable: true, orderable: true },
+        { targets: 1, width: "210px", orderable: false},
+        { targets: 2, width: "210px", orderable: false },
+        { targets: 3, width: "210px" ,  orderable: false},
+        { targets: 4, orderable: false , searchable: false, orderable: false },
+        { targets: 5, visible: false, searchable: false, orderable: false },
+        { targets: 6, searchable: false, orderable: false },
+        { targets: -1, orderable: false, width: "100px" ,orderable: false },
+      ],
+      language: {
+        processing: `
+          <div class="loader multiStepForm" style="display:block">
+            <div>
+              <h2 class="swal2-title">Processing...</h2>
+              <div class="swal2-html-container">Please wait while we process your request.</div>
+              <div class="loader-5"></div>
+            </div>
+          </div>`
+      },
+      processing: true,
+      serverSide: true,
+      paging: true,
+      searching: true,
+      responsive: true,
+      scrollX: true,
+      autoWidth: true,
+
+      initComplete: function () {
+        const api = this.api();
+        const statusColIndex = 5;
+        const statusSet = new Set();
+
+        api.column(statusColIndex).data().each(function (d) {
+          if (d && d.trim() !== "") {
+            statusSet.add(d);
+          }
         });
 
-      Array.from(statusSet).sort().forEach(status => {
-        statusSelect.append(`<option value="${status}">${status}</option>`);
-      });
+        const statusSelect = $('<select><option value="">Filter by Status</option></select>')
+          .on('change', function () {
+            selectedStatus = $(this).val();
+            table.ajax.reload();
+          });
 
-      // Add filters
-      $('.dataTables_filter').prepend(statusSelect.css({ marginRight: '10px' }));
-      $('.dataTables_filter').prepend(orgInput);
+        Array.from(statusSet).sort().forEach(status => {
+          statusSelect.append(`<option value="${status}">${status}</option>`);
+        });
 
-      // ✅ Remove "Search:" label text
-      $('.dataTables_filter label').contents().filter(function () {
-        return this.nodeType === 3;
-      }).remove();
+        const $filterArea = $('.dataTables_filter');
+        if (!$filterArea.hasClass('custom-filter-added')) {
+          $filterArea.addClass('custom-filter-added');
+          $filterArea.prepend(statusSelect.css({ marginRight: '10px' }));
+          $filterArea.prepend(orgInput);
+          $filterArea.prepend(orgCodeInput);
 
-      // ✅ Set placeholder on default search input
-      $('.dataTables_filter input[type="search"]').attr('placeholder', 'Search');
-    }
-  });
+          $filterArea.find('label').contents().filter(function () {
+            return this.nodeType === 3;
+          }).remove();
 
-  setTimeout(() => {
-    table.columns.adjust().draw();
-  }, 100);
+          $filterArea.find('input[type="search"]').attr('placeholder', 'Search');
+        }
+      }
+    });
+  }
 });
+
 
 
 jQuery(document).ready(function ($) {
