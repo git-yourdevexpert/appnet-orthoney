@@ -317,7 +317,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             <span class="error-message"></span>
                         </div>
                     </div>
-                    <h4 class="content-title">Don't Have An Organization? <a href="javascript:;" class="next-with-ortHoney-affiliates">Click Here</a></h4>
+                    <h4 class="content-title" style="display:none">Don't Have An Organization? <a href="javascript:;" class="next-with-ortHoney-affiliates">Click Here</a></h4>
                 </div>
                 <div class="block-btn"><button type="button" class="next w-btn us-btn-style_1">Select Order Method</button></div>
             </div>
@@ -541,21 +541,18 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         $csv_dir = OAM_Helper::$process_recipients_csv_url;
         $greeting = '';
         $csvName = '';
-         $affiliate_select = '[ATL] Atlanta Region ORT, Atlanta, Georgia';
+        $affiliate_select = 'Orthoney';
         if (!empty($data)) {
             $groups = (!empty($data->groups)) ? $data->groups : '';
             $csvName = $data->csv_name != '' ? $data->csv_name : '';
             $greeting = (!empty($data->greeting)) ? $data->greeting : '';
-            $affiliate_select = (!empty($data->affiliate_select)) ? $data->affiliate_select : '[ATL] Atlanta Region ORT, Atlanta, Georgia';
+            $affiliate_select = (!empty($data->affiliate_select)) ? $data->affiliate_select : 'Orthoney';
         }
         ?>
         <div class="step" id="step3">
             <div class="heading-title organization_data_show">
                 <div>
-                     <p class="organization-details">
-                        Organization: <strong class="organization_value"><?php echo self::organization_data($affiliate_select) ?></strong>
-                    </p>
-
+                    <?php echo self::organization_data($affiliate_select) ?>
                 </div>
                 <div></div>
             </div>
@@ -960,9 +957,10 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         </div>
         <?php
     }
+    
     public static function organization_data($affiliate){
         $details= 'Honey from the Heart';
-        if($affiliate!= 'Orthoney'){
+        if($affiliate != 'Orthoney'){
            $details = OAM_Helper::get_affiliate_by_pid($affiliate);
         }
         ?>
