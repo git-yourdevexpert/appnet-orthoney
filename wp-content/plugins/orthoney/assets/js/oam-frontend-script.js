@@ -2047,7 +2047,7 @@ jQuery(document).ready(function ($) {
       serverSide: true,
       paging: true,
       searching: true,
-      orderable: false,
+      ordering: false, 
 
       // ✅ Use initComplete to inject custom filters
       initComplete: function () {
