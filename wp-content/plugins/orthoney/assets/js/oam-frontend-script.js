@@ -3525,7 +3525,7 @@ jQuery(function ($) {
                  <select id="select-affiliate" class="form-control" ><option value="">Select affiliate </option></select>
              </label>
              <label class="customer-select-filter">
-             Customer:
+             Search by Customer Name:
                  <select id="select-customer" class="form-control"><option value="">Select customer</option></select>
              </label>
                   <label class="customer-select-filter">
@@ -3984,7 +3984,7 @@ jQuery(function ($) {
 
         const customFilter = `
                 <label class="yearblock">
-                    Order Year:
+                    Order by Year:
                     <select id="jars-select-year" class="form-control">
                     <option value="">All Years</option>
                     </select>
