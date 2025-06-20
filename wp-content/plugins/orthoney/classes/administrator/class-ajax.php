@@ -304,7 +304,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $select_organization = get_user_meta($user->ID, 'select_organization', true);
             $choose_organization = get_user_meta($user->ID, 'choose_organization', true);
 
-            $organizations_status = 'Assign All Organizations';
+            $organizations_status = '-';
             $matched_token = false;
 
             if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
@@ -330,6 +330,7 @@ class OAM_ADMINISTRATOR_AJAX {
                     if (!$matched_token) continue; // token didn't match
                 }
             } else {
+                  $organizations_status = 'Assign All Organizations';
                 if ($organization_code_search !== '') continue; // no tokens but filter required
             }
 
