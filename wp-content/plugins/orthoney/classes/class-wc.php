@@ -54,59 +54,59 @@ class OAM_WC_Customizer {
     }
 
     // save custom meta 
-public function aff_save_custom_email_meta( $user_id ) {
-    // Check if the user is registering via WooCommerce (i.e. it's an order registration)
+    public function aff_save_custom_email_meta( $user_id ) {
+        // Check if the registration includes organization name (likely WooCommerce registration)
+        if ( isset($_REQUEST['name_of_your_organization']) && !empty($_REQUEST['name_of_your_organization']) ) {
 
- if ( isset( $_REQUEST['name_of_your_organization'] ) && !empty( $_REQUEST['name_of_your_organization'] ) ) {
-    if ( isset( $_REQUEST['email'] ) && !empty( $_REQUEST['email'] ) ) {
-        // Get the email address from the form submission
-        $user_email = sanitize_email( $_REQUEST['email'] );
-        // Save the custom meta _yith_wcaf_email with the email value
-        update_user_meta( $user_id, '_yith_wcaf_email', $user_email );
-    }
+            // Save user email
+            if ( isset($_REQUEST['email']) && !empty($_REQUEST['email']) ) {
+                $user_email = sanitize_email($_REQUEST['email']);
+                update_user_meta($user_id, '_yith_wcaf_email', $user_email);
+            }
 
-    if ( isset( $_REQUEST['phone_number'] ) && !empty( $_REQUEST['phone_number'] ) ) {
-        // Get the email address from the form submission
-        $phone_number = $_REQUEST['phone_number'];
-        // Save the custom meta _yith_wcaf_email with the email value
-        update_user_meta( $user_id, 'user_registration_customer_phone_number', $phone_number );
-    }    
+            // Save user phone number
+            if ( isset($_REQUEST['phone_number']) && !empty($_REQUEST['phone_number']) ) {
+                $phone_number = sanitize_text_field($_REQUEST['phone_number']);
+                update_user_meta($user_id, 'user_registration_customer_phone_number', $phone_number);
+            }
 
-        if ( isset( $_REQUEST['first_name'] ) && !empty( $_REQUEST['first_name'] ) ) {
-        // Get the email address from the form submission
-        $profile_first_name = $_REQUEST['first_name'];
-        // Save the custom meta _yith_wcaf_email with the email value
-        update_user_meta( $user_id, 'first_name', $profile_first_name );
-    }  
-        if ( isset( $_REQUEST['last_name'] ) && !empty( $_REQUEST['last_name'] ) ) {
-        // Get the email address from the form submission
-        $last_name = $_REQUEST['last_name'];
-        // Save the custom meta _yith_wcaf_email with the email value
-        update_user_meta( $user_id, 'last_name', $last_name );
-    }  
-}
+            // Save first name
+            if ( isset($_REQUEST['first_name']) && !empty($_REQUEST['first_name']) ) {
+                $profile_first_name = sanitize_text_field($_REQUEST['first_name']);
+                update_user_meta($user_id, 'first_name', $profile_first_name);
+            }
 
-}
-
-
-
-    public function add_phone_field_to_edit_account() {
-    $user_id = get_current_user_id();
-    $user_phone = get_user_meta($user_id, 'user_registration_customer_phone_number', true);
-    ?>
-    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-        <label for="account_phone"><?php _e('Phone number', 'woocommerce'); ?>&nbsp;<span class="required">*</span></label>
-        <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="user_registration_customer_phone_number" id="user_registration_customer_phone_number" value="<?php echo esc_attr($user_phone); ?>" />
-    </p>
-    <?php
-}
-
-    public function save_phone_field_from_edit_account($user_id) {
-        if (isset($_POST['user_registration_customer_phone_number'])) {
-            update_user_meta($user_id, 'user_registration_customer_phone_number', sanitize_text_field($_POST['user_registration_customer_phone_number']));
+            // Save last name
+            if ( isset($_REQUEST['last_name']) && !empty($_REQUEST['last_name']) ) {
+                $last_name = sanitize_text_field($_REQUEST['last_name']);
+                update_user_meta($user_id, 'last_name', $last_name);
+            }
         }
     }
 
+    public function add_phone_field_to_edit_account() {
+        $user_id    = get_current_user_id();
+        $user_phone = get_user_meta($user_id, 'user_registration_customer_phone_number', true);
+        ?>
+        <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+            <label for="user_registration_customer_phone_number">
+                <?php _e('Phone number', 'woocommerce'); ?>&nbsp;<span class="required">*</span>
+            </label>
+            <input type="text"
+                class="woocommerce-Input woocommerce-Input--text input-text"
+                name="user_registration_customer_phone_number"
+                id="user_registration_customer_phone_number"
+                value="<?php echo esc_attr($user_phone); ?>" />
+        </p>
+        <?php
+    }
+
+    public function save_phone_field_from_edit_account($user_id) {
+        if (isset($_POST['user_registration_customer_phone_number'])) {
+            $phone_number = sanitize_text_field($_POST['user_registration_customer_phone_number']);
+            update_user_meta($user_id, 'user_registration_customer_phone_number', $phone_number);
+        }
+    }
 
     
     public function add_cc_to_new_order_email( $headers, $email_id, $order ) {
@@ -129,6 +129,7 @@ public function aff_save_custom_email_meta( $user_id ) {
 
         return $headers;
     }
+
     public function attach_pdf_order_email($attachments, $email_id, $order) {
         if ($email_id === 'customer_processing_order') { // Target "Processing Order" email
             $upload_dir = wp_upload_dir();
