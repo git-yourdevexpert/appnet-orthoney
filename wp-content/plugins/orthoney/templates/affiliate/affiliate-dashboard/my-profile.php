@@ -158,11 +158,11 @@
         <form id="affiliate-remittance-form">
             <input type="hidden" name="associated_id" id="associated_id" value="<?php echo esc_attr($associated_id); ?>" required>
             <div class="profile-fields site-form grid-two-col">
-                <div class="form-row gfield--width-half">
+                <!-- <div class="form-row gfield--width-half">
                     <label for="org_code">ORG Code <span class="required">*</span></label>
                     <input type="text" name="org_code" id="org_code" value="<?php echo esc_attr($org_code); ?>" readonly required data-error-message="Please enter a Org Code.">
                     <span class="error-message"></span>
-                </div>
+                </div> -->
                 <div class="form-row gfield--width-half">
                     <label for="check_payable">Make Check Payable to <span class="required">*</span></label>
                     <input type="text" name="check_payable" id="check_payable" value="<?php echo esc_attr($check_payable); ?>" required data-error-message="Please enter a make check payable to.">
