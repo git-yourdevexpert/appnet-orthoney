@@ -2837,7 +2837,6 @@ jQuery(document).ready(function ($) {
           });
 
         // Inject into filter container
-        $filterContainer.prepend(orgCodeInput).prepend(orgInput);
 
 
         // Status dropdown
@@ -2853,10 +2852,10 @@ jQuery(document).ready(function ($) {
       if (currentRequest) currentRequest.abort();
       table.ajax.reload();
     });
+        $filterContainer.prepend(orgCodeInput).prepend(orgInput).prepend(statusFilter);
 
-    $filterContainer.prepend(statusFilter).prepend(ordstatus).prepend(orgInput);
 
-    
+
         // Customize the default search input
         const searchBox = $filterContainer.find('input[type="search"]');
         searchBox.attr('placeholder', 'Search Customers');
