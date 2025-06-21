@@ -258,12 +258,13 @@ document.addEventListener('click', function (event) {
 // TODO: Add Sweet Alert Pending
 //Edit my profile 
 document.addEventListener('click', function (event) {
+    
     if (event.target.id === 'save-profile') {
         event.preventDefault();
-        if (!validateForm(this)) return; // Stop submission if validation fails
+        const form = document.querySelector('#affiliate-profile-form');
+        if (!validateForm(form)) return; // Stop submission if validation fails
 
         
-        const form = document.querySelector('#affiliate-profile-form');
         const formData = new FormData(form);
         formData.append('action', 'update_affiliate_profile');
         formData.append("security", oam_ajax.nonce);  // nonce.
@@ -303,6 +304,54 @@ document.addEventListener('click', function (event) {
             });
         });
     }
+
+
+    if (event.target.id === 'save-remittance') {
+        event.preventDefault();
+        const form = document.querySelector('#affiliate-remittance-form');
+        if (!validateForm(form)) return; // Stop submission if validation fails
+
+        const formData = new FormData(form);
+        formData.append('action', 'update_affiliate_remittance');
+        formData.append("security", oam_ajax.nonce);  // nonce.
+
+        fetch(oam_ajax.ajax_url, {
+            method: 'POST',
+            body: formData,
+        })
+
+        .then(response => response.json())
+        .then(data => {
+            const messageDiv = document.querySelector('#profile-message');
+            if (data.success) {
+                Swal.fire({
+                    title: data.message || "Your remittance has been updated successfully.",
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true
+                });
+                setTimeout(function () {
+                  window.location.reload();
+                }, 750);
+            } else {
+                Swal.fire({
+                    title: "Error",
+                    text: data.message || "Something went wrong. Please try again",
+                    icon: "error",
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while updating the Affiliate profile.',
+                icon: 'error',
+            });
+        });
+    }
+
+    
     if (event.target.id === 'affiliate-product-price-profile') {
         
         event.preventDefault();

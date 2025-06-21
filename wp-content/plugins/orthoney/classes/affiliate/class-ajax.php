@@ -14,6 +14,7 @@ class OAM_AFFILIATE_Ajax{
 
         // Affiliate Profile function
         add_action( 'wp_ajax_update_affiliate_profile', array( $this, 'update_affiliate_profile_handler' ) );
+       add_action( 'wp_ajax_update_affiliate_remittance', array( $this, 'update_affiliate_remittance_handler' ) );
         add_action( 'wp_ajax_update_price_affiliate_profile', array( $this, 'update_price_affiliate_profile_handler' ) );
         add_action( 'wp_ajax_update_gift_card_profile', array( $this, 'update_gift_card_profile_handler' ) );
         add_action( 'wp_ajax_update_mission_statement_profile', array( $this, 'update_mission_statement_profile_handler' ) );
@@ -547,6 +548,52 @@ class OAM_AFFILIATE_Ajax{
         }
 
         wp_send_json(['success' => true, 'message' => 'Mission statement updated successfully!']);
+        wp_die();
+        
+    }
+
+    // Affiliate remittance function
+    public function update_affiliate_remittance_handler() {
+       // Verify nonce for security
+        check_ajax_referer('oam_nonce', 'security');
+
+        if (!is_user_logged_in()) {
+            wp_send_json(['success' => false, 'message' => 'You must be logged in to update your profile.']);
+            wp_die();
+        }
+
+        $user_id = get_current_user_id();
+      
+    
+         // Update user meta
+        update_user_meta($user_id, '_yith_wcaf_check_payable', $check_payable);
+        update_user_meta($user_id, '_yith_wcaf_address_check', $address_check);
+        update_user_meta($user_id, '_yith_wcaf_attention', $attention);
+
+        // Validate and sanitize inputs
+        $associated_id = sanitize_text_field($_POST['associated_id']);
+        $check_payable = sanitize_text_field($_POST['check_payable']);
+        $address_check = sanitize_text_field($_POST['address_check']);
+        $attention = sanitize_text_field($_POST['attention']);
+        
+     
+
+        $user_ids = get_users([
+            'meta_key'   => 'associated_affiliate_id',
+            'meta_value' => strval($associated_id),
+            'fields'     => 'ID'
+        ]);
+
+        // Update each team member's price
+        foreach ($user_ids as $id) {
+            // Update user meta
+            update_user_meta($id, '_yith_wcaf_check_payable', $check_payable);
+            update_user_meta($id, '_yith_wcaf_address_check', $address_check);
+            update_user_meta($id, '_yith_wcaf_attention', $attention);
+            
+        }
+
+        wp_send_json(['success' => true, 'message' => 'Your remittance has been updated successfully.']);
         wp_die();
         
     }
