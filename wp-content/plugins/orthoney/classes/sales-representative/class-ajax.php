@@ -589,9 +589,9 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
             $oemail = $user_obj ? $user_obj->user_email : '';
 
             $organizationdata = [];
-            if (!empty($row->organization_name)) {
+            //if (!empty($row->organization_name)) {
                 $organizationdata[] = '<strong>[' . $row->token . ']' . esc_html($row->organization_name) . '</strong>';
-            }
+            //}
             $city_state = trim(esc_html($row->city) . (empty($row->city) || empty($row->state) ? '' : ', ') . esc_html($row->state));
             if (!empty($city_state)) {
                 $organizationdata[] = $city_state;
@@ -627,7 +627,7 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
 
             $data[] = [
                 'code' => esc_html($row->token ?? ''),
-                'organization' => (!empty($row->token) ? '<strong>[' . $row->token . ']</strong> ' : '') . $organization,
+                'organization' =>  $organization,
                 'organization_admin' => $org_admin_user,
                 'new_organization' => $new_organization_block,
                 'status' => esc_html($status),
