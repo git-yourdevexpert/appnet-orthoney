@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             
             else if (input.id === 'greeting') {
-                input.value = input.value.replace(/[^\n0-9a-zA-Z ,.#'&/()-]/g , '');
+                // input.value = input.value.replace(/[^\n0-9a-zA-Z ,.#'&/()-]/g , '');
             }
             else if (input.id === 'city') {
                 input.value = input.value.replace(/[^0-9a-zA-Z \-'.`()]/g, '');  // Allow city names
