@@ -14,7 +14,7 @@ class OAM_AFFILIATE_Ajax{
 
         // Affiliate Profile function
         add_action( 'wp_ajax_update_affiliate_profile', array( $this, 'update_affiliate_profile_handler' ) );
-       add_action( 'wp_ajax_update_affiliate_remittance', array( $this, 'update_affiliate_remittance_handler' ) );
+        add_action( 'wp_ajax_update_affiliate_remittance', array( $this, 'update_affiliate_remittance_handler' ) );
         add_action( 'wp_ajax_update_price_affiliate_profile', array( $this, 'update_price_affiliate_profile_handler' ) );
         add_action( 'wp_ajax_update_gift_card_profile', array( $this, 'update_gift_card_profile_handler' ) );
         add_action( 'wp_ajax_update_mission_statement_profile', array( $this, 'update_mission_statement_profile_handler' ) );
@@ -42,34 +42,59 @@ class OAM_AFFILIATE_Ajax{
     }
 
     public function search_customers_autosuggest_handler() {
-        $customer = isset($_REQUEST['customer']) ? sanitize_text_field($_REQUEST['customer']) : '';
-        $page     = isset($_REQUEST['page']) ? max(1, intval($_REQUEST['page'])) : 1;
-        $per_page = 20;
-        $offset   = ($page - 1) * $per_page;
-        $user_ids = [];
+        global $wpdb;
 
-         $args = [
-            'role'    => 'customer',
-            'search'  => '*' . esc_attr($customer) . '*',
-            'orderby' => 'display_name',
-            'order'   => 'ASC',
-            'number'  => $per_page,
-            'offset'  => $offset,
-            'fields'  => ['ID', 'display_name', 'user_email'],
-        ];
+        $search_term = isset($_REQUEST['customer']) ? sanitize_text_field($_REQUEST['customer']) : '';
+        $page        = isset($_REQUEST['page']) ? max(1, intval($_REQUEST['page'])) : 1;
+        $per_page    = 20;
+        $offset      = ($page - 1) * $per_page;
 
-        $user_query = new WP_User_Query($args);
-        $users = $user_query->get_results();
+        if (empty($search_term)) {
+            wp_send_json([
+                'results'    => [],
+                'pagination' => ['more' => false],
+            ]);
+        }
 
-        $total_users = $user_query->get_total();
+        $search_like = '%' . $wpdb->esc_like($search_term) . '%';
+        $role_value  = 'a:1:{s:8:"customer";b:1;}';
+
+        $sql = "
+            SELECT SQL_CALC_FOUND_ROWS u.ID, u.display_name, u.user_email,
+                fn.meta_value AS first_name, ln.meta_value AS last_name
+            FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} ur ON u.ID = ur.user_id
+                AND ur.meta_key = '{$wpdb->prefix}capabilities'
+                AND ur.meta_value = %s
+            LEFT JOIN {$wpdb->usermeta} fn ON u.ID = fn.user_id AND fn.meta_key = 'first_name'
+            LEFT JOIN {$wpdb->usermeta} ln ON u.ID = ln.user_id AND ln.meta_key = 'last_name'
+            WHERE (
+                CONCAT(COALESCE(fn.meta_value, ''), ' ', COALESCE(ln.meta_value, '')) LIKE %s OR
+                u.display_name LIKE %s OR
+                u.user_email LIKE %s
+            )
+            ORDER BY u.display_name ASC
+            LIMIT %d OFFSET %d
+        ";
+
+        $query = $wpdb->prepare(
+            $sql,
+            $role_value,
+            $search_like,
+            $search_like,
+            $search_like,
+            $per_page,
+            $offset
+        );
+
+        $users = $wpdb->get_results($query);
+        $total = $wpdb->get_var("SELECT FOUND_ROWS();");
 
         $response = [];
 
         foreach ($users as $user) {
-            $first_name = get_user_meta($user->ID, 'first_name', true);
-            $last_name  = get_user_meta($user->ID, 'last_name', true);
-            $full_name  = trim($first_name . ' ' . $last_name);
-            $label      = $full_name.' ['.$user->user_email.']' ?: ($user->display_name.' ['.$user->user_email.']' ?: $user->user_email);
+            $full_name = trim($user->first_name . ' ' . $user->last_name);
+            $label = $full_name ? "$full_name [$user->user_email]" : "$user->display_name [$user->user_email]";
 
             $response[] = [
                 'id'    => $user->user_email,
@@ -79,9 +104,11 @@ class OAM_AFFILIATE_Ajax{
 
         wp_send_json([
             'results'    => $response,
-            'pagination' => ['more' => ($offset + $per_page) < $total_users],
+            'pagination' => ['more' => ($offset + $per_page) < $total],
         ]);
     }
+
+
 
     public function orthoney_org_account_statement_ajax_handler() {
         check_ajax_referer('oam_nonce', 'security');
@@ -304,60 +331,66 @@ class OAM_AFFILIATE_Ajax{
         check_ajax_referer('oam_nonce', 'security');
         $user_id = get_current_user_id();
         $email = sanitize_email($_POST['email']);
+        
         if (empty($email)) {
             wp_send_json(['success' => false, 'message' => 'Invalid email.']);
         }
-    
-        // Perform exact email match using get_user_by instead of WP_User_Query
+
+        // Perform exact email match using get_user_by
         $user = get_user_by('email', $email);
-    
+
         if (!$user) {
             wp_send_json(['success' => false, 'customers' => []]);
         }
-    
+
         // Check if the user has only the 'customer' role
         $user_roles = (array) $user->roles;
         if (count($user_roles) === 1 && in_array('customer', $user_roles)) {
             global $wpdb;
             $table_name = OAM_Helper::$oh_affiliate_customer_linker;
+
             $processQuery = $wpdb->prepare(
                 "SELECT * FROM {$table_name} WHERE affiliate_id = %d AND customer_id = %d",
-                $user_id, $user->id
+                $user_id, $user->ID
             );
-    
+
             $results = $wpdb->get_row($processQuery);
             $message = '';
             $exist_status = 2;
 
-            
-            if($results){
+            if ($results) {
                 $exist_status = $results->status;
-                if($results->status == 0){
-                    $message = 'You have already send request. Can you resend request?';
+                if ($results->status == 0) {
+                    $message = 'You have already sent a request. Do you want to resend it?';
+                } elseif ($results->status == 1) {
+                    $message = 'Customer is already linked with you.';
+                } elseif ($results->status == -1) {
+                    $message = 'Customer has rejected your request.';
                 }
-                if($results->status == 1){
-                    $message = 'Customer is already link with you';
-                }
-                if($results->status == -1){
-                    $message = 'Customer has been reject to you.';
-                }
-
             }
+
+            // Get full name or fallback to display_name
+            $first_name = get_user_meta($user->ID, 'first_name', true);
+            $last_name  = get_user_meta($user->ID, 'last_name', true);
+            $full_name  = trim($first_name . ' ' . $last_name);
+            $final_name = !empty($full_name) ? $full_name : $user->display_name;
+
             $customers = [
                 [
-                    'id'    => $user->id,
-                    'name'  => $user->display_name,
-                    'email' => $user->user_email,
+                    'id'           => $user->ID,
+                    'name'         => $final_name,
+                    'email'        => $user->user_email,
                     'exist_status' => $exist_status,
-                    'message' => $message,
+                    'message'      => $message,
                 ]
             ];
-            
+
             wp_send_json(['success' => true, 'customers' => $customers]);
         }
-    
+
         wp_send_json(['success' => false, 'customers' => []]);
     }
+
     
     // Change Affilate Admin user
     public function change_user_role_logout_handler() {
