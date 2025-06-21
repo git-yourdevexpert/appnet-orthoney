@@ -748,7 +748,7 @@ class OAM_ADMINISTRATOR_AJAX {
         $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
         $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
 
-        $filtered_user_ids = array_filter($user_ids, function ($user_id) use ($search, $user_meta_cache, $user_status_map, $status_filter, $organization_search, $organization_code_search) {
+        $filtered_user_ids = array_filter($user_ids, function ($user_id) use ($search, $user_meta_cache, $user_status_map, $status_filter,$session_status_filter, $organization_search, $organization_code_search) {
             $status = strtolower($user_status_map[$user_id]['label']);
             $organization = strtolower($user_meta_cache[$user_id]['organization']);
             $code = strtolower($user_meta_cache[$user_id]['code']);
