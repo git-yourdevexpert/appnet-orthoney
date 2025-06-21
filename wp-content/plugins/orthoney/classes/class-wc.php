@@ -87,6 +87,10 @@ class OAM_WC_Customizer {
     public function add_phone_field_to_edit_account() {
         $user_id    = get_current_user_id();
         $user_phone = get_user_meta($user_id, 'user_registration_customer_phone_number', true);
+        $affiliate_id = $user_id;
+        $associated_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+
+        $phone_number = get_user_meta($associated_id, '_yith_wcaf_phone_number', true);
         ?>
         <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
             <label for="user_registration_customer_phone_number">
@@ -96,7 +100,7 @@ class OAM_WC_Customizer {
                 class="woocommerce-Input woocommerce-Input--text input-text"
                 name="user_registration_customer_phone_number"
                 id="user_registration_customer_phone_number"
-                value="<?php echo esc_attr($user_phone); ?>" />
+                value="<?php echo esc_attr($user_phone) ?: $phone_number; ?>" />
         </p>
         <?php
     }
