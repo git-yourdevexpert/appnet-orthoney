@@ -753,7 +753,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $organization = strtolower($user_meta_cache[$user_id]['organization']);
             $code = strtolower($user_meta_cache[$user_id]['code']);
 
-            echo $user_id.'</br>';
+           // echo $user_id.'</br>';
             $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true);
 
 
