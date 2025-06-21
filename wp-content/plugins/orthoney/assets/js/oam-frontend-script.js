@@ -2699,7 +2699,7 @@ jQuery(document).ready(function ($) {
   // Create status filter dropdown
   const statusDropdown = $(`
     <select style="margin-right: 10px;">
-      <option value="">All Season Status</option>
+      <option value="">Season Status</option>
       <option value="active">Activated</option>
       <option value="deactivate">Deactivated</option>
     </select>
