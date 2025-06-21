@@ -2699,9 +2699,9 @@ jQuery(document).ready(function ($) {
   // Create status filter dropdown
   const statusDropdown = $(`
     <select style="margin-right: 10px;">
-      <option value="">All Statuses</option>
-      <option value="active">Active</option>
-      <option value="deactivate">Deactivate</option>
+      <option value="">All Season Status</option>
+      <option value="active">Active Season Status</option>
+      <option value="deactivate">Deactivate Season Status</option>
     </select>
   `).on('change', function () {
     selectedStatus = $(this).val();
