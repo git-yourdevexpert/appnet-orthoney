@@ -75,7 +75,12 @@ $dashboard_link_label  = 'Return to Dashboard';
                 if (!empty($requests)) {
                     foreach ($requests as $request) {
                         $customer        = get_userdata($request->customer_id);
-                        $customer_name   = $customer ? esc_html($customer->display_name) : 'Unknown';
+                        $first_name = get_user_meta($request->customer_id, 'first_name', true);
+                        $last_name  = get_user_meta($request->customer_id, 'last_name', true);
+                        $full_name  = trim($first_name . ' ' . $last_name);
+                        $final_name = !empty($full_name) ? $full_name : $customer->display_name;
+
+                        // $customer_name   = $customer ? esc_html($customer->display_name) : 'Unknown';
                         $customer_email  = $customer ? esc_html($customer->user_email) : 'Unknown';
 
                         $status_label = 'Blocked';
@@ -87,7 +92,7 @@ $dashboard_link_label  = 'Return to Dashboard';
 
                         echo '<tr>
                             <td><div class="thead-data">ID</div>' . esc_html($request->customer_id) . '</td>
-                            <td><div class="thead-data">Customer Name</div>' . $customer_name . '</td>
+                            <td><div class="thead-data">Customer Name</div>' . $final_name . '</td>
                             <td><div class="thead-data">Customer Email</div>' . $customer_email . '</td>
                             <td><div class="thead-data">Status</div>' . esc_html($status_label) . '</td>';
 
