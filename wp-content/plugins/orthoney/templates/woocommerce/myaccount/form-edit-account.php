@@ -21,12 +21,15 @@ do_action( 'woocommerce_before_edit_account_form' );
 
 $dashboard_link = CUSTOMER_DASHBOARD_LINK;
 $dashboard_link_label = 'Return to Dashboard';
-
-   $affiliate_id = $user_id;
+ $user_id = get_current_user_id();
+ $affiliate_id = $user_id;
    $associated_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+   if($associated_id){
+	$associated_id = $user_id;
+   }
 
    $phone_number = get_user_meta($associated_id, '_yith_wcaf_phone_number', true);
-     $first_name = get_user_meta($associated_id, '_yith_wcaf_first_name', true) ?: get_user_meta($associated_id, 'first_name', true);
+   $first_name = get_user_meta($associated_id, '_yith_wcaf_first_name', true) ?: get_user_meta($associated_id, 'first_name', true);
    $last_name = get_user_meta($associated_id, '_yith_wcaf_last_name', true) ?: get_user_meta($associated_id, 'last_name', true);
 ?>
 <div class="order-process-block">
