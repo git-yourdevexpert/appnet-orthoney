@@ -740,10 +740,6 @@ class OAM_ADMINISTRATOR_AJAX {
         // Step 4: Filter based on search and status
         $status_filter = sanitize_text_field($_POST['status_filter'] ?? '');
         $session_status_filter = sanitize_text_field($_POST['session_status_filter'] ?? '');
-
-
-        
-
       
         $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
         $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
@@ -755,8 +751,6 @@ class OAM_ADMINISTRATOR_AJAX {
 
            // echo $user_id.'</br>';
             $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true);
-
-
 
             if (!empty($organization_search) && strpos($organization, strtolower($organization_search)) === false) {
                 return false;
@@ -783,8 +777,6 @@ class OAM_ADMINISTRATOR_AJAX {
                     return false;
                 }
             }
-
-
 
             if (empty($search)) return true;
 
@@ -850,6 +842,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 $org_user = get_userdata($associated_affiliate_id);
                 $first_name = get_user_meta($associated_affiliate_id, 'first_name', true);
                 $last_name  = get_user_meta($associated_affiliate_id, 'last_name', true);
+                $yith_wcaf_phone_number = get_user_meta($user_id, 'user_registration_customer_phone_number', true) ?: '';
                 $org_user_name = trim($first_name . ' ' . $last_name) ?: $org_user->display_name;
                 $org_email = $org_user->user_email;
                 $org_admin_user = '<strong>'.$org_user_name . '</strong><br>' . $org_email . '<br>' . $yith_wcaf_phone_number;

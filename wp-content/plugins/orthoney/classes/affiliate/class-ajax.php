@@ -393,7 +393,7 @@ class OAM_AFFILIATE_Ajax{
 
     
     // Change Affilate Admin user
-    public function change_user_role_logout_handler() {
+     public function change_user_role_logout_handler() {
         check_ajax_referer('oam_nonce', 'security'); // Security check
 
         $current_user_id  = get_current_user_id();
@@ -430,13 +430,43 @@ class OAM_AFFILIATE_Ajax{
                 'number'     => -1, // Retrieve all matching users
             ];
 
-            $users = get_users($args);
+           $users = get_users($args);
 
             if (!empty($users)) {
+                $meta_keys = [
+                    '_yith_wcaf_first_name',
+                    '_yith_wcaf_last_name',
+                    '_yith_wcaf_email',
+                    '_yith_wcaf_name_of_your_organization',
+                    '_yith_wcaf_your_organizations_website',
+                    '_yith_wcaf_phone_number',
+                    '_yith_wcaf_address',
+                    '_yith_wcaf_city',
+                    '_yith_wcaf_state',
+                    '_yith_wcaf_zipcode',
+                    '_yith_wcaf_tax_id',
+                    '_yith_wcaf_oam_heart',
+                    '_yith_wcaf_consent',
+                    '_yith_wcaf_privacy_policy_text',
+                    '_yith_wcaf_how_promote',
+                    '_yith_wcaf_paypal_gateway_preferences',
+                    '_yith_wcaf_check_payable',
+                    '_yith_wcaf_address_check',
+                    '_yith_wcaf_attention',
+                ];
+
                 foreach ($users as $user) {
                     update_user_meta($user->ID, 'associated_affiliate_id', $selected_user_id);
+
+                    foreach ($meta_keys as $meta_key) {
+                        $meta_value = get_user_meta($current_user_id, $meta_key, true);
+                        if (!empty($meta_value)) {
+                            update_user_meta($user->ID, $meta_key, $meta_value);
+                        }
+                    }
                 }
             }
+
 
             global $wpdb;
             $yith_affiliate_table = $wpdb->prefix . 'yith_wcaf_affiliates';
@@ -744,11 +774,8 @@ class OAM_AFFILIATE_Ajax{
                 $user->add_role('affiliate_team_member');
 
                 // Update missing phone
-                
                 update_user_meta($existsuser_id, 'user_registration_customer_phone_number', $phone);
-
                 update_user_meta($existsuser_id, '_yith_wcaf_email', $affiliate_email);
-
                 update_user_meta($existsuser_id, 'user_field_type', $affiliate_type);
                 update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
 
@@ -813,7 +840,7 @@ class OAM_AFFILIATE_Ajax{
         // Common user meta updates
         update_user_meta($user_id, 'first_name', $first_name);
         update_user_meta($user_id, 'last_name', $last_name);
-        update_user_meta($user_id, 'phone', $phone);
+        update_user_meta($user_id, 'user_registration_customer_phone_number', $phone);
         update_user_meta($user_id, 'shipping_phone', $phone);
         update_user_meta($user_id, 'user_field_type', $affiliate_type);
         update_user_meta($user_id, 'associated_affiliate_id', $affiliate_id);
