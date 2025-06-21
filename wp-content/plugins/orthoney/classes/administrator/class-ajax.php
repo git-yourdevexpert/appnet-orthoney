@@ -753,7 +753,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $organization = strtolower($user_meta_cache[$user_id]['organization']);
             $code = strtolower($user_meta_cache[$user_id]['code']);
 
-            $activate_affiliate_account = get_user_meta($user_meta_cache[$user_id], 'activate_affiliate_account', true);
+            $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true);
 
 
 
@@ -769,19 +769,19 @@ class OAM_ADMINISTRATOR_AJAX {
                 return false;
             }
 
-                    // Active: must be explicitly 1
-                    if ($session_status_filter === 'active') {
-                        if (intval($activate_affiliate_account) !== 1) {
-                            return false;
-                        }
-                    }
+            // Active: must be explicitly 1
+            if ($session_status_filter === 'active') {
+                if (intval($activate_affiliate_account) !== 1) {
+                    return false;
+                }
+            }
 
-                    // Deactivate: anything that is not 1 (including empty or missing)
-                    if ($session_status_filter === 'deactivate') {
-                        if (intval($activate_affiliate_account) === 1) {
-                            return false;
-                        }
-                    }
+            // Deactivate: anything that is not 1 (including empty or missing)
+            if ($session_status_filter === 'deactivate') {
+                if (intval($activate_affiliate_account) === 1) {
+                    return false;
+                }
+            }
 
 
 
