@@ -744,12 +744,10 @@ class OAM_AFFILIATE_Ajax{
                 $user->add_role('affiliate_team_member');
 
                 // Update missing phone
-                if (empty(get_user_meta($existsuser_id, 'phone', true))) {
-                    update_user_meta($existsuser_id, 'user_registration_customer_phone_number', $phone);
-                }
+                
+                update_user_meta($existsuser_id, 'user_registration_customer_phone_number', $phone);
 
-
-                  update_user_meta($existsuser_id, '_yith_wcaf_email', $affiliate_email);
+                update_user_meta($existsuser_id, '_yith_wcaf_email', $affiliate_email);
 
                 update_user_meta($existsuser_id, 'user_field_type', $affiliate_type);
                 update_user_meta($existsuser_id, 'associated_affiliate_id', $affiliate_id);
@@ -842,7 +840,7 @@ class OAM_AFFILIATE_Ajax{
         if (!empty($affiliate_users)) :
             foreach ($affiliate_users as $user) :
                 $array['userid'] =  $user->ID;
-                $array['phone'] =  get_user_meta($user->ID, 'phone', true);
+                $array['phone'] =  get_user_meta($user->ID, 'user_registration_customer_phone_number', true);
                 $array['affiliate_type'] =  get_user_meta($user->ID, 'user_field_type', true);
                 $array['first_name'] =  $user->first_name;
                 $array['last_name'] =   $user->last_name;
