@@ -74,6 +74,7 @@ $dashboard_link_label  = 'Return to Dashboard';
                 <?php 
                 if (!empty($requests)) {
                     foreach ($requests as $request) {
+                        if($request->customer_id != 0){
                         $customer        = get_userdata($request->customer_id);
                         $first_name = get_user_meta($request->customer_id, 'first_name', true);
                         $last_name  = get_user_meta($request->customer_id, 'last_name', true);
@@ -114,6 +115,7 @@ $dashboard_link_label  = 'Return to Dashboard';
 
                         echo '</tr>';
                     }
+                }
                 }
                 ?>
             </tbody>
