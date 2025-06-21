@@ -2202,6 +2202,7 @@ jQuery(document).ready(function ($) {
 
 jQuery(document).ready(function ($) {
   let selectedStatus = '';
+  let selectedsessionStatus = '';
   let organizationSearch = '';
   let organizationCodeSearch = '';
   let currentAjaxRequest = null; // Track current AJAX request
@@ -2239,6 +2240,7 @@ jQuery(document).ready(function ($) {
         data: function (d) {
           d.action = "orthoney_admin_get_organizations_data";
           d.status_filter = selectedStatus;
+          d.session_status_filter = selectedsessionStatus;
           d.organization_search = organizationSearch;
           d.organization_code_search = organizationCodeSearch;
         },
@@ -2311,14 +2313,14 @@ jQuery(document).ready(function ($) {
           <option value="deactivate">Deactivate</option>
         </select>
       `).on('change', function () {
-        selectedStatus = $(this).val();
+        selectedsessionStatus = $(this).val();
         table.ajax.reload(); // server-side filtering
       });
 
 
         const statusSelect = $('<select><option value="">Filter by Status</option></select>')
           .on('change', function () {
-            selectedStatus = $(this).val();
+            selectedsessionStatus = $(this).val();
             table.ajax.reload();
           });
 
