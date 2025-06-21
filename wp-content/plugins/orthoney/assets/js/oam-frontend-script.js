@@ -2839,6 +2839,24 @@ jQuery(document).ready(function ($) {
         // Inject into filter container
         $filterContainer.prepend(orgCodeInput).prepend(orgInput);
 
+
+        // Status dropdown
+    const statusFilter = $(`
+      <select style="margin-right: 10px;">
+        <option value="">Filter by Status</option>
+        <option value="Accepted and enabled">Accepted and enabled</option>
+        <option value="New request">New request</option>
+        <option value="Rejected">Rejected</option>
+      </select>
+    `).on('change', function () {
+      organizationStatusSearch = $(this).val();
+      if (currentRequest) currentRequest.abort();
+      table.ajax.reload();
+    });
+
+    $filterContainer.prepend(statusFilter).prepend(ordstatus).prepend(orgInput);
+
+    
         // Customize the default search input
         const searchBox = $filterContainer.find('input[type="search"]');
         searchBox.attr('placeholder', 'Search Customers');
