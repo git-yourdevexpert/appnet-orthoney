@@ -419,7 +419,7 @@ class OAM_AFFILIATE_Ajax{
             if (in_array('yith_affiliate', $current_user_roles)) {
                 $current_user->remove_role('yith_affiliate');
                 $current_user->add_role('affiliate_team_member');
-                update_field('user_field_type', 'primary-contact', 'user_' . $current_user_id);
+                update_user_meta($current_user_id, 'user_field_type', 'primary-contact');
             }
 
             $afficated_id = get_user_meta($current_user_id, 'associated_affiliate_id', true);
