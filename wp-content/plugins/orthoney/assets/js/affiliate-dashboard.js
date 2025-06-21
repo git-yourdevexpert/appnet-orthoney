@@ -258,8 +258,7 @@ document.addEventListener('click', function (event) {
 // TODO: Add Sweet Alert Pending
 //Edit my profile 
 document.addEventListener('click', function (event) {
-    
-    if (event.target.id === 'save-profile') {
+     if (event.target.id === 'save-profile') {
         event.preventDefault();
         const form = document.querySelector('#affiliate-profile-form');
         if (!validateForm(form)) return; // Stop submission if validation fails
@@ -350,13 +349,10 @@ document.addEventListener('click', function (event) {
             });
         });
     }
-
-    
     if (event.target.id === 'affiliate-product-price-profile') {
         
         event.preventDefault();
-       
-
+    
         const form = document.querySelector('#affiliate-update-price-form');
         const formData = new FormData(form);
 
