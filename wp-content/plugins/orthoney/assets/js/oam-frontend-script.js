@@ -2692,30 +2692,34 @@ jQuery(document).ready(function ($) {
           </div>
         </div>`
     },
-    initComplete: function () {
-      const api = this.api();
-      const statusColIndex = 4;
-      const statusSet = new Set();
+   initComplete: function () {
+  const api = this.api();
+  const $filterWrapper = $('.dataTables_filter');
 
-      api.column(statusColIndex).data().each(function (d) {
-        if (d && d.trim() !== "") {
-          statusSet.add(d);
-        }
-      });
+  // Create status filter dropdown
+  const statusDropdown = $(`
+    <select style="margin-right: 10px;">
+      <option value="">All Statuses</option>
+      <option value="active">Active</option>
+      <option value="deactivate">Deactivate</option>
+    </select>
+  `).on('change', function () {
+    selectedStatus = $(this).val();
+    if (currentRequest) currentRequest.abort();
+    table.ajax.reload();
+  });
 
-      const $filterWrapper = $('.dataTables_filter');
+  // Remove default label text
+  $filterWrapper.find('label').contents().filter(function () {
+    return this.nodeType === 3;
+  }).remove();
 
-      // Remove default label text
-      $filterWrapper.find('label').contents().filter(function () {
-        return this.nodeType === 3;
-      }).remove();
+  // Inject custom filters
+  $filterWrapper.prepend(statusDropdown).prepend(orgCodeInput).prepend(orgInput);
 
-      // Add custom inputs before default search
-      $filterWrapper.prepend(orgCodeInput).prepend(orgInput);
-
-      // Optional: Add placeholder to the built-in search box
-      $filterWrapper.find('input[type="search"]').attr('placeholder', 'Search...');
-    }
+  // Optional: Update default search input placeholder
+  $filterWrapper.find('input[type="search"]').attr('placeholder', 'Search...');
+}
   });
 });
 
