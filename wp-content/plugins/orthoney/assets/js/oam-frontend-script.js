@@ -2700,8 +2700,8 @@ jQuery(document).ready(function ($) {
   const statusDropdown = $(`
     <select style="margin-right: 10px;">
       <option value="">All Season Status</option>
-      <option value="active">Active Season Status</option>
-      <option value="deactivate">Deactivate Season Status</option>
+      <option value="active">Activated</option>
+      <option value="deactivate">Deactivated</option>
     </select>
   `).on('change', function () {
     selectedStatus = $(this).val();
