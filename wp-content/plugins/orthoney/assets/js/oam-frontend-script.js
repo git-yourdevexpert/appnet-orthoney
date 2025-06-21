@@ -2296,29 +2296,45 @@ jQuery(document).ready(function ($) {
         const statusColIndex = 5;
         const statusSet = new Set();
 
+        // Dynamically collect values from column for Status column filter (Session Status)
         api.column(statusColIndex).data().each(function (d) {
           if (d && d.trim() !== "") {
             statusSet.add(d);
           }
         });
 
-        const statusSelect = $('<select><option value="">Filter by Status</option></select>')
+        const sessionStatusSelect = $('<select><option value="">Session Status</option></select>')
           .on('change', function () {
-            selectedStatus = $(this).val();
-            table.ajax.reload();
+            const val = $.fn.dataTable.util.escapeRegex($(this).val());
+            api.column(statusColIndex).search(val ? '^' + val + '$' : '', true, false).draw();
           });
 
         Array.from(statusSet).sort().forEach(status => {
-          statusSelect.append(`<option value="${status}">${status}</option>`);
+          sessionStatusSelect.append(`<option value="${status}">${status}</option>`);
         });
 
+        // Static "Account Status" (Active/Deactivate) filter
+        const accountStatusSelect = $(`
+          <select style="margin-right: 10px;">
+            <option value="">All Account Statuses</option>
+            <option value="active">Active</option>
+            <option value="deactivate">Deactivate</option>
+          </select>
+        `).on('change', function () {
+          selectedStatus = $(this).val();
+          table.ajax.reload(); // server-side filtering
+        });
+
+        // Add filters to UI
         const $filterArea = $('.dataTables_filter');
         if (!$filterArea.hasClass('custom-filter-added')) {
           $filterArea.addClass('custom-filter-added');
-          $filterArea.prepend(statusSelect.css({ marginRight: '10px' }));
+          $filterArea.prepend(sessionStatusSelect.css({ marginRight: '10px' }));
+          $filterArea.prepend(accountStatusSelect);
           $filterArea.prepend(orgInput);
           $filterArea.prepend(orgCodeInput);
 
+          // Clean up default label text
           $filterArea.find('label').contents().filter(function () {
             return this.nodeType === 3;
           }).remove();
@@ -2326,6 +2342,7 @@ jQuery(document).ready(function ($) {
           $filterArea.find('input[type="search"]').attr('placeholder', 'Search');
         }
       }
+
     });
   }
 });
