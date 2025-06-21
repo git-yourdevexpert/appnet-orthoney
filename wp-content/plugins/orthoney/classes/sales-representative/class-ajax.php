@@ -454,6 +454,9 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
         $length = intval($_POST['length'] ?? 10);
         $draw   = intval($_POST['draw'] ?? 1);
         $search = sanitize_text_field($_POST['search']['value'] ?? '');
+        $status_filter = sanitize_text_field($_POST['status_filter'] ?? '');
+
+
 
         $order = $_POST['order'][0] ?? null;
         $order_column_index = 0;
@@ -490,6 +493,22 @@ class OAM_SALES_REPRESENTATIVE_Ajax{
             $search_like = '%' . $wpdb->esc_like($organization_code_search) . '%';
             $search_filter .= $wpdb->prepare(" AND a.token LIKE %s ", $search_like);
         }
+
+        if (!empty($status_filter)) {
+            if ($status_filter === 'active') {
+                // Show users with activate_affiliate_account = 1
+                $search_filter .= " AND (
+                    MAX(CASE WHEN um.meta_key = 'activate_affiliate_account' THEN um.meta_value END) = '1'
+                )";
+            } elseif ($status_filter === 'deactivate') {
+                // Show users with activate_affiliate_account = 0 or meta not set
+                $search_filter .= " AND (
+                    MAX(CASE WHEN um.meta_key = 'activate_affiliate_account' THEN um.meta_value END) = '0'
+                    OR MAX(CASE WHEN um.meta_key = 'activate_affiliate_account' THEN um.meta_value END) IS NULL
+                )";
+            }
+        }
+
 
         $sql_total = "
             SELECT COUNT(DISTINCT a.user_id)
