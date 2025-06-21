@@ -2827,7 +2827,7 @@ jQuery(document).ready(function ($) {
             }
           });
 
-        const orgCodeInput = $('<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">')
+        const orgCodeInput = $('<input type="text" class="sales-representative" placeholder="Search by Org Code" style="margin-right: 10px;">')
           .on('keyup', function () {
             organizationCodeSearch = $(this).val().trim();
             if (organizationCodeSearch.length >= 3 || organizationCodeSearch.length === 0) {
@@ -2837,24 +2837,9 @@ jQuery(document).ready(function ($) {
           });
 
         // Inject into filter container
+        $filterContainer.prepend(orgCodeInput).prepend(orgInput);
 
-
-        // Status dropdown
-    const statusFilter = $(`
-      <select style="margin-right: 10px;">
-        <option value="">Filter by Status</option>
-        <option value="Accepted and enabled">Accepted and enabled</option>
-        <option value="New request">New request</option>
-        <option value="Rejected">Rejected</option>
-      </select>
-    `).on('change', function () {
-      organizationStatusSearch = $(this).val();
-      if (currentRequest) currentRequest.abort();
-      table.ajax.reload();
-    });
-        $filterContainer.prepend(orgCodeInput).prepend(orgInput).prepend(statusFilter);
-
-
+        
 
         // Customize the default search input
         const searchBox = $filterContainer.find('input[type="search"]');
