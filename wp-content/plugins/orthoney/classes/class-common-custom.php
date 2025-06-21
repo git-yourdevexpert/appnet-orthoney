@@ -510,118 +510,118 @@ class OAM_COMMON_Custom {
     }
    
     public static function orthoney_get_order_data($order_id) {
-    global $wpdb;
+        global $wpdb;
 
-    $order = wc_get_order($order_id);
-    if (!$order) return null;
+        $order = wc_get_order($order_id);
+        if (!$order) return null;
 
-    $order_data = [];
+        $order_data = [];
 
-    // Helper inline cleaner
-    $clean = function ($value) {
-        return (empty($value) || strtolower($value) === 'null') ? '' : $value;
-    };
+        // Helper inline cleaner
+        $clean = function ($value) {
+            return (empty($value) || strtolower($value) === 'null') ? '' : $value;
+        };
 
-    // Basic customer info
-    $first_name = $clean($order->get_billing_first_name());
-    $last_name  = $clean($order->get_billing_last_name());
-    $order_data['order_id'] = $order_id;
-    $order_data['customer_name'] = trim("{$first_name} {$last_name}");
+        // Basic customer info
+        $first_name = $clean($order->get_billing_first_name());
+        $last_name  = $clean($order->get_billing_last_name());
+        $order_data['order_id'] = $order_id;
+        $order_data['customer_name'] = trim("{$first_name} {$last_name}");
 
-    $order_data['email'] = $clean($order->get_billing_email());
+        $order_data['email'] = $clean($order->get_billing_email());
 
-    $address_line1 = $clean($order->get_billing_address_1());
-    $city          = $clean($order->get_billing_city());
-    $state         = $clean($order->get_billing_state());
-    $postcode      = $clean($order->get_billing_postcode());
+        $address_line1 = $clean($order->get_billing_address_1());
+        $city          = $clean($order->get_billing_city());
+        $state         = $clean($order->get_billing_state());
+        $postcode      = $clean($order->get_billing_postcode());
 
-    $order_data['address'] = trim("{$address_line1}, {$city}, {$state} {$postcode}", ', ');
+        $order_data['address'] = trim("{$address_line1}, {$city}, {$state} {$postcode}", ', ');
 
-    // Shipping address
-    $order_data['shipping_address'] = $clean($order->get_formatted_shipping_address());
+        // Shipping address
+        $order_data['shipping_address'] = $clean($order->get_formatted_shipping_address());
 
-    // Custom meta
-    $custom_sub_oid = $clean($order->get_meta('_orthoney_OrderID'));
-    $order_data['custom_sub_oid'] = $custom_sub_oid;
+        // Custom meta
+        $custom_sub_oid = $clean($order->get_meta('_orthoney_OrderID'));
+        $order_data['custom_sub_oid'] = $custom_sub_oid;
 
-    // Suborders
-    $results = $wpdb->get_results(
-        $wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}oh_recipient_order WHERE order_id = %d",
-            $custom_sub_oid
-        ),
-        ARRAY_A
-    );
+        // Suborders
+        $results = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}oh_recipient_order WHERE order_id = %d",
+                $custom_sub_oid
+            ),
+            ARRAY_A
+        );
 
-    $order_data['suborder'] = $results;
-    $sub = [];
+        $order_data['suborder'] = $results;
+        $sub = [];
 
-    if (!empty($results)) {
-        foreach ($results as $suborder_data) {
-            $token = $clean($suborder_data['affiliate_token'] ?? '');
+        if (!empty($results)) {
+            foreach ($results as $suborder_data) {
+                $token = $clean($suborder_data['affiliate_token'] ?? '');
 
-            // Get _userinfo
-            $userinfo = $wpdb->get_var(
-                $wpdb->prepare(
-                    "
-                    SELECT um.meta_value
-                    FROM {$wpdb->prefix}usermeta um
-                    INNER JOIN {$wpdb->prefix}yith_wcaf_affiliates af ON um.user_id = af.user_id
-                    WHERE um.meta_key = %s
-                    AND af.token = %s
-                    ",
-                    '_userinfo',
-                    $token
-                )
-            );
-            $userinfo = $clean($userinfo);
+                // Get _userinfo
+                $userinfo = $wpdb->get_var(
+                    $wpdb->prepare(
+                        "
+                        SELECT um.meta_value
+                        FROM {$wpdb->prefix}usermeta um
+                        INNER JOIN {$wpdb->prefix}yith_wcaf_affiliates af ON um.user_id = af.user_id
+                        WHERE um.meta_key = %s
+                        AND af.token = %s
+                        ",
+                        '_userinfo',
+                        $token
+                    )
+                );
+                $userinfo = $clean($userinfo);
 
-           
+                $org_query = "
+                    SELECT 
+                        meta.meta_value as first_name,
+                        users.user_email,
+                        affiliate.user_id as affiliate_user_id
+                    FROM {$wpdb->prefix}yith_wcaf_affiliates affiliate
+                    JOIN {$wpdb->prefix}usermeta meta ON meta.user_id = affiliate.user_id
+                    JOIN {$wpdb->prefix}users users ON users.ID = affiliate.user_id
+                    WHERE meta.meta_key = '_yith_wcaf_first_name'
+                    AND affiliate.token = %s
+                    GROUP BY affiliate.user_id
+                ";
+                $result = $wpdb->get_row($wpdb->prepare($org_query, $token));
 
-            $org_query = "
-                SELECT 
-                    meta.meta_value as first_name,
-                    users.user_email
-                FROM {$wpdb->prefix}yith_wcaf_affiliates affiliate
-                JOIN {$wpdb->prefix}usermeta meta ON meta.user_id = affiliate.user_id
-                JOIN {$wpdb->prefix}users users ON users.ID = affiliate.user_id
-                WHERE meta.meta_key = '_yith_wcaf_first_name'
-                AND affiliate.token = %s
-                GROUP BY affiliate.user_id
-            ";
-            $result = $wpdb->get_row($wpdb->prepare($org_query, $token));
+                $affiliate_org_name = $clean($result->first_name ?? '');
+                $affiliate_org_email = $clean($result->user_email ?? '');
 
-            $affiliate_org_name = $clean($result->first_name ?? '');
-            $affiliate_org_email = $clean($result->user_email ?? '');
-
-            $sub[] = [
-                'suborder_affiliate_org_name'    => $affiliate_org_name,
-                'suborder_affiliate_org_email'    => $affiliate_org_email,
-                'suborder_product_id'            => $clean($suborder_data['pid'] ?? ''),
-                'suborder_affiliate_token'       => $token,
-                'suborder_affiliate_user_info'   => $userinfo,
-                'suborder_full_name'             => $clean($suborder_data['full_name'] ?? ''),
-                'suborder_data_company_name'     => $clean($suborder_data['company_name'] ?? ''),
-                'suborder_data_city'             => $clean($suborder_data['city'] ?? ''),
-                'suborder_data_state'            => $clean($suborder_data['state'] ?? ''),
-                'suborder_data_zipcode'          => $clean($suborder_data['zipcode'] ?? ''),
-                'suborder_data_country'          => $clean($suborder_data['country'] ?? ''),
-                'suborder_data_address_1'        => $clean($suborder_data['address_1'] ?? ''),
-                'suborder_data_address_2'        => $clean($suborder_data['address_2'] ?? ''),
-                'suborder_data_quantity'         => $clean($suborder_data['quantity'] ?? ''),
-                'suborder_data_userinfo'         => $userinfo,
-            ];
+                $sub[] = [
+                    'suborder_affiliate_user_id'    => $affiliate_user_id,
+                    'suborder_affiliate_org_name'    => $affiliate_org_name,
+                    'suborder_affiliate_org_email'   => $affiliate_org_email?: 'support@orthoney.com',
+                    'suborder_product_id'            => $clean($suborder_data['pid'] ?? ''),
+                    'suborder_affiliate_token'       => $token,
+                    'suborder_affiliate_user_info'   => $userinfo,
+                    'suborder_full_name'             => $clean($suborder_data['full_name'] ?? ''),
+                    'suborder_data_company_name'     => $clean($suborder_data['company_name'] ?? ''),
+                    'suborder_data_city'             => $clean($suborder_data['city'] ?? ''),
+                    'suborder_data_state'            => $clean($suborder_data['state'] ?? ''),
+                    'suborder_data_zipcode'          => $clean($suborder_data['zipcode'] ?? ''),
+                    'suborder_data_country'          => $clean($suborder_data['country'] ?? ''),
+                    'suborder_data_address_1'        => $clean($suborder_data['address_1'] ?? ''),
+                    'suborder_data_address_2'        => $clean($suborder_data['address_2'] ?? ''),
+                    'suborder_data_quantity'         => $clean($suborder_data['quantity'] ?? ''),
+                    'suborder_data_userinfo'         => $userinfo,
+                ];
+            }
         }
+
+        $order_data['suborderdata'] = $sub;
+
+        // Totals
+        $order_data['total'] = $order->get_total();
+        $order_data['formatted_total'] = wc_price($order->get_total());
+
+        return $order_data;
     }
-
-    $order_data['suborderdata'] = $sub;
-
-    // Totals
-    $order_data['total'] = $order->get_total();
-    $order_data['formatted_total'] = wc_price($order->get_total());
-
-    return $order_data;
-}
 
 
     public static function redirect_logged_in_user_to_dashboard() {
