@@ -33,7 +33,6 @@ if ( ! $user ) {
 $organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true)?: '';
 $first_name = get_user_meta($user_id, '_yith_wcaf_first_name', true)?: '';
 $last_name = get_user_meta($user_id, '_yith_wcaf_last_name', true)?: '';
-$address = get_user_meta($user_id, '_yith_wcaf_address', true)?: '';
 $city = get_user_meta($user_id, '_yith_wcaf_city', true)?: '';
 $state = get_user_meta($user_id, '_yith_wcaf_state', true)?: '';
 $zipcode = get_user_meta($user_id, '_yith_wcaf_zipcode', true)?: '';
@@ -42,22 +41,13 @@ $website = get_user_meta($user_id, '_yith_wcaf_your_organizations_website', true
 $phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true)?: '';
 $oam_heart = get_user_meta($user_id, '_yith_wcaf_oam_heart', true)?: '';
 
-$address_parts = array_filter([
-    get_user_meta($user_id, '_yith_wcaf_address', true),
-    get_user_meta($user_id, '_yith_wcaf_city', true),
-    get_user_meta($user_id, '_yith_wcaf_state', true),
-    get_user_meta($user_id, '_yith_wcaf_zipcode', true),
-]);
-
-$full_address = implode(', ', $address_parts);
-
-
-do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
+?>
+<?php do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 <p>
 	Hello, <?php echo get_bloginfo( 'name' ); ?>
 </p>
 <p>
-	A new organization, <strong><?php echo esc_html($organization); ?></strong> from <strong><?php echo esc_html($city) ?>, <?php echo esc_html($state) ?></strong>, has registered on the Honey From The Heart platform and is awaiting your approval.
+	A new organization, <?php echo esc_html($organization); ?> from <?php echo esc_html($city) ?>, <?php echo esc_html($state) ?>, has registered on the Honey From The Heart platform and is awaiting your approval.
 </p>
 
 <p>
@@ -74,7 +64,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 	</span>
 	<br/>
 	<strong>Tax ID: </strong> <span><?php echo esc_html($tax_id); ?></span><br/>
-	<strong>Full Address: </strong> <span><?php echo esc_html($full_address); ?></span><br/>
+	<strong>Full Address: </strong> <span><?php echo esc_html($address); ?></span><br/>
 	<strong>How They Heard About Us: </strong> <span><?php echo esc_html($oam_heart); ?></span><br/>
 
 </p>
