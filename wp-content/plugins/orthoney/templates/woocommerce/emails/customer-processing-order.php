@@ -92,8 +92,8 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
 
         $main_affiliate_first_name = get_user_meta($main_affiliate_id, '_yith_wcaf_first_name', true);
         $main_affiliate_last_name = get_user_meta($main_affiliate_id, '_yith_wcaf_last_name', true);
-        $main_affiliate_org_name = get_user_meta($main_affiliate_id, '_yith_wcaf_name_of_your_organization', true)?:'Honey From The Heart';
-        $main_affiliate_phone = get_user_meta($main_affiliate_id, '_yith_wcaf_phone_number', true)?: '(404) 610-6737';
+        $main_affiliate_org_name = get_user_meta($main_affiliate_id, '_yith_wcaf_name_of_your_organization', true)  ?: 'Honey From The Heart';
+        $main_affiliate_phone = get_user_meta($main_affiliate_id, 'user_registration_customer_phone_number', true)?: '(404) 610-6737';
         $main_affiliate_address = get_user_meta($main_affiliate_id, '_yith_wcaf_address', true);
         $main_affiliate_email = get_user_meta($main_affiliate_id, '_yith_wcaf_email', true)?: 'orthoney@gmail.com';
         $main_affiliate_city = get_user_meta($main_affiliate_id, '_yith_wcaf_city', true);
@@ -102,10 +102,10 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
         $main_affiliate_full_name = trim($main_affiliate_first_name .' '.$main_affiliate_last_name) ?: 'Delilah Cohen';
 
         $main_address_parts = array_filter([
-            get_user_meta($user_id, '_yith_wcaf_address', true)."<br>",
-            get_user_meta($user_id, '_yith_wcaf_city', true),
-            get_user_meta($user_id, '_yith_wcaf_state', true),
-            get_user_meta($user_id, '_yith_wcaf_zipcode', true),
+            get_user_meta($main_affiliate_id, '_yith_wcaf_address', true)."<br>",
+            get_user_meta($main_affiliate_id, '_yith_wcaf_city', true),
+            get_user_meta($main_affiliate_id, '_yith_wcaf_state', true),
+            get_user_meta($main_affiliate_id, '_yith_wcaf_zipcode', true),
         ]);
 
         
