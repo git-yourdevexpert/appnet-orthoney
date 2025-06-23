@@ -993,7 +993,7 @@ document.addEventListener("DOMContentLoaded", function () {
           ) {
             html = `All (${totalCount}) recipient(s) ${
               totalCount === 1 ? "has" : "have"
-            } been failed`;
+            } failed`;
           } else if (
             parseInt(successCount) + parseInt(newCount) != totalCount &&
             failCount == 0 &&

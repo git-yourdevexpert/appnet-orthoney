@@ -809,7 +809,7 @@ document.getElementById('search-button').addEventListener('click', async functio
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
                 denyButtonColor: "#3085d6",
-                confirmButtonText: "Yes, I do",
+                confirmButtonText: "Yes",
                 cancelButtonText: "Cancel",
                 denyButtonText: "Send Request",
                 allowOutsideClick: false,

@@ -58,7 +58,7 @@ $dashboard_link_label  = 'Return to Dashboard';
 
 <!-- Already linked customers list -->
 <div class="affiliate-dashboard order-process-block">
-    <h3>Already linked customer</h3>
+    <h3>Already linked customers</h3>
     <div id="affiliate-results" class="orthoney-datatable-warraper table-with-search-block">
         <table>
             <thead>
