@@ -3229,8 +3229,9 @@ class OAM_Ajax{
 
     }
     // AJAX: Order Export PDF generate 
-    public function orthoney_customer_order_export_ajax_pdf_handler() {
+   public function orthoney_customer_order_export_ajax_pdf_handler() {
 
+        $paperDeadlineDate = date_i18n(OAM_Helper::$date_format, strtotime(get_field('paper_deadline', 'option')));
         $shipStartDate = date_i18n(OAM_Helper::$date_format, strtotime(get_field('free_shipping_start_date', 'option')));
         $shipEndDate = date_i18n(OAM_Helper::$date_format, strtotime(get_field('free_shipping_end_date', 'option')));
 
@@ -3419,23 +3420,23 @@ class OAM_Ajax{
             } elseif ($custom_order_pdf_type == "4p" OR $custom_order_pdf_type == "4e") {
                 $pdftypepdfcontent = "
                     <p>Thank you for your previous support to $affiliate_org_name. It's time again to send the sweetest Rosh Hashanah greetings by supporting $affiliate_org_name with your honey purchase.</p>
-                    <p>Shipping is FREE for orders submitted online through $shipStartDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
+                    <p>Shipping is FREE for orders submitted online through $shipEndDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
                     <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='".esc_url($refersite)."'>".esc_url($refersite)."</a>, click on the <a href='".esc_html(site_url('order-process'))."'>Order Now</a>.</p>
                     <p>Follow the instructions, selecting $affiliate_org_name and choose your reorder from a previous year. Select #" . $sub_order_id . " when prompted.</p>
 
-                    <p>If you can't order online, please update this form for any additions, deletions, or corrections, complete the payment section, and mail it to <a href='mailto:".$affiliate_org_email."'>$affiliate_org_email</a> . Forms must arrive by for ".date("Y")." the date is $shipStartDate, or a shipping charge will be applied.</p>
+                    <p>If you can't order online, please update this form for any additions, deletions, or corrections, complete the payment section, and mail it to <a href='mailto:".$affiliate_org_email."'>$affiliate_org_email</a> . Forms must arrive by for ".date("Y")." the date is $paperDeadlineDate, or a shipping charge will be applied.</p>
                     ";
                     
             } elseif ($custom_order_pdf_type == "2p" OR $custom_order_pdf_type == "2e") {
                 $pdftypepdfcontent = "
                     <p>Thank you for your previous support to $affiliate_org_name. It's time again to send the sweetest Rosh Hashanah greetings by supporting $affiliate_org_name with your honey purchase.</p>
 
-                    <p>Shipping is FREE for orders submitted online through $shipStartDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
+                    <p>Shipping is FREE for orders submitted online through $shipEndDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
 
                     <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='".esc_url($refersite)."'>".esc_url($refersite)."</a>, click on the <a href='".esc_html(site_url('order-process'))."'>Order Now</a>.</p>
                     <p>Follow the instructions, selecting $affiliate_org_name and choose your reorder from a previous year. Select #" . $sub_order_id . " when prompted.</p>
 
-                    <p>If you can't order online, please update this form for any additions, deletions, or corrections, complete the payment section, and mail it to <a href='mailto:".$affiliate_org_email."'>$affiliate_org_email</a> . Forms must arrive by for ".date("Y")." the date is $shipStartDate, or a shipping charge will be applied.</p>
+                    <p>If you can't order online, please update this form for any additions, deletions, or corrections, complete the payment section, and mail it to <a href='mailto:".$affiliate_org_email."'>$affiliate_org_email</a> . Forms must arrive by for ".date("Y")." the date is $paperDeadlineDate, or a shipping charge will be applied.</p>
                     ";
             } else {
                 $pdftypepdfcontent = "

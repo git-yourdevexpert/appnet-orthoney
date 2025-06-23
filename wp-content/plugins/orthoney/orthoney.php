@@ -13,27 +13,25 @@ if (!defined('ABSPATH')) {
 
 require_once 'libs/dompdf/autoload.inc.php';
 
-add_filter('woocommerce_checkout_fields', 'custom_disable_shipping_fields_validation');
+add_filter( 'woocommerce_checkout_fields', 'custom_disable_shipping_fields_validation' );
 add_filter('woocommerce_create_order_draft_enabled', '__return_false');
 
-function custom_disable_shipping_fields_validation($fields)
-{
-    if (isset($fields['shipping'])) {
-        foreach ($fields['shipping'] as $key => $field) {
+function custom_disable_shipping_fields_validation( $fields ) {
+    if ( isset( $fields['shipping'] ) ) {
+        foreach ( $fields['shipping'] as $key => $field ) {
             $fields['shipping'][$key]['required'] = false;
         }
     }
     return $fields;
 }
 
-function custom_rename_coupon_to_voucher($translated, $text, $domain)
-{
+function custom_rename_coupon_to_voucher( $translated, $text, $domain ) {
     $text = str_ireplace('coupon', 'Voucher', $text);
     $text = str_ireplace('Coupon', 'Voucher', $text);
     return $text;
 }
-add_filter('gettext', 'custom_rename_coupon_to_voucher', 10, 3);
-add_filter('ngettext', 'custom_rename_coupon_to_voucher', 10, 3);
+add_filter( 'gettext', 'custom_rename_coupon_to_voucher', 10, 3 );
+add_filter( 'ngettext', 'custom_rename_coupon_to_voucher', 10, 3 );
 
 
 // add_action( 'init', 'createDB' );
@@ -64,37 +62,37 @@ add_filter('ngettext', 'custom_rename_coupon_to_voucher', 10, 3);
 
 
 // Ensure WooCommerce is active before loading the plugin
-if (! in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
-    add_action('admin_notices', function () {
+if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+    add_action( 'admin_notices', function() {
         echo '<div class="error"><p><strong>Warning:</strong> Your custom plugin requires WooCommerce to be activated.</p></div>';
     });
     return;
 }
 
 // Define required columns
-$required_columns = ['full name', 'Company Name', 'Mailing Address', 'Suite/Apt#', 'city', 'state', 'zipcode', 'quantity', 'greeting'];
+$required_columns = ['full name','Company Name', 'Mailing Address', 'Suite/Apt#', 'city', 'state', 'zipcode', 'quantity', 'greeting'];
 $exclude_coupon = ['freeshipping'];
 
-if (! defined('OH_REQUIRED_COLUMNS')) {
-    define('OH_REQUIRED_COLUMNS', $required_columns);
+if ( ! defined( 'OH_REQUIRED_COLUMNS' ) ) {
+    define( 'OH_REQUIRED_COLUMNS', $required_columns );
 }
-if (! defined('EXCLUDE_COUPON')) {
-    define('EXCLUDE_COUPON', $exclude_coupon);
+if ( ! defined( 'EXCLUDE_COUPON' ) ) {
+    define( 'EXCLUDE_COUPON', $exclude_coupon );
 }
 
-if (! defined('OH_PLUGIN_DIR_URL')) {
-    define('OH_PLUGIN_DIR_URL', plugin_dir_url(__FILE__));
+if ( ! defined( 'OH_PLUGIN_DIR_URL' ) ) {
+	define( 'OH_PLUGIN_DIR_URL', plugin_dir_url(__FILE__) );
 }
-if (! defined('OH_PLUGIN_DIR_PATH')) {
-    define('OH_PLUGIN_DIR_PATH', plugin_dir_path(__FILE__));
+if ( ! defined( 'OH_PLUGIN_DIR_PATH' ) ) {
+	define( 'OH_PLUGIN_DIR_PATH', plugin_dir_path(__FILE__)  );
 }
-if (! defined('OH_DOMAIN')) {
-    define('OH_DOMAIN', 'ORTHONEY');
+if ( ! defined( 'OH_DOMAIN' ) ) {
+	define( 'OH_DOMAIN', 'ORTHONEY'  );
 }
 
 
 $link_array = array(
-    'customer_dashboard_link'             => 'CUSTOMER_DASHBOARD_LINK',
+    'customer_dashboard_link'             => 'CUSTOMER_DASHBOARD_LINK', 
     'organization_dashboard_link'         => 'ORGANIZATION_DASHBOARD_LINK',
     'administrator_dashboard_link'        => 'ADMINISTRATOR_DASHBOARD_LINK',
     'sales_representative_dashboard_link' => 'SALES_REPRESENTATIVE_DASHBOARD_LINK',
@@ -106,11 +104,11 @@ $link_array = array(
 );
 
 foreach ($link_array as $key => $constant_name) {
-    if (! defined($constant_name)) {
+    if ( ! defined($constant_name) ) {
         $link = get_field($key, 'options');
         if ($link) {
             define($constant_name, $link['url']);
-        } else {
+        }else{
             define($constant_name, home_url());
         }
     }
@@ -146,13 +144,13 @@ require_once OH_PLUGIN_DIR_PATH . 'classes/administrator/class-administrator.php
 // register_activation_hook(__FILE__, 'orthoney_create_custom_tables');
 
 // Refresh database if requested
-if (isset($_GET['database_refresh']) && ($_GET['database_refresh'] == 'okay' or $_GET['database_refresh'] == 'new')) {
+if(isset($_GET['database_refresh']) && ($_GET['database_refresh'] == 'okay' OR $_GET['database_refresh'] == 'new') ){
     add_action('init', 'orthoney_create_custom_tables');
 }
 
-add_action('init', 'add_customer_role_to_affiliates');
+add_action( 'init', 'add_customer_role_to_affiliates' );
 
-add_action('admin_head', function () {
+add_action('admin_head', function() {
     echo '<style>
         .ui-datepicker-current.ui-state-default.ui-priority-secondary.ui-corner-all {
             display: none !important;
@@ -160,65 +158,61 @@ add_action('admin_head', function () {
     </style>';
 });
 
-function add_customer_role_to_affiliates()
-{
+function add_customer_role_to_affiliates() {
 
-
-    if (isset($_GET['add_customer_role_to_affiliates']) && $_GET['add_customer_role_to_affiliates'] == 'yes') {
-        $affiliates = get_users(array(
+    if( isset($_GET['add_customer_role_to_affiliates']) && $_GET['add_customer_role_to_affiliates'] == 'yes'){
+        $affiliates = get_users( array(
             'role' => 'yith_affiliate'
-        ));
+        ) );
 
-        foreach ($affiliates as $user) {
-            if (! in_array('customer', (array) $user->roles)) {
-                $user->add_role('customer');
+        foreach ( $affiliates as $user ) {
+            if ( ! in_array( 'customer', (array) $user->roles ) ) {
+                $user->add_role( 'customer' );
             }
         }
     }
 
-    if (isset($_GET['season_popup']) && $_GET['season_popup'] == 'yes') {
+    if( isset($_GET['season_popup']) && $_GET['season_popup'] == 'yes'){
 
-?>
+        ?>
         <?php
     }
 }
 
-if (! function_exists('user_registration_pro_generate_magic_login_link')) {
-    function user_registration_pro_generate_magic_login_link($email, $nonce, $redirect_url)
-    {
-        $user  = get_user_by('email', $email);
-        $token = ur_generate_onetime_token($user->ID, 'ur_passwordless_login', 32, 60);
+if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
+    function user_registration_pro_generate_magic_login_link( $email, $nonce, $redirect_url ) {
+        $user  = get_user_by( 'email', $email );
+        $token = ur_generate_onetime_token( $user->ID, 'ur_passwordless_login', 32, 60 );
 
-        update_user_meta($user->ID, 'ur_passwordless_login_redirect_url' . $user->ID, $redirect_url);
+        update_user_meta( $user->ID, 'ur_passwordless_login_redirect_url' . $user->ID, $redirect_url );
 
         $custom_url = ''; // Default login link
         $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user->ID);
 
         $custom_url = OAM_COMMON_Custom::redirect_user_based_on_role($user_roles);
-        if ($custom_url == home_url('wp-admin')) {
+        if($custom_url == home_url('wp-admin')){
             $custom_url = home_url();
         }
 
-        $arr_params = array('action', 'uid', 'token', 'nonce');
+        $arr_params = array( 'action', 'uid', 'token', 'nonce' );
         $url_params = array(
             'uid'   => $user->ID,
             'token' => $token,
             'nonce' => $nonce,
         );
-        $url = add_query_arg($url_params, $custom_url);
+        $url = add_query_arg( $url_params, $custom_url );
 
         return $url;
     }
 }
-
-
+ 
 
 
 // /affiliate-dashboard-user-list-menu-item
 // if (!function_exists('user_has_role')) {
 //     function user_has_role($user_id, $roles_to_check = []) {
 //         $user = get_userdata($user_id);
-
+        
 //         if ($user && !empty($roles_to_check)) {
 //             $user_roles = (array) $user->roles;
 //             return array_intersect($roles_to_check, $user_roles) ? true : false;
@@ -231,7 +225,7 @@ if (! function_exists('user_registration_pro_generate_magic_login_link')) {
 // function custom_login_redirect($redirect_to, $request, $user) {
 //     if (isset($user->ID)) {
 //         $roles_to_check = ['yith_affiliate', 'affiliate_team_member'];
-
+        
 //         if (user_has_role($user->ID, $roles_to_check)) {
 //             return site_url('/affiliate-dashboard'); // Change this to your actual affiliate dashboard page
 //         }
@@ -245,7 +239,7 @@ if (! function_exists('user_registration_pro_generate_magic_login_link')) {
 //     if (is_user_logged_in()) {
 //         $user_id = get_current_user_id();
 //         $roles_to_check = ['yith_affiliate', 'affiliate_team_member'];
-
+        
 //         if (user_has_role($user_id, $roles_to_check) && is_admin()) {
 //             wp_redirect(site_url('/affiliate-dashboard')); // Redirect to Affiliate Dashboard
 //             exit;
@@ -258,7 +252,7 @@ if (! function_exists('user_registration_pro_generate_magic_login_link')) {
 // function hide_admin_bar_for_affiliates($show_admin_bar) {
 //     $user_id = get_current_user_id();
 //     $roles_to_check = ['yith_affiliate', 'affiliate_team_member'];
-
+    
 //     if (user_has_role($user_id, $roles_to_check)) {
 //         return false;
 //     }

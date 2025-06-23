@@ -234,7 +234,7 @@
                     </p>
                 </div>
             </div>
-            <div class="affiliate-profile" >
+            <div class="affiliate-profile">
                 <form id="affiliate-gift-card-form">
                     <div class="form-row gfield--width-half">
                         <div class="textarea-div form-row gfield--width-full">

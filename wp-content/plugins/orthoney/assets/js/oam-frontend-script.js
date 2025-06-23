@@ -2747,8 +2747,6 @@ jQuery(document).ready(function ($) {
  * 
  * 
  */
-
-
 jQuery(document).ready(function ($) {
   let organizationSearch = '';
   let organizationCodeSearch = '';
@@ -2851,7 +2849,6 @@ jQuery(document).ready(function ($) {
     });
   }
 });
-
 
 
 

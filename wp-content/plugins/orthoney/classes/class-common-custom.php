@@ -509,7 +509,7 @@ class OAM_COMMON_Custom {
         file_put_contents($log_file, $log_message, FILE_APPEND);
     }
    
-    public static function orthoney_get_order_data($order_id) {
+     public static function orthoney_get_order_data($order_id) {
         global $wpdb;
 
         $order = wc_get_order($order_id);
@@ -622,7 +622,6 @@ class OAM_COMMON_Custom {
 
         return $order_data;
     }
-
 
     public static function redirect_logged_in_user_to_dashboard() {
 

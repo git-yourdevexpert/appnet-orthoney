@@ -590,9 +590,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     <div class="wpb_column vc_column_container steps-column">
                             <div>
                                 <h3>Recipient List</h3>
-                                <div class="file-title format">
-                                    <p><strong>Your file must include all the required columns with headings exactly matching the sample file. Please click <a href="<?php echo esc_url(OH_PLUGIN_DIR_URL . 'assets/recipient_sample.xlsx'); ?>"  download> Download Sample File</a>  and use the template.</strong></p>
-                                </div>
+                                <p><strong>Your file must include all the required columns with headings exactly matching the sample file. Please click <a href="<?php echo esc_url(OH_PLUGIN_DIR_URL . 'assets/recipient_sample.xlsx'); ?>"  download> Download Sample File</a>  and use the template.</strong></p>
                                 <div class="file-upload field-block">
                                     <label><span class="title-block">File Upload: <small>(Accept: .csv, .xlsx, OR .xls)</small></span></label>
                                     <input type="file" accept=".csv, .xlsx, .xls" id="fileInput"

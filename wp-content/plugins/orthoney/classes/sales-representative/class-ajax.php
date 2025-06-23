@@ -216,6 +216,212 @@ public function orthoney_get_filtered_customers() {
 
 
 
+
+
+    public function orthoney_get_filtered_customers_as() {
+        global $wpdb;
+
+        $user_id      = get_current_user_id();
+        $current_user = wp_get_current_user();
+        $user_roles   = (array) $current_user->roles;
+
+        $select_customer      = get_user_meta($user_id, 'select_customer', true);
+        $choose_customer      = get_user_meta($user_id, 'choose_customer', true);
+        $select_organization  = get_user_meta($user_id, 'select_organization', true);
+        $choose_organization  = get_user_meta($user_id, 'choose_organization', true);
+
+        $choose_ids   = array_map('intval', (array) $choose_customer);
+        $customer_ids = [];
+        $include_clause = '';
+        $affiliate_ids = [];
+
+        // Sanitize POST input
+        $start                  = intval($_POST['start'] ?? 0);
+        $length                 = intval($_POST['length'] ?? 10);
+        $draw                   = intval($_POST['draw'] ?? 1);
+        $search                 = sanitize_text_field($_POST['search']['value'] ?? '');
+        $organization_search    = sanitize_text_field($_POST['organization_search'] ?? '');
+        $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
+
+        if ($select_customer === 'choose_customer') {
+            if (in_array('sales_representative', $user_roles)) {
+                if ($select_organization === 'choose_organization') {
+                    if (!empty($choose_organization)) {
+                        $affiliate_ids = array_filter(array_map('intval', (array) $choose_organization));
+
+                        if (!empty($affiliate_ids)) {
+                            // Build organization search filters
+                            $org_conditions = [];
+                            $org_params = [];
+
+                            if (!empty($organization_search)) {
+                                $org_conditions[] = "aff.user_id IN (
+                                    SELECT user_id FROM {$wpdb->usermeta}
+                                    WHERE meta_key = '_yith_wcaf_name_of_your_organization'
+                                    AND meta_value LIKE %s
+                                )";
+                                $org_params[] = '%' . $wpdb->esc_like($organization_search) . '%';
+                            }
+
+                            if (!empty($organization_code_search)) {
+                                $org_conditions[] = "aff.token LIKE %s";
+                                $org_params[] = '%' . $wpdb->esc_like($organization_code_search) . '%';
+                            }
+
+                            $placeholders = implode(',', array_fill(0, count($affiliate_ids), '%d'));
+                            $query = "
+                                SELECT linker.customer_id
+                                FROM {$wpdb->prefix}oh_affiliate_customer_linker AS linker
+                                INNER JOIN {$wpdb->prefix}yith_wcaf_affiliates AS aff
+                                    ON aff.user_id = linker.affiliate_id
+                                WHERE linker.affiliate_id IN ($placeholders)
+                            ";
+
+                            if (!empty($org_conditions)) {
+                                $query .= ' AND ' . implode(' AND ', $org_conditions);
+                            }
+
+                            $customer_ids = $wpdb->get_col($wpdb->prepare($query, ...$affiliate_ids, ...$org_params));
+                        }
+                    }
+                } 
+            }
+
+
+        
+           if ($select_organization === 'all') {
+                // All affiliates, no org filter
+                $query = "SELECT customer_id FROM {$wpdb->prefix}oh_affiliate_customer_linker";
+                $customer_ids = $wpdb->get_col($query);
+            }
+
+            $all_customer_ids = array_unique(array_merge($choose_ids, $customer_ids));
+
+            if (!empty($all_customer_ids)) {
+                $include_clause = 'AND u.ID IN (' . implode(',', $all_customer_ids) . ')';
+            }
+        }
+
+        // Main query for customers
+        $sql_data = "
+            SELECT DISTINCT u.ID, u.user_email, u.display_name,
+                um_first.meta_value AS first_name, um_last.meta_value AS last_name
+            FROM {$wpdb->users} u
+            INNER JOIN {$wpdb->usermeta} um_role ON um_role.user_id = u.ID
+            LEFT JOIN {$wpdb->usermeta} um_first ON (um_first.user_id = u.ID AND um_first.meta_key = 'first_name')
+            LEFT JOIN {$wpdb->usermeta} um_last ON (um_last.user_id = u.ID AND um_last.meta_key = 'last_name')
+            WHERE um_role.meta_key = '{$wpdb->prefix}capabilities'
+            AND um_role.meta_value = 'a:1:{s:8:\"customer\";b:1;}'
+            AND u.user_email != ''
+            {$include_clause}
+            ORDER BY um_first.meta_value ASC
+        ";
+
+        $results = $wpdb->get_results($sql_data);
+
+        $affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker';
+        $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+        $data = [];
+
+        foreach ($results as $user) {
+            $nonce = wp_create_nonce('switch_to_user_' . $user->ID);
+            $full_name = trim(get_user_meta($user->ID, 'first_name', true) . ' ' . get_user_meta($user->ID, 'last_name', true));
+            $customer = new WC_Customer($user->ID);
+
+            $affiliates_array_ids = $wpdb->get_results($wpdb->prepare(
+                "SELECT  DISTINCT affiliate_id FROM {$affiliate_customer_linker} WHERE customer_id = %d",
+                $user->ID
+            ));
+
+        
+            $oname_block = '';
+            if (!empty($affiliates_array_ids)) {
+                foreach ($affiliates_array_ids as $affiliate) {
+                    $affiliate_id = $affiliate->affiliate_id;
+                    $affiliate_data = $wpdb->get_row($wpdb->prepare(
+                        "SELECT token FROM {$affiliates_table} WHERE user_id = %d",
+                        $affiliate_id
+                    ));
+
+                    $token = $affiliate_data->token ?? '';
+                    $org_name = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
+                    $associated_id = $affiliate_id;
+
+                    if($associated_id == ''){
+                        $associated_id  = $affiliate_data->user_id;
+                    }
+
+            
+                    if ($associated_id) {
+                        if (!empty($token)) {
+                            $oname_block .= '<strong>[' . esc_html($token) . '] ' . esc_html($org_name) . '</strong><br>';
+                        }
+
+                        $afuser = get_userdata($affiliate_id);
+                        if ($afuser && !empty($afuser->user_email)) {
+                            $oname_block .= esc_html($afuser->user_email) . '<br>';
+                        }
+
+                        $oname_block .= esc_html(get_user_meta($affiliate_id, '_yith_wcaf_phone_number', true)) . '<br>';
+
+                        $address_parts = array_filter([
+                            get_user_meta($affiliate_id, '_yith_wcaf_address', true),
+                            get_user_meta($affiliate_id, '_yith_wcaf_city', true),
+                            get_user_meta($affiliate_id, '_yith_wcaf_state', true),
+                            get_user_meta($affiliate_id, '_yith_wcaf_zipcode', true),
+                        ]);
+
+                        if (!empty($address_parts)) {
+                            $oname_block .= esc_html(implode(', ', $address_parts)) . '<br>';
+                        }
+
+                        $oname_block .= '<hr>';
+                    }
+                }
+            }
+            $billing_address = array_filter([
+                $customer->get_billing_address_1(),
+                $customer->get_billing_city(),
+                $customer->get_billing_state(),
+                $customer->get_billing_postcode(),
+                $customer->get_billing_country()
+            ]);
+            $full_address = implode(', ', $billing_address);
+
+            $name_block = '';
+            if (!empty($full_name)) {
+                $name_block .= '<strong>' . esc_html($full_name) . '</strong><br>';
+            }
+            $name_block .= esc_html($user->user_email) . '<br>';
+
+            $billing_phone = $customer->get_billing_phone();
+            if (!empty($billing_phone)) {
+                $name_block .= esc_html($billing_phone) . '<br>';
+            }
+            if (!empty($full_address)) {
+                $name_block .= esc_html($full_address) . '<br>';
+            }
+
+            if ($user->user_email != '') {
+                $data[] = [
+                    'name'   => $name_block,
+                    'email'  => $oname_block,
+                    'action' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user->ID) . '" data-nonce="' . esc_attr($nonce) . '">
+                                    <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png"> Login as Customer
+                                </button>',
+                ];
+            }
+        }
+
+        wp_send_json([
+            'draw'            => $draw,
+            'recordsTotal'    => intval(count($data)),
+            'recordsFiltered' => intval(count($data)),
+            'data'            => $data,
+        ]);
+    }
+
+
     public function get_affiliates_commission_list_ajax_handler() {
         global $wpdb;
 
@@ -582,9 +788,9 @@ public function orthoney_get_filtered_customers() {
             $oemail = $user_obj ? $user_obj->user_email : '';
 
             $organizationdata = [];
-            //if (!empty($row->organization_name)) {
+         //   if (!empty($row->organization_name)) {
                 $organizationdata[] = '<strong>[' . $row->token . '] ' . esc_html($row->organization_name) . '</strong>';
-            //}
+           // }
             $city_state = trim(esc_html($row->city) . (empty($row->city) || empty($row->state) ? '' : ', ') . esc_html($row->state));
             if (!empty($city_state)) {
                 $organizationdata[] = $city_state;
