@@ -53,9 +53,8 @@ $oam_heart = get_user_meta($user_id, '_yith_wcaf_oam_heart', true)?: '';
 
 <?php do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
-<p>Dear, <?php echo  $yith_first_name; echo $yith_last_name;?></p>
+<p>Dear, <?php echo  $first_name; echo $last_name;?></p>
 
-<p>Welcome to the Honey From The Heart family.  Your organization has been approved!</p>
 <p>Thank you for your interest in Honey From The Heart. At this time, we’re unable to approve <strong><?php echo $organization ?></strong> registration.</p>
 <p>If you have any questions or believe this was in error, please contact our team at <?php echo get_option('admin_email') ?>.</p>
 <p>Warm regards,<br>

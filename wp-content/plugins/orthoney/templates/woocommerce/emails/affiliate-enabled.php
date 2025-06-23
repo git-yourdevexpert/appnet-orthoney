@@ -53,7 +53,7 @@ $oam_heart = get_user_meta($user_id, '_yith_wcaf_oam_heart', true)?: '';
 <?php do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
 
-<p>Dear, <?php echo  $yith_first_name; echo $yith_last_name;?></p>
+<p>Dear, <?php echo  $first_name; echo $last_name;?></p>
 <p>Welcome to the Honey From The Heart family.  Your organization has been approved!</p>
 <p>Your unique 3-digit organization code is: <strong><?php echo $affiliate_token ?> </strong></p>
 <p>You can now log in to <?php echo site_url() ?> using your email address and password.</p>
