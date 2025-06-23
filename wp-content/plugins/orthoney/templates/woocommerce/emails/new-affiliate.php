@@ -31,16 +31,16 @@ $last_name = get_user_meta($user_id, '_yith_wcaf_last_name', true)?: '';
 $city = get_user_meta($user_id, '_yith_wcaf_city', true)?: '';
 $state = get_user_meta($user_id, '_yith_wcaf_state', true)?: '';
 $zipcode = get_user_meta($user_id, '_yith_wcaf_zipcode', true)?: '';
-$tax_id = get_user_meta($user_id, '_yith_wcaf_tax_id', true)?: '';
-$website = get_user_meta($user_id, '_yith_wcaf_your_organizations_website', true)?: '';
-$phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true)?: '';
+$tax_id = get_user_meta($user_id, '_yith_wcaf_tyour_organizations_website', true)?: '';
+$phone_number = get_user_meta($user_id, '_yith_wax_id', true)?: '';
+$website = get_user_meta($user_id, '_yith_wcaf_caf_phone_number', true)?: '';
 $oam_heart = get_user_meta($user_id, '_yith_wcaf_oam_heart', true)?: '';
 
 
 do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
 <p>Dear, <?php echo $first_name .' '.$last_name ?></p>
-<p>Thank you for your interest in bringing <strong>Honey From The Heart</strong> to <?php echo esc_html($organization); ?>! </p>
+<p>Thank you for your interest in bringing <strong>Honey From The Heart</strong> to <strong><?php echo esc_html($organization); ?></strong>! </p>
 <p>While you await approval, here’s a little more about how this sweet program can benefit your community and cause:</p>
 <p><strong>About Honey From The Heart</strong></p>
 <p><a href="<?php echo site_url()?>">Honey From The Heart</a> is a non-profit initiative designed to help Jewish organizations raise meaningful funds with a gift that touches hearts and celebrates tradition. 100% of the profit goes directly toward Jewish causes.</p>
