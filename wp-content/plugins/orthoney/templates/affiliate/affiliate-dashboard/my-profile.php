@@ -6,7 +6,12 @@
       global $wpdb;
    $user_id = get_current_user_id();
    $affiliate_id = $user_id;
-   $associated_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+    $associated_id = $user_id;
+
+    if (!empty(get_user_meta($user_id, 'associated_affiliate_id', true))) {
+        // The user is a team member, get the associated affiliate
+        $associated_id = $associated_id;
+    }
    
     $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
     $org_code = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d", $associated_id));
@@ -92,7 +97,7 @@
                 </div>
                 <div class="form-row gfield--width-half">
                     <label for="email">Email ID <span class="required">*</span></label>
-                    <input type="email" name="email" id="email" value="<?php echo esc_attr($email); ?>" readonly required
+                    <input type="email" name="email" id="email" value="<?php echo esc_attr($email); ?>" required
                         data-error-message="Please enter a Email.">
                     <span class="error-message"></span>
                 </div>
@@ -151,9 +156,11 @@
 <br>
 <div class="order-process-block form-deisgn">
     <div class="heading-title">
-        <div>
-            <h3 class="block-title">Remittance Form</h3>
-            <p><strong><br>Please indicate if check will be mailed to a home or your organization's office:</strong></p>
+         <div class="heading-title">
+            <div>
+                <h3 class="block-title">Remittance Form</h3>
+                <p><strong><br>Please indicate if check will be mailed to a home or your organization's office:</strong></p>
+            </div>
         </div>
     </div>
     
@@ -237,7 +244,7 @@
                     </p>
                 </div>
             </div>
-            <div class="affiliate-profile" id="update-price-affiliate-form" >
+            <div class="affiliate-profile">
                 <form id="affiliate-gift-card-form">
                     <div class="form-row gfield--width-half">
                         <div class="textarea-div form-row gfield--width-full">
@@ -261,7 +268,7 @@
     <div class="heading-title">
         <h3 class="block-title">Mission Statement</h3>
     </div>
-    <div class="affiliate-profile" id="update-price-affiliate-form">
+    <div class="affiliate-profile">
         <form id="affiliate-mission-statement-form">
             <div class="form-row gfield--width-half">
                 <div class="textarea-div form-row gfield--width-full">
