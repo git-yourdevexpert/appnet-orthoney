@@ -21,6 +21,9 @@ $result = $wpdb->get_row($wpdb->prepare(
 $setData = json_decode($result->data);
 $affiliate = $setData->affiliate_select != '' ? $setData->affiliate_select : 'Orthoney';
 $affiliate_id = intval($affiliate);
+
+
+
 $token = $wpdb->get_var($wpdb->prepare(
     "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d",
     $affiliate_id
@@ -38,7 +41,12 @@ $recipientResult = $wpdb->get_results($wpdb->prepare(
 ));
 
 $organization = 'Orthoney';
-$organization_data = 'Honey From The Heart';
+
+$main_affiliate_org_name = $organization_data = 'Honey From The Heart';
+$main_affiliate_phone = '(404) 610-6737';
+$main_affiliate_email = 'orthoney@gmail.com';
+
+$main_affiliate_full_address = '735 Heards Ferry Rd <br> Atlanta GA, US 30076';
     
 if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affiliate_token !== 'Orthoney') {
     $token = $recipientResult[0]->affiliate_token;
@@ -79,6 +87,32 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
 
         $merged_address = implode(', ', array_filter(['[' . $token . ']', $organization, $city, $state]));
         $organization_data = trim($merged_address);
+
+        $main_affiliate_id = intval($affiliate); 
+
+        $main_affiliate_first_name = get_user_meta($main_affiliate_id, '_yith_wcaf_first_name', true);
+        $main_affiliate_last_name = get_user_meta($main_affiliate_id, '_yith_wcaf_last_name', true);
+        $main_affiliate_org_name = get_user_meta($main_affiliate_id, '_yith_wcaf_name_of_your_organization', true)?:'Honey From The Heart';
+        $main_affiliate_phone = get_user_meta($main_affiliate_id, '_yith_wcaf_phone_number', true)?: '(404) 610-6737';
+        $main_affiliate_address = get_user_meta($main_affiliate_id, '_yith_wcaf_address', true);
+        $main_affiliate_email = get_user_meta($main_affiliate_id, '_yith_wcaf_email', true)?: 'orthoney@gmail.com';
+        $main_affiliate_city = get_user_meta($main_affiliate_id, '_yith_wcaf_city', true);
+        $main_affiliate_state = get_user_meta($main_affiliate_id, '_yith_wcaf_state', true);
+        $main_affiliate_zipcode = get_user_meta($main_affiliate_id, '_yith_wcaf_zipcode', true);
+        $main_affiliate_full_name = trim($main_affiliate_first_name .' '.$main_affiliate_last_name) ?: 'Delilah Cohen';
+
+        $main_address_parts = array_filter([
+            get_user_meta($user_id, '_yith_wcaf_address', true)."<br>",
+            get_user_meta($user_id, '_yith_wcaf_city', true),
+            get_user_meta($user_id, '_yith_wcaf_state', true),
+            get_user_meta($user_id, '_yith_wcaf_zipcode', true),
+        ]);
+
+        
+        if(!empty($main_address_parts)){
+            $main_affiliate_full_address = implode(', ', $main_address_parts);
+        }
+
     }
 }
 
@@ -107,9 +141,9 @@ $unit_price = ($total_quantity > 0) ? ($line_subtotal / $total_quantity) : 0;
 <p><?php _e( "Your order has been received and is now being processed. Your order details are shown below for your reference:", 'woocommerce' ); ?></p>
 
 <p>If you have questions about your order please contact:<br />
-<strong><?php echo $order->get_billing_first_name() . " " . $order->get_billing_last_name(); ?></strong><br />
-<?php echo $order->get_billing_phone(); ?><br />
-<?php echo $order->get_billing_email(); ?>
+<strong><?php echo  $main_affiliate_org_name ?></strong><br />
+<?php echo  $main_affiliate_phone ?><br />
+<?php echo  $main_affiliate_email ?>
 </p>
 
 <?php do_action('woocommerce_email_before_order_table', $order, $sent_to_admin, $plain_text); ?>
