@@ -396,7 +396,7 @@ class OAM_AFFILIATE_Ajax{
     public function change_user_role_logout_handler() {
         check_ajax_referer('oam_nonce', 'security'); // Security check
 
-        $current_user_id = get_current_user_id();
+        $current_user_id  = get_current_user_id();
         $selected_user_id = isset($_POST['selected_user_id']) ? intval($_POST['selected_user_id']) : 0;
 
         if ($selected_user_id <= 0 || $current_user_id <= 0) {
@@ -404,63 +404,81 @@ class OAM_AFFILIATE_Ajax{
         }
 
         $selected_user = new WP_User($selected_user_id);
-        $current_user = new WP_User($current_user_id);
+        $current_user  = new WP_User($current_user_id);
 
         if ($selected_user && $current_user) {
-
             // Backup existing roles
             $selected_user_roles = $selected_user->roles;
-            $current_user_roles = $current_user->roles;
+            $current_user_roles  = $current_user->roles;
 
-        if (in_array('affiliate_team_member', $selected_user_roles)) {
-            $selected_user->remove_role('affiliate_team_member');
-            $selected_user->add_role('yith_affiliate');
-        }
+            if (in_array('affiliate_team_member', $selected_user_roles)) {
+                $selected_user->remove_role('affiliate_team_member');
+                $selected_user->add_role('yith_affiliate');
+            }
 
-        //  $contact_roles = [
-        //         'Primary'   => 'primary-contact',
-        //         'CoChair'   => 'co-chair',
-        //         'Alternate' => 'alternative-contact',
-        //     ];
+            if (in_array('yith_affiliate', $current_user_roles)) {
+                $current_user->remove_role('yith_affiliate');
+                $current_user->add_role('affiliate_team_member');
+                update_user_meta($current_user_id, 'user_field_type', 'primary-contact');
+            }
 
+            $afficated_id = get_user_meta($current_user_id, 'associated_affiliate_id', true);
 
-         if ( in_array('yith_affiliate', $current_user_roles) ) {
-            $current_user->remove_role('yith_affiliate');
-            $current_user->add_role('affiliate_team_member');
-            update_field('user_field_type', 'primary-contact', 'user_' . $user_id);
-
-        }
-
-           $afficated_id = get_user_meta($current_user_id, 'associated_affiliate_id', true);
-
-
-
-           // $afficated_id = $current_user_id; // Replace with actual value
-            $args = array(
+            $args = [
                 'meta_key'   => 'associated_affiliate_id',
                 'meta_value' => $afficated_id,
                 'number'     => -1, // Retrieve all matching users
-            );
-            $users = get_users($args);
+            ];
+
+           $users = get_users($args);
+
             if (!empty($users)) {
+                $meta_keys = [
+                    '_yith_wcaf_first_name',
+                    '_yith_wcaf_last_name',
+                    '_yith_wcaf_email',
+                    '_yith_wcaf_name_of_your_organization',
+                    '_yith_wcaf_your_organizations_website',
+                    '_yith_wcaf_phone_number',
+                    '_yith_wcaf_address',
+                    '_yith_wcaf_city',
+                    '_yith_wcaf_state',
+                    '_yith_wcaf_zipcode',
+                    '_yith_wcaf_tax_id',
+                    '_yith_wcaf_oam_heart',
+                    '_yith_wcaf_consent',
+                    '_yith_wcaf_privacy_policy_text',
+                    '_yith_wcaf_how_promote',
+                    '_yith_wcaf_paypal_gateway_preferences',
+                    '_yith_wcaf_check_payable',
+                    '_yith_wcaf_address_check',
+                    '_yith_wcaf_attention',
+                ];
+
                 foreach ($users as $user) {
-                    //echo 'User ID: ' . $user->ID . ' - Username: ' . $user->user_login . '<br>';
                     update_user_meta($user->ID, 'associated_affiliate_id', $selected_user_id);
+
+                    foreach ($meta_keys as $meta_key) {
+                        $meta_value = get_user_meta($current_user_id, $meta_key, true);
+                        if (!empty($meta_value)) {
+                            update_user_meta($user->ID, $meta_key, $meta_value);
+                        }
+                    }
                 }
             }
+
 
             global $wpdb;
             $yith_affiliate_table = $wpdb->prefix . 'yith_wcaf_affiliates';
 
-            
-                $wpdb->query($wpdb->prepare(
-                    "UPDATE {$yith_affiliate_table} SET user_id = %d WHERE user_id = %d",
-                    $current_user_id , $selected_user_id
-                ));
-            
+            $wpdb->query($wpdb->prepare(
+                "UPDATE {$yith_affiliate_table} SET user_id = %d WHERE user_id = %d",
+                $selected_user_id,
+                $current_user_id
+            ));
 
             // Email Notification
-            $to = $selected_user->user_email;
+            $to      = $selected_user->user_email;
             $subject = 'Your Role Has Been Changed';
             $message = "Hello " . $selected_user->display_name . ",\n\nYour user role has been updated. Please log in to check your new permissions.\n\nThank you.";
             $headers = ['Content-Type: text/plain; charset=UTF-8'];
@@ -524,6 +542,8 @@ class OAM_AFFILIATE_Ajax{
         wp_send_json(['success' => true, 'message' => 'Product price updated successfully!']);
         wp_die();
     }
+
+    
     public function update_gift_card_profile_handler() {
         // Verify nonce for security
         check_ajax_referer('oam_nonce', 'security');
@@ -643,8 +663,14 @@ class OAM_AFFILIATE_Ajax{
         }
 
         $user_id = get_current_user_id();
-        $affiliate_id = $user_id;
+
         $associated_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+        if (!empty($associated_id)) {
+            $affiliate_id = $associated_id;
+        } else {
+            // The user is the affiliate
+            $affiliate_id = $user_id;
+        }
 
         // Validate and sanitize inputs
         $first_name = sanitize_text_field($_POST['first_name']);
@@ -672,12 +698,12 @@ class OAM_AFFILIATE_Ajax{
         // }
 
         // Update user profile data (including email)
-        $update_data = [
-            'ID'         => $associated_id,
-            '_yith_wcaf_first_name' => $first_name,
-            '_yith_wcaf_last_name'  => $last_name,
-            'user_email' => $email, 
-        ];
+        // $update_data = [
+        //     'ID'         => $associated_id,
+        //     '_yith_wcaf_first_name' => $first_name,
+        //     '_yith_wcaf_last_name'  => $last_name,
+        //     'user_email' => $email, 
+        // ];
 
         // $user_update = wp_update_user($update_data);
 
@@ -686,32 +712,32 @@ class OAM_AFFILIATE_Ajax{
         //     wp_die();
         // }
 
-        $user_ids = get_users([
-            'meta_key'   => 'associated_affiliate_id',
-            'meta_value' => strval($associated_id),
-            'fields'     => 'ID'
-        ]);
+        // $user_ids = get_users([
+        //     'meta_key'   => 'associated_affiliate_id',
+        //     'meta_value' => strval($associated_id),
+        //     'fields'     => 'ID'
+        // ]);
 
         // Update each team member's price
-        foreach ($user_ids as $id) {
+        // foreach ($user_ids as $id) {
             // Update user meta
-            update_user_meta($id, '_yith_wcaf_first_name', $first_name);
-            update_user_meta($id, '_yith_wcaf_last_name', $last_name);
-            update_user_meta($id, 'billing_phone', $billing_phone);
-            update_user_meta($id, '_yith_wcaf_email', $email);
+            update_user_meta($affiliate_id, '_yith_wcaf_first_name', $first_name);
+            update_user_meta($affiliate_id, '_yith_wcaf_last_name', $last_name);
+            update_user_meta($affiliate_id, 'billing_phone', $billing_phone);
+            update_user_meta($affiliate_id, '_yith_wcaf_email', $email);
 
             //affiliate Fields data update
-            // update_user_meta($id, '_yith_wcaf_first_name', $organization_name);
-            // update_user_meta($id, '_yith_wcaf_last_name', '');
-            update_user_meta($id, '_yith_wcaf_phone_number', $billing_phone);
-            update_user_meta($id, '_yith_wcaf_name_of_your_organization', $organization_name);
-            update_user_meta($id, '_yith_wcaf_your_organizations_website', $organization_website);
-            update_user_meta($id, '_yith_wcaf_address', $address);
-            update_user_meta($id, '_yith_wcaf_city', $city);
-            update_user_meta($id, '_yith_wcaf_state', $state);
-            update_user_meta($id, '_yith_wcaf_zipcode', $zipcode);
-            update_user_meta($id, '_yith_wcaf_tax_id', $tax_id);
-        }
+            // update_user_meta($affiliate_id, '_yith_wcaf_first_name', $organization_name);
+            // update_user_meta($affiliate_id, '_yith_wcaf_last_name', '');
+            update_user_meta($affiliate_id, '_yith_wcaf_phone_number', $billing_phone);
+            update_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', $organization_name);
+            update_user_meta($affiliate_id, '_yith_wcaf_your_organizations_website', $organization_website);
+            update_user_meta($affiliate_id, '_yith_wcaf_address', $address);
+            update_user_meta($affiliate_id, '_yith_wcaf_city', $city);
+            update_user_meta($affiliate_id, '_yith_wcaf_state', $state);
+            update_user_meta($affiliate_id, '_yith_wcaf_zipcode', $zipcode);
+            update_user_meta($affiliate_id, '_yith_wcaf_tax_id', $tax_id);
+        // }
 
         wp_send_json(['success' => true, 'message' => 'Your profile has been updated successfully.']);
         wp_die();
