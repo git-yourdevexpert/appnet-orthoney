@@ -13,15 +13,18 @@ $order_process_table = OAM_Helper::$order_process_table;
 $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
 $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
 
-$user = get_current_user_id();
 $result = $wpdb->get_row($wpdb->prepare(
-	"SELECT * FROM {$order_process_table} WHERE user_id = %d AND id = %d",
-	$user, intval($_GET['pid'])
+	"SELECT * FROM {$order_process_table} WHERE  order_id = %d",
+	$order->ID
 ));
-$setData = json_decode($result->data);
-$affiliate = $setData->affiliate_select != '' ? $setData->affiliate_select : 'Orthoney';
-$affiliate_id = intval($affiliate);
 
+
+$setData = json_decode($result->data);
+
+
+$affiliate = $setData->affiliate_select != '' ? $setData->affiliate_select : 'Orthoney';
+
+$affiliate_id = intval($affiliate);
 
 
 $token = $wpdb->get_var($wpdb->prepare(
@@ -37,18 +40,13 @@ $sub_order_id = OAM_COMMON_Custom::get_order_meta($order->get_order_number(), '_
 
 $recipientResult = $wpdb->get_results($wpdb->prepare(
     "SELECT * FROM {$order_process_recipient_table} WHERE order_id = %d",
-    $sub_order_id 
+    $sub_order_id
 ));
 
 $organization = 'Orthoney';
 
-$main_affiliate_org_name = $organization_data = 'Honey From The Heart';
-$main_affiliate_phone = '(404) 610-6737';
-$main_affiliate_email = 'orthoney@gmail.com';
-
-$main_affiliate_full_address = '735 Heards Ferry Rd <br> Atlanta GA, US 30076';
     
-if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affiliate_token !== 'Orthoney') {
+if (!empty($recipientResult) && !empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affiliate_token !== 'Orthoney') {
     $token = $recipientResult[0]->affiliate_token;
     $meta_key = '_yith_wcaf_name_of_your_organization';
 
@@ -87,35 +85,41 @@ if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affilia
 
         $merged_address = implode(', ', array_filter(['[' . $token . ']', $organization, $city, $state]));
         $organization_data = trim($merged_address);
-
-        $main_affiliate_id = intval($affiliate); 
-
-        $main_affiliate_first_name = get_user_meta($main_affiliate_id, '_yith_wcaf_first_name', true);
-        $main_affiliate_last_name = get_user_meta($main_affiliate_id, '_yith_wcaf_last_name', true);
-        $main_affiliate_org_name = get_user_meta($main_affiliate_id, '_yith_wcaf_name_of_your_organization', true)  ?: 'Honey From The Heart';
-        $main_affiliate_phone = get_user_meta($main_affiliate_id, 'user_registration_customer_phone_number', true)?: '(404) 610-6737';
-        $main_affiliate_address = get_user_meta($main_affiliate_id, '_yith_wcaf_address', true);
-        $main_affiliate_email = get_user_meta($main_affiliate_id, '_yith_wcaf_email', true)?: 'orthoney@gmail.com';
-        $main_affiliate_city = get_user_meta($main_affiliate_id, '_yith_wcaf_city', true);
-        $main_affiliate_state = get_user_meta($main_affiliate_id, '_yith_wcaf_state', true);
-        $main_affiliate_zipcode = get_user_meta($main_affiliate_id, '_yith_wcaf_zipcode', true);
-        $main_affiliate_full_name = trim($main_affiliate_first_name .' '.$main_affiliate_last_name) ?: 'Delilah Cohen';
-
-        $main_address_parts = array_filter([
-            get_user_meta($main_affiliate_id, '_yith_wcaf_address', true)."<br>",
-            get_user_meta($main_affiliate_id, '_yith_wcaf_city', true),
-            get_user_meta($main_affiliate_id, '_yith_wcaf_state', true),
-            get_user_meta($main_affiliate_id, '_yith_wcaf_zipcode', true),
-        ]);
-
-        
-        if(!empty($main_address_parts)){
-            $main_affiliate_full_address = implode(', ', $main_address_parts);
-        }
-
     }
 }
 
+
+$main_affiliate_full_address = '735 Heards Ferry Rd <br> Atlanta GA, US 30076';
+$main_affiliate_org_name = $organization_data = 'Honey From The Heart';
+$main_affiliate_phone = '(404) 610-6737';
+$main_affiliate_email = 'orthoney@gmail.com';
+ 
+if($affiliate_id != 0 && $affiliate_id != 'Orthoney'){
+    $main_affiliate_id = intval($affiliate_id); 
+
+        $main_affiliate_first_name = get_user_meta($main_affiliate_id, '_yith_wcaf_first_name', true);
+    $main_affiliate_last_name = get_user_meta($main_affiliate_id, '_yith_wcaf_last_name', true);
+    $main_affiliate_org_name = get_user_meta($main_affiliate_id, '_yith_wcaf_name_of_your_organization', true)  ?: 'Honey From The Heart';
+    $main_affiliate_phone = get_user_meta($main_affiliate_id, 'user_registration_customer_phone_number', true)?: '(404) 610-6737';
+    $main_affiliate_address = get_user_meta($main_affiliate_id, '_yith_wcaf_address', true);
+    $main_affiliate_email = get_user_meta($main_affiliate_id, '_yith_wcaf_email', true)?: 'orthoney@gmail.com';
+    $main_affiliate_city = get_user_meta($main_affiliate_id, '_yith_wcaf_city', true);
+    $main_affiliate_state = get_user_meta($main_affiliate_id, '_yith_wcaf_state', true);
+    $main_affiliate_zipcode = get_user_meta($main_affiliate_id, '_yith_wcaf_zipcode', true);
+    $main_affiliate_full_name = trim($main_affiliate_first_name .' '.$main_affiliate_last_name) ?: 'Delilah Cohen';
+
+    $main_address_parts = array_filter([
+        get_user_meta($main_affiliate_id, '_yith_wcaf_address', true)."<br>",
+        get_user_meta($main_affiliate_id, '_yith_wcaf_city', true),
+        get_user_meta($main_affiliate_id, '_yith_wcaf_state', true),
+        get_user_meta($main_affiliate_id, '_yith_wcaf_zipcode', true),
+    ]);
+
+    
+    if(!empty($main_address_parts)){
+        $main_affiliate_full_address = implode(', ', $main_address_parts);
+    }
+}
 $total_price_before_discount = 0;
 $total_quantity = 0;
 
