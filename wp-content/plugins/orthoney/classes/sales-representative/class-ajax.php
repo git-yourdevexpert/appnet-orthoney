@@ -789,7 +789,7 @@ public function orthoney_get_filtered_customers() {
 
             $organizationdata = [];
          //   if (!empty($row->organization_name)) {
-                $organizationdata[] = '<strong>[' . $row->token . '] ' . esc_html($row->organization_name) . '</strong>';
+                $organizationdata[] = '<strong>' . esc_html($row->organization_name) . '</strong>';
            // }
             $city_state = trim(esc_html($row->city) . (empty($row->city) || empty($row->state) ? '' : ', ') . esc_html($row->state));
             if (!empty($city_state)) {

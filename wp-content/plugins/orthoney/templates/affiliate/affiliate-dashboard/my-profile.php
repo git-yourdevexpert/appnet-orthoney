@@ -151,7 +151,10 @@
 <br>
 <div class="order-process-block form-deisgn">
     <div class="heading-title">
-        <h3 class="block-title">Remittance Form</h3>
+        <div>
+            <h3 class="block-title">Remittance Form</h3>
+            <p><strong><br>Please indicate if check will be mailed to a home or your organization's office:</strong></p>
+        </div>
     </div>
     
     <div class="affiliate-profile">
@@ -234,7 +237,7 @@
                     </p>
                 </div>
             </div>
-            <div class="affiliate-profile">
+            <div class="affiliate-profile" id="update-price-affiliate-form" >
                 <form id="affiliate-gift-card-form">
                     <div class="form-row gfield--width-half">
                         <div class="textarea-div form-row gfield--width-full">
@@ -258,7 +261,7 @@
     <div class="heading-title">
         <h3 class="block-title">Mission Statement</h3>
     </div>
-    <div class="affiliate-profile">
+    <div class="affiliate-profile" id="update-price-affiliate-form">
         <form id="affiliate-mission-statement-form">
             <div class="form-row gfield--width-half">
                 <div class="textarea-div form-row gfield--width-full">

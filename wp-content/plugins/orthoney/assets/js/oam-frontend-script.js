@@ -2676,7 +2676,7 @@ jQuery(document).ready(function ($) {
     columnDefs: [
       { targets: 1, width: "220px" , searchable: true },
       { targets: 2, width: "220px" },
-      { targets: -1, orderable: false },
+      { targets: -1, orderable: true },
       { targets: 4, visible: false, searchable: true },
       { targets: 0, visible: false, searchable: true },
     ],
