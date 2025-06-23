@@ -304,7 +304,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $select_organization = get_user_meta($user->ID, 'select_organization', true);
             $choose_organization = get_user_meta($user->ID, 'choose_organization', true);
 
-            $organizations_status = '';
+            $organizations_status = '-';
             $matched_token = false;
 
             if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
@@ -330,7 +330,7 @@ class OAM_ADMINISTRATOR_AJAX {
                     if (!$matched_token) continue; // token didn't match
                 }
             } else {
-                $organizations_status = 'Assign All Organizations';
+                  $organizations_status = 'Assign All Organizations';
                 if ($organization_code_search !== '') continue; // no tokens but filter required
             }
 
@@ -342,8 +342,6 @@ class OAM_ADMINISTRATOR_AJAX {
         // Apply pagination
         $paged_users = array_slice($filtered_users, $start, $length);
 
-        
-
         $data = [];
         foreach ($paged_users as $user) {
             $admin_url = admin_url("user-edit.php?user_id={$user->ID}&wp_http_referer=%2Fwp-admin%2Fusers.php");
@@ -351,7 +349,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $select_organization = get_user_meta($user->ID, 'select_organization', true);
             $choose_organization = get_user_meta($user->ID, 'choose_organization', true);
 
-            $organizations_status = '';
+            $organizations_status = 'Assign All Organizations';
 
             if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
                 $choose_ids_array = array_map('intval', (array) $choose_organization);
@@ -365,10 +363,6 @@ class OAM_ADMINISTRATOR_AJAX {
                 $token_array = $wpdb->get_col($query);
                 $organizations_status = implode(', ', $token_array);
             }
-            if ($select_organization === 'all') {
-                $organizations_status = 'Assign All Organizations';
-            }
-
 
             $data[] = [
                 'id' => $user->ID,
@@ -739,18 +733,14 @@ class OAM_ADMINISTRATOR_AJAX {
 
         // Step 4: Filter based on search and status
         $status_filter = sanitize_text_field($_POST['status_filter'] ?? '');
-        $session_status_filter = sanitize_text_field($_POST['session_status_filter'] ?? '');
       
         $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
         $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
 
-        $filtered_user_ids = array_filter($user_ids, function ($user_id) use ($search, $user_meta_cache, $user_status_map, $status_filter,$session_status_filter, $organization_search, $organization_code_search) {
+        $filtered_user_ids = array_filter($user_ids, function ($user_id) use ($search, $user_meta_cache, $user_status_map, $status_filter, $organization_search, $organization_code_search) {
             $status = strtolower($user_status_map[$user_id]['label']);
             $organization = strtolower($user_meta_cache[$user_id]['organization']);
             $code = strtolower($user_meta_cache[$user_id]['code']);
-
-           // echo $user_id.'</br>';
-            $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true);
 
             if (!empty($organization_search) && strpos($organization, strtolower($organization_search)) === false) {
                 return false;
@@ -762,20 +752,6 @@ class OAM_ADMINISTRATOR_AJAX {
 
             if (!empty($status_filter) && strtolower($status_filter) !== $status) {
                 return false;
-            }
-
-            // Active: must be explicitly 1
-            if ($session_status_filter === 'active') {
-                if (intval($activate_affiliate_account) !== 1) {
-                    return false;
-                }
-            }
-
-            // Deactivate: anything that is not 1 (including empty or missing)
-            if ($session_status_filter === 'deactivate') {
-                if (intval($activate_affiliate_account) === 1) {
-                    return false;
-                }
             }
 
             if (empty($search)) return true;
@@ -842,7 +818,6 @@ class OAM_ADMINISTRATOR_AJAX {
                 $org_user = get_userdata($associated_affiliate_id);
                 $first_name = get_user_meta($associated_affiliate_id, 'first_name', true);
                 $last_name  = get_user_meta($associated_affiliate_id, 'last_name', true);
-                $yith_wcaf_phone_number = get_user_meta($user_id, 'user_registration_customer_phone_number', true) ?: '';
                 $org_user_name = trim($first_name . ' ' . $last_name) ?: $org_user->display_name;
                 $org_email = $org_user->user_email;
                 $org_admin_user = '<strong>'.$org_user_name . '</strong><br>' . $org_email . '<br>' . $yith_wcaf_phone_number;
@@ -894,7 +869,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
                 $data[] = [
                     'code' => esc_html($meta['code']),
-                    'organization' => (!empty($meta['code']) ? '<strong>[' . $meta['code'] . ']</strong> ' : '') . $organization,
+                    'organization' => $organization,
                     'csr_name' => $csr_name,
                     'organization_admin' => $org_admin_user,
                     'new_organization' => $new_organization_block,

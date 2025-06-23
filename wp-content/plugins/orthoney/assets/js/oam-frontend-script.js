@@ -2202,7 +2202,6 @@ jQuery(document).ready(function ($) {
 
 jQuery(document).ready(function ($) {
   let selectedStatus = '';
-  let selectedsessionStatus = '';
   let organizationSearch = '';
   let organizationCodeSearch = '';
   let currentAjaxRequest = null; // Track current AJAX request
@@ -2240,7 +2239,6 @@ jQuery(document).ready(function ($) {
         data: function (d) {
           d.action = "orthoney_admin_get_organizations_data";
           d.status_filter = selectedStatus;
-          d.session_status_filter = selectedsessionStatus;
           d.organization_search = organizationSearch;
           d.organization_code_search = organizationCodeSearch;
         },
@@ -2266,7 +2264,7 @@ jQuery(document).ready(function ($) {
         { data: "login" }
       ],
       columnDefs: [
-        { targets: 0, visible: false, searchable: true, orderable: true },
+        { targets: 0, visible: true, searchable: true, orderable: true },
         { targets: 1, width: "210px", orderable: false},
         { targets: 2, width: "210px", orderable: false },
         { targets: 3, width: "210px" ,  orderable: false},
@@ -2304,23 +2302,9 @@ jQuery(document).ready(function ($) {
           }
         });
 
-        
-    // Static "Account Status" (Active/Deactivate) filter
-      const accountStatusSelect = $(`
-        <select style="margin-right: 10px;">
-          <option value="">All Account Statuses</option>
-          <option value="active">Active</option>
-          <option value="deactivate">Deactivate</option>
-        </select>
-      `).on('change', function () {
-        selectedsessionStatus = $(this).val();
-        table.ajax.reload(); // server-side filtering
-      });
-
-
         const statusSelect = $('<select><option value="">Filter by Status</option></select>')
           .on('change', function () {
-            selectedsessionStatus = $(this).val();
+            selectedStatus = $(this).val();
             table.ajax.reload();
           });
 
@@ -2333,7 +2317,6 @@ jQuery(document).ready(function ($) {
           $filterArea.addClass('custom-filter-added');
           $filterArea.prepend(statusSelect.css({ marginRight: '10px' }));
           $filterArea.prepend(orgInput);
-          $filterArea.prepend(accountStatusSelect);
           $filterArea.prepend(orgCodeInput);
 
           $filterArea.find('label').contents().filter(function () {
@@ -2709,34 +2692,30 @@ jQuery(document).ready(function ($) {
           </div>
         </div>`
     },
-   initComplete: function () {
-  const api = this.api();
-  const $filterWrapper = $('.dataTables_filter');
+    initComplete: function () {
+      const api = this.api();
+      const statusColIndex = 4;
+      const statusSet = new Set();
 
-  // Create status filter dropdown
-  const statusDropdown = $(`
-    <select style="margin-right: 10px;">
-      <option value="">Season Status</option>
-      <option value="active">Activated</option>
-      <option value="deactivate">Deactivated</option>
-    </select>
-  `).on('change', function () {
-    selectedStatus = $(this).val();
-    if (currentRequest) currentRequest.abort();
-    table.ajax.reload();
-  });
+      api.column(statusColIndex).data().each(function (d) {
+        if (d && d.trim() !== "") {
+          statusSet.add(d);
+        }
+      });
 
-  // Remove default label text
-  $filterWrapper.find('label').contents().filter(function () {
-    return this.nodeType === 3;
-  }).remove();
+      const $filterWrapper = $('.dataTables_filter');
 
-  // Inject custom filters
-  $filterWrapper.prepend(statusDropdown).prepend(orgCodeInput).prepend(orgInput);
+      // Remove default label text
+      $filterWrapper.find('label').contents().filter(function () {
+        return this.nodeType === 3;
+      }).remove();
 
-  // Optional: Update default search input placeholder
-  $filterWrapper.find('input[type="search"]').attr('placeholder', 'Search...');
-}
+      // Add custom inputs before default search
+      $filterWrapper.prepend(orgCodeInput).prepend(orgInput);
+
+      // Optional: Add placeholder to the built-in search box
+      $filterWrapper.find('input[type="search"]').attr('placeholder', 'Search...');
+    }
   });
 });
 
@@ -2747,6 +2726,8 @@ jQuery(document).ready(function ($) {
  * 
  * 
  */
+
+
 jQuery(document).ready(function ($) {
   let organizationSearch = '';
   let organizationCodeSearch = '';
@@ -2761,49 +2742,61 @@ jQuery(document).ready(function ($) {
         [10, 25, 50, 100],
         [10, 25, 50, 100]
       ],
-      serverSide: true,
+      serverSide: false,
       processing: true,
       paging: true,
       searching: true,
       responsive: true,
       ordering: false,
 
-      ajax: {
-        url: oam_ajax.ajax_url,
-        type: 'POST',
-        data: function (d) {
-          return $.extend({}, d, {
+      ajax: function (data, callback) {
+        // Cancel duplicate AJAX call
+        if (currentRequest) {
+          currentRequest.abort();
+        }
+
+        const $tbody = $('#sales-representative-customer-table tbody');
+        const colspan = $('#sales-representative-customer-table thead th').length;
+
+        $tbody.hide().html(`
+          <tr class="custom-loading-row">
+            <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
+              Loading customer data, please wait...
+            </td>
+          </tr>
+        `).show();
+
+        // Perform AJAX
+        currentRequest = $.ajax({
+          url: oam_ajax.ajax_url,
+          type: 'POST',
+          data: {
             action: 'get_filtered_customers',
             nonce: oam_ajax.nonce,
             organization_search: organizationSearch,
             organization_code_search: organizationCodeSearch
-          });
-        },
-        dataSrc: function (response) {
-          return response.data || [];
-        },
-        beforeSend: function () {
-          const $tbody = $('#sales-representative-customer-table tbody');
-          const colspan = $('#sales-representative-customer-table thead th').length;
-          $tbody.hide().html(`
-            <tr class="custom-loading-row">
-              <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
-                Loading customer data, please wait...
-              </td>
-            </tr>
-          `).show();
-        },
-        error: function (xhr, status) {
-          if (status !== 'abort') {
-            console.error("AJAX error:", status);
+          },
+          success: function (response) {
+            callback(response);
+          },
+          error: function (xhr, status) {
+            if (status !== 'abort') {
+              console.error("AJAX error:", status);
+              callback({
+                data: [],
+                recordsTotal: 0,
+                recordsFiltered: 0,
+                draw: data.draw
+              });
+            }
+          },
+          complete: function () {
+            currentRequest = null;
+            setTimeout(() => {
+              $('#sales-representative-customer-table tbody').show();
+            }, 100);
           }
-        },
-        complete: function () {
-          currentRequest = null;
-          setTimeout(() => {
-            $('#sales-representative-customer-table tbody').show();
-          }, 100);
-        }
+        });
       },
 
       columns: [
@@ -2812,9 +2805,10 @@ jQuery(document).ready(function ($) {
         { data: "action" }
       ],
       columnDefs: [
-        { targets: 0, width: "400px", orderable: false, searchable: true },
-        { targets: 1, width: "400px", orderable: false, searchable: false },
-        { targets: -1, width: "80px", orderable: false, searchable: false }
+       { targets: 0, width: "400px", orderable: false ,searchable: true },
+       { targets: 1, width: "400px", orderable: false ,searchable: false },
+        { targets: -1,width: "80px", orderable: false , searchable: false }
+
       ],
       language: {
         search: ""
@@ -2823,6 +2817,7 @@ jQuery(document).ready(function ($) {
       initComplete: function () {
         const $filterContainer = $('#sales-representative-customer-table_filter');
 
+        // Create custom search inputs
         const orgInput = $('<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">')
           .on('keyup', function () {
             organizationSearch = $(this).val().trim();
@@ -2841,10 +2836,26 @@ jQuery(document).ready(function ($) {
             }
           });
 
+        // Inject into filter container
         $filterContainer.prepend(orgCodeInput).prepend(orgInput);
 
+        // Customize the default search input
         const searchBox = $filterContainer.find('input[type="search"]');
         searchBox.attr('placeholder', 'Search Customers');
+
+        // Optional: Debounce default search
+        let typingTimer;
+        searchBox.off().on('input', function () {
+          clearTimeout(typingTimer);
+          const value = this.value;
+
+          typingTimer = setTimeout(() => {
+            if (value.length >= 3 || value.length === 0) {
+              if (currentRequest) currentRequest.abort();
+              table.search(value).draw();
+            }
+          }, 300);
+        });
       }
     });
   }
