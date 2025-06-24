@@ -801,7 +801,7 @@ public function orthoney_get_filtered_customers() {
             if (!empty($organization_phone)) {
                 $organizationdata[] = esc_html($organization_phone);
             }
-            $organization = implode('<br>', array_filter($organizationdata));
+            $organization = implode('<br>', array_filter($organizationdata)); 
 
             $org_admin_user = '';
             if (!empty($row->associated_affiliate_id)) {
