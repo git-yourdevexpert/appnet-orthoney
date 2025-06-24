@@ -3541,22 +3541,20 @@ class OAM_Ajax{
         
             $pdf_url = $upload_dir['url'] . '/' . $pdf_filename;
 
-                $to = $current_user_email;
-                $cc = 'support@orthoney.com,'.$affiliate_org_email;
-                $subject = '#'. $custom_order_id.' Reordering Form – Honey From The Heart';
-                
-                $message = '<p>Dear ' . $name . ',</p>';
-                $message .= '<p>Thank you for your continued support of <strong>Honey From The Heart</strong>!</p>';
-                $message .= '<p>Please find your reordering form attached below.</p>';
-                $message .= '<p>We truly appreciate you being a part of our sweet tradition.</p>';
-                $message .= '<p>Regards, <br><strong>Honey From The Heart Team</strong></p>';
-                $headers = [
-                    'Content-Type: text/html; charset=UTF-8',
-                    'Cc: ' . $cc,
-                ];
-                $attachments = [$pdf_path];
-        
-                $mail_sent = wp_mail($to, $subject, $message, $headers, $attachments);
+            $to = $current_user_email;
+            $cc = 'support@orthoney.com,'.$affiliate_org_email;
+            $subject = '#'. $custom_order_id.' Reordering Form – Honey From The Heart';
+            
+            // $message = '<p>Dear ' . $name . ',</p>';
+            $message = $html;
+            $message .= '<p>Regards, <br><strong>Honey From The Heart Team</strong></p>';
+            $headers = [
+                'Content-Type: text/html; charset=UTF-8',
+                'Cc: ' . $cc,
+            ];
+            $attachments = [$pdf_path];
+    
+            $mail_sent = wp_mail($to, $subject, $message, $headers, $attachments);
     
             }
             
