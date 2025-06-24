@@ -12,8 +12,13 @@ class OAM_Scripts
 	public function __construct() {
         // Hook to enqueue scripts and styles on the front-end
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
+        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
     }
 
+    public function enqueue_admin_assets() {
+          $plugin_url = OH_PLUGIN_DIR_URL . 'assets/';
+        wp_enqueue_style( 'my-admin-style', $plugin_url . 'css/admin-style.css' );
+    }
     // Enqueue front-end assets
     public function enqueue_frontend_assets() {
         $plugin_url = OH_PLUGIN_DIR_URL . 'assets/';
