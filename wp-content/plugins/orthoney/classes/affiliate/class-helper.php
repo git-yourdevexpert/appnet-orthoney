@@ -563,7 +563,7 @@ class OAM_AFFILIATE_Helper
                         </div>
                     </div>
                 </div>
-                '. ( ($details['total_quantity'] > 50)  ? '' : '<div class="dashboard-heading block-row"><div class="item" style="padding: 10px 20px;background-color: rgba(255, 0, 0, 0.5);"><div class="row-block"><p style="color: white;">A minimum of 50 jars is required  for profit sharing. You still need ' . (50 - $details['total_quantity']) . ' more jars.</p style="color: white;"></div></div></div>' );
+                '. ( ($details['total_quantity'] > 50)  ? '' : '<div class="dashboard-heading block-row"><div class="item" style="padding: 10px 20px;background-color: rgba(255, 0, 0, 0.5);"><div class="row-block"><p style="color: white;">A minimum of 50 jars is required. You still need ' . (50 - $details['total_quantity']) . ' more jars.</p style="color: white;"></div></div></div>' );
 
                 if(!empty($cbr_ids_array)){
                      $html .= '<div class="dashboard-heading block-row"><div class="item">
@@ -625,10 +625,7 @@ class OAM_AFFILIATE_Helper
                             </div>
                         </div>
                         <div class="sub-heading">
-                            <div>
-                            <p>' . (($details['total_quantity'] > 50)  ?  '<button data-orgid="' . $affiliate_id . '"  class="w-btn us-btn-style_1 org_account_statement">Account Statement</button>' : 'A minimum of 50 jars is required for profit sharing. You still need ' . (50 - $details['total_quantity']) . ' more jars.') . '</p>
-                            
-                            </div>
+                            <div>' . wc_price($total_commission) . ' ' . (($details['total_quantity'] <= 50) ? '<p style="line-height: 1;"><small style="font-size: 70%; color: red;line-height: 1 !important;font-weight: 900;">You are not eligible for a commission. A minimum of 50 jars is required.</small></p>' : '') . '</div>
                         </div>
                     </div>
                     <style>

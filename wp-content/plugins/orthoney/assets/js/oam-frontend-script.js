@@ -2199,14 +2199,13 @@ jQuery(document).ready(function ($) {
  * 
  * 
  */
-
 jQuery(document).ready(function ($) {
   let selectedStatus = '';
+  let selectedsessionStatus = '';
   let organizationSearch = '';
   let organizationCodeSearch = '';
-  let currentAjaxRequest = null; // Track current AJAX request
+  let currentAjaxRequest = null;
 
-  // Prevent double binding
   if (!$('#admin-organizations-table').hasClass('dt-initialized')) {
     $('#admin-organizations-table').addClass('dt-initialized');
 
@@ -2229,7 +2228,6 @@ jQuery(document).ready(function ($) {
         url: oam_ajax.ajax_url,
         type: "POST",
 
-        // 💡 Abort old AJAX call before sending new one
         beforeSend: function () {
           if (currentAjaxRequest && currentAjaxRequest.readyState !== 4) {
             currentAjaxRequest.abort();
@@ -2239,6 +2237,7 @@ jQuery(document).ready(function ($) {
         data: function (d) {
           d.action = "orthoney_admin_get_organizations_data";
           d.status_filter = selectedStatus;
+          d.session_status_filter = selectedsessionStatus;
           d.organization_search = organizationSearch;
           d.organization_code_search = organizationCodeSearch;
         },
@@ -2247,12 +2246,12 @@ jQuery(document).ready(function ($) {
           return json.data || [];
         },
 
-        // Save reference to current request
         xhr: function () {
           currentAjaxRequest = $.ajaxSettings.xhr();
           return currentAjaxRequest;
         }
       },
+
       columns: [
         { data: "code" },
         { data: "organization" },
@@ -2263,16 +2262,18 @@ jQuery(document).ready(function ($) {
         { data: "price" },
         { data: "login" }
       ],
+
       columnDefs: [
         { targets: 0, visible: true, searchable: true, orderable: true },
-        { targets: 1, width: "210px", orderable: false},
+        { targets: 1, width: "210px", orderable: false },
         { targets: 2, width: "210px", orderable: false },
-        { targets: 3, width: "210px" ,  orderable: false},
-        { targets: 4, orderable: false , searchable: false, orderable: false },
+        { targets: 3, width: "210px", orderable: false },
+        { targets: 4, orderable: false, searchable: false },
         { targets: 5, visible: false, searchable: false, orderable: false },
         { targets: 6, searchable: false, orderable: false },
-        { targets: -1, orderable: false, width: "100px" ,orderable: false },
+        { targets: 7, orderable: false, width: "100px" }
       ],
+
       language: {
         processing: `
           <div class="loader multiStepForm" style="display:block">
@@ -2283,6 +2284,7 @@ jQuery(document).ready(function ($) {
             </div>
           </div>`
       },
+
       processing: true,
       serverSide: true,
       paging: true,
@@ -2302,7 +2304,20 @@ jQuery(document).ready(function ($) {
           }
         });
 
-        const statusSelect = $('<select><option value="">Filter by Status</option></select>')
+        // Dropdown for session status (Static: Active/Deactivate)
+        const accountStatusSelect = $(`
+          <select style="margin-right: 10px;">
+            <option value="">All Account Statuses</option>
+            <option value="active">Active</option>
+            <option value="deactivate">Deactivate</option>
+          </select>
+        `).on('change', function () {
+          selectedsessionStatus = $(this).val();
+          table.ajax.reload();
+        });
+
+        // Dropdown for dynamic organization status
+        const statusSelect = $('<select style="margin-right: 10px;"><option value="">Filter by Status</option></select>')
           .on('change', function () {
             selectedStatus = $(this).val();
             table.ajax.reload();
@@ -2315,8 +2330,9 @@ jQuery(document).ready(function ($) {
         const $filterArea = $('.dataTables_filter');
         if (!$filterArea.hasClass('custom-filter-added')) {
           $filterArea.addClass('custom-filter-added');
-          $filterArea.prepend(statusSelect.css({ marginRight: '10px' }));
+          $filterArea.prepend(statusSelect);
           $filterArea.prepend(orgInput);
+          $filterArea.prepend(accountStatusSelect);
           $filterArea.prepend(orgCodeInput);
 
           $filterArea.find('label').contents().filter(function () {
