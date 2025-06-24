@@ -317,6 +317,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 );
 
                 $token_array = $wpdb->get_col($query);
+                sort($token_array); 
                 $organizations_status = implode(', ', $token_array);
 
                 // Token search filter
