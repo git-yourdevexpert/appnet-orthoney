@@ -287,9 +287,9 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                                             $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
                                         }
 
-                                        $orgName = get_user_meta($user_id, '_orgName', true);
+                                        $orgName = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
                                         if (empty($orgName)) {
-                                            $orgName = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+                                            $orgName = get_user_meta($user_id, '_orgName', true);
                                         }
 
                                         $state_name = isset($states[$state]) ? $states[$state] : $state;
