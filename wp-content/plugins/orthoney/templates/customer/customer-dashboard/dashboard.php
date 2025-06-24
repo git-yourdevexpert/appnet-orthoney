@@ -53,7 +53,7 @@ if ( in_array( 'yith_affiliate', (array) $user->roles ) ) {
                 <div class="one-col-grid">
                 <div class="recipient-lists-block custom-table">
                         <div class="row-block">
-                            <h4>Recent Orders</h4>
+                            <h4>My Orders</h4>
                             <div class="see-all">
                                 <a class="w-btn us-btn-style_1" href="<?php echo esc_url(OAM_Helper::$customer_dashboard_link.'orders/') ?>">See all</a> 
                             </div>
