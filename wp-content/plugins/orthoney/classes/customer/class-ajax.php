@@ -683,6 +683,7 @@ class OAM_Ajax{
 
     // Handles re-order based on existing WooCommerce order
     private function process_reorder_from_order($wpdb, $orderid, $userID, $security, $pid) {
+        global $wpdb;
         $recipient_table = OAM_Helper::$recipient_order_table;
         $process_recipient_table = OAM_Helper::$order_process_recipient_table;
 
