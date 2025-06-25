@@ -100,13 +100,7 @@ class OAM_Shortcode
         orders.date_created_gmt AS order_date,
         ba.first_name AS billing_first_name,
         ba.last_name AS billing_last_name,
-        (
-            SELECT rec1.affiliate_token
-            FROM {$wpdb->prefix}oh_recipient_order AS rec1
-            WHERE rec1.order_id = rel.order_id
-            ORDER BY rec1.id ASC
-            LIMIT 1
-        ) AS affiliate_token,
+        rel.affiliate_code AS affiliate_code,
         IFNULL(qty_table.total_quantity, 0) AS total_quantity
     FROM {$wpdb->prefix}wc_orders AS orders
     INNER JOIN {$wpdb->prefix}oh_wc_order_relation AS rel 

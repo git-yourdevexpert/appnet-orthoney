@@ -140,108 +140,106 @@ function affiliateDatatable() {
   });
 
   ["affiliate-orderlist-table"].forEach((id) => {
-  const div = document.getElementById(id);
-  if (div && div.innerHTML.trim() !== "") {
-    const tableEl = div.querySelector("table");
-    if (tableEl && !jQuery(tableEl).hasClass("dataTable")) {
-      const $table = jQuery(tableEl);
-      const dateColIndex = 5; // Adjust this if "Date" column is at a different index
-      const lastColIndex = $table.find("thead th").length - 1;
+    const div = document.getElementById(id);
+    if (div && div.innerHTML.trim() !== "") {
+      const tableEl = div.querySelector("table");
+      if (tableEl && !jQuery(tableEl).hasClass("dataTable")) {
+        const $table = jQuery(tableEl);
+        const dateColIndex = 5; // Adjust this if "Date" column is at a different index
+        const lastColIndex = $table.find("thead th").length - 1;
 
-      // Create Year filter dropdown with spacing
-      const yearSelect = jQuery(`
+        // Create Year filter dropdown with spacing
+        const yearSelect = jQuery(`
         <select id="yearFilter" class="form-control" style="margin-left: 10px;">
           <option value="">Filter by Year</option>
         </select>
       `);
 
-      // Initialize DataTable
-      const dataTable = $table.DataTable({
-        paging: true,
-        pageLength: 50,
-        lengthMenu: [
-          [10, 25, 50, 100],
-          [10, 25, 50, 100]
-        ],
-        fixedHeader: true,
-        scrollCollapse: false,
-        info: true,
-        searching: true,
-        responsive: true,
-        deferRender: false,
-        order: [[lastColIndex, "desc"]],
-        lengthChange: false,
-        language: {
-          search: "",
-          searchPlaceholder: "Search..."
-        },
-        columnDefs: [
-          {
-            targets: lastColIndex, // Last column (e.g., Actions)
-            orderable: false
+        // Initialize DataTable
+        const dataTable = $table.DataTable({
+          paging: true,
+          pageLength: 50,
+          lengthMenu: [
+            [10, 25, 50, 100],
+            [10, 25, 50, 100]
+          ],
+          fixedHeader: true,
+          scrollCollapse: false,
+          info: true,
+          searching: true,
+          responsive: true,
+          deferRender: false,
+          order: [[lastColIndex, "desc"]],
+          lengthChange: false,
+          language: {
+            search: "",
+            searchPlaceholder: "Search..."
+          },
+          columnDefs: [
+            {
+              targets: lastColIndex, // Last column (e.g., Actions)
+              orderable: false
+            }
+          ],
+          initComplete: function () {
+            // Extract years from Date column
+            const years = new Set();
+            this.api()
+              .column(dateColIndex)
+              .data()
+              .each(function (d) {
+                const match = d.match(/\d{2}\/\d{2}\/(\d{4})/); // Match MM/DD/YYYY
+                if (match) {
+                  years.add(match[1]); // Get year part
+                }
+              });
+
+            // Populate dropdown
+            Array.from(years)
+              .sort((a, b) => b - a)
+              .forEach((year) => {
+                yearSelect.append(`<option value="${year}">${year}</option>`);
+              });
+
+            // Append dropdown next to search box
+            jQuery(`.dataTables_filter label`).before(yearSelect);
           }
-        ],
-        initComplete: function () {
-          // Extract years from Date column
-          const years = new Set();
-          this.api()
-            .column(dateColIndex)
-            .data()
-            .each(function (d) {
-              const match = d.match(/\d{2}\/\d{2}\/(\d{4})/); // Match MM/DD/YYYY
-              if (match) {
-                years.add(match[1]); // Get year part
-              }
-            });
+        });
 
-          // Populate dropdown
-          Array.from(years)
-            .sort((a, b) => b - a)
-            .forEach((year) => {
-              yearSelect.append(`<option value="${year}">${year}</option>`);
-            });
+        // Year filter change event
+        yearSelect.on("change", function () {
+          const selectedYear = this.value;
+          if (selectedYear) {
+            dataTable
+              .column(dateColIndex)
+              .search(`/${selectedYear}$`, true, false)
+              .draw();
+          } else {
+            dataTable.column(dateColIndex).search("").draw();
+          }
+        });
 
-          // Append dropdown next to search box
-          jQuery(`.dataTables_filter label`).before(yearSelect);
-        }
-      });
+        // Hide pagination/info if only one page
+        dataTable.on("draw", function () {
+          const pageInfo = dataTable.page.info();
+          const wrapper = $table.closest(".dataTables_wrapper");
+          const pagination = wrapper.find(".dataTables_paginate");
+          const infoText = wrapper.find(".dataTables_info");
 
-      // Year filter change event
-      yearSelect.on("change", function () {
-        const selectedYear = this.value;
-        if (selectedYear) {
-          dataTable
-            .column(dateColIndex)
-            .search(`/${selectedYear}$`, true, false)
-            .draw();
-        } else {
-          dataTable.column(dateColIndex).search("").draw();
-        }
-      });
+          if (pageInfo.pages <= 1) {
+            pagination.hide();
+            infoText.hide();
+          } else {
+            pagination.show();
+            infoText.show();
+          }
+        });
 
-      // Hide pagination/info if only one page
-      dataTable.on("draw", function () {
-        const pageInfo = dataTable.page.info();
-        const wrapper = $table.closest(".dataTables_wrapper");
-        const pagination = wrapper.find(".dataTables_paginate");
-        const infoText = wrapper.find(".dataTables_info");
-
-        if (pageInfo.pages <= 1) {
-          pagination.hide();
-          infoText.hide();
-        } else {
-          pagination.show();
-          infoText.show();
-        }
-      });
-
-      // Trigger initial draw
-      dataTable.draw();
+        // Trigger initial draw
+        dataTable.draw();
+      }
     }
-  }
-});
-
-
+  });
 }
 
 function VerifyRecipientsDatatable() {
@@ -328,10 +326,11 @@ function getURLParam(param) {
 }
 
 jQuery("select").each(function ($) {
-  var placeholderText = jQuery(this).data("error-message") || "Select an option";
+  var placeholderText =
+    jQuery(this).data("error-message") || "Select an option";
 
-  if(jQuery(this).hasClass('gfield_select')){
-    placeholderText ="Please select a type";
+  if (jQuery(this).hasClass("gfield_select")) {
+    placeholderText = "Please select a type";
   }
 
   jQuery(this).select2({
@@ -348,19 +347,36 @@ jQuery(document).ready(function ($) {
   jQuery("#affiliate_select").select2({
     placeholder: "Select an Organization Below",
     matcher: function (params, data) {
-      if (jQuery.trim(params.term) === "") {
-        return data;
+      if (!params.term) {
+        return data.text === "Honey from the Heart"
+          ? $.extend({}, data, { sort: 0 })
+          : data;
       }
 
-      // Ensure "OrtHoney" always appears at the top
-      if (
-        data.text.toLowerCase().includes(params.term.toLowerCase()) ||
-        data.id === "Orthoney"
-      ) {
-        return data;
+      const term = params.term.toLowerCase();
+      const text = data.text.toLowerCase();
+
+      const bracketMatch = data.text.match(/\[([^\]]+)\]/);
+      const bracketCode = bracketMatch ? bracketMatch[1].toLowerCase() : "";
+
+      let matchScore = null;
+
+      if (data.text === "Honey from the Heart") {
+        matchScore = 1; // Always top
+      } else if (bracketCode.includes(term)) {
+        matchScore = 2; // Best match
+      } else if (text.includes(term)) {
+        matchScore = 3; // Fallback match
+      }
+
+      if (matchScore !== null) {
+        return $.extend({}, data, { sort: matchScore });
       }
 
       return null;
+    },
+    sorter: function (data) {
+      return data.sort((a, b) => (a.sort || 99) - (b.sort || 99));
     }
   });
 });
@@ -450,7 +466,6 @@ document.addEventListener("DOMContentLoaded", initTippy);
 const greetingTextareas = document.querySelectorAll(
   "#affiliate-gift-card-form textarea, #multiStepForm textarea, #recipient-manage-form form textarea, #recipient-order-manage-popup textarea, #affiliate-mission-statement-form textarea"
 );
-
 
 if (greetingTextareas.length) {
   greetingTextareas.forEach((textarea) => {
@@ -1065,7 +1080,9 @@ document.addEventListener("click", function (event) {
     }
 
     let method = "process";
-    const customer_dashboard_recipient_list = document.querySelector("#customer-dashboard-recipient-list");
+    const customer_dashboard_recipient_list = document.querySelector(
+      "#customer-dashboard-recipient-list"
+    );
     let group_id = 0;
     if (customer_dashboard_recipient_list) {
       method = "group";
@@ -1395,10 +1412,10 @@ document.addEventListener("click", function (event) {
             const greeting = data.data.greeting;
             let reasons = data.data.reasons;
 
-            if(reasons == 'Valid and deliverable address.'){
-              reasons = '';
+            if (reasons == "Valid and deliverable address.") {
+              reasons = "";
             }
-            
+
             console.log(reasons);
             console.log(address_verified);
             if (event.target.classList.contains("editRecipient")) {
@@ -1454,7 +1471,7 @@ document.addEventListener("click", function (event) {
                 "<li><label>State </label><span>" +
                 (state ? state : "") +
                 "</span></li>";
-                 html +=
+              html +=
                 "<li><label>Zipcode </label><span>" +
                 (zipcode ? zipcode : "") +
                 "</span></li>";
@@ -1869,60 +1886,61 @@ document.addEventListener("click", function (event) {
 
 // affiliates manage
 document.addEventListener("DOMContentLoaded", function () {
-    const affiliateFilterButton = document.getElementById("affiliate-filter-button");
-    const searchInput = document.getElementById("search-affiliates");
-    const filterSelect = document.getElementById("filter-block-status");
+  const affiliateFilterButton = document.getElementById(
+    "affiliate-filter-button"
+  );
+  const searchInput = document.getElementById("search-affiliates");
+  const filterSelect = document.getElementById("filter-block-status");
 
-    if (affiliateFilterButton && searchInput && filterSelect) {
+  if (affiliateFilterButton && searchInput && filterSelect) {
+    function fetchAffiliates() {
+      process_group_popup(); // If you're using a popup loader
 
-        function fetchAffiliates() {
-            process_group_popup(); // If you're using a popup loader
+      const searchValue = searchInput.value.trim();
+      const filterValue = filterSelect.value;
 
-            const searchValue = searchInput.value.trim();
-            const filterValue = filterSelect.value;
+      const requestData = new URLSearchParams();
+      requestData.append("action", "search_affiliates");
+      requestData.append("search", searchValue);
+      requestData.append("filter", filterValue);
 
-            const requestData = new URLSearchParams();
-            requestData.append("action", "search_affiliates");
-            requestData.append("search", searchValue);
-            requestData.append("filter", filterValue);
-
-            fetch(oam_ajax.ajax_url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: requestData.toString(),
-            })
-            .then(response => response.text())
-            .then(data => {
-                // Look for the container again after fetch
-                const wrapper = document.getElementById("affiliate-results");
-                if (wrapper) {
-                    wrapper.outerHTML = data; // Replace the full block
-                } else {
-                    console.warn("Element with id 'affiliate-results' not found.");
-                    Swal.fire({
-                        icon: "error",
-                        title: "Rendering Error",
-                        text: "Could not find the container to display affiliates.",
-                    });
-                }
-                setTimeout(() => Swal.close(), 500);
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Error fetching affiliates: " + error.message,
-                });
+      fetch(oam_ajax.ajax_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: requestData.toString()
+      })
+        .then((response) => response.text())
+        .then((data) => {
+          // Look for the container again after fetch
+          const wrapper = document.getElementById("affiliate-results");
+          if (wrapper) {
+            wrapper.outerHTML = data; // Replace the full block
+          } else {
+            console.warn("Element with id 'affiliate-results' not found.");
+            Swal.fire({
+              icon: "error",
+              title: "Rendering Error",
+              text: "Could not find the container to display affiliates."
             });
-        }
-
-        affiliateFilterButton.addEventListener("click", function (event) {
-            event.preventDefault();
-            fetchAffiliates();
+          }
+          setTimeout(() => Swal.close(), 500);
+        })
+        .catch((error) => {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Error fetching affiliates: " + error.message
+          });
         });
     }
+
+    affiliateFilterButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      fetchAffiliates();
+    });
+  }
 });
 
 //Group Listing code
@@ -1974,22 +1992,20 @@ jQuery(document).ready(function ($) {
   });
 });
 
-
-
-
-
 jQuery(document).ready(function ($) {
   let currentRequest = null;
-  let organizationSearch = '';
-  let organizationCodeSearch = '';
- 
+  let organizationSearch = "";
+  let organizationCodeSearch = "";
 
-  if (!$('#admin-customer-table').hasClass('dt-initialized')) {
-    $('#admin-customer-table').addClass('dt-initialized');
+  if (!$("#admin-customer-table").hasClass("dt-initialized")) {
+    $("#admin-customer-table").addClass("dt-initialized");
 
     const table = new DataTable("#admin-customer-table", {
       pageLength: 50,
-      lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+      lengthMenu: [
+        [10, 25, 50, 100],
+        [10, 25, 50, 100]
+      ],
       ajax: {
         url: oam_ajax.ajax_url,
         type: "POST",
@@ -1997,7 +2013,6 @@ jQuery(document).ready(function ($) {
           d.action = "orthoney_admin_get_customers_data";
           d.organization_search = organizationSearch;
           d.organization_code_search = organizationCodeSearch;
-         
         },
         beforeSend: function (jqXHR) {
           if (currentRequest) {
@@ -2005,26 +2020,31 @@ jQuery(document).ready(function ($) {
           }
           currentRequest = jqXHR;
 
-          const $tbody = $('#admin-customer-table tbody');
-          const colspan = $('#admin-customer-table thead th').length;
+          const $tbody = $("#admin-customer-table tbody");
+          const colspan = $("#admin-customer-table thead th").length;
 
-          $tbody.hide().html(`
+          $tbody
+            .hide()
+            .html(
+              `
             <tr class="custom-loading-row">
               <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
                 Loading customer data, please wait...
               </td>
             </tr>
-          `).show();
+          `
+            )
+            .show();
         },
         complete: function () {
           currentRequest = null;
           setTimeout(() => {
-            $('#admin-customer-table tbody').show();
+            $("#admin-customer-table tbody").show();
           }, 100);
         },
         error: function (xhr, status) {
-          if (status !== 'abort') {
-            console.error('AJAX error occurred:', status);
+          if (status !== "abort") {
+            console.error("AJAX error occurred:", status);
           }
         }
       },
@@ -2038,39 +2058,47 @@ jQuery(document).ready(function ($) {
         { data: "action" }
       ],
       columnDefs: [
-        { targets: 0, orderable: false , searchable: false},
+        { targets: 0, orderable: false, searchable: false },
         { targets: 1, orderable: false },
         { targets: 2, orderable: false, searchable: false },
-        { targets: -1, orderable: false, searchable: false}
+        { targets: -1, orderable: false, searchable: false }
       ],
       responsive: true,
       processing: true,
       serverSide: true,
       paging: true,
       searching: true,
-      ordering: false, 
+      ordering: false,
 
       // ✅ Use initComplete to inject custom filters
       initComplete: function () {
-        const $filterContainer = $('#admin-customer-table_filter');
+        const $filterContainer = $("#admin-customer-table_filter");
 
-        const orgInput = $('<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">')
-          .on('keyup', function () {
-            organizationSearch = $(this).val().trim();
-            if (organizationSearch.length >= 3 || organizationSearch.length === 0) {
-              if (currentRequest) currentRequest.abort();
-              table.ajax.reload();
-            }
-          });
+        const orgInput = $(
+          '<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">'
+        ).on("keyup", function () {
+          organizationSearch = $(this).val().trim();
+          if (
+            organizationSearch.length >= 3 ||
+            organizationSearch.length === 0
+          ) {
+            if (currentRequest) currentRequest.abort();
+            table.ajax.reload();
+          }
+        });
 
-        const orgCodeInput = $('<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">')
-          .on('keyup', function () {
-            organizationCodeSearch = $(this).val().trim();
-            if (organizationCodeSearch.length >= 3 || organizationCodeSearch.length === 0) {
-              if (currentRequest) currentRequest.abort();
-              table.ajax.reload();
-            }
-          });
+        const orgCodeInput = $(
+          '<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">'
+        ).on("keyup", function () {
+          organizationCodeSearch = $(this).val().trim();
+          if (
+            organizationCodeSearch.length >= 3 ||
+            organizationCodeSearch.length === 0
+          ) {
+            if (currentRequest) currentRequest.abort();
+            table.ajax.reload();
+          }
+        });
 
         // const customerInput = $('<input type="text" placeholder="Search by Customer Name" style="margin-right: 10px;">')
         //   .on('keyup', function () {
@@ -2083,13 +2111,15 @@ jQuery(document).ready(function ($) {
 
         // Prepend inputs to the filter container
         $filterContainer.prepend(orgCodeInput).prepend(orgInput);
-        $filterContainer.find('input[type="search"]').attr('placeholder', 'Search by Customer Name Or Email');
+        $filterContainer
+          .find('input[type="search"]')
+          .attr("placeholder", "Search by Customer Name Or Email");
 
         // Optional: Override default search input with debounce
         const searchBox = $filterContainer.find('input[type="search"]');
         let typingTimer;
 
-        searchBox.off().on('input', function () {
+        searchBox.off().on("input", function () {
           clearTimeout(typingTimer);
           const value = this.value;
 
@@ -2106,12 +2136,12 @@ jQuery(document).ready(function ($) {
 });
 
 /**
- * 
- * 
+ *
+ *
  */
 jQuery(document).ready(function ($) {
   let currentRequest = null;
-  let organizationCodeSearch = '';
+  let organizationCodeSearch = "";
 
   const table = new DataTable("#admin-sales-representative-table", {
     pageLength: 50,
@@ -2138,7 +2168,7 @@ jQuery(document).ready(function ($) {
         currentRequest = null;
       },
       error: function (xhr, textStatus) {
-        if (textStatus !== 'abort') {
+        if (textStatus !== "abort") {
           console.error("AJAX error: ", textStatus);
         }
       },
@@ -2168,9 +2198,9 @@ jQuery(document).ready(function ($) {
             </div>
         </div>
       `,
-       search: ""
+      search: ""
     },
-   
+
     ordering: false,
     responsive: true,
     processing: true,
@@ -2180,17 +2210,20 @@ jQuery(document).ready(function ($) {
 
     // 👇 Custom input injected here after DataTable renders
     initComplete: function () {
-      const $filterContainer = $('#admin-sales-representative-table_filter');
+      const $filterContainer = $("#admin-sales-representative-table_filter");
 
       // Change default search box placeholder
-      $filterContainer.find('input[type="search"]').attr('placeholder', 'Search by CSR Name Or Email');
+      $filterContainer
+        .find('input[type="search"]')
+        .attr("placeholder", "Search by CSR Name Or Email");
 
       // Create custom organization code search box
-      const orgCodeInput = $('<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">')
-        .on('input', function () {
-          organizationCodeSearch = $(this).val();
-          table.ajax.reload();
-        });
+      const orgCodeInput = $(
+        '<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">'
+      ).on("input", function () {
+        organizationCodeSearch = $(this).val();
+        table.ajax.reload();
+      });
 
       // Insert it before default search
       $filterContainer.prepend(orgCodeInput);
@@ -2198,36 +2231,40 @@ jQuery(document).ready(function ($) {
   });
 });
 
-
 /**
- * 
- * 
+ *
+ *
  */
 jQuery(document).ready(function ($) {
-  let selectedStatus = '';
-  let selectedsessionStatus = '';
-  let organizationSearch = '';
-  let organizationCodeSearch = '';
+  let selectedStatus = "";
+  let selectedsessionStatus = "";
+  let organizationSearch = "";
+  let organizationCodeSearch = "";
   let currentAjaxRequest = null;
 
-  if (!$('#admin-organizations-table').hasClass('dt-initialized')) {
-    $('#admin-organizations-table').addClass('dt-initialized');
+  if (!$("#admin-organizations-table").hasClass("dt-initialized")) {
+    $("#admin-organizations-table").addClass("dt-initialized");
 
-    const orgInput = $('<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">')
-      .on('keyup', function () {
-        organizationSearch = $(this).val().trim();
-        table.ajax.reload();
-      });
+    const orgInput = $(
+      '<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">'
+    ).on("keyup", function () {
+      organizationSearch = $(this).val().trim();
+      table.ajax.reload();
+    });
 
-    const orgCodeInput = $('<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">')
-      .on('keyup', function () {
-        organizationCodeSearch = $(this).val().trim();
-        table.ajax.reload();
-      });
+    const orgCodeInput = $(
+      '<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">'
+    ).on("keyup", function () {
+      organizationCodeSearch = $(this).val().trim();
+      table.ajax.reload();
+    });
 
     const table = new DataTable("#admin-organizations-table", {
       pageLength: 50,
-      lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+      lengthMenu: [
+        [10, 25, 50, 100],
+        [10, 25, 50, 100]
+      ],
       ajax: {
         url: oam_ajax.ajax_url,
         type: "POST",
@@ -2302,11 +2339,14 @@ jQuery(document).ready(function ($) {
         const statusColIndex = 5;
         const statusSet = new Set();
 
-        api.column(statusColIndex).data().each(function (d) {
-          if (d && d.trim() !== "") {
-            statusSet.add(d);
-          }
-        });
+        api
+          .column(statusColIndex)
+          .data()
+          .each(function (d) {
+            if (d && d.trim() !== "") {
+              statusSet.add(d);
+            }
+          });
 
         // Dropdown for session status (Static: Active/Deactivate)
         const accountStatusSelect = $(`
@@ -2315,54 +2355,64 @@ jQuery(document).ready(function ($) {
             <option value="active">Active</option>
             <option value="deactivate">Deactivate</option>
           </select>
-        `).on('change', function () {
+        `).on("change", function () {
           selectedsessionStatus = $(this).val();
           table.ajax.reload();
         });
 
         // Dropdown for dynamic organization status
-        const statusSelect = $('<select style="margin-right: 10px;"><option value="">Filter by Status</option></select>')
-          .on('change', function () {
-            selectedStatus = $(this).val();
-            table.ajax.reload();
-          });
-
-        Array.from(statusSet).sort().forEach(status => {
-          statusSelect.append(`<option value="${status}">${status}</option>`);
+        const statusSelect = $(
+          '<select style="margin-right: 10px;"><option value="">Filter by Status</option></select>'
+        ).on("change", function () {
+          selectedStatus = $(this).val();
+          table.ajax.reload();
         });
 
-        const $filterArea = $('.dataTables_filter');
-        if (!$filterArea.hasClass('custom-filter-added')) {
-          $filterArea.addClass('custom-filter-added');
+        Array.from(statusSet)
+          .sort()
+          .forEach((status) => {
+            statusSelect.append(`<option value="${status}">${status}</option>`);
+          });
+
+        const $filterArea = $(".dataTables_filter");
+        if (!$filterArea.hasClass("custom-filter-added")) {
+          $filterArea.addClass("custom-filter-added");
           $filterArea.prepend(statusSelect);
           $filterArea.prepend(orgInput);
           $filterArea.prepend(accountStatusSelect);
           $filterArea.prepend(orgCodeInput);
 
-          $filterArea.find('label').contents().filter(function () {
-            return this.nodeType === 3;
-          }).remove();
+          $filterArea
+            .find("label")
+            .contents()
+            .filter(function () {
+              return this.nodeType === 3;
+            })
+            .remove();
 
-          $filterArea.find('input[type="search"]').attr('placeholder', 'Search');
+          $filterArea
+            .find('input[type="search"]')
+            .attr("placeholder", "Search");
         }
       }
     });
   }
 });
 
-
-
 jQuery(document).ready(function ($) {
   let currentRequest = null;
-  let organizationSearch = '';
-  let organizationCodeSearch = '';
+  let organizationSearch = "";
+  let organizationCodeSearch = "";
 
-  if (!$('#admin-organizations-commission-table').hasClass('dt-initialized')) {
-    $('#admin-organizations-commission-table').addClass('dt-initialized');
+  if (!$("#admin-organizations-commission-table").hasClass("dt-initialized")) {
+    $("#admin-organizations-commission-table").addClass("dt-initialized");
 
     const table = new DataTable("#admin-organizations-commission-table", {
       pageLength: 50,
-      lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+      lengthMenu: [
+        [10, 25, 50, 100],
+        [10, 25, 50, 100]
+      ],
       ajax: {
         url: oam_ajax.ajax_url,
         type: "POST",
@@ -2377,26 +2427,33 @@ jQuery(document).ready(function ($) {
           }
           currentRequest = jqXHR;
 
-          const $tbody = $('#admin-organizations-commission-table tbody');
-          const colspan = $('#admin-organizations-commission-table thead th').length;
+          const $tbody = $("#admin-organizations-commission-table tbody");
+          const colspan = $(
+            "#admin-organizations-commission-table thead th"
+          ).length;
 
-          $tbody.hide().html(`
+          $tbody
+            .hide()
+            .html(
+              `
             <tr class="custom-loading-row">
               <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
                 Loading organization data, please wait...
               </td>
             </tr>
-          `).show();
+          `
+            )
+            .show();
         },
         complete: function () {
           currentRequest = null;
           setTimeout(() => {
-            $('#admin-organizations-commission-table tbody').show();
+            $("#admin-organizations-commission-table tbody").show();
           }, 100);
         },
         error: function (xhr, status) {
-          if (status !== 'abort') {
-            console.error('AJAX error occurred:', status);
+          if (status !== "abort") {
+            console.error("AJAX error occurred:", status);
           }
         }
       },
@@ -2412,9 +2469,7 @@ jQuery(document).ready(function ($) {
         { data: "unit_profit" },
         { data: "total_commission" }
       ],
-      columnDefs: [
-        { targets: 0, width: "210px", orderable: true }
-      ],
+      columnDefs: [{ targets: 0, width: "210px", orderable: true }],
       processing: true,
       serverSide: true,
       paging: true,
@@ -2425,34 +2480,46 @@ jQuery(document).ready(function ($) {
       autoWidth: false,
 
       initComplete: function () {
-        const $filterContainer = $('#admin-organizations-commission-table_filter');
+        const $filterContainer = $(
+          "#admin-organizations-commission-table_filter"
+        );
 
-        const orgInput = $('<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">')
-          .on('keyup', function () {
-            organizationSearch = $(this).val().trim();
-            if (organizationSearch.length >= 3 || organizationSearch.length === 0) {
-              if (currentRequest) currentRequest.abort();
-              table.ajax.reload();
-            }
-          });
+        const orgInput = $(
+          '<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">'
+        ).on("keyup", function () {
+          organizationSearch = $(this).val().trim();
+          if (
+            organizationSearch.length >= 3 ||
+            organizationSearch.length === 0
+          ) {
+            if (currentRequest) currentRequest.abort();
+            table.ajax.reload();
+          }
+        });
 
-        const orgCodeInput = $('<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">')
-          .on('keyup', function () {
-            organizationCodeSearch = $(this).val().trim();
-            if (organizationCodeSearch.length >= 3 || organizationCodeSearch.length === 0) {
-              if (currentRequest) currentRequest.abort();
-              table.ajax.reload();
-            }
-          });
+        const orgCodeInput = $(
+          '<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">'
+        ).on("keyup", function () {
+          organizationCodeSearch = $(this).val().trim();
+          if (
+            organizationCodeSearch.length >= 3 ||
+            organizationCodeSearch.length === 0
+          ) {
+            if (currentRequest) currentRequest.abort();
+            table.ajax.reload();
+          }
+        });
 
         $filterContainer.prepend(orgCodeInput).prepend(orgInput);
-        $filterContainer.find('input[type="search"]').attr('placeholder', 'Search');
+        $filterContainer
+          .find('input[type="search"]')
+          .attr("placeholder", "Search");
 
         // Optional debounce for default search input
         const searchBox = $filterContainer.find('input[type="search"]');
         let typingTimer;
 
-        searchBox.off().on('input', function () {
+        searchBox.off().on("input", function () {
           clearTimeout(typingTimer);
           const value = this.value;
 
@@ -2468,93 +2535,269 @@ jQuery(document).ready(function ($) {
   }
 });
 
-
-
-
-
 jQuery(document).ready(function ($) {
   let currentRequest = null;
-  let organizationSearch = '';
-  let organizationCodeSearch = '';
-  let selectedStatus = '';
+  let organizationSearch = "";
+  let organizationCodeSearch = "";
+  let selectedStatus = "";
 
   // Add Org Name and Org Code input fields
-  const orgInput = $('<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">')
-    .on('keyup', function () {
-      organizationSearch = $(this).val().trim();
-      if (organizationSearch.length >= 3 || organizationSearch.length === 0) {
-        if (currentRequest) currentRequest.abort();
-        table.ajax.reload();
-      }
-    });
+  const orgInput = $(
+    '<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">'
+  ).on("keyup", function () {
+    organizationSearch = $(this).val().trim();
+    if (organizationSearch.length >= 3 || organizationSearch.length === 0) {
+      if (currentRequest) currentRequest.abort();
+      table.ajax.reload();
+    }
+  });
 
-  const orgCodeInput = $('<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">')
-    .on('keyup', function () {
-      organizationCodeSearch = $(this).val().trim();
-      if (organizationCodeSearch.length >= 3 || organizationCodeSearch.length === 0) {
-        if (currentRequest) currentRequest.abort();
-        table.ajax.reload();
-      }
-    });
+  const orgCodeInput = $(
+    '<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">'
+  ).on("keyup", function () {
+    organizationCodeSearch = $(this).val().trim();
+    if (
+      organizationCodeSearch.length >= 3 ||
+      organizationCodeSearch.length === 0
+    ) {
+      if (currentRequest) currentRequest.abort();
+      table.ajax.reload();
+    }
+  });
 
-  const table = $('#sales-representative-affiliate-commission-table').DataTable({
+  const table = $("#sales-representative-affiliate-commission-table").DataTable(
+    {
+      pageLength: 50,
+      lengthMenu: [
+        [10, 25, 50, 100],
+        [10, 25, 50, 100]
+      ],
+      serverSide: true,
+      processing: true,
+      paging: true,
+      searching: true,
+      ordering: true,
+      autoWidth: false,
+      ajax: {
+        url: oam_ajax.ajax_url,
+        type: "POST",
+        data: function (d) {
+          d.action = "get_affiliates_commission_list_ajax";
+          d.nonce = oam_ajax.nonce;
+          d.organization_search = organizationSearch;
+          d.organization_code_search = organizationCodeSearch;
+          d.status_filter = selectedStatus;
+        },
+        beforeSend: function (jqXHR) {
+          if (currentRequest) currentRequest.abort();
+          currentRequest = jqXHR;
+
+          const $tbody = $(
+            "#sales-representative-affiliate-commission-table tbody"
+          );
+          const colspan = $(
+            "#sales-representative-affiliate-commission-table thead th"
+          ).length;
+
+          $tbody
+            .hide()
+            .html(
+              `
+          <tr class="custom-loading-row">
+            <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
+              Loading organization commission data, please wait...
+            </td>
+          </tr>
+        `
+            )
+            .show();
+        },
+        complete: function () {
+          currentRequest = null;
+          setTimeout(() => {
+            $("#sales-representative-affiliate-commission-table tbody").show();
+          }, 100);
+        },
+        error: function (xhr, status) {
+          if (status !== "abort") {
+            console.error("AJAX error occurred:", status);
+          }
+        }
+      },
+      columns: [
+        { data: "organization" },
+        { data: "total_order" },
+        { data: "total_qty" },
+        { data: "cost" },
+        { data: "dist_cost" },
+        { data: "unit_profit" },
+        { data: "total_commission" }
+      ],
+      columnDefs: [
+        { targets: 0, width: "220px" },
+        { targets: -1, orderable: false }
+      ],
+      language: {
+        search: "",
+        searchPlaceholder: "Search...",
+        processing: `
+        <div class="loader multiStepForm" style="display:block">
+          <div>
+            <h2 class="swal2-title">Processing...</h2>
+            <div class="swal2-html-container">Please wait while we process your request.</div>
+            <div class="loader-5"></div>
+          </div>
+        </div>`
+      },
+      initComplete: function () {
+        const api = this.api();
+        const $filterWrapper = $(
+          "#sales-representative-affiliate-commission-table_filter"
+        );
+
+        // Clear default search label
+        $filterWrapper
+          .find("label")
+          .contents()
+          .filter(function () {
+            return this.nodeType === 3;
+          })
+          .remove();
+
+        // Append custom filters
+        $filterWrapper.prepend(orgCodeInput).prepend(orgInput);
+
+        // Optional: Attach debounce to default search box
+        const searchBox = $filterWrapper.find('input[type="search"]');
+        let typingTimer;
+
+        searchBox.off().on("input", function () {
+          clearTimeout(typingTimer);
+          const value = this.value;
+
+          typingTimer = setTimeout(() => {
+            if (value.length >= 3 || value.length === 0) {
+              if (currentRequest) currentRequest.abort();
+              table.search(value).draw();
+            }
+          }, 300);
+        });
+      }
+    }
+  );
+});
+
+/***
+ *
+ *
+ *
+ */
+
+jQuery(document).ready(function ($) {
+  let selectedStatus = "";
+  let organizationSearch = "";
+  let organizationCodeSearch = "";
+  let currentRequest = null;
+
+  // Create Org Name input
+  const orgInput = $(
+    '<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">'
+  ).on("keyup", function () {
+    organizationSearch = $(this).val().trim();
+    if (organizationSearch.length >= 3 || organizationSearch.length === 0) {
+      if (currentRequest) currentRequest.abort();
+      table.ajax.reload();
+    }
+  });
+
+  // Create Org Code input
+  const orgCodeInput = $(
+    '<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">'
+  ).on("keyup", function () {
+    organizationCodeSearch = $(this).val().trim();
+    if (
+      organizationCodeSearch.length >= 3 ||
+      organizationCodeSearch.length === 0
+    ) {
+      if (currentRequest) currentRequest.abort();
+      table.ajax.reload();
+    }
+  });
+
+  // Initialize DataTable
+  const table = $("#sales-representative-affiliate-table").DataTable({
     pageLength: 50,
-    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+    lengthMenu: [
+      [10, 25, 50, 100],
+      [10, 25, 50, 100]
+    ],
     serverSide: true,
     processing: true,
     paging: true,
     searching: true,
-    ordering: true,
-    autoWidth: false,
+    ordering: false,
     ajax: {
       url: oam_ajax.ajax_url,
-      type: 'POST',
+      type: "POST",
       data: function (d) {
-        d.action = 'get_affiliates_commission_list_ajax';
+        d.action = "get_affiliates_list_ajax";
         d.nonce = oam_ajax.nonce;
         d.organization_search = organizationSearch;
         d.organization_code_search = organizationCodeSearch;
         d.status_filter = selectedStatus;
       },
       beforeSend: function (jqXHR) {
-        if (currentRequest) currentRequest.abort();
+        if (currentRequest) {
+          currentRequest.abort();
+        }
         currentRequest = jqXHR;
 
-        const $tbody = $('#sales-representative-affiliate-commission-table tbody');
-        const colspan = $('#sales-representative-affiliate-commission-table thead th').length;
+        const $tbody = $("#sales-representative-affiliate-table tbody");
+        const colspan = $(
+          "#sales-representative-affiliate-table thead th"
+        ).length;
 
-        $tbody.hide().html(`
+        $tbody
+          .hide()
+          .html(
+            `
           <tr class="custom-loading-row">
             <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
-              Loading organization commission data, please wait...
+              Loading organizations data, please wait...
             </td>
           </tr>
-        `).show();
+        `
+          )
+          .show();
       },
       complete: function () {
         currentRequest = null;
         setTimeout(() => {
-          $('#sales-representative-affiliate-commission-table tbody').show();
+          $("#sales-representative-affiliate-table tbody").show();
         }, 100);
       },
-      error: function (xhr, status) {
-        if (status !== 'abort') {
-          console.error('AJAX error occurred:', status);
+      error: function (xhr, error, thrown) {
+        if (error !== "abort") {
+          console.error("AJAX Error:", error);
         }
       }
     },
     columns: [
+      { data: "code" },
       { data: "organization" },
-      { data: "total_order" },
-      { data: "total_qty" },
-      { data: "cost" },
-      { data: "dist_cost" },
-      { data: "unit_profit" },
-      { data: "total_commission" },
+      { data: "organization_admin" },
+      { data: "new_organization" },
+      { data: "status" },
+      { data: "price" },
+      // { data: "commission" },
+      { data: "login" }
     ],
     columnDefs: [
-      { targets: 0, width: "220px" },
+      { targets: 1, width: "220px", searchable: true },
+      { targets: 2, width: "220px" },
       { targets: -1, orderable: false },
+      { targets: 4, visible: false, searchable: true },
+      { targets: 0, visible: true, searchable: true }
     ],
     language: {
       search: "",
@@ -2570,193 +2813,56 @@ jQuery(document).ready(function ($) {
     },
     initComplete: function () {
       const api = this.api();
-      const $filterWrapper = $('#sales-representative-affiliate-commission-table_filter');
+      const $filterWrapper = $(".dataTables_filter");
 
-      // Clear default search label
-      $filterWrapper.find('label').contents().filter(function () {
-        return this.nodeType === 3;
-      }).remove();
-
-      // Append custom filters
-      $filterWrapper.prepend(orgCodeInput).prepend(orgInput);
-
-      // Optional: Attach debounce to default search box
-      const searchBox = $filterWrapper.find('input[type="search"]');
-      let typingTimer;
-
-      searchBox.off().on('input', function () {
-        clearTimeout(typingTimer);
-        const value = this.value;
-
-        typingTimer = setTimeout(() => {
-          if (value.length >= 3 || value.length === 0) {
-            if (currentRequest) currentRequest.abort();
-            table.search(value).draw();
-          }
-        }, 300);
-      });
-    }
-  });
-});
-
-
-
-
-/***
- * 
- * 
- * 
-*/
-
-
-jQuery(document).ready(function ($) {
-  let selectedStatus = '';
-  let organizationSearch = '';
-  let organizationCodeSearch = '';
-  let currentRequest = null;
-
-  // Create Org Name input
-  const orgInput = $('<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">')
-    .on('keyup', function () {
-      organizationSearch = $(this).val().trim();
-      if (organizationSearch.length >= 3 || organizationSearch.length === 0) {
-        if (currentRequest) currentRequest.abort();
-        table.ajax.reload();
-      }
-    });
-
-  // Create Org Code input
-  const orgCodeInput = $('<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">')
-    .on('keyup', function () {
-      organizationCodeSearch = $(this).val().trim();
-      if (organizationCodeSearch.length >= 3 || organizationCodeSearch.length === 0) {
-        if (currentRequest) currentRequest.abort();
-        table.ajax.reload();
-      }
-    });
-
-  // Initialize DataTable
-  const table = $('#sales-representative-affiliate-table').DataTable({
-    pageLength: 50,
-    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-    serverSide: true,
-    processing: true,
-    paging: true,
-    searching: true,
-    ordering: false,
-    ajax: {
-      url: oam_ajax.ajax_url,
-      type: 'POST',
-      data: function (d) {
-        d.action = 'get_affiliates_list_ajax';
-        d.nonce = oam_ajax.nonce;
-        d.organization_search = organizationSearch;
-        d.organization_code_search = organizationCodeSearch;
-        d.status_filter = selectedStatus;
-      },
-      beforeSend: function (jqXHR) {
-        if (currentRequest) {
-          currentRequest.abort();
-        }
-        currentRequest = jqXHR;
-
-        const $tbody = $('#sales-representative-affiliate-table tbody');
-        const colspan = $('#sales-representative-affiliate-table thead th').length;
-
-        $tbody.hide().html(`
-          <tr class="custom-loading-row">
-            <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
-              Loading organizations data, please wait...
-            </td>
-          </tr>
-        `).show();
-      },
-      complete: function () {
-        currentRequest = null;
-        setTimeout(() => {
-          $('#sales-representative-affiliate-table tbody').show();
-        }, 100);
-      },
-      error: function (xhr, error, thrown) {
-        if (error !== 'abort') {
-          console.error('AJAX Error:', error);
-        }
-      }
-    },
-    columns: [
-      { data: "code" },
-      { data: "organization" },
-      { data: "organization_admin" },
-      { data: "new_organization" },
-      { data: "status" },
-      { data: "price" },
-      // { data: "commission" },
-      { data: "login" }
-    ],
-    columnDefs: [
-      { targets: 1, width: "220px" , searchable: true },
-      { targets: 2, width: "220px" },
-      { targets: -1, orderable: false },
-      { targets: 4, visible: false, searchable: true },
-      { targets: 0, visible: true, searchable: true },
-    ],
-    language: {
-      search: "",
-      searchPlaceholder: "Search...",
-      processing: `
-        <div class="loader multiStepForm" style="display:block">
-          <div>
-            <h2 class="swal2-title">Processing...</h2>
-            <div class="swal2-html-container">Please wait while we process your request.</div>
-            <div class="loader-5"></div>
-          </div>
-        </div>`
-    },
-   initComplete: function () {
-  const api = this.api();
-  const $filterWrapper = $('.dataTables_filter');
-
-  // Create status filter dropdown
-  const statusDropdown = $(`
+      // Create status filter dropdown
+      const statusDropdown = $(`
     <select style="margin-right: 10px;">
       <option value="">Season Status</option>
       <option value="active">Activated</option>
       <option value="deactivate">Deactivated</option>
     </select>
-  `).on('change', function () {
-    selectedStatus = $(this).val();
-    if (currentRequest) currentRequest.abort();
-    table.ajax.reload();
-  });
+  `).on("change", function () {
+        selectedStatus = $(this).val();
+        if (currentRequest) currentRequest.abort();
+        table.ajax.reload();
+      });
 
-  // Remove default label text
-  $filterWrapper.find('label').contents().filter(function () {
-    return this.nodeType === 3;
-  }).remove();
+      // Remove default label text
+      $filterWrapper
+        .find("label")
+        .contents()
+        .filter(function () {
+          return this.nodeType === 3;
+        })
+        .remove();
 
-  // Inject custom filters
-  $filterWrapper.prepend(statusDropdown).prepend(orgCodeInput).prepend(orgInput);
+      // Inject custom filters
+      $filterWrapper
+        .prepend(statusDropdown)
+        .prepend(orgCodeInput)
+        .prepend(orgInput);
 
-  // Optional: Update default search input placeholder
-  $filterWrapper.find('input[type="search"]').attr('placeholder', 'Search...');
-}
+      // Optional: Update default search input placeholder
+      $filterWrapper
+        .find('input[type="search"]')
+        .attr("placeholder", "Search...");
+    }
   });
 });
 
-
-
 /***
- * 
- * 
- * 
+ *
+ *
+ *
  */
 jQuery(document).ready(function ($) {
-  let organizationSearch = '';
-  let organizationCodeSearch = '';
+  let organizationSearch = "";
+  let organizationCodeSearch = "";
   let currentRequest = null;
 
-  if (!$('#sales-representative-customer-table').hasClass('dt-initialized')) {
-    $('#sales-representative-customer-table').addClass('dt-initialized');
+  if (!$("#sales-representative-customer-table").hasClass("dt-initialized")) {
+    $("#sales-representative-customer-table").addClass("dt-initialized");
 
     const table = new DataTable("#sales-representative-customer-table", {
       pageLength: 50,
@@ -2773,10 +2879,10 @@ jQuery(document).ready(function ($) {
 
       ajax: {
         url: oam_ajax.ajax_url,
-        type: 'POST',
+        type: "POST",
         data: function (d) {
           return $.extend({}, d, {
-            action: 'get_filtered_customers',
+            action: "get_filtered_customers",
             nonce: oam_ajax.nonce,
             organization_search: organizationSearch,
             organization_code_search: organizationCodeSearch
@@ -2786,34 +2892,37 @@ jQuery(document).ready(function ($) {
           return response.data || [];
         },
         beforeSend: function () {
-          const $tbody = $('#sales-representative-customer-table tbody');
-          const colspan = $('#sales-representative-customer-table thead th').length;
-          $tbody.hide().html(`
+          const $tbody = $("#sales-representative-customer-table tbody");
+          const colspan = $(
+            "#sales-representative-customer-table thead th"
+          ).length;
+          $tbody
+            .hide()
+            .html(
+              `
             <tr class="custom-loading-row">
               <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
                 Loading customer data, please wait...
               </td>
             </tr>
-          `).show();
+          `
+            )
+            .show();
         },
         error: function (xhr, status) {
-          if (status !== 'abort') {
+          if (status !== "abort") {
             console.error("AJAX error:", status);
           }
         },
         complete: function () {
           currentRequest = null;
           setTimeout(() => {
-            $('#sales-representative-customer-table tbody').show();
+            $("#sales-representative-customer-table tbody").show();
           }, 100);
         }
       },
 
-      columns: [
-        { data: "name" },
-        { data: "email" },
-        { data: "action" }
-      ],
+      columns: [{ data: "name" }, { data: "email" }, { data: "action" }],
       columnDefs: [
         { targets: 0, width: "400px", orderable: false, searchable: true },
         { targets: 1, width: "400px", orderable: false, searchable: false },
@@ -2824,36 +2933,44 @@ jQuery(document).ready(function ($) {
       },
 
       initComplete: function () {
-        const $filterContainer = $('#sales-representative-customer-table_filter');
+        const $filterContainer = $(
+          "#sales-representative-customer-table_filter"
+        );
 
-        const orgInput = $('<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">')
-          .on('keyup', function () {
-            organizationSearch = $(this).val().trim();
-            if (organizationSearch.length >= 3 || organizationSearch.length === 0) {
-              if (currentRequest) currentRequest.abort();
-              table.ajax.reload();
-            }
-          });
+        const orgInput = $(
+          '<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">'
+        ).on("keyup", function () {
+          organizationSearch = $(this).val().trim();
+          if (
+            organizationSearch.length >= 3 ||
+            organizationSearch.length === 0
+          ) {
+            if (currentRequest) currentRequest.abort();
+            table.ajax.reload();
+          }
+        });
 
-        const orgCodeInput = $('<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">')
-          .on('keyup', function () {
-            organizationCodeSearch = $(this).val().trim();
-            if (organizationCodeSearch.length >= 3 || organizationCodeSearch.length === 0) {
-              if (currentRequest) currentRequest.abort();
-              table.ajax.reload();
-            }
-          });
+        const orgCodeInput = $(
+          '<input type="text" placeholder="Search by Org Code" style="margin-right: 10px;">'
+        ).on("keyup", function () {
+          organizationCodeSearch = $(this).val().trim();
+          if (
+            organizationCodeSearch.length >= 3 ||
+            organizationCodeSearch.length === 0
+          ) {
+            if (currentRequest) currentRequest.abort();
+            table.ajax.reload();
+          }
+        });
 
         $filterContainer.prepend(orgCodeInput).prepend(orgInput);
 
         const searchBox = $filterContainer.find('input[type="search"]');
-        searchBox.attr('placeholder', 'Search Customers');
+        searchBox.attr("placeholder", "Search Customers");
       }
     });
   }
 });
-
-
 
 //incomplete order process code
 jQuery(document).ready(function ($) {
@@ -2897,8 +3014,8 @@ jQuery(document).ready(function ($) {
     columns: columns,
     drawCallback: function () {
       if (typeof initTippy === "function") {
-          initTippy();
-        }
+        initTippy();
+      }
     },
     language: {
       emptyTable: emptyMessage
@@ -3425,7 +3542,7 @@ jQuery(function ($) {
       select: {
         style: "multi" // or 'single'
       },
-      
+
       ajax: {
         url: oam_ajax.ajax_url,
         type: "POST",
@@ -3445,15 +3562,19 @@ jQuery(function ($) {
           d.selected_min_qty = qtySlider[0] || 1;
           d.selected_max_qty = qtySlider[1] || 1000;
           d.search_by_recipient = $(".search-recipient-name").val();
-          
-          if(tabletype == 'organization-dashboard' || tabletype == 'sales-representative-dashboard'){
-             const affiliate_token = $("#customer-orders-table").data("affiliate_token");
+
+          if (
+            tabletype == "organization-dashboard" ||
+            tabletype == "sales-representative-dashboard"
+          ) {
+            const affiliate_token = $("#customer-orders-table").data(
+              "affiliate_token"
+            );
             d.search_by_organization = affiliate_token;
-          }else{
+          } else {
             d.search_by_organization = $("input.search-by-organization").val();
           }
           d.dsr_affiliate_token = $("select#dsr_affiliate_token").val();
-      
         },
         beforeSend: function () {
           process_group_popup("Please wait while we process your request.");
@@ -3662,7 +3783,7 @@ jQuery(function ($) {
             data: function (params) {
               return {
                 action: "orthoney_get_customers_autocomplete",
-                customer: params.term || '',
+                customer: params.term || "",
                 page: params.page || 1
               };
             },
@@ -3684,14 +3805,16 @@ jQuery(function ($) {
         const tokenString = $("#customer-orders-table").data("affiliate_token"); // e.g. "A1,BSL,XYZ"
 
         // Step 2: Split and create option elements
-        const tokens = tokenString ? tokenString.split(",").map(t => t.trim()) : [];
+        const tokens = tokenString
+          ? tokenString.split(",").map((t) => t.trim())
+          : [];
 
-        tokens.forEach(token => {
+        tokens.forEach((token) => {
           const option = new Option(token, token, false, false); // text, value, selected, defaultSelected
           $("#dsr_affiliate_token").append(option);
         });
 
-         $("#dsr_affiliate_token").select2({
+        $("#dsr_affiliate_token").select2({
           placeholder: "Select organization...",
           allowClear: false
         });
@@ -3759,7 +3882,6 @@ jQuery(function ($) {
             }
           });
         });
-
 
         $(document).on("click", ".order-pdf-export", function (e) {
           e.preventDefault();
@@ -3931,14 +4053,20 @@ jQuery(function ($) {
           d.selected_max_qty = qtySlider[1];
           d.tabletype = tabletype;
           d.selected_customer_id = $("#jar-select-customer").val();
-          if(tabletype == 'organization-dashboard' || tabletype == 'sales-representative-dashboard'){
-            const affiliate_token = $("#customer-jar-orders-table").data("affiliate_token");
+          if (
+            tabletype == "organization-dashboard" ||
+            tabletype == "sales-representative-dashboard"
+          ) {
+            const affiliate_token = $("#customer-jar-orders-table").data(
+              "affiliate_token"
+            );
             d.search_by_organization = affiliate_token;
-          }else{
-            d.search_by_organization = $("input.jar-search-by-organization").val();
+          } else {
+            d.search_by_organization = $(
+              "input.jar-search-by-organization"
+            ).val();
           }
           d.jar_dsr_affiliate_token = $("select#jar_dsr_affiliate_token").val();
-          
         },
         beforeSend: function () {
           process_group_popup("Please wait while we process your request.");
@@ -4033,7 +4161,6 @@ jQuery(function ($) {
         //     }
         //  });
 
-
         $("#jar-select-customer").select2({
           placeholder: "Search by Customer",
           allowClear: true,
@@ -4051,7 +4178,7 @@ jQuery(function ($) {
             data: function (params) {
               return {
                 action: "orthoney_get_customers_autocomplete",
-                customer: params.term || '',
+                customer: params.term || "",
                 page: params.page || 1
               };
             },
@@ -4069,22 +4196,25 @@ jQuery(function ($) {
             cache: true
           }
         });
-        
-        const tokenString = $("#customer-jar-orders-table").data("affiliate_token"); // e.g. "A1,BSL,XYZ"
+
+        const tokenString = $("#customer-jar-orders-table").data(
+          "affiliate_token"
+        ); // e.g. "A1,BSL,XYZ"
 
         // Step 2: Split and create option elements
-        const tokens = tokenString ? tokenString.split(",").map(t => t.trim()) : [];
+        const tokens = tokenString
+          ? tokenString.split(",").map((t) => t.trim())
+          : [];
 
-        tokens.forEach(token => {
+        tokens.forEach((token) => {
           const option = new Option(token, token, false, false); // text, value, selected, defaultSelected
           $("#jar_dsr_affiliate_token").append(option);
         });
 
-         $("#jar_dsr_affiliate_token").select2({
+        $("#jar_dsr_affiliate_token").select2({
           placeholder: "Select organization...",
           allowClear: false
         });
-
 
         // $(document).on('change', '#jar-select-customer, #jars-select-year', function () {
         //     table.ajax.reload();
@@ -4191,8 +4321,6 @@ function jarfilter_trigger(jarOrderId, year) {
 /**
  * Recipient Order End
  */
-
-
 
 jQuery(document).ready(function ($) {
   const recipientOrderID = getURLParam("recipient-order");
@@ -4462,8 +4590,6 @@ jQuery(document).ready(function ($) {
   });
 });
 
-
-
 jQuery(document).on("click", ".org_account_statement", function (e) {
   e.preventDefault();
 
@@ -4473,7 +4599,7 @@ jQuery(document).on("click", ".org_account_statement", function (e) {
   const requestData = {
     action: "orthoney_org_account_statement_ajax",
     security: oam_ajax.nonce,
-    orgid: $btn.data("orgid"),
+    orgid: $btn.data("orgid")
   };
 
   process_group_popup("Generating CSV...");
@@ -4493,9 +4619,8 @@ jQuery(document).on("click", ".org_account_statement", function (e) {
         Swal.fire({
           title: "Export Failed",
           text:
-            response?.data?.message ||
-            "Something went wrong during export.",
-          icon: "error",
+            response?.data?.message || "Something went wrong during export.",
+          icon: "error"
         });
       }
     })
@@ -4504,7 +4629,7 @@ jQuery(document).on("click", ".org_account_statement", function (e) {
       Swal.fire({
         title: "Network Error",
         text: "Failed to communicate with server. Please try again.",
-        icon: "error",
+        icon: "error"
       });
     })
     .always(function () {
@@ -4537,7 +4662,9 @@ jQuery(document).ready(function ($) {
 
         if (response.success) {
           Swal.fire({
-            title: response.data?.message || "Your account has been successfully activated.",
+            title:
+              response.data?.message ||
+              "Your account has been successfully activated.",
             icon: "success",
             showConfirmButton: false,
             timerProgressBar: false
@@ -4549,7 +4676,9 @@ jQuery(document).ready(function ($) {
         } else {
           Swal.fire({
             title: "Activation Failed",
-            text: response?.data?.message || "Something went wrong during activation.",
+            text:
+              response?.data?.message ||
+              "Something went wrong during activation.",
             icon: "error"
           });
         }
@@ -4566,38 +4695,39 @@ jQuery(document).ready(function ($) {
   });
 });
 
-
-
-
-document.addEventListener('DOMContentLoaded', function () {
-setTimeout(() => {
-    const errorEl = document.querySelector('.season_start_end_message_box.withpopup');
+document.addEventListener("DOMContentLoaded", function () {
+  setTimeout(() => {
+    const errorEl = document.querySelector(
+      ".season_start_end_message_box.withpopup"
+    );
 
     if (errorEl) {
-        errorEl.style.display ='block';
+      errorEl.style.display = "block";
     }
-    }, 2000);
+  }, 2000);
 });
-
-
 
 (function () {
   const second = 1000,
-        minute = second * 60,
-        hour = minute * 60,
-        day = hour * 24;
+    minute = second * 60,
+    hour = minute * 60,
+    day = hour * 24;
 
-  const countdowns = document.querySelectorAll('.season_start_end_message_box .countdown');
+  const countdowns = document.querySelectorAll(
+    ".season_start_end_message_box .countdown"
+  );
 
-  countdowns.forEach(countdown => {
-    const dataDate = countdown.getAttribute('data-date');
-    const dataCurrentDate = countdown.getAttribute('data-currentdate');
+  countdowns.forEach((countdown) => {
+    const dataDate = countdown.getAttribute("data-date");
+    const dataCurrentDate = countdown.getAttribute("data-currentdate");
 
     // Initial reference time from server
-    let serverNow = dataCurrentDate ? new Date(dataCurrentDate).getTime() : new Date().getTime();
+    let serverNow = dataCurrentDate
+      ? new Date(dataCurrentDate).getTime()
+      : new Date().getTime();
 
     if (isNaN(serverNow)) {
-      console.error('Invalid data-currentdate format:', dataCurrentDate);
+      console.error("Invalid data-currentdate format:", dataCurrentDate);
       return;
     }
 
@@ -4612,13 +4742,13 @@ setTimeout(() => {
       if (hasTime) {
         targetDate = new Date(dataDate);
       } else {
-        const parts = dataDate.split('/');
+        const parts = dataDate.split("/");
         if (parts.length === 3) {
           targetDate = new Date(dataDate);
         } else if (parts.length === 2) {
           const yyyy = new Date(serverNow).getFullYear();
-          const mm = parts[0].padStart(2, '0');
-          const dd = parts[1].padStart(2, '0');
+          const mm = parts[0].padStart(2, "0");
+          const dd = parts[1].padStart(2, "0");
 
           targetDate = new Date(`${mm}/${dd}/${yyyy}`);
           if (serverNow > targetDate.getTime()) {
@@ -4636,7 +4766,7 @@ setTimeout(() => {
     const targetDate = parseTargetDate();
 
     if (!targetDate) {
-      console.error('Invalid data-date format:', dataDate);
+      console.error("Invalid data-date format:", dataDate);
       return;
     }
 
@@ -4645,18 +4775,18 @@ setTimeout(() => {
       const distance = targetDate.getTime() - now;
 
       if (distance < 0) {
-        countdown.style.display = 'none';
+        countdown.style.display = "none";
         clearInterval(timer);
         return;
       }
 
-      const daysEl = countdown.querySelector('.days');
-      const hoursEl = countdown.querySelector('.hours');
-      const minutesEl = countdown.querySelector('.minutes');
-      const secondsEl = countdown.querySelector('.seconds');
+      const daysEl = countdown.querySelector(".days");
+      const hoursEl = countdown.querySelector(".hours");
+      const minutesEl = countdown.querySelector(".minutes");
+      const secondsEl = countdown.querySelector(".seconds");
 
       if (!daysEl || !hoursEl || !minutesEl || !secondsEl) {
-        console.error('Missing countdown elements');
+        console.error("Missing countdown elements");
         clearInterval(timer);
         return;
       }
@@ -4673,4 +4803,3 @@ setTimeout(() => {
     timer = setInterval(updateCountdown, 1000);
   });
 })();
-
