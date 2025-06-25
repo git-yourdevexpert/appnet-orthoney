@@ -195,9 +195,9 @@ class OAM_WC_Customizer {
         $result = $wpdb->get_row($wpdb->prepare("SELECT data FROM {$order_process_table} WHERE order_id = %d", $order_id));
         $json_data = $result->data ?? '';
         $decoded_data = json_decode($json_data, true);
-        $affiliate = !empty($decoded_data['affiliate_select']) ? $decoded_data['affiliate_select'] : 'Orthoney';
+        $affiliate = !empty($decoded_data['affiliate_select']) ? $decoded_data['affiliate_select'] : 0;
 
-        $token = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d", $affiliate));
+        $token = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d", $affiliate));
         $recipientResult = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$recipient_order_table} WHERE order_id = %d", $sub_order_id));
 
         $total_quantity = 0;
@@ -724,7 +724,7 @@ class OAM_WC_Customizer {
         $order = wc_get_order($order_id);
     
         $yith_wcaf_affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
-         $order_process_table = OAM_Helper::$order_process_table;
+        $order_process_table = OAM_Helper::$order_process_table;
 
         $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
         // $yith_wcaf_referral = OAM_COMMON_Custom::get_order_meta($order_id, '_yith_wcaf_referral');
@@ -735,9 +735,9 @@ class OAM_WC_Customizer {
 
         $decoded_data = json_decode($json_data, true);
 
-        $affiliate = !empty($decoded_data['affiliate_select']) ? $decoded_data['affiliate_select'] : 'Orthoney';
+        $affiliate = !empty($decoded_data['affiliate_select']) ? $decoded_data['affiliate_select'] : 0;
 
-        $yith_wcaf_referral = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d", $affiliate));
+        $yith_wcaf_referral = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d", $affiliate));
 
         if (!empty($yith_wcaf_referral)) {
             $yith_wcaf_referral_token = $yith_wcaf_referral;

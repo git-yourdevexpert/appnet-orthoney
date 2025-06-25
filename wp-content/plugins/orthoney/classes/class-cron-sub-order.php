@@ -114,10 +114,11 @@ class OAM_WC_CRON_Suborder {
 
         $decoded_data = json_decode($json_data, true);
 
-        $affiliate = !empty($decoded_data['affiliate_select']) ? $decoded_data['affiliate_select'] : 'Orthoney';
+        $affiliate = !empty($decoded_data['affiliate_select']) ? $decoded_data['affiliate_select'] : 0;
 
-        $affiliate_token = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d", $affiliate));
+        $affiliate_token = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d", $affiliate));
 
+        OAM_COMMON_Custom::sub_order_error_log('affiliate_token from process table: ' . $affiliate_token, $order_id);
 
         $affiliate_id = '';
         if($affiliate_token != ''){
