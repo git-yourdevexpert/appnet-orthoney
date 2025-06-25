@@ -722,7 +722,9 @@ class OAM_WC_Customizer {
     
         $order = wc_get_order($order_id);
     
-        if (!$order) return;
+        $yith_wcaf_affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+         $order_process_table = OAM_Helper::$order_process_table;
+
         $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
         // $yith_wcaf_referral = OAM_COMMON_Custom::get_order_meta($order_id, '_yith_wcaf_referral');
 
