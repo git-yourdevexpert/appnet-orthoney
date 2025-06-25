@@ -9,7 +9,7 @@ class OAM_WC_CRON_Suborder {
         // Hook into Thank You to schedule the sub-order creation
         add_action('woocommerce_thankyou', array($this, 'queue_sub_order_creation'), 10, 1);
         // Hook for async processing via WP Cron
-        add_action('oam_create_sub_orders_async', array($this, 'schedule_create_sub_order_cron_handler'));
+        add_action('oam_create_sub_orders_async', array($this, 'schedule_create_sub_order_cron_handler'), 10, 1);
         // Disable Processing mail temporarily
         add_filter('woocommerce_email_enabled_customer_processing_order', array($this,'oam_disable_processing_email_temporarily'), 10, 2);
         // Order status is change then init CRON job.
@@ -18,7 +18,7 @@ class OAM_WC_CRON_Suborder {
 
     public function oam_maybe_schedule_sub_order_on_status_change($order_id, $from_status, $to_status, $order) {
         if (in_array($to_status, ['processing']) && !wp_next_scheduled('oam_create_sub_orders_async', [$order_id])) {
-            wp_schedule_single_event(time() + 5, 'oam_create_sub_orders_async', [$order_id]);
+            wp_schedule_single_event(time() + 50, 'oam_create_sub_orders_async', [$order_id]);
         }
     }
 
@@ -48,7 +48,7 @@ class OAM_WC_CRON_Suborder {
         }
     
         if (!wp_next_scheduled('oam_create_sub_orders_async', [$order_id])) {
-            wp_schedule_single_event(time() + 5, 'oam_create_sub_orders_async', [$order_id]);
+            wp_schedule_single_event(time() + 50, 'oam_create_sub_orders_async', [$order_id]);
         }
     }
 
@@ -109,6 +109,7 @@ class OAM_WC_CRON_Suborder {
 
         $result = $wpdb->get_row($wpdb->prepare("SELECT data FROM {$order_process_table} WHERE order_id = %d", $order_id));
         
+
         $json_data = $result->data ?? '';
 
         $decoded_data = json_decode($json_data, true);
@@ -117,6 +118,7 @@ class OAM_WC_CRON_Suborder {
 
         $affiliate_token = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d", $affiliate));
 
+
         $affiliate_id = '';
         if($affiliate_token != ''){
             $affiliate_id = $wpdb->get_var($wpdb->prepare(
@@ -124,8 +126,7 @@ class OAM_WC_CRON_Suborder {
                 $affiliate_token
             ));
         }
-        
-        
+    
         // Update order_process_table
         if ($process_id) {
             $wpdb->update(
