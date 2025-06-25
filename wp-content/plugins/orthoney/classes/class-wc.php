@@ -724,7 +724,17 @@ class OAM_WC_Customizer {
     
         if (!$order) return;
         $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
-        $yith_wcaf_referral = OAM_COMMON_Custom::get_order_meta($order_id, '_yith_wcaf_referral');
+        // $yith_wcaf_referral = OAM_COMMON_Custom::get_order_meta($order_id, '_yith_wcaf_referral');
+
+        $result = $wpdb->get_row($wpdb->prepare("SELECT data FROM {$order_process_table} WHERE order_id = %d", $order_id));
+
+        $json_data = $result->data ?? '';
+
+        $decoded_data = json_decode($json_data, true);
+
+        $affiliate = !empty($decoded_data['affiliate_select']) ? $decoded_data['affiliate_select'] : 'Orthoney';
+
+        $yith_wcaf_referral = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d", $affiliate));
 
         if (!empty($yith_wcaf_referral)) {
             $yith_wcaf_referral_token = $yith_wcaf_referral;
