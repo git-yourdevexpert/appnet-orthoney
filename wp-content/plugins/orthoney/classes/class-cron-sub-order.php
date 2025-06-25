@@ -102,6 +102,15 @@ class OAM_WC_CRON_Suborder {
         }
 
         $order_type = $single_order ? 'single-order' : 'multi-recipient-order';
+    
+        // Update order_process_table
+        if ($process_id) {
+            $wpdb->update(
+                $order_process_table,
+                ['order_type' => $order_type, 'order_id' => $order_id],
+                ['id' => $process_id]
+            );
+        }
 
          // Prepare data
          $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
@@ -118,6 +127,7 @@ class OAM_WC_CRON_Suborder {
 
         $affiliate_token = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d", $affiliate));
 
+        OAM_COMMON_Custom::sub_order_error_log('affiliate from process table: ' . $affiliate, $order_id);
         OAM_COMMON_Custom::sub_order_error_log('affiliate_token from process table: ' . $affiliate_token, $order_id);
 
         $affiliate_id = '';
@@ -126,15 +136,6 @@ class OAM_WC_CRON_Suborder {
                 "SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE token = %s",
                 $affiliate_token
             ));
-        }
-    
-        // Update order_process_table
-        if ($process_id) {
-            $wpdb->update(
-                $order_process_table,
-                ['order_type' => $order_type, 'order_id' => $order_id],
-                ['id' => $process_id]
-            );
         }
 
         if ($order_type !== 'multi-recipient-order') return;
