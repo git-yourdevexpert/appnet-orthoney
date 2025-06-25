@@ -719,6 +719,7 @@ class OAM_WC_Customizer {
 
     public function add_labels_to_order_overview($order_id) {
         if (!$order_id) return;
+        global $wpdb;
     
         $order = wc_get_order($order_id);
     
