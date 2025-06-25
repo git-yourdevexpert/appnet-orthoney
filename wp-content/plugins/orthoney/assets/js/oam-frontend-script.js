@@ -1454,7 +1454,7 @@ document.addEventListener("click", function (event) {
                 "<li><label>State </label><span>" +
                 (state ? state : "") +
                 "</span></li>";
-              html +=
+                 html +=
                 "<li><label>Zipcode </label><span>" +
                 (zipcode ? zipcode : "") +
                 "</span></li>";
@@ -2696,9 +2696,9 @@ jQuery(document).ready(function ($) {
     columnDefs: [
       { targets: 1, width: "220px" , searchable: true },
       { targets: 2, width: "220px" },
-      { targets: -1, orderable: true },
+      { targets: -1, orderable: false },
       { targets: 4, visible: false, searchable: true },
-      { targets: 0, visible: false, searchable: true },
+      { targets: 0, visible: true, searchable: true },
     ],
     language: {
       search: "",
@@ -2712,30 +2712,34 @@ jQuery(document).ready(function ($) {
           </div>
         </div>`
     },
-    initComplete: function () {
-      const api = this.api();
-      const statusColIndex = 4;
-      const statusSet = new Set();
+   initComplete: function () {
+  const api = this.api();
+  const $filterWrapper = $('.dataTables_filter');
 
-      api.column(statusColIndex).data().each(function (d) {
-        if (d && d.trim() !== "") {
-          statusSet.add(d);
-        }
-      });
+  // Create status filter dropdown
+  const statusDropdown = $(`
+    <select style="margin-right: 10px;">
+      <option value="">Season Status</option>
+      <option value="active">Activated</option>
+      <option value="deactivate">Deactivated</option>
+    </select>
+  `).on('change', function () {
+    selectedStatus = $(this).val();
+    if (currentRequest) currentRequest.abort();
+    table.ajax.reload();
+  });
 
-      const $filterWrapper = $('.dataTables_filter');
+  // Remove default label text
+  $filterWrapper.find('label').contents().filter(function () {
+    return this.nodeType === 3;
+  }).remove();
 
-      // Remove default label text
-      $filterWrapper.find('label').contents().filter(function () {
-        return this.nodeType === 3;
-      }).remove();
+  // Inject custom filters
+  $filterWrapper.prepend(statusDropdown).prepend(orgCodeInput).prepend(orgInput);
 
-      // Add custom inputs before default search
-      $filterWrapper.prepend(orgCodeInput).prepend(orgInput);
-
-      // Optional: Add placeholder to the built-in search box
-      $filterWrapper.find('input[type="search"]').attr('placeholder', 'Search...');
-    }
+  // Optional: Update default search input placeholder
+  $filterWrapper.find('input[type="search"]').attr('placeholder', 'Search...');
+}
   });
 });
 
@@ -2746,8 +2750,6 @@ jQuery(document).ready(function ($) {
  * 
  * 
  */
-
-
 jQuery(document).ready(function ($) {
   let organizationSearch = '';
   let organizationCodeSearch = '';
@@ -2762,61 +2764,49 @@ jQuery(document).ready(function ($) {
         [10, 25, 50, 100],
         [10, 25, 50, 100]
       ],
-      serverSide: false,
+      serverSide: true,
       processing: true,
       paging: true,
       searching: true,
       responsive: true,
       ordering: false,
 
-      ajax: function (data, callback) {
-        // Cancel duplicate AJAX call
-        if (currentRequest) {
-          currentRequest.abort();
-        }
-
-        const $tbody = $('#sales-representative-customer-table tbody');
-        const colspan = $('#sales-representative-customer-table thead th').length;
-
-        $tbody.hide().html(`
-          <tr class="custom-loading-row">
-            <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
-              Loading customer data, please wait...
-            </td>
-          </tr>
-        `).show();
-
-        // Perform AJAX
-        currentRequest = $.ajax({
-          url: oam_ajax.ajax_url,
-          type: 'POST',
-          data: {
+      ajax: {
+        url: oam_ajax.ajax_url,
+        type: 'POST',
+        data: function (d) {
+          return $.extend({}, d, {
             action: 'get_filtered_customers',
             nonce: oam_ajax.nonce,
             organization_search: organizationSearch,
             organization_code_search: organizationCodeSearch
-          },
-          success: function (response) {
-            callback(response);
-          },
-          error: function (xhr, status) {
-            if (status !== 'abort') {
-              console.error("AJAX error:", status);
-              callback({
-                data: [],
-                recordsTotal: 0,
-                recordsFiltered: 0,
-                draw: data.draw
-              });
-            }
-          },
-          complete: function () {
-            currentRequest = null;
-            setTimeout(() => {
-              $('#sales-representative-customer-table tbody').show();
-            }, 100);
+          });
+        },
+        dataSrc: function (response) {
+          return response.data || [];
+        },
+        beforeSend: function () {
+          const $tbody = $('#sales-representative-customer-table tbody');
+          const colspan = $('#sales-representative-customer-table thead th').length;
+          $tbody.hide().html(`
+            <tr class="custom-loading-row">
+              <td colspan="${colspan}" style="text-align:center; font-weight:bold; padding:20px;">
+                Loading customer data, please wait...
+              </td>
+            </tr>
+          `).show();
+        },
+        error: function (xhr, status) {
+          if (status !== 'abort') {
+            console.error("AJAX error:", status);
           }
-        });
+        },
+        complete: function () {
+          currentRequest = null;
+          setTimeout(() => {
+            $('#sales-representative-customer-table tbody').show();
+          }, 100);
+        }
       },
 
       columns: [
@@ -2825,10 +2815,9 @@ jQuery(document).ready(function ($) {
         { data: "action" }
       ],
       columnDefs: [
-       { targets: 0, width: "400px", orderable: false ,searchable: true },
-       { targets: 1, width: "400px", orderable: false ,searchable: false },
-        { targets: -1,width: "80px", orderable: false , searchable: false }
-
+        { targets: 0, width: "400px", orderable: false, searchable: true },
+        { targets: 1, width: "400px", orderable: false, searchable: false },
+        { targets: -1, width: "80px", orderable: false, searchable: false }
       ],
       language: {
         search: ""
@@ -2837,7 +2826,6 @@ jQuery(document).ready(function ($) {
       initComplete: function () {
         const $filterContainer = $('#sales-representative-customer-table_filter');
 
-        // Create custom search inputs
         const orgInput = $('<input type="text" placeholder="Search by Org Name" style="margin-right: 10px;">')
           .on('keyup', function () {
             organizationSearch = $(this).val().trim();
@@ -2856,26 +2844,10 @@ jQuery(document).ready(function ($) {
             }
           });
 
-        // Inject into filter container
         $filterContainer.prepend(orgCodeInput).prepend(orgInput);
 
-        // Customize the default search input
         const searchBox = $filterContainer.find('input[type="search"]');
         searchBox.attr('placeholder', 'Search Customers');
-
-        // Optional: Debounce default search
-        let typingTimer;
-        searchBox.off().on('input', function () {
-          clearTimeout(typingTimer);
-          const value = this.value;
-
-          typingTimer = setTimeout(() => {
-            if (value.length >= 3 || value.length === 0) {
-              if (currentRequest) currentRequest.abort();
-              table.search(value).draw();
-            }
-          }, 300);
-        });
       }
     });
   }

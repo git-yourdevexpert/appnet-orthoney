@@ -105,8 +105,19 @@ class OAM_WC_CRON_Suborder {
 
          // Prepare data
          $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
-         $affiliate_token = OAM_COMMON_Custom::get_order_meta($order_id, '_yith_wcaf_referral');
-         $affiliate_id = '';
+        //  $affiliate_token = OAM_COMMON_Custom::get_order_meta($order_id, '_yith_wcaf_referral');
+
+        $result = $wpdb->get_row($wpdb->prepare("SELECT data FROM {$order_process_table} WHERE order_id = %d", $order_id));
+        
+        $json_data = $result->data ?? '';
+
+        $decoded_data = json_decode($json_data, true);
+
+        $affiliate = !empty($decoded_data['affiliate_select']) ? $decoded_data['affiliate_select'] : 'Orthoney';
+
+        $affiliate_token = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d", $affiliate));
+
+        $affiliate_id = '';
         if($affiliate_token != ''){
             $affiliate_id = $wpdb->get_var($wpdb->prepare(
                 "SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE token = %s",

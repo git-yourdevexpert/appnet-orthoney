@@ -11,7 +11,8 @@ $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 
 
 ?>
 <style>
-#admin-organizations-results table.dataTable tbody th, table.dataTable tbody td:nth-child(2) ,
+
+    #admin-organizations-results table.dataTable tbody th, table.dataTable tbody td:nth-child(2) ,
     #admin-organizations-results table.dataTable tbody th, table.dataTable tbody td:nth-child(4) {
         width: 210px !important;
         max-width:210px !important;
@@ -23,6 +24,7 @@ $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 
         max-width:60px !important;
         word-break: break-word;
     }
+
 </style>
 <div class="affiliate-dashboard order-process-block">
     <div class="heading-title">

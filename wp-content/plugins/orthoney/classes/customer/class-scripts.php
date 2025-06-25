@@ -19,6 +19,7 @@ class OAM_Scripts
           $plugin_url = OH_PLUGIN_DIR_URL . 'assets/';
         wp_enqueue_style( 'my-admin-style', $plugin_url . 'css/admin-style.css' );
     }
+
     // Enqueue front-end assets
     public function enqueue_frontend_assets() {
         $plugin_url = OH_PLUGIN_DIR_URL . 'assets/';

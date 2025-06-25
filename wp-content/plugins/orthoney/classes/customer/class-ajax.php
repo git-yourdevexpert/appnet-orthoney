@@ -646,6 +646,7 @@ class OAM_Ajax{
 
     // Handles processing from selected group IDs
     private function process_group_recipient_data($wpdb, $ids, $pid) {
+        global $wpdb;
         $group_table = OAM_Helper::$group_recipient_table;
         $process_table = OAM_Helper::$order_process_recipient_table;
 
@@ -683,7 +684,6 @@ class OAM_Ajax{
 
     // Handles re-order based on existing WooCommerce order
     private function process_reorder_from_order($wpdb, $orderid, $userID, $security, $pid) {
-        global $wpdb;
         $recipient_table = OAM_Helper::$recipient_order_table;
         $process_recipient_table = OAM_Helper::$order_process_recipient_table;
 
@@ -3542,20 +3542,20 @@ class OAM_Ajax{
         
             $pdf_url = $upload_dir['url'] . '/' . $pdf_filename;
 
-            $to = $current_user_email;
-            $cc = 'support@orthoney.com,'.$affiliate_org_email;
-            $subject = '#'. $custom_order_id.' Reordering Form – Honey From The Heart';
-            
-            // $message = '<p>Dear ' . $name . ',</p>';
-            $message = $html;
-            $message .= '<p>Regards, <br><strong>Honey From The Heart Team</strong></p>';
-            $headers = [
-                'Content-Type: text/html; charset=UTF-8',
-                'Cc: ' . $cc,
-            ];
-            $attachments = [$pdf_path];
-    
-            $mail_sent = wp_mail($to, $subject, $message, $headers, $attachments);
+                $to = $current_user_email;
+                $cc = 'support@orthoney.com,'.$affiliate_org_email;
+                $subject = '#'. $custom_order_id.' Reordering Form – Honey From The Heart';
+                
+                // $message = '<p>Dear ' . $name . ',</p>';
+                $message = $html;
+                $message .= '<p>Regards, <br><strong>Honey From The Heart Team</strong></p>';
+                $headers = [
+                    'Content-Type: text/html; charset=UTF-8',
+                    'Cc: ' . $cc,
+                ];
+                $attachments = [$pdf_path];
+        
+                $mail_sent = wp_mail($to, $subject, $message, $headers, $attachments);
     
             }
             

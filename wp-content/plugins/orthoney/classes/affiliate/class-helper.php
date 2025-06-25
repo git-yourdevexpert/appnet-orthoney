@@ -554,8 +554,8 @@ class OAM_AFFILIATE_Helper
             $cbr_ids_array = array_unique($cbr_ids_array);
 
             $total_quantity_commission = '';
-            if($details['total_quantity'] > 50){
-               $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item" style="padding: 10px 20px;background-color: rgba(255, 0, 0, 0.5);"><div class="row-block"><p style="color: white;">A minimum of 50 jars is required. You still need ' . (50 - $details['total_quantity']) . ' more jars."</p></div></div></div>';
+            if($details['total_quantity'] < 50){
+                $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item" style="padding: 10px 20px;background-color: rgba(255, 0, 0, 0.5);"><div class="row-block"><p style="color: white;">To qualify for commission, a minimum of 50 jars is required. You`re just ' . (50 - $details['total_quantity']) . ' jars away, keep going!</p></div></div></div>';
             }
             if($details['total_quantity'] > 50 && $details['total_quantity'] < 100){
 
@@ -596,6 +596,7 @@ class OAM_AFFILIATE_Helper
                      $html .= '</div></div></div>';
 
                 }
+
 
                  $html .= '<div class="block-row three-block-col">
                     <div class="place-order item" style="display:none">
