@@ -18,7 +18,7 @@ class OAM_WC_CRON_Suborder {
 
     public function oam_maybe_schedule_sub_order_on_status_change($order_id, $from_status, $to_status, $order) {
         if (in_array($to_status, ['processing']) && !wp_next_scheduled('oam_create_sub_orders_async', [$order_id])) {
-            wp_schedule_single_event(time() + 50, 'oam_create_sub_orders_async', [$order_id]);
+            wp_schedule_single_event(time() + 30, 'oam_create_sub_orders_async', [$order_id]);
         }
     }
 
@@ -48,7 +48,7 @@ class OAM_WC_CRON_Suborder {
         }
     
         if (!wp_next_scheduled('oam_create_sub_orders_async', [$order_id])) {
-            wp_schedule_single_event(time() + 50, 'oam_create_sub_orders_async', [$order_id]);
+            wp_schedule_single_event(time() + 30, 'oam_create_sub_orders_async', [$order_id]);
         }
     }
 
