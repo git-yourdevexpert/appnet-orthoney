@@ -1144,7 +1144,7 @@ class OAM_Ajax{
 
                 if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {
                     if (!empty($components)) {
-                        if (($original['city'] ?? '') !== ($components['city_name'] ?? '')) {
+                        if ( ucwords(strtolower(trim($city)))  !== ucwords(strtolower(trim($data[0]['components']['city_name']))) ) {
                             $message .= 'Provided city is invalid. Accepted city is <span style="color: #6BBE56;">' . esc_html($components['city_name']) . '</span>';
                             $success = false;
                         } 

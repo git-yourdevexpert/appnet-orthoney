@@ -1699,7 +1699,7 @@ class OAM_Helper{
         if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {
             if(!empty($data[0]['components'])){
                 $message = '';
-                if ($city !== $data[0]['components']['city_name']) {
+                if ( ucwords(strtolower(trim($city)))  !== ucwords(strtolower(trim($data[0]['components']['city_name']))) ) {
                     $message .= 'Provided city is invalid. Accepted city is <span style="color: #6BBE56;">'.$data[0]['components']['city_name'].'</span>';
                     
                 } 
