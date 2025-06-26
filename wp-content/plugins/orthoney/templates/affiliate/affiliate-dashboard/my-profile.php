@@ -51,7 +51,7 @@
    
    if ((empty($activate_affiliate_account) AND $activate_affiliate_account != 1 ) ) {
         echo '<div class="dashboard-block"><div class="dashboard-heading block-row">
-                <div class="item" style="background-color: rgba(255, 0, 0, 0.5);">
+                <div class="item error-message-box">
                     <div class="row-block">
                         <h6 class="block-title">Your account is inactive. Submit your Tax ID to activate your account and become eligible for this year`s commission.</h6>
                         <div>';

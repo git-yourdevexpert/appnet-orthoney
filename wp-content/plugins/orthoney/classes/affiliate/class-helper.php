@@ -492,7 +492,7 @@ class OAM_AFFILIATE_Helper
 
         if (empty($activate_affiliate_account) and $activate_affiliate_account != 1) {
             $html = '<div class="dashboard-heading block-row">
-                        <div class="item" style="background-color: rgba(255, 0, 0, 0.5);">
+                        <div class="item error-message-box">
                             <div class="row-block">
                                 <h6 class="block-title">Your account is inactive. Submit your Tax ID to activate your account and become eligible for this year`s commission.</h6>
                                 <div>';
@@ -555,11 +555,11 @@ class OAM_AFFILIATE_Helper
 
             $total_quantity_commission = '';
             if($details['total_quantity'] < 50){
-                $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item" style="padding: 10px 20px;background-color: rgba(255, 0, 0, 0.5);"><div class="row-block"><p style="color: white;">To qualify for commission, a minimum of 50 jars is required. You`re just ' . (50 - $details['total_quantity']) . ' jars away, keep going!</p></div></div></div>';
+                $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item error-message-box"><div class="row-block"><p >To qualify for commission, a minimum of 50 jars is required. You`re just ' . (50 - $details['total_quantity']) . ' jars away, keep going!</p></div></div></div>';
             }
             if($details['total_quantity'] > 50 && $details['total_quantity'] < 100){
 
-                 $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item" style="padding: 10px 20px;background-color: rgba(255, 0, 0, 0.5);"><div class="row-block"><p style="color: white;">You`re very close to your next Profit-Sharing level! Add just ' . (100 - $details['total_quantity']) . ' more jars to reach 100 jars and unlock additional benefits.</p></div></div></div>';
+                 $ $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item error-message-box"><div class="row-block"><p >You`re very close to your next Profit-Sharing level! Add just ' . (100 - $details['total_quantity']) . ' more jars to reach 100 jars and unlock additional benefits.</p></div></div></div>';
             }
             $html .= '
                 <div class="dashboard-heading block-row">
