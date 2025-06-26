@@ -561,7 +561,7 @@ class OAM_AFFILIATE_Helper
             }
             if($details['current_year_total_quantity'] > 50 && $details['current_year_total_quantity'] < 100){
 
-                 $ $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item error-message-box"><div class="row-block"><p >You`re very close to your next Profit-Sharing level! Add just ' . (100 - $details['current_year_total_quantity']) . ' more jars to reach 100 jars and unlock additional benefits.</p></div></div></div>';
+                 $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item error-message-box"><div class="row-block"><p >You`re very close to your next Profit-Sharing level! Add just ' . (100 - $details['current_year_total_quantity']) . ' more jars to reach 100 jars and unlock additional benefits.</p></div></div></div>';
             }
             $html .= '
                 <div class="dashboard-heading block-row">
