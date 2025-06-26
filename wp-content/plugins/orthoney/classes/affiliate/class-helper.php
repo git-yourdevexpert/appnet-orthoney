@@ -565,7 +565,7 @@ class OAM_AFFILIATE_Helper
                 <div class="dashboard-heading block-row">
                     <div class="item">
                         <div class="row-block">
-                            <h3 class="block-title">' . (!empty($affiliate->_orgName) ? esc_html($affiliate->_orgName) : esc_html($affiliate->display_name)) . '</h3>
+                            <h3 class="block-title">' . (!empty($affiliate->_yith_wcaf_name_of_your_organization) ? esc_html($affiliate->_yith_wcaf_name_of_your_organization) : esc_html($affiliate->display_name)) . '</h3>
                             ' . ($details['token'] ? '<div> <strong>Token: ' . $details['token'] . '</strong></div> ' : '') . '
                         </div>
                     </div>
