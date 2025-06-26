@@ -437,6 +437,7 @@ class OAM_AFFILIATE_Helper
         $total_commission = 0;
         $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
 
+
         $exclude_coupon = EXCLUDE_COUPON;
         $total_all_quantity = 0;
         $total_orders = 0;
@@ -509,6 +510,7 @@ class OAM_AFFILIATE_Helper
             </div>';
         }
         
+
         if ($details['token'] != '') {
 
             global $wpdb;
@@ -554,12 +556,12 @@ class OAM_AFFILIATE_Helper
             $cbr_ids_array = array_unique($cbr_ids_array);
 
             $total_quantity_commission = '';
-            if($details['total_quantity'] < 50){
-                $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item error-message-box"><div class="row-block"><p >To qualify for commission, a minimum of 50 jars is required. You`re just ' . (50 - $details['total_quantity']) . ' jars away, keep going!</p></div></div></div>';
+            if($details['current_year_total_quantity'] < 50){
+                $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item error-message-box"><div class="row-block"><p >To qualify for commission, a minimum of 50 jars is required. You`re just ' . (50 - $details['current_year_total_quantity']) . ' jars away, keep going!</p></div></div></div>';
             }
-            if($details['total_quantity'] > 50 && $details['total_quantity'] < 100){
+            if($details['current_year_total_quantity'] > 50 && $details['current_year_total_quantity'] < 100){
 
-                 $ $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item error-message-box"><div class="row-block"><p >You`re very close to your next Profit-Sharing level! Add just ' . (100 - $details['total_quantity']) . ' more jars to reach 100 jars and unlock additional benefits.</p></div></div></div>';
+                 $ $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item error-message-box"><div class="row-block"><p >You`re very close to your next Profit-Sharing level! Add just ' . (100 - $details['current_year_total_quantity']) . ' more jars to reach 100 jars and unlock additional benefits.</p></div></div></div>';
             }
             $html .= '
                 <div class="dashboard-heading block-row">
@@ -774,6 +776,7 @@ class OAM_AFFILIATE_Helper
             $product_price = 0;
             if ($affiliate_data) {
                 $affiliate_id = $affiliate_data->ID;
+                $$affiliate_token = $affiliate_data->token;
                 $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
                 $product_price = get_user_meta($affiliate_data->user_id, 'DJarPrice', true);
                 if($selling_min_price >= $product_price){
@@ -787,36 +790,36 @@ class OAM_AFFILIATE_Helper
 
             // Commission details
             $commission_year_results = $wpdb->get_results($wpdb->prepare("SELECT 
-                c.order_id,
+                c.wc_order_id,
                 SUM(CAST(qty_meta.meta_value AS UNSIGNED)) AS total_quantity,
                 SUM(CAST(line_total_meta.meta_value AS DECIMAL(10,2))) AS line_total,
                 SUM(CAST(line_subtotal_meta.meta_value AS DECIMAL(10,2))) AS line_subtotal
-                FROM {$wpdb->prefix}yith_wcaf_commissions c
-                INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+                FROM {$wpdb->prefix}oh_wc_order_relation  c
+                INNER JOIN {$wpdb->prefix}wc_orders o ON c.wc_order_id = o.id
                 INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_id = o.id AND oi.order_item_type = 'line_item'
                 LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta qty_meta ON qty_meta.order_item_id = oi.order_item_id AND qty_meta.meta_key = '_qty'
                 LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_total_meta ON line_total_meta.order_item_id = oi.order_item_id AND line_total_meta.meta_key = '_line_total'
                 LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_subtotal_meta ON line_subtotal_meta.order_item_id = oi.order_item_id AND line_subtotal_meta.meta_key = '_line_subtotal'
-                WHERE c.affiliate_id = %d AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
-                GROUP BY c.order_id", $affiliate_id));
+                WHERE c.affiliate_code = %s AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
+                GROUP BY c.wc_order_id", $affiliate_token));
 
             $total_quantity = (int) $wpdb->get_var($wpdb->prepare("SELECT 
                 SUM(CAST(om.meta_value AS UNSIGNED))
-                FROM {$wpdb->prefix}yith_wcaf_commissions c
-                INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+                FROM {$wpdb->prefix}oh_wc_order_relation c
+                INNER JOIN {$wpdb->prefix}wc_orders o ON c.wc_order_id = o.id
                 INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id AND oi.order_item_type = 'line_item'
                 INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
-                WHERE c.affiliate_id = %d AND YEAR(o.date_created_gmt) = YEAR(CURDATE())", $affiliate_id));
+                WHERE c.affiliate_code = %s AND YEAR(o.date_created_gmt) = YEAR(CURDATE())", $affiliate_token));
 
             $total_exclude_quantity = (int) $wpdb->get_var($wpdb->prepare("SELECT 
                 SUM(CAST(om.meta_value AS UNSIGNED))
-                FROM {$wpdb->prefix}yith_wcaf_commissions c
-                INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+                FROM {$wpdb->prefix}oh_wc_order_relation c
+                INNER JOIN {$wpdb->prefix}wc_orders o ON c.wc_order_id = o.id
                 INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id
                 INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id
                 INNER JOIN {$wpdb->prefix}wc_orders_meta wm ON wm.order_id = o.id
-                WHERE c.affiliate_id = %d AND om.meta_key = '_qty' AND wm.meta_key = 'affiliate_account_status' AND wm.meta_value = '1'
-                AND YEAR(o.date_created_gmt) = YEAR(CURDATE())", $affiliate_id));
+                WHERE c.affiliate_code = %s AND om.meta_key = '_qty' AND wm.meta_key = 'affiliate_account_status' AND wm.meta_value = '1'
+                AND YEAR(o.date_created_gmt) = YEAR(CURDATE())", $affiliate_token));
 
             $exclude_coupon = EXCLUDE_COUPON;
             $total_all_quantity = $wholesale_qty = 0;
@@ -933,6 +936,7 @@ class OAM_AFFILIATE_Helper
         // Get current user ID
         $current_user_id = get_current_user_id();
         $affiliate_id = $current_user_id;
+        $affiliate_token = '';
 
         // Determine affiliate ID based on role if not provided
         if ($affiliate_id_attr == '') {
@@ -957,6 +961,7 @@ class OAM_AFFILIATE_Helper
             );
             if ($affiliate) {
                 $affiliate_id = $affiliate->ID;
+                $affiliate_token = $affiliate->token;
             }
         } else {
             // Fetch affiliate record
@@ -968,6 +973,7 @@ class OAM_AFFILIATE_Helper
             );
             if ($affiliate) {
                 $affiliate_id = $affiliate->ID;
+                $affiliate_token = $affiliate->token;
                 $current_user_id = $affiliate_id_attr;
             }
             $activate_affiliate_account = get_user_meta($affiliate_id_attr, 'activate_affiliate_account', true);
@@ -975,49 +981,53 @@ class OAM_AFFILIATE_Helper
 
         $commission_year_results = $wpdb->get_results($wpdb->prepare(
             "SELECT 
-                c.order_id,
+                c.order_id as order_id,
+                c.wc_order_id as wc_order_id,
                 SUM(CAST(qty_meta.meta_value AS UNSIGNED)) AS total_quantity,
                 SUM(CAST(line_total_meta.meta_value AS DECIMAL(10,2))) AS line_total,
                 SUM(CAST(line_subtotal_meta.meta_value AS DECIMAL(10,2))) AS line_subtotal
-            FROM {$wpdb->prefix}yith_wcaf_commissions c
-            INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+            FROM {$wpdb->prefix}oh_wc_order_relation c
+            INNER JOIN {$wpdb->prefix}wc_orders o ON c.wc_order_id = o.id
             INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_id = o.id AND oi.order_item_type = 'line_item'
             LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta qty_meta ON qty_meta.order_item_id = oi.order_item_id AND qty_meta.meta_key = '_qty'
             LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_total_meta ON line_total_meta.order_item_id = oi.order_item_id AND line_total_meta.meta_key = '_line_total'
             LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_subtotal_meta ON line_subtotal_meta.order_item_id = oi.order_item_id AND line_subtotal_meta.meta_key = '_line_subtotal'
-            WHERE c.affiliate_id = %d
+            WHERE c.affiliate_code = %s
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
-            GROUP BY c.order_id",
-            $affiliate_id
+            GROUP BY c.wc_order_id",
+            $affiliate_token
         ));
+
+     
 
         $total_quantity = $wpdb->get_var($wpdb->prepare(
             "SELECT 
                 SUM(CAST(om.meta_value AS UNSIGNED))
-            FROM {$wpdb->prefix}yith_wcaf_commissions c
-            INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+            FROM {$wpdb->prefix}oh_wc_order_relation c
+            INNER JOIN {$wpdb->prefix}wc_orders o ON c.wc_order_id = o.id
             INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id AND oi.order_item_type = 'line_item'
             INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
-            WHERE c.affiliate_id = %d
+            WHERE c.affiliate_code = %s
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE())",
-            $affiliate_id
+            $affiliate_token
         ));
 
         $total_exclude_quantity = $wpdb->get_var($wpdb->prepare(
             "SELECT 
                 SUM(CAST(om.meta_value AS UNSIGNED)) AS total_qty
-            FROM {$wpdb->prefix}yith_wcaf_commissions c
+            FROM {$wpdb->prefix}oh_wc_order_relation c
             INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
             INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id
             INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om  ON oi.order_item_id = om.order_item_id
             INNER JOIN {$wpdb->prefix}wc_orders_meta wm ON wm.order_id = o.id
-            WHERE c.affiliate_id = %d
+            WHERE c.affiliate_code = %s
                 AND om.meta_key = '_qty'
                 AND wm.meta_key = 'affiliate_account_status'
                 AND wm.meta_value = '1'
                 AND YEAR(o.date_created_gmt) = YEAR(CURDATE())",
-            $affiliate_id
+           $affiliate_token
         ));
+
 
 
         if (!empty($commission_year_results)) {
@@ -1027,10 +1037,10 @@ class OAM_AFFILIATE_Helper
                
                 $exclude_coupon = EXCLUDE_COUPON;
                 foreach ($commission_year_results as $key => $value) {
-                    $affiliate_account_status =  OAM_COMMON_Custom::get_order_meta($value->order_id, 'affiliate_account_status') ?: 0;
+                    $affiliate_account_status =  OAM_COMMON_Custom::get_order_meta($value->wc_order_id, 'affiliate_account_status') ?: 0;
                     if($affiliate_account_status == 1){
                         $common = [];
-                        $coupon_data = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($value->order_id);
+                        $coupon_data = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($value->wc_order_id);
                         $coupon_array = !empty($coupon_data) ? explode(",", $coupon_data) : [];
                         if(count($coupon_array) > 0){
                             $coupon_array = array_diff($coupon_array, $exclude_coupon);
@@ -1078,13 +1088,13 @@ class OAM_AFFILIATE_Helper
                         }
                     }
 
-                    $affiliate_account_status =  OAM_COMMON_Custom::get_order_meta($commission->order_id, 'affiliate_account_status') ?: 0;
-                    $custom_order_id = OAM_COMMON_Custom::get_order_meta($commission->order_id, '_orthoney_OrderID');
+                    $affiliate_account_status =  OAM_COMMON_Custom::get_order_meta($commission->wc_order_id, 'affiliate_account_status') ?: 0;
+                    $custom_order_id = OAM_COMMON_Custom::get_order_meta($commission->wc_order_id, '_orthoney_OrderID');
 
                     $data['total_exclude_quantity'] = $total_exclude_quantity;
                     $data['total_all_quantity'] = $total_quantity;
                     $data['wholesale_qty'] = $wholesale_qty;
-                    $data['order_id'] = $commission->order_id;
+                    $data['order_id'] = $commission->wc_order_id;
                     $data['custom_order_id'] = $custom_order_id;
                     $data['total_quantity'] =  $total_all_quantity;
                     $data['line_total'] = $line_total;
@@ -1141,15 +1151,15 @@ class OAM_AFFILIATE_Helper
             $data['refunds'] = $affiliate->refunds;
             $data['total_quantity'] = 0;
             $affiliate_id = $affiliate->ID;
+            $affiliate_token = $affiliate->token;
 
             // Get active balance and order IDs
             $results = $wpdb->get_row($wpdb->prepare(
                 "SELECT 
-                    SUM(c.amount) AS total_amount,
-                    GROUP_CONCAT( DISTINCT c.order_id ORDER BY o.date_created_gmt DESC) AS order_ids,
+                   GROUP_CONCAT( DISTINCT c.wc_order_id ORDER BY o.date_created_gmt DESC) AS order_ids,
                     SUM(q.total_qty) AS total_quantity
-                FROM {$wpdb->prefix}yith_wcaf_commissions c
-                INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+                FROM {$wpdb->prefix}oh_wc_order_relation  c
+                INNER JOIN {$wpdb->prefix}wc_orders o ON c.wc_order_id = o.id
                 LEFT JOIN (
                     SELECT 
                         oi.order_id,
@@ -1160,25 +1170,25 @@ class OAM_AFFILIATE_Helper
                         AND om.meta_key = '_qty'
                     WHERE oi.order_item_type = 'line_item'
                     GROUP BY oi.order_id
-                ) q ON q.order_id = c.order_id
-                WHERE c.affiliate_id = %d 
+                ) q ON q.order_id = c.wc_order_id
+                WHERE c.affiliate_code = %s
                 AND o.parent_order_id = 0
-                GROUP BY c.affiliate_id",
-                $affiliate_id
+                GROUP BY c.affiliate_user_id",
+                $affiliate_token
             ));
+
 
             $current_year_results = $wpdb->get_row($wpdb->prepare(
                 "SELECT 
-                    SUM(DISTINCT c.amount) AS total_amount,
-                    GROUP_CONCAT(DISTINCT c.order_id ORDER BY o.date_created_gmt DESC) AS order_ids,
+                    GROUP_CONCAT(DISTINCT c.wc_order_id ORDER BY o.date_created_gmt DESC) AS order_ids,
                     SUM(CAST(om.meta_value AS UNSIGNED)) AS total_quantity
-                FROM {$wpdb->prefix}yith_wcaf_commissions c
-                INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
+                FROM {$wpdb->prefix}oh_wc_order_relation c
+                INNER JOIN {$wpdb->prefix}wc_orders o ON c.wc_order_id = o.id
                 INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id AND oi.order_item_type = 'line_item'
                 INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
-                WHERE c.affiliate_id = %d 
+                WHERE c.affiliate_code = %s
                 AND YEAR(o.date_created_gmt) = YEAR(CURDATE())",
-                $affiliate_id
+                $affiliate_token
             ));
 
             if ($results) {
