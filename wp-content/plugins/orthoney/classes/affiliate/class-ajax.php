@@ -616,34 +616,34 @@ class OAM_AFFILIATE_Ajax{
 
         $user_id = get_current_user_id();
       
-    
-         // Update user meta
-        update_user_meta($user_id, '_yith_wcaf_check_payable', $check_payable);
-        update_user_meta($user_id, '_yith_wcaf_address_check', $address_check);
-        update_user_meta($user_id, '_yith_wcaf_attention', $attention);
-
         // Validate and sanitize inputs
         $associated_id = sanitize_text_field($_POST['associated_id']);
         $check_payable = sanitize_text_field($_POST['check_payable']);
         $address_check = sanitize_text_field($_POST['address_check']);
         $attention = sanitize_text_field($_POST['attention']);
-        
-     
+        $check_mailed_address = sanitize_text_field($_POST['check_mailed_address']);
+    
+         // Update user meta
+        update_user_meta($associated_id, '_yith_wcaf_check_payable', $check_payable);
+        update_user_meta($associated_id, '_yith_wcaf_address_check', $address_check);
+        update_user_meta($associated_id, '_yith_wcaf_attention', $attention);
+        update_user_meta($associated_id, '_yith_wcaf_check_mailed_address', $check_mailed_address);
 
-        $user_ids = get_users([
-            'meta_key'   => 'associated_affiliate_id',
-            'meta_value' => strval($associated_id),
-            'fields'     => 'ID'
-        ]);
+    
+        // $user_ids = get_users([
+        //     'meta_key'   => 'associated_affiliate_id',
+        //     'meta_value' => strval($associated_id),
+        //     'fields'     => 'ID'
+        // ]);
 
-        // Update each team member's price
-        foreach ($user_ids as $id) {
-            // Update user meta
-            update_user_meta($id, '_yith_wcaf_check_payable', $check_payable);
-            update_user_meta($id, '_yith_wcaf_address_check', $address_check);
-            update_user_meta($id, '_yith_wcaf_attention', $attention);
+        // // Update each team member's price
+        // foreach ($user_ids as $id) {
+        //     // Update user meta
+        //     update_user_meta($id, '_yith_wcaf_check_payable', $check_payable);
+        //     update_user_meta($id, '_yith_wcaf_address_check', $address_check);
+        //     update_user_meta($id, '_yith_wcaf_attention', $attention);
             
-        }
+        // }
 
         wp_send_json(['success' => true, 'message' => 'Your remittance has been updated successfully.']);
         wp_die();

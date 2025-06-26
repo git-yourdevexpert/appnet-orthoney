@@ -42,7 +42,8 @@
    $check_payable = get_user_meta($associated_id, '_yith_wcaf_check_payable', true);
    $address_check = get_user_meta($associated_id, '_yith_wcaf_address_check', true);
    $attention = get_user_meta($associated_id, '_yith_wcaf_attention', true);
-   
+    $check_mailed_address = get_user_meta($associated_id, '_yith_wcaf_check_mailed_address', true);
+
    $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
    //TODO
    $dashboard_link = ORGANIZATION_DASHBOARD_LINK;
@@ -159,7 +160,6 @@
          <div class="heading-title">
             <div>
                 <h3 class="block-title">Remittance Form</h3>
-                <p><strong><br>Please indicate if check will be mailed to a home or your organization's office:</strong></p>
             </div>
         </div>
     </div>
@@ -186,6 +186,11 @@
                 <div class="form-row gfield--width-half">
                     <label for="attention">To the Attention of <span class="required">*</span></label>
                     <input type="text" name="attention" id="attention" value="<?php echo esc_attr($attention); ?>" required data-error-message="Please enter a attention.">
+                    <span class="error-message"></span>
+                </div>
+                <div class="form-row gfield--width-half">
+                    <label for="check_mailed_address">Please indicate if check will be mailed to a home or your organization's office:<span class="required">*</span></label>
+                    <input type="text" name="check_mailed_address" id="check_mailed_address" value="<?php echo esc_attr($check_mailed_address); ?>" required data-error-message="Please enter a check mailed.">
                     <span class="error-message"></span>
                 </div>
                 
