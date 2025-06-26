@@ -546,12 +546,12 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           if (parseInt(unverifiedCount) == 0 && parseInt(verifiedCount) != 0) {
-            html = `All submitted address(es) are verified`;
+            html = `All submitted address(es) verified`;
             dbtntext = `I Want to Update`;
           }
           if (parseInt(unverifiedCount) != 0 && parseInt(verifiedCount) == 0) {
             const count = parseInt(unverifiedCount);
-            html = `All submitted address(es) ${count === 1 ? 'is' : 'are'} Rejected`;
+            html = `All submitted address(es) Rejected`;
           }
 
           if (html == "") {
