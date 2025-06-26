@@ -190,7 +190,7 @@
                 </div>
                 <div class="form-row gfield--width-half">
                     <label for="check_mailed_address">Please indicate if check will be mailed to a home or your organization's office:<span class="required">*</span></label>
-                    <input type="text" name="check_mailed_address" id="check_mailed_address" value="<?php echo esc_attr($check_mailed_address); ?>" required data-error-message="Please enter a check mailed.">
+                    <input type="text" name="check_mailed_address" id="check_mailed_address" value="<?php echo esc_attr($check_mailed_address); ?>" required data-error-message="Please enter an indication.">
                     <span class="error-message"></span>
                 </div>
                 
