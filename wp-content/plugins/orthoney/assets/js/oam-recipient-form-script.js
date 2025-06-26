@@ -990,9 +990,7 @@ document.addEventListener("DOMContentLoaded", function () {
             newCount == 0 &&
             duplicatePassCount == 0
           ) {
-            html = `All (${totalCount}) recipient(s) ${
-              totalCount === 1 ? "has" : "have"
-            } failed`;
+            html = `All (${totalCount}) recipient(s) failed`;
           } else if (
             parseInt(successCount) + parseInt(newCount) != totalCount &&
             failCount == 0 &&
