@@ -987,6 +987,7 @@ class OAM_AFFILIATE_Helper
             LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_subtotal_meta ON line_subtotal_meta.order_item_id = oi.order_item_id AND line_subtotal_meta.meta_key = '_line_subtotal'
             WHERE c.affiliate_id = %d
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
+            ORDER BY o.date_created_gmt ASC
             GROUP BY c.order_id",
             $affiliate_id
         ));
@@ -999,7 +1000,9 @@ class OAM_AFFILIATE_Helper
             INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id AND oi.order_item_type = 'line_item'
             INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
             WHERE c.affiliate_id = %d
-            AND YEAR(o.date_created_gmt) = YEAR(CURDATE())",
+            AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
+            ORDER BY o.date_created_gmt ASC
+            ",
             $affiliate_id
         ));
 
@@ -1015,7 +1018,8 @@ class OAM_AFFILIATE_Helper
                 AND om.meta_key = '_qty'
                 AND wm.meta_key = 'affiliate_account_status'
                 AND wm.meta_value = '1'
-                AND YEAR(o.date_created_gmt) = YEAR(CURDATE())",
+                AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
+                ORDER BY o.date_created_gmt ASC",
             $affiliate_id
         ));
 
@@ -1163,7 +1167,8 @@ class OAM_AFFILIATE_Helper
                 ) q ON q.order_id = c.order_id
                 WHERE c.affiliate_id = %d 
                 AND o.parent_order_id = 0
-                GROUP BY c.affiliate_id",
+                GROUP BY c.affiliate_id 
+                ORDER BY o.date_created_gmt ASC ",
                 $affiliate_id
             ));
 
@@ -1177,7 +1182,8 @@ class OAM_AFFILIATE_Helper
                 INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id AND oi.order_item_type = 'line_item'
                 INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
                 WHERE c.affiliate_id = %d 
-                AND YEAR(o.date_created_gmt) = YEAR(CURDATE())",
+                AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) 
+                ORDER BY o.date_created_gmt ASC",
                 $affiliate_id
             ));
 
