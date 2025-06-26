@@ -1150,7 +1150,7 @@ class OAM_AFFILIATE_Helper
             $results = $wpdb->get_row($wpdb->prepare(
                 "SELECT 
                     SUM(c.amount) AS total_amount,
-                    GROUP_CONCAT( DISTINCT c.order_id ORDER BY o.date_created_gmt DESC) AS order_ids,
+                    GROUP_CONCAT( DISTINCT c.order_id ORDER BY o.date_created_gmt ASC) AS order_ids,
                     SUM(q.total_qty) AS total_quantity
                 FROM {$wpdb->prefix}yith_wcaf_commissions c
                 INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
@@ -1167,23 +1167,21 @@ class OAM_AFFILIATE_Helper
                 ) q ON q.order_id = c.order_id
                 WHERE c.affiliate_id = %d 
                 AND o.parent_order_id = 0
-                GROUP BY c.affiliate_id 
-                ORDER BY o.date_created_gmt ASC ",
+                GROUP BY c.affiliate_id",
                 $affiliate_id
             ));
 
             $current_year_results = $wpdb->get_row($wpdb->prepare(
                 "SELECT 
                     SUM(DISTINCT c.amount) AS total_amount,
-                    GROUP_CONCAT(DISTINCT c.order_id ORDER BY o.date_created_gmt DESC) AS order_ids,
+                    GROUP_CONCAT(DISTINCT c.order_id ORDER BY o.date_created_gmt ASC) AS order_ids,
                     SUM(CAST(om.meta_value AS UNSIGNED)) AS total_quantity
                 FROM {$wpdb->prefix}yith_wcaf_commissions c
                 INNER JOIN {$wpdb->prefix}wc_orders o ON c.order_id = o.id
                 INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id AND oi.order_item_type = 'line_item'
                 INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
                 WHERE c.affiliate_id = %d 
-                AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) 
-                ORDER BY o.date_created_gmt ASC",
+                AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) ",
                 $affiliate_id
             ));
 
