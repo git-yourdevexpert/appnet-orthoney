@@ -1048,7 +1048,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
           // html += `<li class="total-recipients"><span>Total Passed Recipients: </span> ${totalCount - (parseInt(duplicateFailCount) + parseInt(failCount))}</li>`;
 
-           html += `</ul></div>${failedhtml}</div><p style="padding-top: 25px;margin-bottom: -14px;"><strong style="font-size: 18px;color: red;line-height: 1.5;text-align: center;font-weight: 800;">Once you proceed to the next step, you will no longer be able to add or remove recipients. <br>Please make sure your recipient list is complete before continuing.</strong></p></div>`;
+           html += `</ul></div>${failedhtml}</div><p style="padding-top: 25px;margin-bottom: -14px;"><strong style="font-size: 18px;color: red;line-height: 1.5;text-align: center;font-weight: 800;"> Attention! Before continuing, please ensure your recipient list is complete. You won’t be able to add or remove recipients after the next step.</strong></p></div>`;
           // html += `<p>Please confirm if you would like to proceed with the successfully added records.</p>`;
 
           const result = await Swal.fire({
