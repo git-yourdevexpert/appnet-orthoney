@@ -735,7 +735,7 @@ class OAM_WC_Customizer {
         
         $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
         $wc_order_id_exist = $wpdb->get_row($wpdb->prepare(
-            "SELECT order_id data FROM {$wc_order_relation_table} WHERE wc_order_id = %d",
+            "SELECT order_id FROM {$wc_order_relation_table} WHERE wc_order_id = %d",
             $order_id
         ));
         if (!empty($wc_order_id_exist->id)){
