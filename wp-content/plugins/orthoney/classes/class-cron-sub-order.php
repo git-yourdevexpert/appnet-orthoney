@@ -108,6 +108,13 @@ class OAM_WC_CRON_Suborder
             ['id' => $process_id]
         );
 
+        $wc_order_id_exist = $wpdb->get_row($wpdb->prepare(
+            "SELECT user_id, name, data FROM {$wc_order_relation_table} WHERE wc_order_id = %d",
+            $order_id
+        ));
+
+        if (!$wc_order_id_exist) return; 
+
         // Fetch process data
         $process_data = $wpdb->get_row($wpdb->prepare(
             "SELECT user_id, name, data FROM {$order_process_table} WHERE id = %d",
