@@ -287,7 +287,7 @@ class OAM_AFFILIATE_Helper
     public static function affiliate_current_year_order_list($details, $limit = 9999999)
     {
         if (empty($details['current_year_orders_ids'])) {
-            return '<p>Current year customer order is not found?</p>';
+            return '<p>No customer orders found for the current year</p>';
         }
 
         $total_commission = 0;

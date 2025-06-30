@@ -42,18 +42,34 @@ class OAM_WC_CRON_Suborder
         $order = wc_get_order($order_id);
         if (!$order) return;
 
-        $formatted_count = OAM_COMMON_Custom::get_current_month_count();
-        $order->update_meta_data('_orthoney_OrderID', $formatted_count);
-        $order->update_meta_data('order_process_by', OAM_COMMON_Custom::old_user_id());
-        $order->save();
+        global $wpdb;
+        $wc_order_relation_table      = $wpdb->prefix . 'oh_wc_order_relation';
+        $wc_order_id_exist = $wpdb->get_row($wpdb->prepare(
+            "SELECT order_id FROM {$wc_order_relation_table} WHERE wc_order_id = %d",
+            $order_id
+        ));
 
-        // Only schedule if order is NOT 'draft' or 'failed'
-        if (in_array($order->get_status(), ['draft', 'failed'])) {
-            return; // Do NOT schedule
-        }
+        if (empty($wc_order_id_exist->order_id)){
+    
+            $formatted_count = OAM_COMMON_Custom::get_current_month_count();
 
-        if (!wp_next_scheduled('oam_create_sub_orders_async', [$order_id])) {
-            wp_schedule_single_event(time() + 30, 'oam_create_sub_orders_async', [$order_id]);
+            if (!empty($wc_order_id_exist->order_id)){
+                $custom_order_id = $wc_order_id_exist->order_id;
+            }
+
+
+            $order->update_meta_data('_orthoney_OrderID', $formatted_count);
+            $order->update_meta_data('order_process_by', OAM_COMMON_Custom::old_user_id());
+            $order->save();
+
+            // Only schedule if order is NOT 'draft' or 'failed'
+            if (in_array($order->get_status(), ['draft', 'failed'])) {
+                return; // Do NOT schedule
+            }
+
+            if (!wp_next_scheduled('oam_create_sub_orders_async', [$order_id])) {
+                wp_schedule_single_event(time() + 30, 'oam_create_sub_orders_async', [$order_id]);
+            }
         }
     }
 
@@ -98,8 +114,17 @@ class OAM_WC_CRON_Suborder
         if (!$process_id) return;
 
         $order_type = $single_order ? 'single-order' : 'multi-recipient-order';
-
+        
         $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
+        $wc_order_id_exist = $wpdb->get_row($wpdb->prepare(
+            "SELECT order_id FROM {$wc_order_relation_table} WHERE wc_order_id = %d",
+            $order_id
+        ));
+
+        if (!empty($wc_order_id_exist->order_id)){
+            $custom_order_id = $wc_order_id_exist->order_id;
+        }
+
 
         // Update order_process_table
         $wpdb->update(
