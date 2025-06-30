@@ -1144,10 +1144,11 @@ class OAM_Ajax{
 
                 if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {
                     if (!empty($components)) {
-                        if ( ucwords(strtolower(trim($original['city'])))  !== ucwords(strtolower(trim($components['city_name']))) ) {
+                        if ( ucwords(strtolower(trim($city)))  !== ucwords(strtolower(trim($data[0]['components']['city_name']))) ) {
                             $message .= 'Provided city is invalid. Accepted city is <span style="color: #6BBE56;">' . esc_html($components['city_name']) . '</span>';
                             $success = false;
                         } 
+
                         if (($original['state'] ?? '') !== ($components['state_abbreviation'] ?? '')) {
                             $message .= 'Provided state is invalid. Accepted state is <span style="color: #6BBE56;">' . esc_html($components['state_abbreviation']) . '</span>';
                             $success = false;
@@ -3321,23 +3322,24 @@ class OAM_Ajax{
             $email = esc_html($orderdata['email']);
             $address = esc_html($orderdata['address']);
             $userinfo = esc_html($orderdata['suborder_affiliate_user_info']);
+            $affiliate_user_id = esc_html($orderdata['suborder_affiliate_user_id']);
 
             $distAddressParts = [];
             $shopAddressParts = [];
             $distNameParts = [];
 
-           $distNameParts[] = get_user_meta($user_id, '_yith_wcaf_first_name', true)?: '';
-           $distNameParts[] = get_user_meta($user_id, '_yith_wcaf_last_name', true)?: '';
-           $distAddressParts[] = get_user_meta($user_id, '_yith_wcaf_address', true)?: '';
+           $distNameParts[] = get_user_meta($affiliate_user_id, '_yith_wcaf_first_name', true)?: '';
+           $distNameParts[] = get_user_meta($affiliate_user_id, '_yith_wcaf_last_name', true)?: '';
+           $distAddressParts[] = get_user_meta($affiliate_user_id, '_yith_wcaf_address', true)?: '';
             $cityStateZip = trim(
-                rtrim( get_user_meta($user_id, '_yith_wcaf_city', true) ?? '', ',' ) . ', ' . 
-                ( get_user_meta($user_id, '_yith_wcaf_state', true) ?? '' ) . ' ' . 
-                ( get_user_meta($user_id, '_yith_wcaf_zipcode', true) ?? '' )
+                rtrim( get_user_meta($affiliate_user_id, '_yith_wcaf_city', true) ?? '', ',' ) . ', ' . 
+                ( get_user_meta($affiliate_user_id, '_yith_wcaf_state', true) ?? '' ) . ' ' . 
+                ( get_user_meta($affiliate_user_id, '_yith_wcaf_zipcode', true) ?? '' )
             );
             $distAddressParts[] = $cityStateZip;
 
             $selling_minimum_price = get_field('selling_minimum_price', 'option');
-            $custom_price = get_user_meta($user_id, 'DJarPrice', true);
+            $custom_price = get_user_meta($affiliate_user_id, 'DJarPrice', true);
             if($custom_price != '' OR $custom_price < $selling_minimum_price){
                 $custom_price = $selling_minimum_price;
             }
