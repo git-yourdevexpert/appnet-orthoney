@@ -113,184 +113,185 @@ class OAM_WC_CRON_Suborder
             $order_id
         ));
 
-        if (!empty($wc_order_id_exist->id)) return;
+        if (empty($wc_order_id_exist->id)){
 
-        // Fetch process data
-        $process_data = $wpdb->get_row($wpdb->prepare(
-            "SELECT user_id, name, data FROM {$order_process_table} WHERE id = %d",
-            $process_id
-        ));
-
-        if (!$process_data) return;
-
-        $decoded_data     = json_decode($process_data->data ?? '', true);
-        $affiliate        = $decoded_data['affiliate_select'] ?? 0;
-        $affiliate_token  = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d", $affiliate));
-        $affiliate_id     = $affiliate_token ? $wpdb->get_var($wpdb->prepare("SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE token = %s", $affiliate_token)) : 0;
-
-        OAM_COMMON_Custom::sub_order_error_log("affiliate: {$affiliate}, token: {$affiliate_token}", $order_id);
-
-        if ($order_type !== 'multi-recipient-order') return;
-
-        // Insert WC Order Relation
-        $wpdb->insert($wc_order_relation_table, [
-            'user_id'           => (int) $process_data->user_id,
-            'wc_order_id'       => (int) $order_id,
-            'order_id'          => sanitize_text_field($custom_order_id),
-            'quantity'          => (int) $total_quantity,
-            'order_type'        => $single_order ? 'single_address' : 'multi_address',
-            'affiliate_code'    => sanitize_text_field($affiliate_token ?: 'Orthoney'),
-            'affiliate_user_id' => (int) $affiliate_id,
-        ]);
-
-        // Ensure Group
-        $group_id = $wpdb->get_var($wpdb->prepare(
-            "SELECT id FROM {$group_table} WHERE order_id = %d AND pid = %d",
-            $order_id,
-            $process_id
-        ));
-
-        if (!$group_id) {
-            $wpdb->insert($group_table, [
-                'user_id'    => $process_data->user_id,
-                'pid'        => $process_id,
-                'order_id'   => $order_id,
-                'visibility' => 1,
-                'name'       => sanitize_text_field($process_data->name),
-            ]);
-            $group_id = $wpdb->insert_id;
-        }
-
-        // Check recipient count
-        $existing_count = (int) $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(id) FROM {$group_recipient_table} WHERE group_id = %d",
-            $group_id
-        ));
-
-        if ($existing_count === $total_quantity) return;
-
-        $recipients = OAM_Helper::get_recipient_by_pid($process_id);
-        if (empty($recipients)) return;
-
-        $recipient_ids = wp_list_pluck($recipients, 'id');
-        $placeholders  = implode(',', array_fill(0, count($recipient_ids), '%d'));
-
-        // Update order_id in recipients
-        $wpdb->query($wpdb->prepare(
-            "UPDATE {$order_process_recipient_table} SET order_id = %s WHERE id IN ($placeholders)",
-            array_merge([$custom_order_id], $recipient_ids)
-        ));
-
-        $recipient_rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM {$order_process_recipient_table} WHERE id IN ($placeholders)",
-            $recipient_ids
-        ));
-
-        if (empty($recipient_rows)) return;
-
-        $count = 0;
-        foreach ($recipient_rows as $recipient) {
-            $exists = $wpdb->get_var($wpdb->prepare(
-                "SELECT id FROM {$recipient_order_table} WHERE recipient_id = %d AND order_id = %s",
-                $recipient->id,
-                $custom_order_id
+            // Fetch process data
+            $process_data = $wpdb->get_row($wpdb->prepare(
+                "SELECT user_id, name, data FROM {$order_process_table} WHERE id = %d",
+                $process_id
             ));
-            if ($exists) continue;
 
-            $count++;
-            $sub_order_id = $custom_order_id . '-' . $count;
+            if (!$process_data) return;
 
-            // Insert recipient order
-            $recipient_order_data = [
-                'ID'                 => $count,
-                'pid'                => $process_id,
-                'created_by'         => OAM_COMMON_Custom::old_user_id(),
-                'order_id'           => $custom_order_id,
-                'recipient_id'       => $recipient->id,
-                'recipient_order_id' => $sub_order_id,
-                'affiliate_token'    => $affiliate_token ?? 'Orthoney',
-                'country'            => 'US',
-                'order_type'         => $order_type,
-                'user_id'            => $recipient->user_id ?? 0,
-                'full_name'          => sanitize_text_field($recipient->full_name),
-                'company_name'       => sanitize_text_field($recipient->company_name),
-                'address_1'          => sanitize_text_field($recipient->address_1),
-                'address_2'          => sanitize_text_field($recipient->address_2),
-                'city'               => sanitize_text_field($recipient->city),
-                'state'              => sanitize_text_field($recipient->state),
-                'zipcode'            => sanitize_text_field($recipient->zipcode),
-                'greeting'           => sanitize_text_field($recipient->greeting),
-                'quantity'           => sanitize_text_field($recipient->quantity),
-                'address_verified'   => sanitize_text_field($recipient->address_verified),
-            ];
-            $wpdb->insert($recipient_order_table, $recipient_order_data);
+            $decoded_data     = json_decode($process_data->data ?? '', true);
+            $affiliate        = $decoded_data['affiliate_select'] ?? 0;
+            $affiliate_token  = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d", $affiliate));
+            $affiliate_id     = $affiliate_token ? $wpdb->get_var($wpdb->prepare("SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE token = %s", $affiliate_token)) : 0;
 
-            // Insert group recipient
-            $group_recipient_data = [
-                'recipient_id'      => $recipient->id,
-                'group_id'          => $group_id,
-                'order_id'          => $sub_order_id,
-                'visibility'        => 1,
-                'new'               => 0,
-                'update_type'       => 0,
-                'verified'          => sanitize_text_field($recipient->verified),
-                'reasons'           => sanitize_text_field($recipient->reasons),
-                'user_id'           => $recipient->user_id ?? 0,
-                'full_name'         => sanitize_text_field($recipient->full_name),
-                'company_name'      => sanitize_text_field($recipient->company_name),
-                'address_1'         => sanitize_text_field($recipient->address_1),
-                'address_2'         => sanitize_text_field($recipient->address_2),
-                'city'              => sanitize_text_field($recipient->city),
-                'state'             => sanitize_text_field($recipient->state),
-                'zipcode'           => sanitize_text_field($recipient->zipcode),
-                'quantity'          => sanitize_text_field($recipient->quantity),
-                'address_verified'  => sanitize_text_field($recipient->address_verified),
-                'greeting'          => sanitize_text_field($recipient->greeting),
-            ];
-            $wpdb->insert($group_recipient_table, $group_recipient_data);
+            OAM_COMMON_Custom::sub_order_error_log("affiliate: {$affiliate}, token: {$affiliate_token}", $order_id);
 
-            // Handle Jar Order Creation
-            $jar_order_type = $recipient->quantity > 6 ? 'internal' : 'external';
-            for ($i = 1; $i <= $recipient->quantity; $i++) {
-                $jar_id = $sub_order_id . '-' . $i;
-                $wpdb->insert($oh_wc_jar_order, [
-                    'order_id'           => $custom_order_id,
-                    'recipient_order_id' => $sub_order_id,
-                    'jar_order_id'       => $jar_id,
-                    'tracking_no'        => '',
-                    'quantity'           => ($jar_order_type === 'internal') ? $recipient->quantity : 1,
-                    'order_type'         => $jar_order_type,
-                    'status'             => ''
+            if ($order_type !== 'multi-recipient-order') return;
+
+            // Insert WC Order Relation
+            $wpdb->insert($wc_order_relation_table, [
+                'user_id'           => (int) $process_data->user_id,
+                'wc_order_id'       => (int) $order_id,
+                'order_id'          => sanitize_text_field($custom_order_id),
+                'quantity'          => (int) $total_quantity,
+                'order_type'        => $single_order ? 'single_address' : 'multi_address',
+                'affiliate_code'    => sanitize_text_field($affiliate_token ?: 'Orthoney'),
+                'affiliate_user_id' => (int) $affiliate_id,
+            ]);
+
+            // Ensure Group
+            $group_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT id FROM {$group_table} WHERE order_id = %d AND pid = %d",
+                $order_id,
+                $process_id
+            ));
+
+            if (!$group_id) {
+                $wpdb->insert($group_table, [
+                    'user_id'    => $process_data->user_id,
+                    'pid'        => $process_id,
+                    'order_id'   => $order_id,
+                    'visibility' => 1,
+                    'name'       => sanitize_text_field($process_data->name),
                 ]);
-                if ($jar_order_type === 'external' && $i === $recipient->quantity) {
-                    $wpdb->insert($oh_jar_order_greeting, [
+                $group_id = $wpdb->insert_id;
+            }
+
+            // Check recipient count
+            $existing_count = (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(id) FROM {$group_recipient_table} WHERE group_id = %d",
+                $group_id
+            ));
+
+            if ($existing_count === $total_quantity) return;
+
+            $recipients = OAM_Helper::get_recipient_by_pid($process_id);
+            if (empty($recipients)) return;
+
+            $recipient_ids = wp_list_pluck($recipients, 'id');
+            $placeholders  = implode(',', array_fill(0, count($recipient_ids), '%d'));
+
+            // Update order_id in recipients
+            $wpdb->query($wpdb->prepare(
+                "UPDATE {$order_process_recipient_table} SET order_id = %s WHERE id IN ($placeholders)",
+                array_merge([$custom_order_id], $recipient_ids)
+            ));
+
+            $recipient_rows = $wpdb->get_results($wpdb->prepare(
+                "SELECT * FROM {$order_process_recipient_table} WHERE id IN ($placeholders)",
+                $recipient_ids
+            ));
+
+            if (empty($recipient_rows)) return;
+
+            $count = 0;
+            foreach ($recipient_rows as $recipient) {
+                $exists = $wpdb->get_var($wpdb->prepare(
+                    "SELECT id FROM {$recipient_order_table} WHERE recipient_id = %d AND order_id = %s",
+                    $recipient->id,
+                    $custom_order_id
+                ));
+                if ($exists) continue;
+
+                $count++;
+                $sub_order_id = $custom_order_id . '-' . $count;
+
+                // Insert recipient order
+                $recipient_order_data = [
+                    'ID'                 => $count,
+                    'pid'                => $process_id,
+                    'created_by'         => OAM_COMMON_Custom::old_user_id(),
+                    'order_id'           => $custom_order_id,
+                    'recipient_id'       => $recipient->id,
+                    'recipient_order_id' => $sub_order_id,
+                    'affiliate_token'    => $affiliate_token ?? 'Orthoney',
+                    'country'            => 'US',
+                    'order_type'         => $order_type,
+                    'user_id'            => $recipient->user_id ?? 0,
+                    'full_name'          => sanitize_text_field($recipient->full_name),
+                    'company_name'       => sanitize_text_field($recipient->company_name),
+                    'address_1'          => sanitize_text_field($recipient->address_1),
+                    'address_2'          => sanitize_text_field($recipient->address_2),
+                    'city'               => sanitize_text_field($recipient->city),
+                    'state'              => sanitize_text_field($recipient->state),
+                    'zipcode'            => sanitize_text_field($recipient->zipcode),
+                    'greeting'           => sanitize_text_field($recipient->greeting),
+                    'quantity'           => sanitize_text_field($recipient->quantity),
+                    'address_verified'   => sanitize_text_field($recipient->address_verified),
+                ];
+                $wpdb->insert($recipient_order_table, $recipient_order_data);
+
+                // Insert group recipient
+                $group_recipient_data = [
+                    'recipient_id'      => $recipient->id,
+                    'group_id'          => $group_id,
+                    'order_id'          => $sub_order_id,
+                    'visibility'        => 1,
+                    'new'               => 0,
+                    'update_type'       => 0,
+                    'verified'          => sanitize_text_field($recipient->verified),
+                    'reasons'           => sanitize_text_field($recipient->reasons),
+                    'user_id'           => $recipient->user_id ?? 0,
+                    'full_name'         => sanitize_text_field($recipient->full_name),
+                    'company_name'      => sanitize_text_field($recipient->company_name),
+                    'address_1'         => sanitize_text_field($recipient->address_1),
+                    'address_2'         => sanitize_text_field($recipient->address_2),
+                    'city'              => sanitize_text_field($recipient->city),
+                    'state'             => sanitize_text_field($recipient->state),
+                    'zipcode'           => sanitize_text_field($recipient->zipcode),
+                    'quantity'          => sanitize_text_field($recipient->quantity),
+                    'address_verified'  => sanitize_text_field($recipient->address_verified),
+                    'greeting'          => sanitize_text_field($recipient->greeting),
+                ];
+                $wpdb->insert($group_recipient_table, $group_recipient_data);
+
+                // Handle Jar Order Creation
+                $jar_order_type = $recipient->quantity > 6 ? 'internal' : 'external';
+                for ($i = 1; $i <= $recipient->quantity; $i++) {
+                    $jar_id = $sub_order_id . '-' . $i;
+                    $wpdb->insert($oh_wc_jar_order, [
                         'order_id'           => $custom_order_id,
                         'recipient_order_id' => $sub_order_id,
                         'jar_order_id'       => $jar_id,
+                        'tracking_no'        => '',
+                        'quantity'           => ($jar_order_type === 'internal') ? $recipient->quantity : 1,
+                        'order_type'         => $jar_order_type,
+                        'status'             => ''
+                    ]);
+                    if ($jar_order_type === 'external' && $i === $recipient->quantity) {
+                        $wpdb->insert($oh_jar_order_greeting, [
+                            'order_id'           => $custom_order_id,
+                            'recipient_order_id' => $sub_order_id,
+                            'jar_order_id'       => $jar_id,
+                            'greeting'           => $recipient->greeting,
+                        ]);
+                    }
+                }
+
+                if ($jar_order_type === 'internal') {
+                    $wpdb->insert($oh_jar_order_greeting, [
+                        'order_id'           => $custom_order_id,
+                        'recipient_order_id' => $sub_order_id,
+                        'jar_order_id'       => $sub_order_id . '-1',
                         'greeting'           => $recipient->greeting,
                     ]);
                 }
+
+                OAM_COMMON_Custom::sub_order_error_log("Sub-order created for Recipient ID: {$recipient->id} → Sub Order ID: {$sub_order_id}", $order_id);
             }
 
-            if ($jar_order_type === 'internal') {
-                $wpdb->insert($oh_jar_order_greeting, [
-                    'order_id'           => $custom_order_id,
-                    'recipient_order_id' => $sub_order_id,
-                    'jar_order_id'       => $sub_order_id . '-1',
-                    'greeting'           => $recipient->greeting,
-                ]);
-            }
+            // Finalize
+            $main_order->update_meta_data('_oam_suborders_ready', 1);
+            $main_order->save();
 
-            OAM_COMMON_Custom::sub_order_error_log("Sub-order created for Recipient ID: {$recipient->id} → Sub Order ID: {$sub_order_id}", $order_id);
+            WC()->mailer()->get_emails()['WC_Email_Customer_Processing_Order']->trigger($order_id);
+
+            OAM_COMMON_Custom::sub_order_error_log('End create sub order: ' . $order_id, $order_id);
         }
-
-        // Finalize
-        $main_order->update_meta_data('_oam_suborders_ready', 1);
-        $main_order->save();
-
-        WC()->mailer()->get_emails()['WC_Email_Customer_Processing_Order']->trigger($order_id);
-
-        OAM_COMMON_Custom::sub_order_error_log('End create sub order: ' . $order_id, $order_id);
     }
 }
 new OAM_WC_CRON_Suborder();
