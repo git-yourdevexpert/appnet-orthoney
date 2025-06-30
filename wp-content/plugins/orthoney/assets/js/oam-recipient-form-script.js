@@ -551,7 +551,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
           if (parseInt(unverifiedCount) != 0 && parseInt(verifiedCount) == 0) {
             const count = parseInt(unverifiedCount);
-            html = `All submitted address(es) Rejected`;
+            html = `All submitted address(es) ${count === 1 ? 'is' : 'are'} Rejected`;
           }
 
           if (html == "") {
@@ -977,9 +977,7 @@ document.addEventListener("DOMContentLoaded", function () {
             failCount == 0 &&
             duplicateFailCount == 0
           ) {
-            html = `All (${totalCount}) recipient(s) ${
-              totalCount === 1 ? "has" : "have"
-            } been added`;
+            html = `All (${totalCount}) recipient(s) added`;
           } else if (
             parseInt(successCount) +
               parseInt(newCount) +
