@@ -592,6 +592,7 @@ class OAM_COMMON_Custom {
 
                 $affiliate_org_name = $clean($result->first_name ?? '');
                 $affiliate_org_email = $clean($result->_yith_wcaf_email ?: $result->user_email ?: '');
+                $affiliate_user_id = $clean($result->affiliate_user_id ?: $result->affiliate_user_id ?: 0);
 
                 $sub[] = [
                     'suborder_affiliate_user_id'    => $affiliate_user_id,

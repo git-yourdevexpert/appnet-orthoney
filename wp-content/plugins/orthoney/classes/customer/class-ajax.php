@@ -1144,11 +1144,10 @@ class OAM_Ajax{
 
                 if ($dpv_match_code !== 'N' && !empty($dpv_match_code)) {
                     if (!empty($components)) {
-                        if ( ucwords(strtolower(trim($city)))  !== ucwords(strtolower(trim($data[0]['components']['city_name']))) ) {
+                       if ( ucwords(strtolower(trim($original['city'])))  !== ucwords(strtolower(trim($components['city_name']))) ) {
                             $message .= 'Provided city is invalid. Accepted city is <span style="color: #6BBE56;">' . esc_html($components['city_name']) . '</span>';
                             $success = false;
                         } 
-
                         if (($original['state'] ?? '') !== ($components['state_abbreviation'] ?? '')) {
                             $message .= 'Provided state is invalid. Accepted state is <span style="color: #6BBE56;">' . esc_html($components['state_abbreviation']) . '</span>';
                             $success = false;
@@ -3318,11 +3317,12 @@ class OAM_Ajax{
             $order = wc_get_order($order_id);
             $orderdata = OAM_COMMON_Custom::orthoney_get_order_data($order_id);
 
+          
             $name = esc_html($orderdata['customer_name']);
             $email = esc_html($orderdata['email']);
             $address = esc_html($orderdata['address']);
             $userinfo = esc_html($orderdata['suborder_affiliate_user_info']);
-            $affiliate_user_id = esc_html($orderdata['suborder_affiliate_user_id']);
+            
 
             $distAddressParts = [];
             $shopAddressParts = [];
@@ -3337,12 +3337,7 @@ class OAM_Ajax{
                 ( get_user_meta($affiliate_user_id, '_yith_wcaf_zipcode', true) ?? '' )
             );
             $distAddressParts[] = $cityStateZip;
-
-            $selling_minimum_price = get_field('selling_minimum_price', 'option');
-            $custom_price = get_user_meta($affiliate_user_id, 'DJarPrice', true);
-            if($custom_price != '' OR $custom_price < $selling_minimum_price){
-                $custom_price = $selling_minimum_price;
-            }
+            
 
             $shop_address = get_option( 'woocommerce_store_address' );
             $shop_address_2 = get_option( 'woocommerce_store_address_2' );
@@ -3385,14 +3380,21 @@ class OAM_Ajax{
             $affiliate_org_name = 'Honey from the Heart';
             $affiliate_org_email = '';
 
+            $custom_price = 0;
             if (!empty($orderdata['suborderdata'])) {
                 $affiliate_user_id = $orderdata['suborderdata'][0]['suborder_affiliate_user_id'];
                 $yith_wcaf_email = get_user_meta($affiliate_user_id, '_yith_wcaf_email', true);
+                $selling_minimum_price = (int) get_field('selling_minimum_price', 'option');
+                $custom_price = (int) get_user_meta($affiliate_user_id, 'DJarPrice', true)?: 0;
+                if($custom_price < $selling_minimum_price){
+                    $custom_price = $selling_minimum_price;
+                }
+                
                 $affiliate_org_name = $orderdata['suborderdata'][0]['suborder_affiliate_org_name'];
                 $affiliate_org_email = $yith_wcaf_email ?: $orderdata['suborderdata'][0]['suborder_affiliate_org_email'];
             }
 
-            
+          
             $affiliate_org_name = 'Honey from the Heart';
             $suborder_affiliate_token = 'Honey from the Heart';
             $refersite = site_url();
