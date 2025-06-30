@@ -738,7 +738,8 @@ class OAM_WC_Customizer {
             "SELECT order_id FROM {$wc_order_relation_table} WHERE wc_order_id = %d",
             $order_id
         ));
-        if (!empty($wc_order_id_exist->id)){
+
+        if (!empty($wc_order_id_exist->order_id)){
             $custom_order_id = $wc_order_id_exist->order_id;
         }
 
