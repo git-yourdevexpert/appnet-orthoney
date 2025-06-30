@@ -731,11 +731,22 @@ class OAM_WC_Customizer {
 
         if (!$process_id) return;
 
+        $wc_order_relation_table      = $wpdb->prefix . 'oh_wc_order_relation';
+        
+        $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
+        $wc_order_id_exist = $wpdb->get_row($wpdb->prepare(
+            "SELECT order_id data FROM {$wc_order_relation_table} WHERE wc_order_id = %d",
+            $order_id
+        ));
+        if (!empty($wc_order_id_exist->id)){
+            $custom_order_id = $wc_order_id_exist->order_id;
+        }
+
 
         $yith_wcaf_affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
         $order_process_table = OAM_Helper::$order_process_table;
 
-        $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
+       
         // $yith_wcaf_referral = OAM_COMMON_Custom::get_order_meta($order_id, '_yith_wcaf_referral');
 
         $result = $wpdb->get_row($wpdb->prepare("SELECT data FROM {$order_process_table} WHERE id = %d", $process_id));
