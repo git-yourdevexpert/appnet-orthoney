@@ -5222,3 +5222,16 @@ body.administrator-dashboard-active .top-bar-menu .administrator-dashboard-link 
 .dashboard-heading.block-row .item.error-message-box .block-title{
   color: #fff;
 }
+
+.dashboard-heading.block-row .item.success-message-box,
+.wc-block-components-form.wc-block-checkout__form.show-message .organization-not-active-error-message .success-message-box{
+  background: #6BBE56;
+  color: #fff;
+  padding: 20px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.dashboard-heading.block-row .item.success-message-box .block-title{
+  color: #fff;
+}

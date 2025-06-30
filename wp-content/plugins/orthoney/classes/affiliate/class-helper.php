@@ -557,11 +557,11 @@ class OAM_AFFILIATE_Helper
 
             $total_quantity_commission = '';
             if($details['current_year_total_quantity'] < 50){
-                $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item error-message-box"><div class="row-block"><p >To qualify for commission, a minimum of 50 jars is required. You`re just ' . (50 - $details['current_year_total_quantity']) . ' jars away, keep going!</p></div></div></div>';
+                $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item success-message-box"><div class="row-block"><p >To qualify for commission, a minimum of 50 jars is required. You`re just ' . (50 - $details['current_year_total_quantity']) . ' jars away, keep going!</p></div></div></div>';
             }
             if($details['current_year_total_quantity'] >= 50 && $details['current_year_total_quantity'] < 100){
 
-                 $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item error-message-box"><div class="row-block"><p >You`re very close to your next Profit-Sharing level! Add just ' . (100 - $details['current_year_total_quantity']) . ' more jars to reach 100 jars and unlock additional benefits.</p></div></div></div>';
+                 $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item success-message-box"><div class="row-block"><p >You`re very close to your next Profit-Sharing level! Add just ' . (100 - $details['current_year_total_quantity']) . ' more jars to reach 100 jars and unlock additional benefits.</p></div></div></div>';
             }
             $html .= '
                 <div class="dashboard-heading block-row">
@@ -574,7 +574,7 @@ class OAM_AFFILIATE_Helper
                 </div>'.$total_quantity_commission;
 
                 if(!empty($cbr_ids_array)){
-                     $html .= '<div class="dashboard-heading block-row"><div class="item">
+                    $html .= '<div class="dashboard-heading block-row"><div class="item">
                         <div class="row-block">
                         <h3 class="block-title">Sales Representative</h3>
                         </div>
@@ -592,13 +592,10 @@ class OAM_AFFILIATE_Helper
                             ]);
                             $html .= '<div class="item-box">';
                             $html .= implode('<br>', $output_parts);
-                             $html .= '</div>';
+                            $html .= '</div>';
                         }
-
-                     $html .= '</div></div></div>';
-
+                        $html .= '</div></div></div>';
                 }
-
 
                  $html .= '<div class="block-row three-block-col">
                     <div class="place-order item" style="display:none">
@@ -639,16 +636,17 @@ class OAM_AFFILIATE_Helper
                     <style>
                     .commission-calc{
                         list-style: none;
-    margin: 0;
-    font-size: 16px;
-    color: #000;
+                    margin: 0;
+                    font-size: 16px;
+                    color: #000;
+                                    }
+                    .commission-calc li{
+                    display: flex;
+                    justify-content: space-between;
+                        }
+                    .commission-calc li.total{    border-top: 2px solid #ddd;
+                    padding-top: 10px;
                     }
-    .commission-calc li{
-    display: flex;
-    justify-content: space-between;
-        }
-    .commission-calc li.total{    border-top: 2px solid #ddd;
-    padding-top: 10px;}
                     </style>
                      <div class="place-order item">
                         <div class="row-block">
@@ -667,9 +665,9 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Dist Unit Cost </span><span>'.wc_price($unit_cost).'</span></li>
                                     <li><span>Dist Unit Profit <div class="tooltip" data-tippy="(Dist Unit Price - Dist Unit Cost )"></div></span><span>'.wc_price($unit_price - $unit_cost).'</span></li>
                                     <li><span>Total Cost <div class="tooltip" data-tippy="(Fundrs Total + Wholesale Total )"></div> </span><span>'.wc_price(($fundraising_qty * $unit_price) + ($wholesale_qty * $unit_price)).'</span></li>
-                                   
+                                 
                                     <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Total Qty * Dist Unit Cost )"></div></span><span>'.wc_price($total_all_quantity * $unit_cost).'</span></li>
-                                    <li class="total"><span>Distributor Sales Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div> </span><span>'.(($details['total_quantity'] > 50) ? wc_price($fundraising_qty * ($unit_price - $unit_cost)) :  wc_price(0)).'</span></li>
+                                    <li class="total"><span>Distributor Sales Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div> </span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  :  wc_price($fundraising_qty * ($unit_price - $unit_cost)) ).'</span></li>
                                 </ul>
                             </div>
                         </div>
@@ -692,7 +690,7 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Dist Unit Profit <div class="tooltip" data-tippy="(Dist Unit Price - Dist Unit Cost )"></div></span><span>'.wc_price($unit_price - $unit_cost).'</span></li>
                                      <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Price )"></div></span><span>'.wc_price($fundraising_qty * $unit_cost).'</span></li>
                                     <li ><span>Fundraising Total <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Price )"></div></span><span>'.wc_price($fundraising_qty * $unit_price).'</span></li>
-                                    <li  class="total"><span>Fundraising Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div></span><span>'.wc_price($fundraising_qty * ($unit_price - $unit_cost)).'</span></li>
+                                    <li  class="total"><span>Fundraising Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price($fundraising_qty * ($unit_price - $unit_cost))).'</span></li>
                                     
                                 </ul>
                             </div>
