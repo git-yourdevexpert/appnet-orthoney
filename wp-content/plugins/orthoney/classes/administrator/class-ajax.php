@@ -20,17 +20,56 @@ class OAM_ADMINISTRATOR_AJAX {
      * administrator callback
      */
     public function orthoney_orthoney_activate_affiliate_account_ajax_handler() {
+        global $wpdb;
+
         $user_id = intval($_POST['user_id'] ?? 0);
 
         if (!$user_id) {
             wp_send_json_error(['message' => 'Invalid user ID.']);
         }
-        // Optionally set any user meta or status updates here
-        // Example:
-        update_user_meta($user_id, 'activate_affiliate_account', 1);
+
+        $yith_wcaf_affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+        $affiliate_token = $wpdb->get_var($wpdb->prepare(
+            "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d",
+            $user_id
+        ));
+
+        $organization_name = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+
+        $to = 'support@orthoney.com';
+        $subject = 'Organization Account Activated for the Season';
+
+        // Create the content of your custom message
+        $custom_message = '<p>Hello Honey From The Heart Team,</p>';
+        $custom_message .= '<p>We’d like to inform you that the following organization has activated their account for this season:</p>';
+        $custom_message .= '<ul>';
+        $custom_message .= '<li><strong>Organization Code: </strong>' . esc_html($affiliate_token) . '</li>';
+        $custom_message .= '<li><strong>Organization Name: </strong>' . esc_html($organization_name) . '</li>';
+        $custom_message .= '</ul>';
+        $custom_message .= '<p>Warm regards,<br>Honey From The Heart Team</p>';
+
+        // Get WooCommerce mailer
+        $mailer = WC()->mailer();
+
+        // Wrap message using WooCommerce email template
+        $wrapped_message = $mailer->wrap_message($subject, $custom_message);
+
+        // Get headers (with content type and from name/email if needed)
+        $headers = ['Content-Type: text/html; charset=UTF-8'];
+
+        // Send email using WooCommerce mailer
+        $mail_sent = $mailer->send($to, $subject, $wrapped_message, $headers);
+
+        if (!$mail_sent) {
+            wp_send_json_error(['message' => 'Failed to send email.']);
+        }
+
+        // Optionally update metadata
+        // update_user_meta($user_id, 'activate_affiliate_account', 1);
 
         wp_send_json_success(['message' => 'Your account has been successfully activated.']);
     }
+
 
     // DB changes on 18-6-2025 for the show details
     public function orthoney_admin_get_customers_data_handler() {
