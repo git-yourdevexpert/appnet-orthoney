@@ -40,7 +40,7 @@ class OAM_ADMINISTRATOR_AJAX {
         $subject = 'Organization Account Activated for the Season';
 
         // Create the content of your custom message
-        $custom_message = '<p>Hello Honey From The Heart Team,</p>';
+        $custom_message = '<p>Hello,</p>';
         $custom_message .= '<p>We’d like to inform you that the following organization has activated their account for this season:</p>';
         $custom_message .= '<ul>';
         $custom_message .= '<li><strong>Organization Code: </strong>' . esc_html($affiliate_token) . '</li>';
@@ -65,7 +65,7 @@ class OAM_ADMINISTRATOR_AJAX {
         }
 
         // Optionally update metadata
-        // update_user_meta($user_id, 'activate_affiliate_account', 1);
+        update_user_meta($user_id, 'activate_affiliate_account', 1);
 
         wp_send_json_success(['message' => 'Your account has been successfully activated.']);
     }
