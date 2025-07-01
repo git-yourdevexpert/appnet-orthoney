@@ -3421,7 +3421,7 @@ class OAM_Ajax{
                 $pdftypepdfcontent = "
                     <p>Thank you for your previous support to $affiliate_org_name. It's time again to send the sweetest Rosh Hashanah greetings by supporting $affiliate_org_name with your honey purchase.</p>
                     <p>For your ordering convenience, the details of your last order are listed below. To order, simply update this form with any additions, deletions or corrections, fill out the payment section and mail it to $distName $distAddress.</p>
-                    <p>Mail orders must be received by $shipStartDate. Your order will be shipped to arrive in time for Rosh Hashanah.</p>";
+                    <p>Mail orders must be received by $paperDeadlineDate. Your order will be shipped to arrive in time for Rosh Hashanah.</p>";
             } elseif ($custom_order_pdf_type == "4p" OR $custom_order_pdf_type == "4e") {
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
