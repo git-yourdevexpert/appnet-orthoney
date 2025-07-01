@@ -363,7 +363,7 @@ class OAM_AFFILIATE_Helper
                                 <th>Qty</th>
                                 <th>Type</th>
                                 <th>Fundrs total<br><small>(Fundraising Qty * Dist Unit Price )</small></th>
-                                <th>Distributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></th>
+                                <th>Distributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )<div class="tooltip" data-tippy="There is no profit-sharing for orders under 50 jars. Once your organization reaches 50 jars, profit-sharing begins. Your rate increases again at 100 jars. Final earnings are calculated based on total confirmed sales at the end of the season."></div></small></th>
                                 <th>Order Date</th>
                             </tr>
                         </thead>
