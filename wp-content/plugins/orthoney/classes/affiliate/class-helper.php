@@ -110,27 +110,27 @@ class OAM_AFFILIATE_Helper
                 <input type="hidden" id="user_id" name="user_id" required />
                 <input type="hidden" id="affiliate_id" name="affiliate_id" value="<?php echo $affiliate_id ?>" required/>
                 <div class="form-row gfield--width-half">
-                    <label for="first_name"> First Name</label>
+                    <label for="first_name"> First Name <span class="required">*</span></label>
                     <input type="text" id="first_name" name="first_name" required data-error-message="Please enter a First Name." />
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-half">
-                    <label for="last_name">Last Name</label>
+                    <label for="last_name">Last Name <span class="required">*</span></label>
                     <input type="text" id="last_name" name="last_name" required data-error-message="Please enter a Last Name." />
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-full">
-                    <label for="email">Email</label>
+                    <label for="email">Email <span class="required">*</span></label>
                     <input type="email" id="email" name="email" required data-error-message="Please enter a valid Email." />
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-full">
-                    <label for="phone">Phone Number</label>
+                    <label for="phone">Phone Number <span class="required">*</span></label>
                     <input type="text" id="phone" name="phone" class="phone-input" required data-error-message="Please enter a Phone Number." />
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-full">
-                    <label for="affiliate_type">Type</label>
+                    <label for="affiliate_type">Type <span class="required">*</span></label>
                     <select name="type" id="affiliate_type" required data-error-message="Please select a Type.">
                         <option value="">Select a Type</option>
                         <option value="primary-contact">Primary Contact</option>
