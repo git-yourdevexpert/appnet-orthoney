@@ -139,107 +139,127 @@ function affiliateDatatable() {
     }
   });
 
-  ["affiliate-orderlist-table"].forEach((id) => {
-    const div = document.getElementById(id);
-    if (div && div.innerHTML.trim() !== "") {
-      const tableEl = div.querySelector("table");
-      if (tableEl && !jQuery(tableEl).hasClass("dataTable")) {
-        const $table = jQuery(tableEl);
-        const dateColIndex = 5; // Adjust this if "Date" column is at a different index
-        const lastColIndex = $table.find("thead th").length - 1;
+  
+["affiliate-orderlist-table"].forEach((id) => {
+  const div = document.getElementById(id);
+  if (div && div.innerHTML.trim() !== "") {
+    const tableEl = div.querySelector("table");
+    if (tableEl && !jQuery(tableEl).hasClass("dataTable")) {
+      const $table = jQuery(tableEl);
+      const dateColIndex = 5; // Change if Date column index is different
+      const lastColIndex = $table.find("thead th").length - 1;
 
-        // Create Year filter dropdown with spacing
-        const yearSelect = jQuery(`
+      // Custom sort: ignore '#' in the first column
+      jQuery.fn.dataTable.ext.type.order["ignore-hash-asc"] = function (a, b) {
+        return (
+          (parseInt(a.replace(/^#/, ""), 10) || 0) -
+          (parseInt(b.replace(/^#/, ""), 10) || 0)
+        );
+      };
+      jQuery.fn.dataTable.ext.type.order["ignore-hash-desc"] = function (a, b) {
+        return (
+          (parseInt(b.replace(/^#/, ""), 10) || 0) -
+          (parseInt(a.replace(/^#/, ""), 10) || 0)
+        );
+      };
+
+      // Create Year filter dropdown with spacing
+      const yearSelect = jQuery(`
         <select id="yearFilter" class="form-control" style="margin-left: 10px;">
           <option value="">Filter by Year</option>
         </select>
       `);
 
-        // Initialize DataTable
-        const dataTable = $table.DataTable({
-          paging: true,
-          pageLength: 50,
-          lengthMenu: [
-            [10, 25, 50, 100],
-            [10, 25, 50, 100]
-          ],
-          fixedHeader: true,
-          scrollCollapse: false,
-          info: true,
-          searching: true,
-          responsive: true,
-          deferRender: false,
-          lengthChange: false,
-          
-          language: {
-            search: "",
-            searchPlaceholder: "Search..."
+      // Initialize DataTable
+      const dataTable = $table.DataTable({
+        paging: true,
+        pageLength: 50,
+        lengthMenu: [
+          [10, 25, 50, 100],
+          [10, 25, 50, 100]
+        ],
+        fixedHeader: true,
+        scrollCollapse: false,
+        info: true,
+        searching: true,
+        responsive: true,
+        deferRender: false,
+        order: [[0, "desc"]], // Sort by first column (ignoring #)
+        lengthChange: false,
+        language: {
+          search: "",
+          searchPlaceholder: "Search..."
+        },
+        columnDefs: [
+          {
+            targets: 0, // First column
+            type: "ignore-hash" // Use custom sort type
           },
-          columnDefs: [
-            {
-              targets: lastColIndex, // Last column (e.g., Actions)
-              orderable: false
-            }
-          ],
-          initComplete: function () {
-            // Extract years from Date column
-            const years = new Set();
-            this.api()
-              .column(dateColIndex)
-              .data()
-              .each(function (d) {
-                const match = d.match(/\d{2}\/\d{2}\/(\d{4})/); // Match MM/DD/YYYY
-                if (match) {
-                  years.add(match[1]); // Get year part
-                }
-              });
-
-            // Populate dropdown
-            Array.from(years)
-              .sort((a, b) => b - a)
-              .forEach((year) => {
-                yearSelect.append(`<option value="${year}">${year}</option>`);
-              });
-
-            // Append dropdown next to search box
-            jQuery(`.dataTables_filter label`).before(yearSelect);
+          {
+            targets: lastColIndex, // Last column (e.g., Actions)
+            orderable: false
           }
-        });
+        ],
+        initComplete: function () {
+          // Extract years from Date column
+          const years = new Set();
+          this.api()
+            .column(dateColIndex)
+            .data()
+            .each(function (d) {
+              const match = d.match(/\d{2}\/\d{2}\/(\d{4})/); // Match MM/DD/YYYY
+              if (match) {
+                years.add(match[1]); // Get year
+              }
+            });
 
-        // Year filter change event
-        yearSelect.on("change", function () {
-          const selectedYear = this.value;
-          if (selectedYear) {
-            dataTable
-              .column(dateColIndex)
-              .search(`/${selectedYear}$`, true, false)
-              .draw();
-          } else {
-            dataTable.column(dateColIndex).search("").draw();
-          }
-        });
+          // Populate dropdown
+          Array.from(years)
+            .sort((a, b) => b - a)
+            .forEach((year) => {
+              yearSelect.append(`<option value="${year}">${year}</option>`);
+            });
 
-        // Hide pagination/info if only one page
-        dataTable.on("draw", function () {
-          const pageInfo = dataTable.page.info();
-          const wrapper = $table.closest(".dataTables_wrapper");
-          const pagination = wrapper.find(".dataTables_paginate");
-          const infoText = wrapper.find(".dataTables_info");
+          // Append dropdown next to search box
+          jQuery(`.dataTables_filter label`).before(yearSelect);
+        }
+      });
 
-          if (pageInfo.pages <= 1) {
-            pagination.hide();
-            infoText.hide();
-          } else {
-            pagination.show();
-            infoText.show();
-          }
-        });
+      // Year filter change event
+      yearSelect.on("change", function () {
+        const selectedYear = this.value;
+        if (selectedYear) {
+          dataTable
+            .column(dateColIndex)
+            .search(`/${selectedYear}$`, true, false)
+            .draw();
+        } else {
+          dataTable.column(dateColIndex).search("").draw();
+        }
+      });
 
-        // Trigger initial draw
-        dataTable.draw();
-      }
+      // Hide pagination/info if only one page
+      dataTable.on("draw", function () {
+        const pageInfo = dataTable.page.info();
+        const wrapper = $table.closest(".dataTables_wrapper");
+        const pagination = wrapper.find(".dataTables_paginate");
+        const infoText = wrapper.find(".dataTables_info");
+
+        if (pageInfo.pages <= 1) {
+          pagination.hide();
+          infoText.hide();
+        } else {
+          pagination.show();
+          infoText.show();
+        }
+      });
+
+      // Trigger initial draw
+      dataTable.draw();
     }
-  });
+  }
+});
+
 }
 
 function VerifyRecipientsDatatable() {
@@ -331,6 +351,12 @@ jQuery("select").each(function ($) {
 
   if (jQuery(this).hasClass("gfield_select")) {
     placeholderText = "Please select a type";
+  }
+  if (jQuery(this)[0].getAttribute('name') == 'input_14') {
+  placeholderText = "Please select a user type";
+  }
+  if (jQuery(this)[0].getAttribute('name') == 'input_18') {
+    placeholderText = "Please select an inquiry type";
   }
 
   jQuery(this).select2({
