@@ -591,7 +591,7 @@ class OAM_COMMON_Custom {
                 $result = $wpdb->get_row($wpdb->prepare($org_query, $token));
 
                 $affiliate_org_name = $clean($result->first_name ?? '');
-                $affiliate_org_email = $clean($result->_yith_wcaf_email ?: $result->user_email ?: '');
+                $affiliate_org_email = $clean($result->user_email ?: '');
                 $affiliate_user_id = $clean($result->affiliate_user_id ?: $result->affiliate_user_id ?: 0);
 
                 $sub[] = [
