@@ -705,6 +705,12 @@ class OAM_ADMINISTRATOR_AJAX {
 
             $user_obj = get_userdata($user_id);
 
+        
+
+            $email = get_user_meta($user_id, '_yith_wcaf_email', true)
+                ?: $user_obj->user_email ?: '';
+
+
             $city = get_user_meta($user_id, '_yith_wcaf_city', true)
                 ?: get_user_meta($user_id, 'billing_city', true)
                 ?: get_user_meta($user_id, 'shipping_city', true) ?: '';
@@ -725,7 +731,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 'city'         => $city,
                 'state'        => $state,
                 'code'         => $row->token,
-                'email'        => $user_obj ? $user_obj->user_email : '',
+                'email'        => $email,
                 'phone'        => $organization_phone,
             ];
         }
