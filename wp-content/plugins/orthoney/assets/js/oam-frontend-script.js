@@ -352,7 +352,7 @@ jQuery("select").each(function ($) {
   if (jQuery(this).hasClass("gfield_select")) {
     placeholderText = "Please select a type";
   }
-  if (jQuery(this)[0].getAttribute('name') == 'input_14') {
+  if (jQuery(this)[0].getAttribute('name') == 'input_8') {
   placeholderText = "Please select a user type";
   }
   if (jQuery(this)[0].getAttribute('name') == 'input_18') {
