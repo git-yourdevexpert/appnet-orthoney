@@ -3314,6 +3314,7 @@ class OAM_Ajax{
                 $sub_order_id
             ));
 
+            $customer_email = '';
             $order = wc_get_order($order_id);
             $orderdata = OAM_COMMON_Custom::orthoney_get_order_data($order_id);
 
