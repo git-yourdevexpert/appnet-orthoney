@@ -3449,7 +3449,7 @@ class OAM_Ajax{
             } elseif ($custom_order_pdf_type == "2e" OR $custom_order_pdf_type == "4e") {
 
                 $pdftypepdfcontent = "
-                    <p>Thank you for your previous support to $affiliate_org_name. It's time again to send the sweetest Rosh Hashanah greetings by supporting $affiliate_org_name with your honey purchase.</p>
+                    <p>Thank you for your previous support to <strong>$affiliate_org_name</strong>. It's time again to send the sweetest Rosh Hashanah greetings by supporting <strong>$affiliate_org_name</strong> with your honey purchase.</p>
 
                     <p>Shipping is FREE for orders submitted online through <strong>$shipEndDate</strong>. After <strong>$shipEndDate</strong>, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
                     <p><strong><u>How to Order Online:</u></strong></p>
