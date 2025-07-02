@@ -3396,7 +3396,7 @@ class OAM_Ajax{
                     $custom_price = $selling_minimum_price;
                 }
                 
-                $affiliate_org_name = $orderdata['suborderdata'][0]['suborder_affiliate_org_name'];
+                $affiliate_org_name =  get_user_meta($affiliate_user_id, '_yith_wcaf_name_of_your_organization', true);
                 $affiliate_org_email = $yith_wcaf_email ?: $orderdata['suborderdata'][0]['suborder_affiliate_org_email'];
             }
 
@@ -3466,7 +3466,7 @@ class OAM_Ajax{
                         </ul> 
                     </p>
 
-                    <p>To order by mail update this form for any additions, deletions, or corrections, complete the payment section, and mail it to <strong>$paperDeadlineDate</strong> or email it to  <a href='mailto:".$affiliate_org_email."'><strong>$affiliate_org_email</strong></a>. Forms must arrive by <strong>$shipEndDate </strong>, or a shipping charge will be applied.</p>";
+                    <p>To order by mail update this form for any additions, deletions, or corrections, complete the payment section, and mail it to a href='mailto:support@orthoney.com'><strong>support@orthoney.com</strong></a> or email it to  <a href='mailto:".$affiliate_org_email."'><strong>$affiliate_org_email</strong></a>. Forms must arrive by <strong>$paperDeadlineDate </strong>, or a shipping charge will be applied.</p>";
 
             } else {
                 $pdftypepdfcontent = "
@@ -3586,7 +3586,7 @@ class OAM_Ajax{
                     'Cc: support@orthoney.com' . ($affiliate_org_email ? ", $affiliate_org_email" : '')
                 ];
                 $attachments = [$pdf_path];
-                $mail_sent = $mailer->send($current_user_email, $subject, $wrapped_message, $headers, $attachments);
+                $mail_sent = $mailer->send($to, $subject, $wrapped_message, $headers, $attachments);
             }
             
         }
