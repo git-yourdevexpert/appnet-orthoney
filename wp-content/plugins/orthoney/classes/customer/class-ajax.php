@@ -3419,7 +3419,7 @@ class OAM_Ajax{
                 <div><span class="label">Email:</span> <strong>' . $email . '</strong></div>
             </div>
             <div class="section">
-                <p>Dear ' . $name . ',</p>';
+                <p><br>Dear ' . $name . ',</p>';
     
             // PDF content types
             if ($custom_order_pdf_type == "5p") {
