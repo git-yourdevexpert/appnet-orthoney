@@ -3393,8 +3393,7 @@ class OAM_Ajax{
                 $affiliate_org_email = $yith_wcaf_email ?: $orderdata['suborderdata'][0]['suborder_affiliate_org_email'];
             }
 
-          
-            $affiliate_org_name = 'Honey from the Heart';
+        
             $suborder_affiliate_token = 'Honey from the Heart';
             $refersite = site_url();
             if (!empty($orderdata['suborderdata'])) {
@@ -3446,13 +3445,12 @@ class OAM_Ajax{
                     <p>Thank you for your previous support to $affiliate_org_name. It's time again to send the sweetest Rosh Hashanah greetings by supporting $affiliate_org_name with your honey purchase.</p>
 
                     <p>Shipping is FREE for orders submitted online through $shipEndDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
-
                     <p><strong><u>How to Order Online:</u></strong></p>
-                    <ul><li>Go to <a href='".site_url('order-process/')."'></a></li>
+                    <ul style='list-style-type: disc;margin-left: 24px;font-size: 14px;'><li>Go to <a href='".site_url('order-process/')."'></a></li>
                     </ul>
                     </p>
                     <p><strong>Log in to your existing account or create a new one <strong><br>
-                       <ul>
+                    <ul style='list-style-type: disc;margin-left: 24px;font-size: 14px;'>
                        <li> Click “Order Now” </li>
                        <li> Choose your organization using either: Your 3-digit code: $suborder_affiliate_token or $affiliate_org_name.</li>
                        <li> To reorder from a previous year, select order #" . $sub_order_id . " when prompted.</li>
@@ -3581,7 +3579,6 @@ class OAM_Ajax{
                 ];
                 $attachments = [$pdf_path];
                 $mail_sent = $mailer->send($current_user_email, $subject, $wrapped_message, $headers, $attachments);
-    
             }
             
         }
