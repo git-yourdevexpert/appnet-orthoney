@@ -3577,7 +3577,7 @@ class OAM_Ajax{
                 
                 // $message = '<p>Dear ' . $name . ',</p>';
                 $html .= "<p>Thank you for continuing to support Honey From the Heart your participation helps us make a difference, one jar at a time.</p>
-                    <p>The Honey From The Heart Team  <br><u> A sweet way to raise money!</u></p>";
+                    <p>The Honey From The Heart Team  <br><i> A sweet way to raise money!</i></p>";
                 $mailer = WC()->mailer();
                 $subject = '#' . $custom_order_id . ' Reordering Form – Honey From The Heart';
                 $wrapped_message = $mailer->wrap_message($subject, $html);
