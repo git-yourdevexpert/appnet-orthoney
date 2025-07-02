@@ -3317,6 +3317,12 @@ class OAM_Ajax{
             $order = wc_get_order($order_id);
             $orderdata = OAM_COMMON_Custom::orthoney_get_order_data($order_id);
 
+            $user_id = $order->get_user_id();
+            if ($user_id) {
+                $user_info = get_userdata($user_id);
+                $customer_email = $user_info->user_email;
+            }
+
           
             $name = esc_html($orderdata['customer_name']);
             $email = esc_html($orderdata['email']);
@@ -3564,7 +3570,7 @@ class OAM_Ajax{
             
                 $pdf_url = $upload_dir['url'] . '/' . $pdf_filename;
 
-                $to = $current_user_email;
+                $to = $customer_email;
                 $cc = 'support@orthoney.com,'.$affiliate_org_email;
                 $subject = '#'. $custom_order_id.' Reordering Form – Honey From The Heart';
                 
