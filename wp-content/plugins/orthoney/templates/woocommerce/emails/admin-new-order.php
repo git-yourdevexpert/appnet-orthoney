@@ -87,13 +87,13 @@ if ( $additional_content ) {
 	echo wp_kses_post( wpautop( wptexturize( $additional_content ) ) );
 	echo $email_improvements_enabled ? '</td></tr></table>' : '';
 }
-$code = $token ?: $affiliate;
+$code = $token;
 if ($code != 'Orthoney') {
     echo '<p>Distributor Code: ' . esc_html($code) . '</p>'; 
 }
 
 
-echo 'To view detailed order information <a href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id})").'"></a>Click Here ';
+echo 'To view detailed order information <a href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$order->get_order_number()})").'"></a>Click Here ';
 /*
  * @hooked WC_Emails::email_footer() Output the email footer
  */
