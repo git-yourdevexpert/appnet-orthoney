@@ -3466,7 +3466,7 @@ class OAM_Ajax{
                         </ul> 
                     </p>
 
-                    <p>To order by mail update this form for any additions, deletions, or corrections, complete the payment section, and mail it to a href='mailto:support@orthoney.com'><strong>support@orthoney.com</strong></a> or email it to  <a href='mailto:".$affiliate_org_email."'><strong>$affiliate_org_email</strong></a>. Forms must arrive by <strong>$paperDeadlineDate </strong>, or a shipping charge will be applied.</p>";
+                    <p>To order by mail update this form for any additions, deletions, or corrections, complete the payment section, and mail it to <a href='mailto:support@orthoney.com'><strong>support@orthoney.com</strong></a> or email it to  <a href='mailto:".$affiliate_org_email."'><strong>$affiliate_org_email</strong></a>. Forms must arrive by <strong>$paperDeadlineDate </strong>, or a shipping charge will be applied.</p>";
 
             } else {
                 $pdftypepdfcontent = "
