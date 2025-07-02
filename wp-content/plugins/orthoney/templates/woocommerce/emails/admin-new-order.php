@@ -93,7 +93,7 @@ if ($code != 'Orthoney') {
 }
 
 
-echo 'To view detailed order information href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id})").'"></a>Click Here ';
+echo 'To view detailed order information <a href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id})").'"></a>Click Here ';
 /*
  * @hooked WC_Emails::email_footer() Output the email footer
  */
