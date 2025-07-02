@@ -263,7 +263,7 @@ document.addEventListener('click', function (event) {
         const form = document.querySelector('#affiliate-profile-form');
         if (!validateForm(form)) return; // Stop submission if validation fails
 
-        
+        process_group_popup();
         const formData = new FormData(form);
         formData.append('action', 'update_affiliate_profile');
         formData.append("security", oam_ajax.nonce);  // nonce.
@@ -280,9 +280,10 @@ document.addEventListener('click', function (event) {
                 Swal.fire({
                     title: data.message || "Your profile has been updated successfully.",
                     icon: "success",
-                    timer: 2000,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
                     showConfirmButton: false,
-                    timerProgressBar: true
                 });
                 setTimeout(function () {
                   window.location.reload();
@@ -309,6 +310,8 @@ document.addEventListener('click', function (event) {
         event.preventDefault();
         const form = document.querySelector('#affiliate-remittance-form');
         if (!validateForm(form)) return; // Stop submission if validation fails
+        
+        process_group_popup();
 
         const formData = new FormData(form);
         formData.append('action', 'update_affiliate_remittance');
@@ -326,9 +329,10 @@ document.addEventListener('click', function (event) {
                 Swal.fire({
                     title: data.message || "Your remittance has been updated successfully.",
                     icon: "success",
-                    timer: 2000,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
                     showConfirmButton: false,
-                    timerProgressBar: true
                 });
                 setTimeout(function () {
                   window.location.reload();
@@ -353,6 +357,7 @@ document.addEventListener('click', function (event) {
         
         event.preventDefault();
     
+        process_group_popup();
         const form = document.querySelector('#affiliate-update-price-form');
         const formData = new FormData(form);
 
@@ -365,6 +370,7 @@ document.addEventListener('click', function (event) {
             Swal.fire({
                 title: "Organization selling price cannot be lower than the product's standard selling price.",
                 icon: "error",
+                
             });
             return;
         }
@@ -384,9 +390,10 @@ document.addEventListener('click', function (event) {
                 Swal.fire({
                     title: data.message || "Updated price successfully!",
                     icon: "success",
-                    timer: 2000,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
                     showConfirmButton: false,
-                    timerProgressBar: true
                 });
                  setTimeout(function () {
                   window.location.reload();
@@ -433,8 +440,10 @@ document.addEventListener('click', function (event) {
                     title: data.message || "Updated gift card successfully!",
                     icon: "success",
                     timer: 2000,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
                     showConfirmButton: false,
-                    timerProgressBar: true
                 });
                  setTimeout(function () {
                   window.location.reload();
@@ -481,9 +490,10 @@ document.addEventListener('click', function (event) {
                 Swal.fire({
                     title: data.message || "Updated mission statement successfully!",
                     icon: "success",
-                    timer: 2000,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
                     showConfirmButton: false,
-                    timerProgressBar: true
                 });
                  setTimeout(function () {
                   window.location.reload();
