@@ -3407,9 +3407,9 @@ class OAM_Ajax{
             $html .= '
             <h2>'.date('Y').' Honey Reorder Form</h2>
             <div class="section">
-                <div><span class="label">Name:</span> ' . $name . '</div>
-                '.(!empty($address) ? '<div><span class="label">Address:</span> ' . $address . '</div>' : '' ).'
-                <div><span class="label">Email:</span> ' . $email . '</div>
+                <div><span class="label">Name:</span> <strong>' . $name . '</strong></div>
+                '.(!empty($address) ? '<div><span class="label">Address:</span> <strong>' . $address . '</strong></div>' : '' ).'
+                <div><span class="label">Email:</span> <strong>' . $email . '</strong></div>
             </div>
             <div class="section">
                 <p>Dear ' . $name . ',</p>';
@@ -3430,9 +3430,9 @@ class OAM_Ajax{
                     
             } elseif ($custom_order_pdf_type == "2p") {
                 $pdftypepdfcontent = "
-                    <p>Thank you for your previous support to $affiliate_org_name. It's time again to send the sweetest Rosh Hashanah greetings by supporting $affiliate_org_name with your honey purchase.</p>
+                    <p>Thank you for your previous support to <strong>$affiliate_org_name</strong>. It's time again to send the sweetest Rosh Hashanah greetings by supporting <strong>$affiliate_org_name</strong> with your honey purchase.</p>
 
-                    <p>Shipping is FREE for orders submitted online through $shipEndDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
+                    <p>Shipping is FREE for orders submitted online through <strong>$shipEndDate</strong>. After <strong>$shipEndDate</strong>, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
 
                     <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='".esc_url($refersite)."'>".esc_url($refersite)."</a>, click on the <a href='".esc_html(site_url('order-process'))."'>Order Now</a>.</p>
                     <p>Follow the instructions, selecting $affiliate_org_name and choose your reorder from a previous year. Select #" . $sub_order_id . " when prompted.</p>
@@ -3444,21 +3444,22 @@ class OAM_Ajax{
                 $pdftypepdfcontent = "
                     <p>Thank you for your previous support to $affiliate_org_name. It's time again to send the sweetest Rosh Hashanah greetings by supporting $affiliate_org_name with your honey purchase.</p>
 
-                    <p>Shipping is FREE for orders submitted online through $shipEndDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
+                    <p>Shipping is FREE for orders submitted online through <strong>$shipEndDate</strong>. After <strong>$shipEndDate</strong>, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
                     <p><strong><u>How to Order Online:</u></strong></p>
-                    <ul style='list-style-type: disc;margin-left: 24px;font-size: 14px;'><li>Go to <a href='".site_url('order-process/')."'></a></li>
+                    <ul style='list-style-type: disc;margin-left: 24px;font-size: 14px;'>
+                    <li>Go to <a href='".site_url('order-process/')."'>here</a></li>
                     </ul>
                     </p>
                     <p><strong>Log in to your existing account or create a new one <strong><br>
                     <ul style='list-style-type: disc;margin-left: 24px;font-size: 14px;'>
                        <li> Click “Order Now” </li>
-                       <li> Choose your organization using either: Your 3-digit code: $suborder_affiliate_token or $affiliate_org_name.</li>
-                       <li> To reorder from a previous year, select order #" . $sub_order_id . " when prompted.</li>
+                       <li> Choose your organization using either: Your 3-digit code: <strong>$suborder_affiliate_token</strong> or <strong>$affiliate_org_name</strong>.</li>
+                       <li> To reorder from a previous year, select order <strong>#" . $sub_order_id . " </strong>when prompted.</li>
                        <li> Complete checkout!.</li>
                         </ul> 
                     </p>
 
-                    <p>To order by mail update this form for any additions, deletions, or corrections, complete the payment section, and mail it to paperDeadlineDate or email it to  <a href='mailto:".$affiliate_org_email."'>$affiliate_org_email</a>. Forms must arrive by $shipEndDate , or a shipping charge will be applied.</p>";
+                    <p>To order by mail update this form for any additions, deletions, or corrections, complete the payment section, and mail it to <strong>$paperDeadlineDate</strong> or email it to  <a href='mailto:".$affiliate_org_email."'><strong>$affiliate_org_email</strong></a>. Forms must arrive by <strong>$shipEndDate </strong>, or a shipping charge will be applied.</p>";
 
             } else {
                 $pdftypepdfcontent = "
