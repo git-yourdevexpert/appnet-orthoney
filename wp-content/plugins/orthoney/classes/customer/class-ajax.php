@@ -3297,9 +3297,9 @@ class OAM_Ajax{
 
             $custom_order_id = $order_id;
 
-             if ($custom_order_pdf_type == "2e" || $custom_order_pdf_type == "4e") {
+            if ($custom_order_pdf_type == "2e" || $custom_order_pdf_type == "4e") {
                 $html = '';
-             }
+            }
             // if (!$order) continue;
             $distName = 'Honey from the Heart';
             
@@ -3323,7 +3323,6 @@ class OAM_Ajax{
             $address = esc_html($orderdata['address']);
             $userinfo = esc_html($orderdata['suborder_affiliate_user_info']);
             
-
             $distAddressParts = [];
             $shopAddressParts = [];
             $distNameParts = [];
@@ -3422,7 +3421,7 @@ class OAM_Ajax{
                     <p>Thank you for your previous support to $affiliate_org_name. It's time again to send the sweetest Rosh Hashanah greetings by supporting $affiliate_org_name with your honey purchase.</p>
                     <p>For your ordering convenience, the details of your last order are listed below. To order, simply update this form with any additions, deletions or corrections, fill out the payment section and mail it to $distName $distAddress.</p>
                     <p>Mail orders must be received by $paperDeadlineDate. Your order will be shipped to arrive in time for Rosh Hashanah.</p>";
-            } elseif ($custom_order_pdf_type == "4p" OR $custom_order_pdf_type == "4e") {
+            } elseif ($custom_order_pdf_type == "4p" ) {
                 $pdftypepdfcontent = "
                     <p>Thank you for supporting $affiliate_org_name in the past by ordering honey. It's time again to send the sweetest Rosh Hashanah greetings and support $affiliate_org_name with your honey purchase.</p>
 
@@ -3430,17 +3429,29 @@ class OAM_Ajax{
 
                     <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='".esc_url($refersite)."'>".esc_url($refersite)."</a>, click on the Order Honey link, follow the instructions and enter your Reorder #" . $sub_order_id . " when prompted.</p>";
                     
-            } elseif ($custom_order_pdf_type == "2p" OR $custom_order_pdf_type == "2e") {
+            } elseif ($custom_order_pdf_type == "2p" OR $custom_order_pdf_type == "2e" OR $custom_order_pdf_type == "4e") {
+
+                
                 $pdftypepdfcontent = "
                     <p>Thank you for your previous support to $affiliate_org_name. It's time again to send the sweetest Rosh Hashanah greetings by supporting $affiliate_org_name with your honey purchase.</p>
 
                     <p>Shipping is FREE for orders submitted online through $shipEndDate. After $shipEndDate, ".wc_price( $ort_shipping_cost)." per jar is automatically added for shipping.</p>
 
-                    <p>Your order will be shipped to arrive in time for Rosh Hashanah. To order honey, go to <a href='".esc_url($refersite)."'>".esc_url($refersite)."</a>, click on the <a href='".esc_html(site_url('order-process'))."'>Order Now</a>.</p>
-                    <p>Follow the instructions, selecting $affiliate_org_name and choose your reorder from a previous year. Select #" . $sub_order_id . " when prompted.</p>
+                    <p><strong><u>How to Order Online:</u></strong></p>
+                    <ul><li>Go to <a href='".site_url('order-process/')."'></a></li>
+                    </ul>
+                    </p>
+                    <p><strong>Log in to your existing account or create a new one <strong><br>
+                       <ul>
+                       <li> Click “Order Now” </li>
+                       <li> Choose your organization using either: Your 3-digit code: $suborder_affiliate_token or $affiliate_org_name.</li>
+                       <li> To reorder from a previous year, select order #" . $sub_order_id . " when prompted.</li>
+                       <li> Complete checkout!.</li>
+                        </ul> 
+                    </p>
 
-                    <p>If you can't order online, please update this form for any additions, deletions, or corrections, complete the payment section, and mail it to <a href='mailto:".$affiliate_org_email."'>$affiliate_org_email</a> . Forms must arrive by for ".date("Y")." the date is $paperDeadlineDate, or a shipping charge will be applied.</p>
-                    ";
+                    <p>To order by mail update this form for any additions, deletions, or corrections, complete the payment section, and mail it to paperDeadlineDate or email it to  <a href='mailto:".$affiliate_org_email."'>$affiliate_org_email</a>. Forms must arrive by $shipEndDate , or a shipping charge will be applied.</p>";
+
             } else {
                 $pdftypepdfcontent = "
                     <p>Thank you for your previous support to $affiliate_org_name.</p>
@@ -3491,8 +3502,6 @@ class OAM_Ajax{
                         <p><strong>' . $title . '</strong> &times; ' . $quantity . ' jar(s)<br>' . $full_address . '</p>
                     </div>';
                 }
-
-              
     
             }else{
                 $title = trim($order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name());
@@ -3531,35 +3540,37 @@ class OAM_Ajax{
 
             if ($custom_order_pdf_type == "2e" || $custom_order_pdf_type == "4e") {
                 // Generate PDF
-            $dompdf = new \Dompdf\Dompdf();
+                $dompdf = new \Dompdf\Dompdf();
 
-            $dompdf->loadHtml($starthtml . $html . $endhtml);
-            $dompdf->setPaper('A4', 'portrait');
-            $dompdf->render();
-        
-            $timestamp = date('Y-m-d_h.ia');
-            $upload_dir = wp_upload_dir();
-            $pdf_filename = $custom_order_pdf_type . '_' . $timestamp . '.pdf';
-            $pdf_path = $upload_dir['path'] . '/' . $pdf_filename;
-        
-            file_put_contents($pdf_path, $dompdf->output());
-        
-            $pdf_url = $upload_dir['url'] . '/' . $pdf_filename;
+                $dompdf->loadHtml($starthtml . $html . $endhtml);
+                $dompdf->setPaper('A4', 'portrait');
+                $dompdf->render();
+            
+                $timestamp = date('Y-m-d_h.ia');
+                $upload_dir = wp_upload_dir();
+                $pdf_filename = $custom_order_pdf_type . '_' . $timestamp . '.pdf';
+                $pdf_path = $upload_dir['path'] . '/' . $pdf_filename;
+            
+                file_put_contents($pdf_path, $dompdf->output());
+            
+                $pdf_url = $upload_dir['url'] . '/' . $pdf_filename;
 
                 $to = $current_user_email;
                 $cc = 'support@orthoney.com,'.$affiliate_org_email;
                 $subject = '#'. $custom_order_id.' Reordering Form – Honey From The Heart';
                 
                 // $message = '<p>Dear ' . $name . ',</p>';
-                $message = $html;
-                $message .= '<p>Regards, <br><strong>Honey From The Heart Team</strong></p>';
+                $html .= "<p>Thank you for continuing to support Honey From the Heart your participation helps us make a difference, one jar at a time.</p>
+                    <p>The Honey From The Heart Team  <br><u> A sweet way to raise money!</u></p>";
+                $mailer = WC()->mailer();
+                $subject = '#' . $custom_order_id . ' Reordering Form – Honey From The Heart';
+                $wrapped_message = $mailer->wrap_message($subject, $html);
                 $headers = [
                     'Content-Type: text/html; charset=UTF-8',
-                    'Cc: ' . $cc,
+                    'Cc: support@orthoney.com' . ($affiliate_org_email ? ", $affiliate_org_email" : '')
                 ];
                 $attachments = [$pdf_path];
-        
-                $mail_sent = wp_mail($to, $subject, $message, $headers, $attachments);
+                $mail_sent = $mailer->send($current_user_email, $subject, $wrapped_message, $headers, $attachments);
     
             }
             
