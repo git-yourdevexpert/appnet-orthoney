@@ -18,26 +18,6 @@
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 
 defined( 'ABSPATH' ) || exit;
-global $wpdb;
-
-$order_process_table = OAM_Helper::$order_process_table;
-$yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
-
-$user =  $order->get_user_id();;
-
-$result = $wpdb->get_row($wpdb->prepare(
-	"SELECT * FROM {$order_process_table} WHERE user_id = %d AND order_id = %d",
-	$order->get_user_id(), $order->get_order_number()) );
-
-$setData = json_decode($result->data);
-$affiliate = $setData->affiliate_select != '' ? $setData->affiliate_select : 'Orthoney';
-
-$affiliate_id = intval($affiliate);
-
-$token = $wpdb->get_var($wpdb->prepare(
-    "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d",
-    $affiliate_id
-));
 
 $email_improvements_enabled = FeaturesUtil::feature_is_enabled( 'email_improvements' );
 
@@ -87,13 +67,7 @@ if ( $additional_content ) {
 	echo wp_kses_post( wpautop( wptexturize( $additional_content ) ) );
 	echo $email_improvements_enabled ? '</td></tr></table>' : '';
 }
-$code = $token;
-if ($code != 'Orthoney') {
-    echo '<p>Distributor Code: ' . esc_html($code) . '</p>'; 
-}
 
-
-echo 'To view detailed order information <a href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$order->get_order_number()})").'"></a>Click Here ';
 /*
  * @hooked WC_Emails::email_footer() Output the email footer
  */
