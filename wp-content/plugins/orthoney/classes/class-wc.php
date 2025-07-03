@@ -503,7 +503,7 @@ class OAM_WC_Customizer {
 
     public function checkout_order_summary_render_block_handler($block_content, $block) {
 
-         if ((is_checkout() || isset($block['blockName'])) && $block['blockName'] === 'woocommerce/checkout-actions-block' ) {
+         if ((is_checkout() || isset($block['blockName'])) && $block['blockName'] === 'woocommerce/checkout-actions-block' && !is_admin()) {
 
             $custom_content = '';
             if (isset($_COOKIE['yith_wcaf_referral_token'])) {
