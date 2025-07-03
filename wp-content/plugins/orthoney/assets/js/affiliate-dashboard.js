@@ -983,12 +983,125 @@ jQuery(document).ready(function ($) {
         '#addUserForm #phone',
         'form.register #profile_phone_number',
         '#affiliate-profile-form #billing_phone',
-        '#billing #billing-phone',
         '#user_registration_customer_phone_number',
-        '#edit-billing-address-form #phone_number',
-
     ];
     attachPhoneAutoFormat(selectors);
+
+    function billingPhoneNumberValidation() {
+        document.body.addEventListener('input', function(e) {
+            if (e.target && e.target.id === 'billing-phone') {
+                let cursorPosition = e.target.selectionStart;
+                let oldValue = e.target.value;
+
+                // Strip non-digits and limit to 10
+                let value = oldValue.replace(/\D/g, '').substring(0, 10);
+                let formatted = '';
+
+                if (value.length >= 1) {
+                    formatted = '(' + value.substring(0, 3);
+                }
+                if (value.length >= 4) {
+                    formatted += ') ' + value.substring(3, 6);
+                }
+                if (value.length >= 7) {
+                    formatted += '-' + value.substring(6, 10);
+                }
+
+                e.target.value = formatted;
+
+                let newCursorPosition = cursorPosition;
+                if (formatted.length > oldValue.length && cursorPosition === oldValue.length) {
+                    newCursorPosition = formatted.length;
+                } else if (formatted.length < oldValue.length) {
+                    newCursorPosition = Math.min(cursorPosition, formatted.length);
+                }
+
+                setTimeout(() => {
+                    e.target.setSelectionRange(newCursorPosition, newCursorPosition);
+                }, 0);
+            }
+        });
+
+        document.body.addEventListener('blur', function(e) {
+            if (e.target && e.target.id === 'billing-phone') {
+                const value = e.target.value.replace(/\D/g, '');
+                let isValid = /^[2-9][0-8][0-9][2-9][0-9]{6}$/.test(value);
+
+                const errorClass = 'invalid-phone';
+                const errorMsg = 'Please enter a valid US phone number';
+
+                // Remove old error if exists
+                const existingError = e.target.nextElementSibling;
+                if (existingError && existingError.classList.contains('phone-error-message')) {
+                    existingError.remove();
+                }
+
+                if (e.target.value !== '' && !isValid) {
+                    e.target.classList.add(errorClass);
+
+                    const errorEl = document.createElement('span');
+                    errorEl.className = 'phone-error-message';
+                    errorEl.style.cssText = 'color: #e74c3c; font-size: 12px; display: block; margin-top: 5px;';
+                    errorEl.textContent = errorMsg;
+                    e.target.insertAdjacentElement('afterend', errorEl);
+                } else {
+                    e.target.classList.remove(errorClass);
+                }
+            }
+        }, true);
+
+        document.body.addEventListener('paste', function(e) {
+            if (e.target && e.target.id === 'billing-phone') {
+                setTimeout(() => {
+                    let value = e.target.value.replace(/\D/g, '').substring(0, 10);
+                    let formatted = '';
+
+                    if (value.length >= 1) {
+                        formatted = '(' + value.substring(0, 3);
+                    }
+                    if (value.length >= 4) {
+                        formatted += ') ' + value.substring(3, 6);
+                    }
+                    if (value.length >= 7) {
+                        formatted += '-' + value.substring(6, 10);
+                    }
+
+                    e.target.value = formatted;
+                }, 0);
+            }
+        });
+
+        document.body.addEventListener('keydown', function(e) {
+            if (e.target && e.target.id === 'billing-phone') {
+                let cursorPosition = e.target.selectionStart;
+                let value = e.target.value;
+
+                if (e.key === 'Backspace') {
+                    if (cursorPosition > 0) {
+                        const charBefore = value.charAt(cursorPosition - 1);
+                        if (['(', ')', ' ', '-'].includes(charBefore)) {
+                            setTimeout(() => {
+                                e.target.setSelectionRange(cursorPosition - 1, cursorPosition - 1);
+                            }, 0);
+                        }
+                    }
+                }
+
+                if (e.key === 'Delete') {
+                    const charAfter = value.charAt(cursorPosition);
+                    if (['(', ')', ' ', '-'].includes(charAfter)) {
+                        setTimeout(() => {
+                            e.target.setSelectionRange(cursorPosition + 1, cursorPosition + 1);
+                        }, 0);
+                    }
+                }
+            }
+        });
+    }
+
+    // Call this after the DOM is ready
+    document.addEventListener('DOMContentLoaded', billingPhoneNumberValidation);
+
 
     // Re-run every 500ms to catch dynamically loaded inputs
     const intervalId = setInterval(() => {
