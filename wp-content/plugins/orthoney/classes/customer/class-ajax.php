@@ -3399,7 +3399,7 @@ class OAM_Ajax{
                     $custom_price = $selling_minimum_price;
                 }
                 
-                $affiliate_org_name =  get_user_meta($affiliate_user_id, '_yith_wcaf_name_of_your_organization', true);
+                $affiliate_org_name =  get_user_meta($affiliate_user_id, '_yith_wcaf_name_of_your_organization', true) ?:'Honey from the Heart' ;
                 $affiliate_org_email = $yith_wcaf_email ?: $orderdata['suborderdata'][0]['suborder_affiliate_org_email'];
             }
 
