@@ -121,7 +121,7 @@ class OAM_Ajax{
         $order->set_billing_city($billing_data['city']);
         $order->set_billing_state($billing_data['state']);
         $order->set_billing_postcode($billing_data['postcode']);
-         $order->set_billing_phone($billing_data['phone_number']);
+        $order->set_billing_phone($billing_data['phone_number']);
 
         $order->save();
 
@@ -3463,7 +3463,8 @@ class OAM_Ajax{
                     <p><strong>Log in to your existing account or create a new one <strong><br>
                     <ul style='list-style-type: disc;margin-left: 24px;font-size: 14px;'>
                        <li> Click “Order Now” </li>
-                       <li> Choose your organization using either: Your 3-digit code: <strong>$suborder_affiliate_token</strong> or <strong>$affiliate_org_name</strong>.</li>
+                       <li> Choose your organization using either: 
+                       ".($suborder_affiliate_token == 'Orthoney' ? 'Honey From The Heart' : 'Your 3-digit code: <strong>$suborder_affiliate_token</strong> or <strong>$affiliate_org_name</strong>') ." .</li>
                        <li> To reorder from a previous year, select order <strong>#" . $sub_order_id . " </strong>when prompted.</li>
                        <li> Complete checkout!.</li>
                         </ul> 
