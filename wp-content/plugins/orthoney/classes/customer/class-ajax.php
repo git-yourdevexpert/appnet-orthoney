@@ -154,6 +154,7 @@ class OAM_Ajax{
             'city'       => $order->get_billing_city(),
             'state'      => $order->get_billing_state(),
             'zipcode'   => $order->get_billing_postcode(),
+            'phone_number'   => $order->get_billing_phone(),
         ];
 
         wp_send_json_success($billing_details);
