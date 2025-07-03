@@ -984,7 +984,9 @@ jQuery(document).ready(function ($) {
         'form.register #profile_phone_number',
         '#affiliate-profile-form #billing_phone',
         '#billing #billing-phone',
-        '#user_registration_customer_phone_number'
+        '#user_registration_customer_phone_number',
+        '#edit-billing-address-form #phone_number',
+
     ];
     attachPhoneAutoFormat(selectors);
 

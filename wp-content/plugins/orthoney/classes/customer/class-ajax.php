@@ -109,6 +109,7 @@ class OAM_Ajax{
             'city'       => sanitize_text_field($_POST['city'] ?? ''),
             'state'      => sanitize_text_field($_POST['state'] ?? ''),
             'postcode'   => sanitize_text_field($_POST['zipcode'] ?? ''),
+            'phone_number'   => sanitize_text_field($_POST['phone_number'] ?? ''),
         ];
 
         // Update billing fields
@@ -120,6 +121,7 @@ class OAM_Ajax{
         $order->set_billing_city($billing_data['city']);
         $order->set_billing_state($billing_data['state']);
         $order->set_billing_postcode($billing_data['postcode']);
+         $order->set_billing_phone($billing_data['phone_number']);
 
         $order->save();
 

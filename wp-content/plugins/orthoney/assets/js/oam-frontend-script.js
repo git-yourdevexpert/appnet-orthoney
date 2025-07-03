@@ -3413,7 +3413,8 @@ document.addEventListener("click", function (event) {
         "address_2",
         "city",
         "state",
-        "zipcode"
+        "zipcode",
+        "phone_number",
       ];
       fields.forEach((field) => {
         const input = form.querySelector(`#${field}`);

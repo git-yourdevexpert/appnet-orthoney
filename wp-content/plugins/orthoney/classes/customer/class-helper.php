@@ -1472,6 +1472,11 @@ class OAM_Helper{
                     <input type="text" id="zipcode" name="zipcode" required data-error-message="Please enter a valid zipcode.">
                     <span class="error-message"></span>
                 </div>
+                <div class="form-row gfield--width-half">
+                    <label for="phone_number">Phone Number<span class="required">*</span></label>
+                    <input type="text" id="phone_number" name="phone_number" required data-error-message="Please enter a valid phone number.">
+                    <span class="error-message"></span>
+                </div>
                 
 
                 <div class="footer-btn gfield--width-full">
