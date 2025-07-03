@@ -5,6 +5,8 @@ if (!defined('ABSPATH')) {
 }
 
 $user_id    = get_current_user_id();
+$user_info = get_userdata($user_id);
+$current_user_email = $user_info->user_email;
 $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
 
 if (
@@ -104,11 +106,19 @@ $dashboard_link_label  = 'Return to Dashboard';
                                 </button>
                             </td>';
                         } elseif ($request->status == 1) {
-                            echo '<td><div class="thead-data">Action</div>
+                            if($current_user_email == $customer_email){
+                                echo '<td><div class="thead-data">Action</div>
+                                <a class="icon-txt-btn" href="'.esc_html(CUSTOMER_DASHBOARD_LINK).'">
+                                <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
+                                </a>
+                                </td>';
+                            }else{
+                                echo '<td><div class="thead-data">Action</div>
                                 <button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($request->customer_id) . '">
-                                    <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
+                                <img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png">Login as Customer
                                 </button>
-                            </td>';
+                                </td>';
+                                }
                         } else {
                             echo '<td><div class="thead-data">Action</div>-</td>';
                         }
