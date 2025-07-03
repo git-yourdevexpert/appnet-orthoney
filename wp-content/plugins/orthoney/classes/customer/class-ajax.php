@@ -3463,7 +3463,7 @@ class OAM_Ajax{
                     <p><strong>Log in to your existing account or create a new one <strong><br>
                     <ul style='list-style-type: disc;margin-left: 24px;font-size: 14px;'>
                        <li> Click “Order Now” </li>
-                       <li> Choose your organization using either: ".($suborder_affiliate_token == 'Orthoney' ? 'Honey From The Heart' : 'Your 3-digit code: <strong>$suborder_affiliate_token</strong> or <strong>$affiliate_org_name</strong>') ." .</li>
+                       <li> Choose your organization using either: ".($suborder_affiliate_token == 'Orthoney' ? '<strong>Honey From The Heart</strong>' : 'Your 3-digit code: <strong>$suborder_affiliate_token</strong> or <strong>$affiliate_org_name</strong>') ." .</li>
                        <li> To reorder from a previous year, select order <strong>#" . $sub_order_id . " </strong>when prompted.</li>
                        <li> Complete checkout!.</li>
                         </ul> 
