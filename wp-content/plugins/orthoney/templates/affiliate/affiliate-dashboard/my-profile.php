@@ -3,10 +3,11 @@
    if (!defined('ABSPATH')) {
        exit;
    }
-      global $wpdb;
+
+   global $wpdb;
    $user_id = get_current_user_id();
    $affiliate_id = $user_id;
-    $associated_id = $user_id;
+   $associated_id = $user_id;
 
     if (!empty(get_user_meta($user_id, 'associated_affiliate_id', true))) {
         // The user is a team member, get the associated affiliate
@@ -42,8 +43,8 @@
    $check_payable = get_user_meta($associated_id, '_yith_wcaf_check_payable', true);
    $address_check = get_user_meta($associated_id, '_yith_wcaf_address_check', true);
    $attention = get_user_meta($associated_id, '_yith_wcaf_attention', true);
-    $check_mailed_address = get_user_meta($associated_id, '_yith_wcaf_check_mailed_address', true);
-
+   $check_mailed_address = get_user_meta($associated_id, '_yith_wcaf_check_mailed_address', true);
+   
    $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
    //TODO
    $dashboard_link = ORGANIZATION_DASHBOARD_LINK;
@@ -57,11 +58,10 @@
                         <h6 class="block-title">Your account is inactive. Submit your Tax ID to activate your account and become eligible for this year`s commission.</h6>
                         <div>';
                         if (!empty($tax_id)) {
-                                echo '<button data-userid="' . esc_attr($affiliate_id) . '" class="w-btn us-btn-style_1 activate_affiliate_account">Activate Account</button>';
+                            echo '<button data-userid="' . esc_attr($affiliate_id) . '" class="w-btn us-btn-style_1 activate_affiliate_account">Activate Account</button>';
                         } else {
-                                echo '<a href="'.ORGANIZATION_DASHBOARD_LINK.'my-profile/" class="w-btn us-btn-style_1">Update Tax ID</a>';
+                            echo '<a href="'.ORGANIZATION_DASHBOARD_LINK.'my-profile/" class="w-btn us-btn-style_1">Update Tax ID</a>';
                         }
-                        
                     echo '</div></div>
                 </div>
             </div></div>';
@@ -97,7 +97,7 @@
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-half">
-                    <label for="email">Email ID <span class="required">*</span></label>
+                    <label for="email">Email ID <span class="required">*</span> <br><span class="error-message"><strong>This is the email address where reorder notifications will be sent.</strong></span></label>
                     <input type="email" name="email" id="email" value="<?php echo esc_attr($email); ?>" required
                         data-error-message="Please enter a Email.">
                     <span class="error-message"></span>
