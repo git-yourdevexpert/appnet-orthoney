@@ -1007,7 +1007,7 @@ jQuery(document).ready(function ($) {
         '#user_registration_customer_phone_number',
         '#user_registration_customer_phone_number',
         '#edit-billing-address-form #phone_number',
-        '.woocommerce-address-fields__field-wrapper #billing_phone_field #billing_phone',
+        '#billing_phone_field #billing_phone',
     ];
     attachPhoneAutoFormat(selectors);
 
