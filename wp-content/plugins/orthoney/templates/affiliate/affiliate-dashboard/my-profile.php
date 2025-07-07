@@ -97,7 +97,7 @@
                     <span class="error-message"></span>
                 </div>
                 <div class="form-row gfield--width-half">
-                    <label for="email">Email ID <span class="required">*</span> <br><span class="error-message"><strong>This is the email address where reorder notifications will be sent.</strong></span></label>
+                    <label for="email">Email ID <span class="required">*</span> <br><span class="error-message" style="color: #6BBE56;"><strong>This is the email address where reorder notifications will be sent.</strong></span></label>
                     <input type="email" name="email" id="email" value="<?php echo esc_attr($email); ?>" required
                         data-error-message="Please enter a Email.">
                     <span class="error-message"></span>
