@@ -212,7 +212,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $cache_key = 'affiliates_for_customer__new' . $user_id;
             $oname_block = get_transient($cache_key);
 
-            if ($oname_block === false) {
+            // if ($oname_block === false) {
                 $oname_block = '';
                 $blocks = [];
 
@@ -271,7 +271,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 }
 
                 set_transient($cache_key, $oname_block, HOUR_IN_SECONDS);
-            }
+            // }
 
             $admin_url = admin_url("user-edit.php?user_id={$user_id}&wp_http_referer=%2Fwp-admin%2Fusers.php");
 

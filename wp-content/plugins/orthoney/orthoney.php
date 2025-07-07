@@ -13,6 +13,39 @@ if (!defined('ABSPATH')) {
 
 require_once 'libs/dompdf/autoload.inc.php';
 
+
+add_filter('render_block', 'custom_checkout_phone_format_script', 10, 2);
+function custom_checkout_phone_format_script($block_content, $block) {
+    // Only inject into checkout page and only into relevant block
+    if (is_checkout() && strpos($block['blockName'], 'woocommerce/checkout') !== false) {
+        // Add JS after the block content
+        $script = <<<EOD
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const input = document.querySelector('#billing #billing-phone');
+    if (!input) return;
+
+    input.addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\\D/g, '').substring(0, 10);
+
+        let formatted = '';
+        if (value.length > 0) formatted = '(' + value.substring(0, 3);
+        if (value.length >= 4) formatted += ') ' + value.substring(3, 6);
+        if (value.length >= 7) formatted += '-' + value.substring(6, 10);
+
+        input.value = formatted;
+        input.setAttribute('value', formatted); // Set attribute too
+    });
+});
+</script>
+EOD;
+
+        return $block_content . $script;
+    }
+
+    return $block_content;
+}
+
 add_filter( 'woocommerce_checkout_fields', 'custom_disable_shipping_fields_validation' );
 add_filter('woocommerce_create_order_draft_enabled', '__return_false');
 
@@ -158,7 +191,9 @@ add_action('admin_head', function() {
     </style>';
 });
 
+
 function add_customer_role_to_affiliates() {
+
 
     if( isset($_GET['add_customer_role_to_affiliates']) && $_GET['add_customer_role_to_affiliates'] == 'yes'){
         $affiliates = get_users( array(
@@ -276,132 +311,3 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 //     }
 //     return $query;
 // });
-
-
-// Add US phone number validation to WooCommerce checkout
-add_action('woocommerce_checkout_process', 'validate_us_phone_number');
-add_action('woocommerce_after_checkout_validation', 'validate_us_phone_number_after', 10, 2);
-
-function validate_us_phone_number() {
-    if (isset($_POST['billing_phone']) && !empty($_POST['billing_phone'])) {
-        $phone = sanitize_text_field($_POST['billing_phone']);
-        
-        if (!is_valid_us_phone($phone)) {
-            wc_add_notice(__('Please enter a valid US phone number (e.g., (555) 123-4567 or 555-123-4567)'), 'error');
-        }
-    }
-}
-
-function validate_us_phone_number_after($data, $errors) {
-    if (isset($data['billing_phone']) && !empty($data['billing_phone'])) {
-        $phone = sanitize_text_field($data['billing_phone']);
-        
-        if (!is_valid_us_phone($phone)) {
-            $errors->add('billing_phone', __('Please enter a valid US phone number (e.g., (555) 123-4567 or 555-123-4567)'));
-        }
-    }
-}
-
-function is_valid_us_phone($phone) {
-    // Remove all non-digit characters
-    $phone_digits = preg_replace('/\D/', '', $phone);
-    
-    // Check if it's a valid US phone number (10 digits, optionally starting with 1)
-    if (strlen($phone_digits) == 10) {
-        // Standard 10-digit US number
-        return preg_match('/^[2-9][0-8][0-9][2-9][0-9]{6}$/', $phone_digits);
-    } elseif (strlen($phone_digits) == 11 && substr($phone_digits, 0, 1) == '1') {
-        // 11-digit number starting with 1
-        $phone_digits = substr($phone_digits, 1);
-        return preg_match('/^[2-9][0-8][0-9][2-9][0-9]{6}$/', $phone_digits);
-    }
-    
-    return false;
-}
-
-// Add client-side validation with JavaScript
-add_action('wp_footer', 'add_checkout_phone_validation_script');
-
-function add_checkout_phone_validation_script() {
-    if (is_checkout()) {
-        ?>
-        <script type="text/javascript">
-        jQuery(document).ready(function($) {
-
-            console.log('billing_phone');
-
-            // Phone number formatting and validation
-            $('body').on('input', '#billing-phone', function() {
-                var phone = $(this).val().replace(/\D/g, '');
-                var formattedPhone = '';
-                
-                if (phone.length > 0) {
-                    if (phone.length <= 3) {
-                        formattedPhone = '(' + phone;
-                    } else if (phone.length <= 6) {
-                        formattedPhone = '(' + phone.substring(0, 3) + ') ' + phone.substring(3);
-                    } else {
-                        formattedPhone = '(' + phone.substring(0, 3) + ') ' + phone.substring(3, 6) + '-' + phone.substring(6, 10);
-                    }
-                }
-
-                console.log(phone);
-                
-                
-                $(this).val(formattedPhone);
-            });
-            
-            // Validate on blur
-            $('body').on('blur', '#billing-phone', function() {
-                var phone = $(this).val().replace(/\D/g, '');
-                var isValid = false;
-
-                console.log(phone);
-                
-                if (phone.length === 10) {
-                    // Check if it matches US phone pattern
-                    var pattern = /^[2-9][0-8][0-9][2-9][0-9]{6}$/;
-                    isValid = pattern.test(phone);
-                } else if (phone.length === 11 && phone.charAt(0) === '1') {
-                    var pattern = /^1[2-9][0-8][0-9][2-9][0-9]{6}$/;
-                    isValid = pattern.test(phone);
-                }
-                
-                if ($(this).val() !== '' && !isValid) {
-                    $(this).addClass('woocommerce-invalid');
-                    if (!$(this).next('.phone-error').length) {
-                        $(this).after('<span class="phone-error" style="color: red; font-size: 12px;">Please enter a valid US phone number</span>');
-                    }
-                } else {
-                    $(this).removeClass('woocommerce-invalid');
-                    $(this).next('.phone-error').remove();
-                }
-            });
-        });
-        </script>
-        <?php
-    }
-}
-
-// Optional: Add CSS for better styling
-add_action('wp_head', 'add_checkout_phone_validation_styles');
-
-function add_checkout_phone_validation_styles() {
-    if (is_checkout()) {
-        ?>
-        <style>
-        .woocommerce-invalid {
-            border-color: #e2401c !important;
-            box-shadow: 0 0 0 1px #e2401c !important;
-        }
-        .phone-error {
-            display: block;
-            margin-top: 5px;
-            color: #e2401c;
-            font-size: 12px;
-        }
-        </style>
-        <?php
-    }
-}
-?>
