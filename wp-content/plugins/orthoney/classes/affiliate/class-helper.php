@@ -507,6 +507,11 @@ class OAM_AFFILIATE_Helper
             $html .= '</div>
             </div>
             </div>
+            <div class="item error-message-box">
+            <div class="row-block">
+            <h6 class="block-title" style="line-height: 1.5;">The current product price is set to the default value of '.wc_price($selling_minimum_price).'. Please ensure you update the price before activating your account. Once your account is activated and orders begin, the product price will be locked and cannot be changed.</h6>
+            </div>
+            </div>
             </div>';
         }
         
