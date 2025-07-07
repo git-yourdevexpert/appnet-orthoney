@@ -225,43 +225,57 @@ class OAM_ADMINISTRATOR_AJAX {
                 ));
 
                 foreach ($affiliates_ids as $affiliate_id) {
-                    $token = $wpdb->get_var($wpdb->prepare(
-                        "SELECT token FROM {$affiliates_table} WHERE user_id = %d",
-                        $affiliate_id
-                    ));
-                    $org_name = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
-                    $associated = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
+                    $affiliate_wp_user = new WP_User($affiliate_id);
+                    $affiliate_wp_user_roles = $affiliate_wp_user->roles;
 
-                    if ($associated) {
-                        $block = '';
+                    // Check if current user has 'yith_affiliate' role
+                    if (in_array('yith_affiliate', $current_user_roles)) {
+                        // Get token from affiliate table
+                        $token = $wpdb->get_var($wpdb->prepare(
+                            "SELECT token FROM {$affiliates_table} WHERE user_id = %d",
+                            $affiliate_id
+                        ));
 
-                        if (!empty($token)) {
-                            $block .= '<strong>[' . esc_html($token) . '] ' . esc_html($org_name) . '</strong><br>';
-                        }
+                        // Get meta values
+                        $org_name   = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
+                        $associated = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
 
-                        $afuser = get_userdata($affiliate_id);
-                        if ($afuser) {
-                            $block .= esc_html($afuser->user_email) . '<br>';
-                        }
+                        if ($associated) {
+                            $block = '';
 
-                        $phone = get_user_meta($affiliate_id, '_yith_wcaf_phone_number', true);
-                        if (!empty($phone)) {
-                            $block .= esc_html($phone) . '<br>';
-                        }
+                            // Add token and org name
+                            if (!empty($token)) {
+                                $block .= '<strong>[' . esc_html($token) . '] ' . esc_html($org_name) . '</strong><br>';
+                            }
 
-                        $addr = array_filter([
-                            get_user_meta($affiliate_id, '_yith_wcaf_address', true),
-                            get_user_meta($affiliate_id, '_yith_wcaf_city', true),
-                            get_user_meta($affiliate_id, '_yith_wcaf_state', true),
-                            get_user_meta($affiliate_id, '_yith_wcaf_zipcode', true)
-                        ]);
+                            // Add affiliate email
+                            $af_user = get_userdata($affiliate_id);
+                            if ($af_user) {
+                                $block .= esc_html($af_user->user_email) . '<br>';
+                            }
 
-                        if (!empty($addr)) {
-                            $block .= esc_html(implode(', ', $addr)) . '<br>';
-                        }
+                            // Add phone number
+                            $phone = get_user_meta($affiliate_id, '_yith_wcaf_phone_number', true);
+                            if (!empty($phone)) {
+                                $block .= esc_html($phone) . '<br>';
+                            }
 
-                        if (!empty($block)) {
-                            $blocks[] = $block;
+                            // Add address if available
+                            $address_parts = array_filter([
+                                get_user_meta($affiliate_id, '_yith_wcaf_address', true),
+                                get_user_meta($affiliate_id, '_yith_wcaf_city', true),
+                                get_user_meta($affiliate_id, '_yith_wcaf_state', true),
+                                get_user_meta($affiliate_id, '_yith_wcaf_zipcode', true),
+                            ]);
+
+                            if (!empty($address_parts)) {
+                                $block .= esc_html(implode(', ', $address_parts)) . '<br>';
+                            }
+
+                            // Store final block
+                            if (!empty($block)) {
+                                $blocks[] = $block;
+                            }
                         }
                     }
                 }

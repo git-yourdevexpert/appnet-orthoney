@@ -134,10 +134,11 @@ class OAM_WC_Customizer {
                         // Check if it matches US phone pattern
                         var pattern = /^[2-9][0-8][0-9][2-9][0-9]{6}$/;
                         isValid = pattern.test(phone);
-                    } else if (phone.length === 11 && phone.charAt(0) === '1') {
-                        var pattern = /^1[2-9][0-8][0-9][2-9][0-9]{6}$/;
-                        isValid = pattern.test(phone);
-                    }
+                    } 
+                    // else if (phone.length === 11 && phone.charAt(0) === '1') {
+                    //     var pattern = /^1[2-9][0-8][0-9][2-9][0-9]{6}$/;
+                    //     isValid = pattern.test(phone);
+                    // }
                     
                     if ($(this).val() !== '' && !isValid) {
                         $(this).addClass('woocommerce-invalid');

@@ -973,15 +973,17 @@ jQuery(document).ready(function ($) {
 });
 
 
-function attachPhoneAutoFormat(selectors) {
+jQuery(document).ready(function ($) {
+
+    function attachPhoneAutoFormat(selectors) {
         selectors.forEach(selector => {
             $(selector).each(function () {
                 const $input = $(this);
 
                 // Skip if already bound
-                // if ($input.data('phone-format-attached')) return;
+                if ($input.data('phone-format-attached')) return;
 
-                // $input.data('phone-format-attached', true);
+                $input.data('phone-format-attached', true);
 
                 $input.on('input', function (e) {
                     let value = e.target.value.replace(/\D/g, '').substring(0, 10); // Only digits, max 10
@@ -992,17 +994,11 @@ function attachPhoneAutoFormat(selectors) {
                     if (value.length >= 7) formatted += '-' + value.substring(6, 10);
 
                     e.target.value = formatted;
-                
-                    
-                    $input.setAttribute('value', formatted);
                 });
             });
         });
     }
 
-jQuery(document).ready(function ($) {
-
-    
     // Run immediately
     const selectors = [
         '#addUserForm #phone',
@@ -1011,7 +1007,6 @@ jQuery(document).ready(function ($) {
         // '#billing #billing-phone',
         '#user_registration_customer_phone_number',
         '#edit-billing-address-form #phone_number',
-
     ];
     attachPhoneAutoFormat(selectors);
 
