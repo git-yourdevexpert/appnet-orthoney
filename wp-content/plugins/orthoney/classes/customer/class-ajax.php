@@ -3598,7 +3598,7 @@ class OAM_Ajax{
                 $wrapped_message = $mailer->wrap_message($subject, $html);
                 $headers = [
                     'Content-Type: text/html; charset=UTF-8',
-                    'Cc: support@orthoney.com' . ($affiliate_org_email ? ", $affiliate_org_email" : '')
+                    'Cc:' . $cc
                 ];
                 $attachments = [$pdf_path];
                 $mail_sent = $mailer->send($to, $subject, $wrapped_message, $headers, $attachments);
