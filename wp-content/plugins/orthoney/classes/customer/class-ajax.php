@@ -186,17 +186,24 @@ class OAM_Ajax{
 
         $custom_order_id = OAM_COMMON_Custom::get_order_meta($orderid, '_orthoney_OrderID');
 
+        $affiliate_token = 'Orthoney';
+        $affiliate_id = 0;
         $affiliate_data = $wpdb->get_row(
-            $wpdb->prepare("
-                SELECT a.token, a.ID
-                FROM {$wpdb->prefix}yith_wcaf_commissions c
-                JOIN {$wpdb->prefix}yith_wcaf_affiliates a ON c.affiliate_id = a.ID
-                WHERE c.order_id = %d
-            ", $orderid)
+            $wpdb->prepare(
+                "SELECT r.affiliate_code, a.user_id
+                FROM {$wpdb->prefix}oh_wc_order_relation r
+                LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates a
+                ON r.affiliate_code = a.token
+                WHERE r.order_id = %d",
+                $custom_order_id
+            ),
+            ARRAY_A
         );
 
-        $affiliate_token = $affiliate_data->token ?? 'Orthoney';
-        $affiliate_id    = $affiliate_data->ID ?? 0;
+        if(!empty($affiliate_data)){
+            $affiliate_token = $affiliate_data['affiliate_code'] ?? 'Orthoney';
+            $affiliate_id = $affiliate_data['user_id'] ?? 0;
+        }
 
         $recipient_data = $wpdb->get_results(
             $wpdb->prepare("SELECT * FROM $recipient_order_table WHERE order_id = %d", $custom_order_id)
@@ -3577,7 +3584,6 @@ class OAM_Ajax{
                 $to = $email;
                
                 $cc = implode(',', array_unique(array_filter([
-                    'support@orthoney.com',
                     $affiliate_org_email,
                     $customer_email
                 ])));
