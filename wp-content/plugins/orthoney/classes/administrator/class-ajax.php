@@ -229,7 +229,7 @@ class OAM_ADMINISTRATOR_AJAX {
                     $affiliate_wp_user_roles = $affiliate_wp_user->roles;
 
                     // Check if current user has 'yith_affiliate' role
-                    if (in_array('yith_affiliate', $current_user_roles)) {
+                    if (in_array('yith_affiliate', $affiliate_wp_user_roles)) {
                         // Get token from affiliate table
                         $token = $wpdb->get_var($wpdb->prepare(
                             "SELECT token FROM {$affiliates_table} WHERE user_id = %d",
