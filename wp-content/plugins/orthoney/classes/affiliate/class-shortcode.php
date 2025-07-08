@@ -12,8 +12,31 @@ class OAM_AFFILIATE_Shortcode
 	 **/
 	public function __construct() {
         add_shortcode('affiliate_dashboard', array( $this, 'affiliate_dashboard_handler' ) );
+        add_shortcode('org_token', array( $this, 'org_token_handler' ) );
     }
 
+    public function org_token_handler() {
+        ob_start();
+        $affiliate_id = get_current_user_id();
+        $user_roles = OAM_COMMON_Custom::get_user_role_by_id($affiliate_id);
+
+
+
+        if( !in_array('yith_affiliate ', $user_roles)){
+            if(in_array('affiliate_team_member', $user_roles) OR in_array('administrator', $user_roles)){
+                if(get_user_meta($affiliate_id, 'associated_affiliate_id', true)){
+                    $affiliate_id = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
+
+                }
+            }
+        }
+        $details = OAM_AFFILIATE_Helper::get_affiliate_details($affiliate_id);
+        if (!empty($details['token'])) {
+            echo "<h6><strong>Token :  ".$details['token']."</strong></h6>";
+        }
+
+        return ob_get_clean();
+    }
     public function affiliate_dashboard_handler() {
         ob_start();
 
