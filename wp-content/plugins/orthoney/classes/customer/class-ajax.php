@@ -3574,8 +3574,14 @@ class OAM_Ajax{
             
                 $pdf_url = $upload_dir['url'] . '/' . $pdf_filename;
 
-                $to = $customer_email;
-                $cc = 'support@orthoney.com,'.$affiliate_org_email;
+                $to = $email;
+               
+                $cc = implode(',', array_unique(array_filter([
+                    'support@orthoney.com',
+                    $affiliate_org_email,
+                    $customer_email
+                ])));
+
                 $subject = '#'. $custom_order_id.' Reordering Form – Honey From The Heart';
                 
                 // $message = '<p>Dear ' . $name . ',</p>';
