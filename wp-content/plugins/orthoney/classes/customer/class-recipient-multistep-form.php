@@ -780,6 +780,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                             data-failCount="<?php echo $result['data']['failCount']; ?>"
                             data-duplicateCount="<?php echo $result['data']['duplicateCount']; ?>"
                             data-duplicatePassCount="<?php echo $result['data']['duplicatePassCount'];?>"
+                            data-greeting_empty_count="<?php echo $greeting_empty_count;?>"
                             data-duplicateFailCount="<?php echo $result['data']['duplicateFailCount']; ?>">
                             Verify Recipient Addresses
                         </button>
