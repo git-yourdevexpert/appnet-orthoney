@@ -922,10 +922,12 @@ class OAM_Helper{
                 if($alreadyOrder == 0){
                     if($reverify == 0){
                         $html .= '<td data-label="Status"><div class="thead-data">Status</div>'.(($data->verified == 0) ? stripslashes($reasonsHtml): 'Added to Order').'</td>';
+                         $html .= '<td data-label="Greeting"><div class="thead-data">Greeting</div>'.((!empty($data->greeting) ? 'Yes' : 'NO')).'</td>';
                     }
                     if($reverify == 1 OR $reverify == 2){
                         if($reverify == 1){
                              $html .= '<td data-label="Status"><div class="thead-data">Reason</div><span style="color:red">'.stripslashes($data->reasons).'</span></td>';
+                              $html .= '<td data-label="Greeting"><div class="thead-data">Greeting</div>'.((!empty($data->greeting) ? 'Yes' : 'NO')).'</td>';
                         }
                         $html .= '<td data-label="Action"><div class="thead-data">Action</div>';
                         if($data->address_verified == 0){

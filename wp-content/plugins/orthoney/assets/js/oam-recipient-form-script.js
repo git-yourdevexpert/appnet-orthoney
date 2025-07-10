@@ -946,6 +946,7 @@ document.addEventListener("DOMContentLoaded", function () {
           event.preventDefault();
 
           const totalCount = event.target.getAttribute("data-totalcount");
+          const greeting_empty_count = event.target.getAttribute("data-greeting_empty_count");
           const successCount = event.target.getAttribute("data-successcount");
           const newCount = event.target.getAttribute("data-newcount");
           const failCount = event.target.getAttribute("data-failcount");
@@ -1043,8 +1044,12 @@ document.addEventListener("DOMContentLoaded", function () {
           // }
 
           // html += `<li class="total-recipients"><span>Total Passed Recipients: </span> ${totalCount - (parseInt(duplicateFailCount) + parseInt(failCount))}</li>`;
+          let greeting_empty_count_html = '';
+          if(greeting_empty_count != 0){
+            greeting_empty_count_html = `<p style="padding-top: 25px;margin-bottom: -14px;"><strong style="font-size: 18px;color: red;line-height: 1.5;text-align: center;font-weight: 800;">Please make sure you have added greetings for all recipients before continuing.</strong></p>`;
+          }
 
-           html += `</ul></div>${failedhtml}</div><p style="padding-top: 25px;margin-bottom: -14px;"><strong style="font-size: 18px;color: red;line-height: 1.5;text-align: center;font-weight: 800;"> Attention! Before continuing, please ensure your recipient list is complete. You won’t be able to add or remove recipients after the next step.</strong></p></div>`;
+           html += `</ul></div>${failedhtml}</div><p style="padding-top: 25px;margin-bottom: -14px;"><strong style="font-size: 18px;color: red;line-height: 1.5;text-align: center;font-weight: 800;"> Attention! Before continuing, please ensure your recipient list is complete. You won’t be able to add or remove recipients after the next step.</strong></p>${greeting_empty_count_html}</div>`;
           // html += `<p>Please confirm if you would like to proceed with the successfully added records.</p>`;
 
           const result = await Swal.fire({
