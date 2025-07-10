@@ -453,6 +453,7 @@ class OAM_AFFILIATE_Ajax{
                     '_yith_wcaf_check_payable',
                     '_yith_wcaf_address_check',
                     '_yith_wcaf_attention',
+                    'activate_affiliate_account',
                 ];
 
                 foreach ($users as $user) {
@@ -497,7 +498,11 @@ class OAM_AFFILIATE_Ajax{
     public function update_price_affiliate_profile_handler() {
         // Verify nonce for security
         check_ajax_referer('oam_nonce', 'security');
+         global $wpdb;
+        $org_token = sanitize_text_field($_POST['org_token']);
 
+        $year_start = date('Y-01-01 00:00:00');
+        $year_end   = date('Y-12-31 23:59:59');
 
         $today = current_time('m/d/Y H:i:s');
         $season_start_date = get_field('season_start_date', 'option');
@@ -506,11 +511,24 @@ class OAM_AFFILIATE_Ajax{
         $current_timestamp      = strtotime($today);
         $season_start_timestamp = strtotime($season_start_date);
         $season_end_timestamp   = strtotime($season_end_date);
+        
+        $query = $wpdb->prepare(
+            "SELECT COUNT(id) FROM {$wpdb->prefix}oh_wc_order_relation WHERE affiliate_code = %s AND created_date BETWEEN %s AND %s",
+            $org_token,
+           $year_start,
+            $year_end
+        );
 
+        $count = $wpdb->get_var($query);
+
+        // if ($is_within_range ) {
+        //     wp_send_json(['success' => false, 'message' => 'Updating the selling price during the season is not allowed.']);
+        //     wp_die();
+        // }
         $is_within_range = ( $current_timestamp >= $season_start_timestamp && $current_timestamp <= $season_end_timestamp );
 
-        if ($is_within_range ) {
-            wp_send_json(['success' => false, 'message' => 'Updating the selling price during the season is not allowed.']);
+        if($count > 0){
+            wp_send_json(['success' => false, 'message' => 'The price for this season is locked and cannot be changed.']);
             wp_die();
         }
         if (!is_user_logged_in()) {
@@ -614,10 +632,12 @@ class OAM_AFFILIATE_Ajax{
             wp_die();
         }
 
-        $user_id = get_current_user_id();
-      
-        // Validate and sanitize inputs
-        $associated_id = sanitize_text_field($_POST['associated_id']);
+         $associated_id = isset($_POST['associated_id']) ? absint($_POST['associated_id']) : 0;
+
+        if (!get_userdata($associated_id)) {
+             wp_send_json(['success' => false, 'message' => 'User does not exist. Please try again.']);
+            wp_die();
+        } 
         $check_payable = sanitize_text_field($_POST['check_payable']);
         $address_check = sanitize_text_field($_POST['address_check']);
         $attention = sanitize_text_field($_POST['attention']);

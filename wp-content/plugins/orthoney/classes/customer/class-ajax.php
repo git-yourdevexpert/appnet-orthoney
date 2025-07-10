@@ -194,8 +194,8 @@ class OAM_Ajax{
                 FROM {$wpdb->prefix}oh_wc_order_relation r
                 LEFT JOIN {$wpdb->prefix}yith_wcaf_affiliates a
                 ON r.affiliate_code = a.token
-                WHERE r.order_id = %d",
-                $custom_order_id
+                WHERE r.wc_order_id = %d",
+                $orderid
             ),
             ARRAY_A
         );

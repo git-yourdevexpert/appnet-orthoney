@@ -9,11 +9,11 @@
    $affiliate_id = $user_id;
    $associated_id = $user_id;
 
-    if (!empty(get_user_meta($user_id, 'associated_affiliate_id', true))) {
-        // The user is a team member, get the associated affiliate
-        $associated_id = $associated_id;
+    $associated_affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true);
+    if (!empty($associated_affiliate_id)) {
+        $associated_id = $associated_affiliate_id;
     }
-   
+
     $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
     $org_code = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d", $associated_id));
 
@@ -232,7 +232,7 @@
                             <input type="text" name="product_price" id="product_price" value="<?php echo esc_attr($show_price); ?>" data-error-message="Please enter a product price">
                             <span class="error-message"></span>
                             <input type="hidden" name="selling_minimum_price" value="<?php echo $selling_minimum_price ?>">
-                        
+                            <input type="hidden" name="org_token" value="<?php echo $org_code ?>">
                             <button type="button" class="add-user w-btn us-btn-style_1" id="affiliate-product-price-profile">Update Price</button>
                         </div>
                         

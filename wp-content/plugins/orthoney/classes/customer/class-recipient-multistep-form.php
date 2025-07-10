@@ -132,7 +132,6 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             
                 if (!empty($_GET['pid'])) {
                     
-                   
                     $user = self::$current_user_id;
                     $result = $wpdb->get_row($wpdb->prepare(
                         "SELECT * FROM {$order_process_table} WHERE user_id = %d AND id = %d",
@@ -194,7 +193,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     public static function step_1($data){
         $affiliate = 'Orthoney';
         if (!empty($data)) {
-            $affiliate = $data->affiliate_select != '' ? $data->affiliate_select : 'Orthoney';
+            $affiliate = ($data->affiliate_select == '' || $data->affiliate_select == 0 )  ?  'Orthoney' : $data->affiliate_select ;
         }
         OAM_COMMON_Custom::set_affiliate_cookie($affiliate);
         ?>

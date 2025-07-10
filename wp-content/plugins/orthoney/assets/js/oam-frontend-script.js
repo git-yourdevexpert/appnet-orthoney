@@ -4033,12 +4033,13 @@ jQuery(function ($) {
         jQuery(document).on("click", ".reset_btton", function (e) {
           const currentYear = new Date().getFullYear();
           $("#select-year").val(currentYear); // Set default
-          $("#select-customer").val(""); // Set default
+          $("#select-customer").val('').empty().trigger("change");
           $(".search-recipient-name").val(""); // Set default
           $(".search-by-organization").val(""); // Set default
           $("#order_status").val("all"); // Set default
           $("#custom-order-type-filter").val("all"); // Set default
           jQuery('#customer-orders-table_filter input[type="search"]').val("");
+           table.search("").draw();
 
           const min = $("#slider-range").slider("option", "min");
           const max = $("#slider-range").slider("option", "max");
@@ -4256,7 +4257,7 @@ jQuery(function ($) {
         jQuery(document).on("click", ".jar_reset_btton", function ($) {
           const currentYear = new Date().getFullYear();
           jQuery("#jars-select-year").val(currentYear); // Set default
-          jQuery("#jar-select-customer").val(""); // Set default
+           jQuery("#jar-select-customer").val('').empty().trigger("change");
           jQuery(".jar-search-by-organization").val(""); // Set default
           jQuery('#customer-jar-orders-table_filter input[type="search"]').val(
             ""
