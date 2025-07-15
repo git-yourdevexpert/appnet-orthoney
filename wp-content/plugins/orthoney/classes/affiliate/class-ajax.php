@@ -472,6 +472,14 @@ class OAM_AFFILIATE_Ajax{
             global $wpdb;
             $yith_affiliate_table = $wpdb->prefix . 'yith_wcaf_affiliates';
 
+            $wc_order_relation = $wpdb->prefix . 'oh_wc_order_relation';
+
+            $wpdb->query($wpdb->prepare(
+                "UPDATE {$wc_order_relation} SET affiliate_user_id = %d WHERE affiliate_user_id = %d",
+                $selected_user_id,
+                $current_user_id
+            ));
+
             $wpdb->query($wpdb->prepare(
                 "UPDATE {$yith_affiliate_table} SET user_id = %d WHERE user_id = %d",
                 $selected_user_id,
