@@ -132,6 +132,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
             
                 if (!empty($_GET['pid'])) {
                     
+                   
                     $user = self::$current_user_id;
                     $result = $wpdb->get_row($wpdb->prepare(
                         "SELECT * FROM {$order_process_table} WHERE user_id = %d AND id = %d",
@@ -646,6 +647,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                 $view_all_recipients_btn_html = '';
 
                 if(self::$atts_process_id != 0){
+                   
                     $order_process_table = OAM_Helper::$order_process_table;
                     $user_id = self::$current_user_id;
 
@@ -659,12 +661,14 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                     }
                 }
 
-                  $pid = $_GET['pid'];
+                $pid = $_GET['pid'];
                 $greeting_empty_count = (int) $wpdb->get_var($wpdb->prepare(
-                    "SELECT COUNT(*) FROM {$order_process_recipient_table} WHERE pid = %d AND greeting = %s",
+                    "SELECT COUNT(*) FROM {$order_process_recipient_table} WHERE pid = %d AND greeting = %s AND visibility = %d" ,
                     $_GET['pid'],
-                    ''
+                    '',
+                    1
                 ));
+
 
                 $oam_ajax = new OAM_Ajax();
                 // Fetch recipient data based on 'pid' parameter
