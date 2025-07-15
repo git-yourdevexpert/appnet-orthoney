@@ -1158,7 +1158,7 @@ class OAM_Helper{
         $total_quantity = 0;
        
         
-        $unverifiedTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Reason</th><th>Action</th></tr></thead><tbody>';
+        $unverifiedTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Reason</th><th>Greeting</th><th>Action</th></tr></thead><tbody>';
 
         $verifyTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Action</th></tr></thead><tbody>';
 
