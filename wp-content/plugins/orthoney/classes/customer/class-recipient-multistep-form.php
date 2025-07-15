@@ -803,7 +803,8 @@ class OAM_RECIPIENT_MULTISTEP_FORM
     
 
     public static function step_5($data, $currentStep, $group_name){
-
+        global $wpdb;
+        $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
         $affiliate_select = 'Orthoney';
         if (!empty($data)) {
             $affiliate_select = (!empty($data->affiliate_select)) ? $data->affiliate_select : 'Orthoney';
@@ -814,6 +815,14 @@ class OAM_RECIPIENT_MULTISTEP_FORM
         $checkoutProceedStatus = $data->checkout_proceed_with_multi_addresses_status ?? '';
 
      
+          $pid = $_GET['pid'];
+                $greeting_empty_count = (int) $wpdb->get_var($wpdb->prepare(
+                    "SELECT COUNT(*) FROM {$order_process_recipient_table} WHERE pid = %d AND greeting = %s AND visibility = %d " ,
+                    $_GET['pid'],
+                    '',
+                    1
+                ));
+
         echo '<div class="step" id="step5">';
         if (!empty($data->delivery_preference)) {
             if(($currentStep == 4 OR $currentStep == 5 ) AND ($data->delivery_preference == 'single_address' OR $data->delivery_preference == 'multiple_address')){
@@ -866,7 +875,7 @@ class OAM_RECIPIENT_MULTISTEP_FORM
                         if($result['data']['totalCount'] != 0){
                             echo '<div class="button-block">';
                             echo '<button data-href="'.CUSTOMER_DASHBOARD_LINK.'" class="w-btn us-btn-style_1 outline-btn save_continue_later_btn" data-tippy="Click to save your order progress to your Dashboard under Incomplete Orders.">Save & Continue Later</button>';
-                            echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step">Proceed To CheckOut</button>';
+                            echo '<button id="checkout_proceed_with_addresses_button" class="w-btn us-btn-style_1 next-step" data-greeting_empty_count="'.$greeting_empty_count.'">Proceed To CheckOut</button>';
                             echo '<input type="hidden" name="processCheckoutStatus" value="' . $currentStep . '">';
                             echo '<input type="hidden" name="checkout_proceed_with_multi_addresses_status" value="' . $checkoutProceedStatus . '">';
                             if ($result['data']['unverifiedRecordCount'] > 0) {

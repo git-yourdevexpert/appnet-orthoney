@@ -531,7 +531,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
           const unverified_table = document.querySelector("#unverified-block"); // Select a single element
           const verified_table = document.querySelector("#verified-block"); // Select a single element
-
+          const greeting_empty_count = event.target.getAttribute("data-greeting_empty_count");
+          
           let html = ``;
 
           let unverifiedCount = 0;
@@ -566,14 +567,18 @@ document.addEventListener("DOMContentLoaded", function () {
           console.log(verifiedButton);
           
           if (parseInt(unverifiedCount) != 0){
-            html += `<p style="color:red"><br>Some addresses are unverified. Please correct them before proceeding. Honey From The Heart cannot guarantee delivery to unverified addresses.</p>`;
+            html += `<p style="margin-bottom: -14px;"><strong style="font-size: 18px;color: red;line-height: 1.5;text-align: center;font-weight: 800;"><br>Some addresses are unverified. Please correct them before proceeding. Honey From The Heart cannot guarantee delivery to unverified addresses.</strong></p>`;
           }
+
           html += `<div class='exceptions'><ul>`;
 
           html += `<li><span>Verified Address(es): </span> ${verifiedCount}</li>`;
           html += `<li><span>Rejected Address(es): </span> ${unverifiedCount}</li></ul>`;
           
 
+          if(greeting_empty_count != 0){
+            html += `<p style="padding-top: 25px;margin-bottom: -14px;"><strong style="font-size: 18px;color: red;line-height: 1.5;text-align: center;font-weight: 800;">Please make sure you have added greetings for all recipients before continuing.</strong></p>`;
+          }
           // html += `<li class="total-recipients"><span>Total Recipients: </span> ${(parseInt(verifiedCount) + parseInt(unverifiedCount))}</li></ul>`;
 
           const result = await Swal.fire({
