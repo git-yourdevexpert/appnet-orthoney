@@ -2484,7 +2484,7 @@ class OAM_Ajax{
         $postcode       = $recipientOrderDetails->zipcode;
         $country        = $recipientOrderDetails->country ?? 'US';
         $total_quantity = $recipientOrderDetails->quantity;
-        $greeting       = $recipientOrderDetails->greeting ?? '';
+        $greeting       = html_entity_decode(stripslashes($recipientOrderDetails->greeting)) ?? '';
 
         $states = WC()->countries->get_states('US');
         $full_state_name = isset($states[$state]) ? $states[$state] : $state;
