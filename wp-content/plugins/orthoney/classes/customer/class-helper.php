@@ -930,6 +930,9 @@ class OAM_Helper{
                              $html .= '<td data-label="Status"><div class="thead-data">Reason</div><span style="color:red">'.stripslashes($data->reasons).'</span></td>';
                               $html .= '<td data-label="Greeting"><div class="thead-data">Greeting</div>'.((!empty($data->greeting) ? 'Yes' : 'NO')).'</td>';
                         }
+                        if($data->address_verified == 1){
+                            $html .= '<td data-label="Greeting"><div class="thead-data">Greeting</div>'.((!empty($data->greeting) ? 'Yes' : 'NO')).'</td>';
+                        }
                         $html .= '<td data-label="Action"><div class="thead-data">Action</div>';
                         if($data->address_verified == 0){
                             // $html .= '<button class="reverifyAddress w-btn us-btn-style_1" style="padding:10px"><small>Reverify Address</small></button>';
@@ -1161,7 +1164,7 @@ class OAM_Helper{
         
         $unverifiedTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Reason</th><th>Greeting</th><th>Action</th></tr></thead><tbody>';
 
-        $verifyTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Action</th></tr></thead><tbody>';
+        $verifyTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Greeting</th><th>Action</th></tr></thead><tbody>';
 
 
         $tableEnd = '</tbody></table>';
