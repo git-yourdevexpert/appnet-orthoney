@@ -456,7 +456,7 @@ class OAM_Ajax{
 
             $response[] = [
                 'id'    => $user->ID,
-                'label' => $label,
+                'label' => stripslashes(html_entity_decode($label)),
             ];
         }
 
