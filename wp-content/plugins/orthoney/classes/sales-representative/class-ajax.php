@@ -94,14 +94,17 @@ public function orthoney_get_filtered_customers() {
     $search_clause = '';
     $search_params = [];
 
-    if (!empty($search)) {
+   if (!empty($search)) {
         $like = '%' . $wpdb->esc_like($search) . '%';
+
         $search_clause = " AND (
             u.user_email LIKE %s
             OR um_first.meta_value LIKE %s
             OR um_last.meta_value LIKE %s
+            OR CONCAT(um_first.meta_value, ' ', um_last.meta_value) LIKE %s
         )";
-        $search_params = [$like, $like, $like];
+
+        $search_params = [$like, $like, $like, $like];
     }
 
     $limit_clause = $length > 0 ? "LIMIT %d, %d" : '';
