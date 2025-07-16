@@ -515,20 +515,13 @@ class OAM_ADMINISTRATOR_AJAX {
             af.banned,
             u.user_email,
             COALESCE(org_name.meta_value, CONCAT(first_name.meta_value, ' ', last_name.meta_value)) as organization,
-            COALESCE(city1.meta_value, city2.meta_value, city3.meta_value) as city,
-            COALESCE(state1.meta_value, state2.meta_value, state3.meta_value) as state,
             phone.meta_value as phone
         FROM {$wpdb->prefix}yith_wcaf_affiliates af
         LEFT JOIN {$wpdb->users} u ON af.user_id = u.ID
         LEFT JOIN {$wpdb->usermeta} org_name ON af.user_id = org_name.user_id AND org_name.meta_key = '_yith_wcaf_name_of_your_organization'
         LEFT JOIN {$wpdb->usermeta} first_name ON af.user_id = first_name.user_id AND first_name.meta_key = 'first_name'
         LEFT JOIN {$wpdb->usermeta} last_name ON af.user_id = last_name.user_id AND last_name.meta_key = 'last_name'
-        LEFT JOIN {$wpdb->usermeta} city1 ON af.user_id = city1.user_id AND city1.meta_key = '_yith_wcaf_city'
-        LEFT JOIN {$wpdb->usermeta} city2 ON af.user_id = city2.user_id AND city2.meta_key = 'billing_city'
-        LEFT JOIN {$wpdb->usermeta} city3 ON af.user_id = city3.user_id AND city3.meta_key = 'shipping_city'
-        LEFT JOIN {$wpdb->usermeta} state1 ON af.user_id = state1.user_id AND state1.meta_key = '_yith_wcaf_state'
-        LEFT JOIN {$wpdb->usermeta} state2 ON af.user_id = state2.user_id AND state2.meta_key = 'billing_state'
-        LEFT JOIN {$wpdb->usermeta} state3 ON af.user_id = state3.user_id AND state3.meta_key = 'shipping_state'
+ 
         LEFT JOIN {$wpdb->usermeta} phone ON af.user_id = phone.user_id AND phone.meta_key = '_yith_wcaf_phone_number'
         WHERE af.token != '' AND af.user_id != 0 {$where_clause}
     ";
@@ -599,18 +592,23 @@ class OAM_ADMINISTRATOR_AJAX {
         // Build organization display
         $organizationdata = [];
         $organization = $user->organization ?: '';
-        $city = $user->city ?: '';
-        $state = $user->state ?: '';
+        $city = get_user_meta($user_id, '_yith_wcaf_city', true);
+        if (empty($city)) {
+            $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
+        }
+
+        $state = get_user_meta($user_id, '_yith_wcaf_state', true);
+        if (empty($state)) {
+            $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
+        }
+
         $phone = $user->phone ?: '';
 
         if (!empty($organization)) {
             $organizationdata[] = '<strong> ['.esc_html($user->token).'] ' . esc_html($organization) . '</strong>';
         }
 
-        $city_state = trim(esc_html($city) . (empty($city) || empty($state) ? '' : ', ') . esc_html($state));
-        if (!empty($city_state)) {
-            $organizationdata[] = $city_state;
-        }
+      
 
         if (!empty($user->user_email)) {
             $organizationdata[] = esc_html($user->user_email);
