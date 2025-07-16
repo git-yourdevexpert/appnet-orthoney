@@ -592,14 +592,19 @@ class OAM_ADMINISTRATOR_AJAX {
         // Build organization display
         $organizationdata = [];
         $organization = $user->organization ?: '';
-        $city = get_user_meta($user_id, '_yith_wcaf_city', true);
+        $city = get_user_meta($user_id, '_yith_wcaf_city', true) ?: '';
         if (empty($city)) {
             $city = get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
         }
 
-        $state = get_user_meta($user_id, '_yith_wcaf_state', true);
+        $state = get_user_meta($user_id, '_yith_wcaf_state', true) ?: '';
         if (empty($state)) {
             $state = get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
+        }
+
+        $phone = get_user_meta($user_id, '_yith_wcaf_phone_number', true) ?: '';
+        if (empty($phone)) {
+            $phone = get_user_meta($user_id, 'billing_phone', true) ?: get_user_meta($user_id, 'shipping_phone', true);
         }
 
         $phone = $user->phone ?: '';
@@ -607,8 +612,6 @@ class OAM_ADMINISTRATOR_AJAX {
         if (!empty($organization)) {
             $organizationdata[] = '<strong> ['.esc_html($user->token).'] ' . esc_html($organization) . '</strong>';
         }
-
-      
 
         if (!empty($user->user_email)) {
             $organizationdata[] = esc_html($user->user_email);
