@@ -15,9 +15,10 @@ $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
 
 $user = get_current_user_id();
 $result = $wpdb->get_row($wpdb->prepare(
-	"SELECT * FROM {$order_process_table} WHERE user_id = %d AND id = %d",
-	$user, intval($_GET['pid'])
+	"SELECT * FROM {$order_process_table} WHERE user_id = %d AND order_id = %d",
+	$user, intval($order->get_order_number())
 ));
+
 $setData = json_decode($result->data);
 $affiliate = $setData->affiliate_select != '' ? $setData->affiliate_select : 'Orthoney';
 $affiliate_id = intval($affiliate);
