@@ -432,8 +432,8 @@ public function orthoney_get_filtered_customers() {
         $select_organization = get_user_meta($user_id, 'select_organization', true);
         $choose_organization = get_user_meta($user_id, 'choose_organization', true);
 
-        $organization_search      = sanitize_text_field($_POST['organization_search'] ?? '');
-        $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
+       $organization_search = strtolower(stripslashes($_POST['organization_search'] ?? ''));
+        $organization_code_search = strtolower(stripslashes($_POST['organization_code_search'] ?? ''));
 
         // Build include clause
         $include_clause = '';
@@ -478,7 +478,10 @@ public function orthoney_get_filtered_customers() {
         // Org name filter
         if (!empty($organization_search)) {
             $org_search_like = '%' . $wpdb->esc_like($organization_search) . '%';
-            $search_filter .= $wpdb->prepare(" AND MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END) LIKE %s", $org_search_like);
+            $search_filter .= $wpdb->prepare(
+                " AND LOWER(MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END)) LIKE %s",
+                $org_search_like
+            );
         }
 
         // Org code filter
