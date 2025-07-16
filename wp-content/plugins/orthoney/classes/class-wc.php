@@ -58,9 +58,44 @@ class OAM_WC_Customizer {
 
         add_action('wp_head', array($this,'add_checkout_phone_validation_styles'));
 
+        // Change recipient of 'customer_processing_order' email
+        add_filter( 'woocommerce_email_recipient_customer_processing_order', array($this,'orthoney_custom_email_recipient'), 10, 2 );
+        // Add CC to 'customer_processing_order' email headers
+        add_filter( 'woocommerce_email_headers', array($this,'orthoney_add_cc_to_email_headers'), 10, 2 );
+
     }
 
-    
+    public function orthoney_custom_email_recipient( $recipient, $order ) {
+
+        if ( ! is_a( $order, 'WC_Order' ) ) {
+            return $recipient; // Safety check
+        }
+
+        $user = $order->get_user();
+
+        if ( $user && ! empty( $user->user_email ) ) {
+            $recipient = $user->user_email;
+        }
+
+        return $recipient;
+    }
+
+
+    public function orthoney_add_cc_to_email_headers( $headers, $email_id ) {
+
+        if ( $email_id === 'customer_processing_order' ) {
+
+            $cc_email = 'support@orthoney.com';
+
+            if ( is_array( $headers ) ) {
+                $headers[] = 'Cc: ' . $cc_email;
+            } else {
+                $headers .= 'Cc: ' . $cc_email . "\r\n";
+            }
+        }
+
+        return $headers;
+    }
 // Start Add US phone number validation to WooCommerce checkout
     public function validate_us_phone_number() {
         if (isset($_POST['billing_phone']) && !empty($_POST['billing_phone'])) {
