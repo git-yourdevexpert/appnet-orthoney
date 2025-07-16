@@ -82,8 +82,8 @@ class OAM_ADMINISTRATOR_AJAX {
         $order_column_index = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
         $order_dir = isset($_POST['order'][0]['dir']) && in_array($_POST['order'][0]['dir'], ['asc', 'desc']) ? $_POST['order'][0]['dir'] : 'asc';
 
-        $organization_search = strtolower($_POST['organization_search'] ?? '');
-        $$organization_search = strtolower(stripslashes($_POST['organization_search'] ?? ''));
+         $organization_search = strtolower(stripslashes($_POST['organization_search'] ?? ''));
+        $organization_code_search = strtolower(stripslashes($_POST['organization_code_search'] ?? ''));
 
         $column_map = [
             0 => 'u.ID',
@@ -100,7 +100,7 @@ class OAM_ADMINISTRATOR_AJAX {
         $org_conditions = [];
         $org_params = [];
 
-        if (!empty($organization_search)) {
+         if (!empty($organization_search)) {
             $org_conditions[] = "aff.user_id IN (
                 SELECT user_id FROM {$wpdb->usermeta}
                 WHERE meta_key = '_yith_wcaf_name_of_your_organization'
@@ -108,7 +108,7 @@ class OAM_ADMINISTRATOR_AJAX {
             )";
             $org_params[] = '%' . $wpdb->esc_like($organization_search) . '%';
         }
-        
+
         if (!empty($organization_code_search)) {
             $org_conditions[] = "aff.token LIKE %s";
             $org_params[] = '%' . $wpdb->esc_like($organization_code_search) . '%';
