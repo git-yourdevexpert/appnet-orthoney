@@ -15,17 +15,12 @@ $order_process_recipient_table = OAM_Helper::$order_process_recipient_table;
 
 $user = get_current_user_id();
 $result = $wpdb->get_row($wpdb->prepare(
-	"SELECT * FROM {$order_process_table} WHERE user_id = %d AND order_id = %d",
-	$user, intval($order->get_order_number())
+	"SELECT * FROM {$order_process_table} WHERE order_id = %d",
+	intval($order->get_order_number())
 ));
 
 $setData = json_decode($result->data);
 $affiliate = $setData->affiliate_select != '' ? $setData->affiliate_select : 'Orthoney';
-$affiliate_id = intval($affiliate);
-$token = $wpdb->get_var($wpdb->prepare(
-    "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d",
-    $affiliate_id
-));
 
 foreach ($order->get_items() as $item_id => $item) { 
     $total_honey_jars += $item->get_quantity();
@@ -33,25 +28,23 @@ foreach ($order->get_items() as $item_id => $item) {
 
 $sub_order_id = OAM_COMMON_Custom::get_order_meta($order->get_order_number(), '_orthoney_OrderID');
 
-$recipientResult = $wpdb->get_results($wpdb->prepare(
-    "SELECT * FROM {$order_process_recipient_table} WHERE order_id = %d",
-    $sub_order_id 
-));
+// $recipientResult = $wpdb->get_results($wpdb->prepare(
+//     "SELECT * FROM {$order_process_recipient_table} WHERE order_id = %d",
+//     $sub_order_id 
+// ));
 
 $organization = 'Orthoney';
 $organization_data = 'Honey From The Heart';
-    
-if (!empty($recipientResult[0]->affiliate_token) && $recipientResult[0]->affiliate_token !== 'Orthoney') {
-    $token = $recipientResult[0]->affiliate_token;
-    $meta_key = '_yith_wcaf_name_of_your_organization';
 
-    $organization = $wpdb->get_var($wpdb->prepare(
-        "SELECT um.meta_value
-        FROM {$wpdb->usermeta} um
-        JOIN {$wpdb->prefix}yith_wcaf_affiliates aff ON um.user_id = aff.user_id
-        WHERE aff.token = %s AND um.meta_key = %s",
-        $token, $meta_key
+if (!empty($affiliate) && $affiliate !== 'Orthoney') {
+    $affiliate_id = $affiliate;
+    $token = $wpdb->get_var($wpdb->prepare(
+    "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d",
+    $affiliate_id
     ));
+
+    
+    $organization = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
 
     if ($organization != 'Orthoney') {
         $organization_data_query = $wpdb->get_row($wpdb->prepare(
