@@ -515,14 +515,13 @@ class OAM_ADMINISTRATOR_AJAX {
             af.banned,
             u.user_email,
             COALESCE(org_name.meta_value, CONCAT(first_name.meta_value, ' ', last_name.meta_value)) as organization,
-            phone.meta_value as phone
+           
         FROM {$wpdb->prefix}yith_wcaf_affiliates af
         LEFT JOIN {$wpdb->users} u ON af.user_id = u.ID
         LEFT JOIN {$wpdb->usermeta} org_name ON af.user_id = org_name.user_id AND org_name.meta_key = '_yith_wcaf_name_of_your_organization'
         LEFT JOIN {$wpdb->usermeta} first_name ON af.user_id = first_name.user_id AND first_name.meta_key = 'first_name'
         LEFT JOIN {$wpdb->usermeta} last_name ON af.user_id = last_name.user_id AND last_name.meta_key = 'last_name'
- 
-        LEFT JOIN {$wpdb->usermeta} phone ON af.user_id = phone.user_id AND phone.meta_key = '_yith_wcaf_phone_number'
+
         WHERE af.token != '' AND af.user_id != 0 {$where_clause}
     ";
 
@@ -606,8 +605,6 @@ class OAM_ADMINISTRATOR_AJAX {
         if (empty($phone)) {
             $phone = get_user_meta($user_id, 'billing_phone', true) ?: get_user_meta($user_id, 'shipping_phone', true);
         }
-
-        $phone = $user->phone ?: '';
 
         if (!empty($organization)) {
             $organizationdata[] = '<strong> ['.esc_html($user->token).'] ' . esc_html($organization) . '</strong>';
