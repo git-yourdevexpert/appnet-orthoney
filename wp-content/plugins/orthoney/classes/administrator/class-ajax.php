@@ -82,7 +82,7 @@ class OAM_ADMINISTRATOR_AJAX {
         $order_column_index = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
         $order_dir = isset($_POST['order'][0]['dir']) && in_array($_POST['order'][0]['dir'], ['asc', 'desc']) ? $_POST['order'][0]['dir'] : 'asc';
 
-        $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
+        $organization_search = strtolower($_POST['organization_search'] ?? '');
         $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
 
         $column_map = [
