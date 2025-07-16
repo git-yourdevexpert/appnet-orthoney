@@ -33,15 +33,15 @@ public function orthoney_get_filtered_customers() {
     $length                  = intval($_POST['length'] ?? 10);
     $draw                    = intval($_POST['draw'] ?? 1);
     $search                  = sanitize_text_field($_POST['search']['value'] ?? '');
-    $organization_search     = sanitize_text_field($_POST['organization_search'] ?? '');
-    $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
+    $organization_search = strtolower(stripslashes($_POST['organization_search'] ?? ''));
+        $organization_code_search = strtolower(stripslashes($_POST['organization_code_search'] ?? ''));
 
     // 1. Filter affiliates by organization name/code
     $affiliate_ids = [];
     $org_conditions = [];
     $org_params = [];
 
-    if (!empty($organization_search)) {
+     if (!empty($organization_search)) {
         $org_conditions[] = "user_id IN (
             SELECT user_id FROM {$wpdb->usermeta}
             WHERE meta_key = '_yith_wcaf_name_of_your_organization'
