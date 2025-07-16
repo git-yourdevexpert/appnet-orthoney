@@ -797,23 +797,24 @@ class OAM_ADMINISTRATOR_AJAX {
 
         $status_filter = sanitize_text_field($_POST['status_filter'] ?? '');
         $session_status_filter = sanitize_text_field($_POST['session_status_filter'] ?? '');
-        $organization_search = sanitize_text_field($_POST['organization_search'] ?? '');
-        $organization_code_search = sanitize_text_field($_POST['organization_code_search'] ?? '');
-
+        $organization_search = stripslashes($_POST['organization_search'] ?? '');
+        $organization_code_search = stripslashes($_POST['organization_code_search'] ?? '');
+       
         $filtered_user_ids = array_filter($user_ids, function ($user_id) use (
-            $search, $user_meta_cache, $user_status_map,
-            $status_filter, $session_status_filter,
-            $organization_search, $organization_code_search, $sales_reps_data
+            $search, $user_meta_cache, $user_status_map, $status_filter, $session_status_filter, $organization_search, $organization_code_search, $sales_reps_data
         ) {
             $status = strtolower($user_status_map[$user_id]['label']);
             $meta = $user_meta_cache[$user_id];
-            $organization = strtolower($meta['organization']);
+            $organization = $meta['organization'];
             $code = strtolower($meta['code']);
 
             $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true);
 
-            if (!empty($organization_search) && strpos($organization, strtolower($organization_search)) === false) {
-                return false;
+           if (!empty($organization_search)) {
+                $org_search = strtolower(stripslashes($organization_search));
+                if (strpos(strtolower($organization), $org_search) === false) {
+                    return false;
+                }
             }
 
             if (!empty($organization_code_search) && strpos($code, strtolower($organization_code_search)) === false) {
