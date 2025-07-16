@@ -35,6 +35,8 @@ $sub_order_id = OAM_COMMON_Custom::get_order_meta($order->get_order_number(), '_
 
 $organization = 'Orthoney';
 $organization_data = 'Honey From The Heart';
+$organization_address_data = '1000 N. West Street, Suite 1200, Wilmington, DE 19801';
+$affiliate_email = 'support@orthoney.com';
 
 if (!empty($affiliate) && $affiliate !== 'Orthoney') {
     $affiliate_id = $affiliate;
@@ -45,6 +47,15 @@ if (!empty($affiliate) && $affiliate !== 'Orthoney') {
 
     
     $organization = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
+    $affiliate_email_meta_data = get_user_meta( $affiliate_id, '_yith_wcaf_email', true );
+
+    if ( empty( $affiliate_email_meta_data ) ) {
+        $user = get_userdata( $affiliate_id );
+        
+        if ( $user && ! empty( $user->user_email ) ) {
+            $affiliate_email = $user->user_email;
+        }
+    }
 
     if ($organization != 'Orthoney') {
         $organization_data_query = $wpdb->get_row($wpdb->prepare(
@@ -73,6 +84,14 @@ if (!empty($affiliate) && $affiliate !== 'Orthoney') {
 
         $merged_address = implode(', ', array_filter(['[' . $token . ']', $organization, $city, $state]));
         $organization_data = trim($merged_address);
+        $organization_address_data = implode(', ', array_filter([
+            $organization_data_query->address_1,
+            $organization_data_query->address_2,
+            $city,
+            $state,
+            $organization_data_query->zipcode,
+            $organization_data_query->country
+        ]));
     }
 }
 
@@ -101,9 +120,19 @@ $unit_price = ($total_quantity > 0) ? ($line_subtotal / $total_quantity) : 0;
 <p><?php _e( "Your order has been received and is now being processed. Your order details are shown below for your reference:", 'woocommerce' ); ?></p>
 
 <p>If you have questions about your order please contact:<br />
-<strong><?php echo $order->get_billing_first_name() . " " . $order->get_billing_last_name(); ?></strong><br />
-<?php echo $order->get_billing_phone(); ?><br />
-<?php echo $order->get_billing_email(); ?>
+<?php
+if ($organization != 'Orthoney') {
+    echo '<strong>' . esc_html($organization_data) . '</strong><br />';
+    echo esc_html($organization_address_data) . '<br />';
+    echo esc_html($affiliate_email) . '<br />';
+} else {
+    echo '<strong>Honey From The Heart</strong><br />';
+    echo '1000 N. West Street, Suite 1200<br />';
+    echo 'Wilmington, DE 19801<br />';
+    echo esc_html($affiliate_email) . '<br />';
+}
+?>
+
 </p>
 
 <?php do_action('woocommerce_email_before_order_table', $order, $sent_to_admin, $plain_text); ?>
