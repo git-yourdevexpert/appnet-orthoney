@@ -65,7 +65,7 @@ if ($order_process_user_id && ($user_info = get_userdata($order_process_user_id)
 $sub_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
 $recipient_order_table = $wpdb->prefix . 'oh_recipient_order';
 $recipientResult = $wpdb->get_results($wpdb->prepare(
-    "SELECT * FROM {$recipient_order_table} WHERE order_id = %d",
+    "SELECT DISTINCT * FROM {$recipient_order_table} WHERE order_id = %d",
     $sub_order_id
 ));
 
@@ -229,7 +229,19 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
             </thead>
             <tbody>
                 <?php
-                $recipients = !empty($recipientResult) ? $recipientResult : [(object) [
+                $uniqueRecipients = [];
+                $subOrderIds = [];
+
+                if (!empty($recipientResult)) {
+                    foreach ($recipientResult as $recipient) {
+                        if (!in_array($recipient->recipient_order_id, $subOrderIds)) {
+                            $uniqueRecipients[] = $recipient;
+                            $subOrderIds[] = $recipient->recipient_order_id;
+                        }
+                    }
+                }
+
+                $recipients = !empty($uniqueRecipients) ? $uniqueRecipients : [(object) [
                     'recipient_order_id' => $sub_order_id,
                     'full_name' => $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name(),
                     'company_name' => '',
@@ -250,10 +262,11 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                         $sub_order->zipcode
                     ]));
 
-                   
                     $jarOrderResult = $wpdb->get_results($wpdb->prepare(
-                        "SELECT * FROM {$oh_wc_jar_order} WHERE recipient_order_id =%s ",
-                        $sub_order->recipient_order_id
+                        "SELECT * FROM {$oh_wc_jar_order} 
+                        WHERE recipient_order_id = %s AND order_id != %d
+                        GROUP BY recipient_order_id",
+                        $sub_order->recipient_order_id, 0
                     ));
                     ?>
                     <tr class="group-header" data-count="<?php echo count($jarOrderResult) ?>" data-group="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-id="<?php echo esc_attr($sub_order->recipient_order_id); ?>">

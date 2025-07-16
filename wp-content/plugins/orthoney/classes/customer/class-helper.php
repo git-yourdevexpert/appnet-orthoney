@@ -605,11 +605,11 @@ class OAM_Helper{
         $sub_order_id =  OAM_COMMON_Custom::get_order_meta($order_data->id, '_orthoney_OrderID');
         $jarsorder_count = 1;
         if($sub_order_id){
-        $jarsorder_count = $wpdb->get_var(
+         $jarsorder_count = $wpdb->get_var(
             $wpdb->prepare(
                 "
                 SELECT COUNT(*)
-                FROM {$wpdb->prefix}oh_recipient_order
+                FROM {$wpdb->prefix}oh_order_process_recipient
                 WHERE order_id = %d
                 ",
                 $sub_order_id
