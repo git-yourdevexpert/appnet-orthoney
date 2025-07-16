@@ -104,7 +104,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $org_conditions[] = "aff.user_id IN (
                 SELECT user_id FROM {$wpdb->usermeta}
                 WHERE meta_key = '_yith_wcaf_name_of_your_organization'
-                AND meta_value LIKE %s
+                AND LOWER(meta_value) LIKE %s
             )";
             $org_params[] = '%' . $wpdb->esc_like($organization_search) . '%';
         }
