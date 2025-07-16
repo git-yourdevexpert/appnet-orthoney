@@ -689,11 +689,12 @@ public function orthoney_get_filtered_customers() {
             ) ", $search_like, $search_like, $search_like, $search_like);
         }
 
-        if (!empty($organization_search)) {
+       if (!empty($organization_search)) {
             $search_like = '%' . $wpdb->esc_like($organization_search) . '%';
-            $search_filter .= $wpdb->prepare("
-                AND MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END) LIKE %s
-            ", $search_like);
+            $search_filter .= $wpdb->prepare(
+                " AND LOWER(MAX(CASE WHEN um.meta_key = '_yith_wcaf_name_of_your_organization' THEN um.meta_value END)) LIKE %s ",
+                $search_like
+            );
         }
 
         if (!empty($organization_code_search)) {
