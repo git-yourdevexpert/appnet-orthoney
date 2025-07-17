@@ -322,6 +322,10 @@ class OAM_Helper{
             $order_no = esc_attr($order['order_no']);
             $recipient_name = esc_attr($order['billing_name']);
 
+            if (isset($order['affiliate_code']) && $order['affiliate_code'] === 'Orthoney') {
+                $order['affiliate_code'] = 'Honey from the Heart';
+            }
+
             $wc_order_id = $wpdb->get_var($wpdb->prepare(
                 "SELECT order_id
                 FROM {$wpdb->prefix}wc_orders_meta

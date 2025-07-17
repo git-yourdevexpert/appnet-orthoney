@@ -3599,7 +3599,13 @@ jQuery(function ($) {
             );
             d.search_by_organization = affiliate_token;
           } else {
-            d.search_by_organization = $("input.search-by-organization").val();
+            let organizationInput = $("input.search-by-organization").val();
+
+            if ($.trim(organizationInput) === "HFTH") {
+                organizationInput = "Orthoney";
+            }
+
+            d.search_by_organization = organizationInput;
           }
           d.dsr_affiliate_token = $("select#dsr_affiliate_token").val();
         },
@@ -4090,9 +4096,13 @@ jQuery(function ($) {
             );
             d.search_by_organization = affiliate_token;
           } else {
-            d.search_by_organization = $(
-              "input.jar-search-by-organization"
-            ).val();
+            let organizationInput = $("input.jar-search-by-organization").val();
+
+            if ($.trim(organizationInput) === "HFTH") {
+                organizationInput = "Orthoney";
+            }
+            d.search_by_organization = organizationInput;
+
           }
           d.jar_dsr_affiliate_token = $("select#jar_dsr_affiliate_token").val();
         },
