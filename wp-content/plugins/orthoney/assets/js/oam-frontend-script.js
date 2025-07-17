@@ -3601,8 +3601,8 @@ jQuery(function ($) {
           } else {
             let organizationInput = $("input.search-by-organization").val();
 
-            if ($.trim(organizationInput) === "HFTH") {
-                organizationInput = "Orthoney";
+            if ($.trim(organizationInput).toLowerCase() === "hfth") {
+                organizationInput = "orthoney";
             }
 
             d.search_by_organization = organizationInput;
@@ -4098,8 +4098,8 @@ jQuery(function ($) {
           } else {
             let organizationInput = $("input.jar-search-by-organization").val();
 
-            if ($.trim(organizationInput) === "HFTH") {
-                organizationInput = "Orthoney";
+            if ($.trim(organizationInput).toLowerCase() === "hfth") {
+                organizationInput = "orthoney";
             }
             d.search_by_organization = organizationInput;
 

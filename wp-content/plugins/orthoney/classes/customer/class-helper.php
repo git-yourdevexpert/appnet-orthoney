@@ -412,27 +412,31 @@ class OAM_Helper{
 
         
         if (!empty($_REQUEST['search_by_organization'])) {
-            $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
+            // Sanitize and convert to lowercase
+            $search_by_organization = strtolower(sanitize_text_field($_REQUEST['search_by_organization']));
+            
             $search_terms = array_filter(array_map('trim', explode(',', $search_by_organization)));
 
-            // Add dsr_affiliate_token if provided and not already in array
-            $dsr_token = isset($_REQUEST['dsr_affiliate_token']) ? sanitize_text_field($_REQUEST['dsr_affiliate_token']) : null;
+            // Check dsr_token
+            $dsr_token = isset($_REQUEST['dsr_affiliate_token']) ? strtolower(sanitize_text_field($_REQUEST['dsr_affiliate_token'])) : null;
+            
             if ($dsr_token) {
                 $search_terms = [];
                 $search_terms[] = $dsr_token;
             }
 
             if (!empty($search_terms)) {
-                // We split the conditions instead of duplicating placeholders in one clause
                 $id_placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
                 $code_placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
 
-                $where_conditions[] = "(CAST(orders.id AS CHAR) IN ($id_placeholders) OR rel.affiliate_code IN ($code_placeholders))";
+                // Lowercase search terms for rel.affiliate_code
+                $lowercased_search_terms = array_map('strtolower', $search_terms);
 
-                // Append values for both placeholders
-                $where_values = array_merge($search_terms, $search_terms);
+                $where_conditions[] = "(CAST(orders.id AS CHAR) IN ($id_placeholders) OR LOWER(rel.affiliate_code) IN ($code_placeholders))";
+
+                // Combine normal and lowercase terms accordingly
+                $where_values = array_merge($search_terms, $lowercased_search_terms);
             }
-           
         }
 
         if (!empty($_REQUEST['search_by_recipient'])) {
@@ -522,7 +526,7 @@ class OAM_Helper{
         $where_values[] = $offset;
 
         if (!empty($_REQUEST['search_by_organization'])) {
-            if($_REQUEST['search_by_organization'] != 'Orthoney'){
+            if($_REQUEST['search_by_organization'] != 'orthoney'){
                 $where_conditions[] = "(rel.affiliate_user_id != 0 )";
             }else{
                 $where_conditions[] = "(rel.affiliate_user_id = 0 )";
