@@ -424,13 +424,13 @@ class OAM_Helper{
 
             if (!empty($search_terms)) {
                 // We split the conditions instead of duplicating placeholders in one clause
-                $id_placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
+                // $id_placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
                 $code_placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
 
-                $where_conditions[] = "(CAST(orders.id AS CHAR) IN ($id_placeholders) OR rel.affiliate_code IN ($code_placeholders))";
+                $where_conditions[] = "rel.affiliate_code IN ($code_placeholders)";
 
                 // Append values for both placeholders
-                $where_values = array_merge($search_terms, $search_terms);
+                $where_values = array_merge( $search_terms);
             }
            
         }
