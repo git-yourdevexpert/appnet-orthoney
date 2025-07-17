@@ -521,8 +521,10 @@ class OAM_Helper{
         $where_values[] = $limit;
         $where_values[] = $offset;
 
-        if (!empty($_REQUEST['search_by_organization'])) {
-            $where_conditions[] = "(rel.affiliate_user_id != 0 )";
+         if (!empty($_REQUEST['search_by_organization'])) {
+            if($_REQUEST['search_by_organization'] != 'Orthoney'){
+                $where_conditions[] = "(rel.affiliate_user_id != 0 )";
+            }
         }
 
          $sql = $wpdb->prepare(
