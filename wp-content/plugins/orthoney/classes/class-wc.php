@@ -60,6 +60,7 @@ class OAM_WC_Customizer {
 
         // Change recipient of 'customer_processing_order' email
         add_filter( 'woocommerce_email_recipient_customer_processing_order', array($this,'orthoney_custom_email_recipient'), 10, 2 );
+        add_filter( 'woocommerce_email_recipient_customer_failed_order', array($this,'orthoney_custom_email_recipient'), 10, 2 );
         // Add CC to 'customer_processing_order' email headers
         add_filter( 'woocommerce_email_headers', array($this,'orthoney_add_cc_to_email_headers'), 10, 2 );
 
