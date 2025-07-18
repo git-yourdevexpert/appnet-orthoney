@@ -3587,7 +3587,7 @@ class OAM_Ajax{
                
                 $cc = implode(',', array_unique(array_filter([
                     $affiliate_org_email,
-                    // $customer_email
+                    $customer_email
                 ])));
 
                 $subject = '#'. $custom_order_id.' Reordering Form – Honey From The Heart';
