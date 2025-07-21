@@ -1040,7 +1040,6 @@ class OAM_AFFILIATE_Helper
         ));
 
 
-
         if (!empty($commission_year_results)) {
             // if ($total_quantity >= 50) {
                 $total_all_quantity = 0;
