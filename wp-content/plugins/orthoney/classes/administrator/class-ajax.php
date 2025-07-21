@@ -14,8 +14,90 @@ class OAM_ADMINISTRATOR_AJAX {
         add_action('wp_ajax_orthoney_admin_get_organizations_commission_data', array($this,'orthoney_admin_get_organizations_commission_data_handler'));
         add_action('wp_ajax_orthoney_admin_get_sales_representative_data', array($this,'orthoney_admin_get_sales_representative_data_handler'));
         add_action('wp_ajax_orthoney_activate_affiliate_account_ajax', array($this,'orthoney_orthoney_activate_affiliate_account_ajax_handler'));
+        add_action('wp_ajax_get_org_details_base_id', array($this, 'orthoney_get_org_details_base_id_callback'));
     }
     
+    public function orthoney_get_org_details_base_id_callback() {
+        check_ajax_referer('oam_nonce', 'security');
+
+        global $wpdb;
+        
+
+        $org_id = isset($_POST['org_id']) ? intval($_POST['org_id']) : 0;
+
+        if (!$org_id) {
+            wp_send_json_error(['message' => 'Invalid Organization ID']);
+        }
+
+        $yith_wcaf_affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+            $affiliate_token = $wpdb->get_var($wpdb->prepare(
+                "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d",
+                $org_id
+            ));
+
+        $meta_fields = [
+            'name_of_your_organization' => '_yith_wcaf_name_of_your_organization',
+            'organizations_website'     => '_yith_wcaf_your_organizations_website',
+            'phone_number'              => '_yith_wcaf_phone_number',
+            'address'                   => '_yith_wcaf_address',
+            'mission_statement'         => 'mission_statement',
+            'gift_card'                 => 'gift_card',
+            'city'                      => '_yith_wcaf_city',
+            'state'                     => '_yith_wcaf_state',
+            'zipcode'                   => '_yith_wcaf_zipcode',
+            'tax_id'                    => '_yith_wcaf_tax_id',
+            'check_payable'             => '_yith_wcaf_check_payable',
+            'address_check'             => '_yith_wcaf_address_check',
+            'attention'                 => '_yith_wcaf_attention',
+            'check_mailed_address'      => '_yith_wcaf_check_mailed_address',
+            'product_price'             => 'DJarPrice',
+        ];
+
+        $org_data = [];
+
+        foreach ($meta_fields as $key => $meta_key) {
+            $org_data[$key] = sanitize_text_field(get_user_meta($org_id, $meta_key, true));
+        }
+
+        if (empty($org_data['name_of_your_organization'])) {
+            wp_send_json_error(['message' => 'Organization not found or missing name.']);
+        }
+
+        $address_parts = [];
+
+        if (!empty($org_data['address'])) {
+            $address_parts[] = $org_data['address'];
+        }
+
+        $city_state_zip = trim(
+            $org_data['city'] . 
+            (!empty($org_data['state']) ? ', ' . $org_data['state'] : '') . 
+            (!empty($org_data['zipcode']) ? ' ' . $org_data['zipcode'] : '')
+        );
+
+        if (!empty($city_state_zip)) {
+            $address_parts[] = $city_state_zip;
+        }
+
+        $full_address = implode(' ', $address_parts);
+
+        $response = [
+            'org_name'            => $org_data['name_of_your_organization'] . ($affiliate_token ? ' [' . $affiliate_token . ']' : ''),
+            'website'             => $org_data['organizations_website'],
+            'phone'               => $org_data['phone_number'],
+            'mission'             => $org_data['mission_statement'],
+            'gift_card'           => $org_data['gift_card'],
+            'product_price'       => $org_data['product_price'],
+            'tax_id'              => $org_data['tax_id'],
+            'check_payable'       => $org_data['check_payable'],
+            'address_check'       => $org_data['address_check'],
+            'attention'           => $org_data['attention'],
+            'check_mailed_address'=> $org_data['check_mailed_address'],
+            'full_address'        => $full_address,
+        ];
+
+        wp_send_json_success($response);
+    }
     /**
      * administrator callback
      */

@@ -4841,3 +4841,92 @@ document.addEventListener("DOMContentLoaded", function () {
     timer = setInterval(updateCountdown, 1000);
   });
 })();
+
+
+document.addEventListener("click", function (event) {
+    const target = event.target;
+
+    if (target.classList.contains("view_order_details")) {
+        event.preventDefault();
+
+        const org_id = target.getAttribute("data-org-id");
+        const popupSelector = target.getAttribute("data-popup");
+
+        // Show loader
+        process_group_popup("Loading organization details...");
+
+        fetch(oam_ajax.ajax_url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({
+                action: "get_org_details_base_id",
+                org_id: org_id,
+                security: oam_ajax.nonce
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+
+                // Inject data into the popup content
+                const popupContent = document.querySelector(popupSelector);
+                if (popupContent) {
+                    popupContent.querySelector('.popup-title span').textContent = data.data.org_name;
+                    popupContent.querySelector('#org-website').textContent = data.data.website;
+                    popupContent.querySelector('#org-phone').textContent = data.data.phone;
+                    popupContent.querySelector('#org-tax-id').textContent = data.data.tax_id;
+                    popupContent.querySelector('#gift_card').textContent = data.data.gift_card;
+                    popupContent.querySelector('#product_price').textContent = data.data.product_price;
+                    popupContent.querySelector('#org-check_payable').textContent = data.data.check_payable;
+                    popupContent.querySelector('#org-check_address').textContent = data.data.address_check;
+                    popupContent.querySelector('#org-check_attention').textContent = data.data.attention;
+                    popupContent.querySelector('#org-check_office').textContent = data.data.check_mailed_address;
+                    popupContent.querySelector('#org-full-address').textContent = data.data.full_address;
+                }
+
+                // Open popup after data is loaded
+                const popup = lity(popupSelector);
+
+                // Disable outclick close
+                requestAnimationFrame(() => {
+                    const lityElement = document.querySelector('.lity');
+                    if (!lityElement) return;
+
+                    lityElement.addEventListener('click', function(e) {
+                        if (e.target === lityElement || e.target.classList.contains('lity-wrap')) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                        }
+                    }, true);
+
+                    // Allow close button to work
+                    const closeBtn = lityElement.querySelector('.lity-close');
+                    if (closeBtn) {
+                        closeBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            popup.close();
+                        }, { once: true });
+                    }
+                });
+
+                Swal.close();
+
+            } else {
+                Swal.fire({
+                    title: "Error",
+                    text: data.data.message || "Failed to load organization details.",
+                    icon: "error"
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                title: "Error",
+                text: "An error occurred while processing the request.",
+                icon: "error"
+            });
+        });
+    }
+});
