@@ -3105,6 +3105,8 @@ class OAM_Ajax{
             }
         }
 
+        $where[] = "orders.status NOT IN ('trash')";
+
        $sql = $wpdb->prepare(
             "SELECT  COUNT( DISTINCT orders.id) FROM {$orders_table} AS orders
             $join
@@ -3203,17 +3205,15 @@ class OAM_Ajax{
             $values[] = get_current_user_id();
         }
 
-        // if (!empty($_REQUEST['search_by_organization'])) {
-        //    $where[] = "affiliate_token IS NOT NULL";
-        // }
-        
+        $joins = "
+            LEFT JOIN {$wpdb->prefix}oh_wc_order_relation oor ON {$jar_table}.order_id = oor.order_id
+            LEFT JOIN {$orders_table} o ON oor.wc_order_id = o.id
+        ";
+
+        $where[] = "o.status != %s";
+        $values[] = 'trash';
         $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
         $sql = $wpdb->prepare("SELECT COUNT(id) FROM {$jar_table} $where_sql", ...$values);
-//   echo '<pre>';
-//         print_r($wpdb);
-//         echo '</pre>';
-//         die;
-
 
         
         $total_orders = $wpdb->get_var($sql);

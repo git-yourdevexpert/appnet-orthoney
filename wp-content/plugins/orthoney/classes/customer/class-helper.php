@@ -280,6 +280,14 @@ class OAM_Helper{
              $where_clauses[] = "affiliate_token IS NOT NULL ";
         }
 
+        $joins = "
+            LEFT JOIN {$wpdb->prefix}oh_wc_order_relation oor ON {$jar_table}.order_id = oor.order_id
+            LEFT JOIN {$orders_table} o ON oor.wc_order_id = o.id
+        ";
+
+        $where_clauses[] = "o.status != %s";
+        $params[] = 'trash';
+
         $where_sql = '';
         if (!empty($where_clauses)) {
             $where_sql = 'WHERE ' . implode(' AND ', $where_clauses);
@@ -532,6 +540,7 @@ class OAM_Helper{
                 $where_conditions[] = "(rel.affiliate_user_id = 0 )";
             }
         }
+        $where_conditions[] = "orders.status NOT IN ('trash') ";
         $where_conditions[] = "(rel.order_id != 0 )";
 
          $sql = $wpdb->prepare(
