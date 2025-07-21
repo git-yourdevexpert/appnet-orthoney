@@ -64,8 +64,49 @@ class OAM_WC_Customizer {
         // Add CC to 'customer_processing_order' email headers
         add_filter( 'woocommerce_email_headers', array($this,'orthoney_add_cc_to_email_headers'), 10, 2 );
 
+        add_filter('woocommerce_available_payment_gateways', array($this,'cash_on_carry_gateway_filter'));
+
     }
 
+    public function cash_on_carry_gateway_filter($gateways) {
+
+        if (is_checkout()) {
+
+            $cash_on_carry_user_copy = get_field('cash_on_carray_user_copy', 'option');
+            $allowed_emails = [];
+
+            if (!empty($cash_on_carry_user_copy) && is_array($cash_on_carry_user_copy)) {
+                foreach ($cash_on_carry_user_copy as $user) {
+                    if (!empty($user['user_email'])) {
+                        $email = sanitize_email($user['user_email']);
+                        if (is_email($email) && email_exists($email)) {
+                            $allowed_emails[] = strtolower($email);
+                        }
+                    }
+                }
+            }
+
+            $current_user = wp_get_current_user();
+            $billing_email = '';
+
+            // Get billing email for logged-in user
+            if ($current_user->ID) {
+                $billing_email = strtolower($current_user->user_email);
+            }
+
+            // For guest checkout, get email from checkout form
+            if (empty($billing_email) && !empty($_POST['billing_email'])) {
+                $billing_email = strtolower(sanitize_email($_POST['billing_email']));
+            }
+
+            // Disable COD if user email is not in allowed list
+            if (!in_array($billing_email, $allowed_emails)) {
+                unset($gateways['cod']);
+            }
+        }
+
+        return $gateways;
+    }
     public function orthoney_custom_email_recipient( $recipient, $order ) {
 
         if ( ! is_a( $order, 'WC_Order' ) ) {
