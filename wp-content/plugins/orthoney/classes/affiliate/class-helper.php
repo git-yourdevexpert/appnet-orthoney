@@ -830,6 +830,7 @@ class OAM_AFFILIATE_Helper
 
             $exclude_coupon = EXCLUDE_COUPON;
             $total_all_quantity = $wholesale_qty = 0;
+        
 
             if (!empty($commission_year_results)) {
                 foreach ($commission_year_results as $value) {
@@ -848,27 +849,32 @@ class OAM_AFFILIATE_Helper
                 }
 
                 foreach ($commission_year_results as $commission) {
-                    $order_id = $commission->order_id;
+                    $order_id = $commission->wc_order_id;
                     $total_qty = (int) $commission->total_quantity;
                     $par_jar = $commission->line_subtotal / $total_qty;
 
                     $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
-                    if ($par_jar >= $selling_minimum_price) {
+                    if ($par_jar >= $selling_min_price) {
                         if (OAM_AFFILIATE_Helper::is_user_created_this_year($affiliate_data->user_id)) {
-                            if ($total_all_quantity < 99) {
+                            if ($total_qty < 99) {
+                                
                                 $minimum_price = get_field('new_minimum_price_50', 'option');
                             } else {
+                                
                                 $minimum_price = get_field('new_minimum_price_100', 'option');
                             }
                         } else {
-                            if ($total_all_quantity < 99) {
+                            if ($total_qty < 99) {
+                                
                                 $minimum_price = get_field('ex_minimum_price_50', 'option');
                             } else {
+                                
                                 $minimum_price = get_field('ex_minimum_price_100', 'option');
                             }
                         }
                     }
 
+                   
                     
                     $data = [
                         'total_exclude_quantity' => $total_exclude_quantity,
@@ -876,7 +882,7 @@ class OAM_AFFILIATE_Helper
                         'wholesale_qty' => $wholesale_qty,
                         'order_id' => $order_id,
                         'custom_order_id' => OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID'),
-                        'total_quantity' => $total_all_quantity,
+                        'total_quantity' => $total_qty,
                         'line_total' => $commission->line_total,
                         'line_subtotal' => $commission->line_subtotal,
                         'par_jar' => $par_jar,
@@ -884,8 +890,9 @@ class OAM_AFFILIATE_Helper
                         'minimum_price' => $minimum_price,
                         'is_voucher_used' => $coupon_codes,
                         'affiliate_account_status' => (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status'),
-                        'commission' => ($par_jar >= $selling_min_price ? (($par_jar - $minimum_price) * $total_all_quantity) : 0)
+                        'commission' => ($par_jar >= $selling_min_price ? (($par_jar - $minimum_price) * $total_qty) : 0)
                     ];
+
 
                     $commission_array[$data['custom_order_id']] = $data;
                 }
@@ -1182,7 +1189,8 @@ class OAM_AFFILIATE_Helper
                     GROUP BY oi.order_id
                 ) q ON q.order_id = c.wc_order_id
                 WHERE c.affiliate_code = %s
-                AND o.parent_order_id = 0
+                AND o.parent_order_id = 0 
+                AND o.status IN ('wc-processing', 'wc-completed')
                 GROUP BY c.affiliate_user_id",
                 $affiliate_token
             ));
@@ -1197,7 +1205,7 @@ class OAM_AFFILIATE_Helper
                 INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id AND oi.order_item_type = 'line_item'
                 INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
                 WHERE c.affiliate_code = %s
-                AND YEAR(o.date_created_gmt) = YEAR(CURDATE())",
+                AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) AND o.status IN ('wc-processing', 'wc-completed')",
                 $affiliate_token
             ));
 
