@@ -735,11 +735,11 @@
             "append": ""
         },
         {
-            "key": "field_68543272fef4e",
-            "label": "Mailchimp API Key",
-            "name": "mailchimp_api_key",
+            "key": "field_687a4a9c616d7",
+            "label": "Cash on Carry Setting",
+            "name": "",
             "aria-label": "",
-            "type": "text",
+            "type": "tab",
             "instructions": "",
             "required": 0,
             "conditional_logic": 0,
@@ -748,19 +748,16 @@
                 "class": "",
                 "id": ""
             },
-            "default_value": "",
-            "maxlength": "",
-            "allow_in_bindings": 0,
-            "placeholder": "",
-            "prepend": "",
-            "append": ""
+            "placement": "left",
+            "endpoint": 0,
+            "selected": 0
         },
         {
-            "key": "field_6854327afef4f",
-            "label": "Mailchimp List ID for Organizations Approved List",
-            "name": "mailchimp_list_id_for_organizations_approved_list",
+            "key": "field_687a4ab4616d8",
+            "label": "Select User for allow Cash on Carry Payment",
+            "name": "cash_on_carray_user_copy",
             "aria-label": "",
-            "type": "text",
+            "type": "user",
             "instructions": "",
             "required": 0,
             "conditional_logic": 0,
@@ -769,12 +766,13 @@
                 "class": "",
                 "id": ""
             },
-            "default_value": "",
-            "maxlength": "",
+            "role": "",
+            "return_format": "array",
+            "multiple": 1,
+            "allow_null": 0,
             "allow_in_bindings": 0,
-            "placeholder": "",
-            "prepend": "",
-            "append": ""
+            "bidirectional": 0,
+            "bidirectional_target": []
         }
     ],
     "location": [
@@ -795,5 +793,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1750674951
+    "modified": 1752845090
 }
