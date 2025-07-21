@@ -842,7 +842,7 @@ public function orthoney_get_filtered_customers() {
                 'status' => esc_html($status),
                 'price' => wc_price($show_price),
                 'season_status' => esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
-                'login' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png"> Login as Org</button>',
+                'login' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . esc_attr($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/login-customer-icon.png"> Login as Org</button><button class="view_order_details icon-txt-btn" data-popup="#view_org_details_popup" data-org-id="' . intval($user_id) . '"><i class="far fa-eye"></i>View Org Details</button>',
             ];
         }
 
