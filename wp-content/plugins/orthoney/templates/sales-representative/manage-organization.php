@@ -22,3 +22,7 @@ if (!defined('ABSPATH')) {
     </table>
 </div>
 </div>
+
+<?php 
+OAM_ADMINISTRATOR_HELPER::org_details_popup_callback();
+?>
