@@ -1055,7 +1055,7 @@ class OAM_ADMINISTRATOR_AJAX {
                     'new_organization' => $new_organization_block,
                     'status' => esc_html($status),
                     'price' => wc_price($show_price),
-                    'login' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . intval($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As Org</button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Org Prf</a>'
+                    'login' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . intval($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As Org</button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Org Prf</a><button class="view_order_details icon-txt-btn" data-popup="#view_org_details_popup" data-org-id="' . intval($user_id) . '"><i class="far fa-eye"></i>View Org Details</button>'
                 ];
 
             }
