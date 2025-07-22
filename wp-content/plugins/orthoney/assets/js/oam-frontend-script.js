@@ -3719,7 +3719,7 @@ jQuery(function ($) {
                     </select>
                 </label>
                 <label class="custom-payment-method-filter-wrapper">
-                    Order by Payment Method:
+                    Order by Payment Methods:
                     <select id="custom-payment-method-filter" class="custom-select form-control">
                         <option value="all">All Payment Methods</option>
                         <option value="Credit card">Credit Card</option>
