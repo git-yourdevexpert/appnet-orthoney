@@ -21,7 +21,7 @@ class OAM_ADMINISTRATOR_AJAX {
         check_ajax_referer('oam_nonce', 'security');
 
         global $wpdb;
-        
+         $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
 
         $org_id = isset($_POST['org_id']) ? intval($_POST['org_id']) : 0;
 
@@ -87,7 +87,7 @@ class OAM_ADMINISTRATOR_AJAX {
             'phone'               => $org_data['phone_number'],
             'mission'             => $org_data['mission_statement'],
             'gift_card'           => $org_data['gift_card'],
-            'product_price'       => $org_data['product_price'],
+            'product_price'       => $org_data['product_price'] ?: $selling_minimum_price,
             'tax_id'              => $org_data['tax_id'],
             'check_payable'       => $org_data['check_payable'],
             'address_check'       => $org_data['address_check'],
