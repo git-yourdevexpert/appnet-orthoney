@@ -948,8 +948,8 @@ class OAM_ADMINISTRATOR_AJAX {
             );
         });
 
-        $recordsTotal    = count($user_ids);
-        $recordsFiltered = count($filtered_user_ids);
+       $recordsTotal    = count(array_unique($user_ids));
+        $recordsFiltered = count(array_unique($filtered_user_ids));
 
         // Step 5: Ordering
         $order_column_index = $_POST['order'][0]['column'] ?? 0;
@@ -965,7 +965,7 @@ class OAM_ADMINISTRATOR_AJAX {
         });
 
         // Step 6: Pagination
-        $paged_user_ids = array_slice(array_values($filtered_user_ids), $start, $length);
+        $paged_user_ids = array_unique(array_slice(array_values($filtered_user_ids), $start, $length));
 
         // Step 7: Format and output
         $data = [];
