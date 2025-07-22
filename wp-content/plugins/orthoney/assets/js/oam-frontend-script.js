@@ -3645,6 +3645,7 @@ jQuery(function ($) {
         { data: "affiliate_code", orderable: false, searchable: false },
         { data: "total_jar", orderable: false, searchable: false },
         { data: "total_recipient", orderable: false, searchable: false },
+        { data: "payment_method", orderable: false, searchable: false },
         //{ data: 'type', orderable: false, searchable: false },
         //{ data: 'status', orderable: false, searchable: false },
         { data: "price", orderable: false, searchable: false },
