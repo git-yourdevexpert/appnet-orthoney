@@ -900,6 +900,7 @@ class OAM_AFFILIATE_Helper
 
             $fundraising_orders = $total_orders = $wholesale_order = $unit_price = $unit_cost = 0;
             $product_price = 0;
+            $fundraising_qty = 0;
             foreach ($commission_array as $data) {
                 if ((int)$data['affiliate_account_status'] === 1) {
                     $unit_price = $data['par_jar'];

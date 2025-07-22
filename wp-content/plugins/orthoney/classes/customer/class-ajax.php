@@ -1169,9 +1169,11 @@ class OAM_Ajax{
                                  $success = false;
                             }
                         }else{
-                            if ($zipcode !== $data[0]['components']['zipcode']) {
-                                $message .= 'Provided zipcode is invalid. Accepted zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'</span>';
-                                 $success = false;
+                            if (!empty($data) && isset($data[0]['components']['zipcode'])) {
+                                if ($zipcode !== $data[0]['components']['zipcode']) {
+                                    $message .= 'Provided zipcode is invalid. Accepted zipcode is <span style="color: #6BBE56;">'. $data[0]['components']['zipcode'].'</span>';
+                                    $success = false;
+                                }
                             }
                         }
                         
@@ -2536,7 +2538,9 @@ class OAM_Ajax{
 
     if (!empty($record)) {
         // Apply stripslashes to each value
-        $record = array_map('stripslashes', $record);
+        $record = array_map(function($item) {
+            return is_string($item) ? stripslashes($item) : $item;
+        }, $record);
 
         $response = ['success' => true, 'data' => $record];
         return !empty($recipient) ? json_encode($response) : wp_send_json_success($record);
