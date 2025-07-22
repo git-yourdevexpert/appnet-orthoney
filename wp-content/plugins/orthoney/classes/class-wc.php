@@ -139,19 +139,6 @@ class OAM_WC_Customizer {
         return $headers;
     }
 
-        if ( $email_id === 'customer_processing_order' ) {
-
-            $cc_email = 'support@orthoney.com';
-
-            if ( is_array( $headers ) ) {
-                $headers[] = 'Cc: ' . $cc_email;
-            } else {
-                $headers .= 'Cc: ' . $cc_email . "\r\n";
-            }
-        }
-
-        return $headers;
-    }
 // Start Add US phone number validation to WooCommerce checkout
     public function validate_us_phone_number() {
         if (isset($_POST['billing_phone']) && !empty($_POST['billing_phone'])) {
