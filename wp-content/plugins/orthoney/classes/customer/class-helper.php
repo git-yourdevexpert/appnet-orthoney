@@ -494,6 +494,18 @@ class OAM_Helper{
         //     $where_values = array_merge($where_values, $statuses);
         // }
 
+        if (!empty($_REQUEST['custom_payment_method']) && $_REQUEST['custom_payment_method'] !== "all") {
+            if($_REQUEST['custom_payment_method'] == 'Check payments'){
+                $where_conditions[] = "(orders.payment_method_title = %s OR orders.payment_method_title = %s)";
+                $where_values[] = 'Check payments';
+                $where_values[] = 'Pay by Check';
+            }else{
+                $where_conditions[] = "orders.payment_method_title = %s";
+                $where_values[] = sanitize_text_field($_REQUEST['custom_payment_method']);
+            }
+            
+        }
+
         if (
             isset($_REQUEST['selected_min_qty'], $_REQUEST['selected_max_qty']) &&
             is_numeric($_REQUEST['selected_min_qty']) &&
@@ -716,9 +728,10 @@ class OAM_Helper{
             'date' => esc_html($created_date),
             'billing_name' => esc_html($billing_name),
             'shipping_name' => esc_html($shipping_name),
-            'affiliate_code' => esc_html($referral_id),
+            'affiliate_code' => esc_html($referral_id == 'Orthoney' ? 'Honey from the Heart' : $referral_id),
             'total_jar' => esc_html($total_quantity),
             'total_recipient' => $total_recipient,
+            'payment_method' => $order_data->payment_method_title == 'Pay by Check' ? 'Check payments' : $order_data->payment_method_title,
 
            // 'total_recipient' => "<a id=".$jar_order_id." onclick='jarfilter_trigger(\"$jar_order_id\")' class='filter-jar-order-by-wc-order' href='javascript:;'>".$jarsorder_count."</a>",
             //'type' => esc_html($order_type),

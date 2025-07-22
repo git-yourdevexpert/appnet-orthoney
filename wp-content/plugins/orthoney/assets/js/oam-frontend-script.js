@@ -3716,6 +3716,17 @@ jQuery(function ($) {
                         <option value="wc-checkout-draft">Draft</option>
                     </select>
                 </label>
+                <label class="custom-payment-method-filter-wrapper">
+                    Order by Status:
+                    <select id="custom-payment-method-filter" class="custom-select form-control">
+                        <option value="all">All Payments Methods</option>
+                        <option value="Credit card">Credit Card</option>
+                        <option value="Check payments">Check payments</option>
+                        <option value="PayPal">PayPal</option>
+                        <option value="Cash on Carry">Cash on Carry</option>
+
+                    </select>
+                </label>
                 <label class="rangeblock">
                 <label for="amount">Quantity Range:</label>
                 <input type="text" id="quantity_range" readonly="" style="border:0; color:#f6931f; font-weight:bold;">

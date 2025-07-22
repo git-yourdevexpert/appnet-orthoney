@@ -198,6 +198,7 @@ if ($first_segment == 'sales-representative-dashboard') {
             <th>Organization Code</th>
             <th>Qty</th>
             <th>Total Recipient</th>
+            <th>Payment Method</th>
             <!-- <th>Type</th>
             <th>Status</th> -->
             <th>Price</th>

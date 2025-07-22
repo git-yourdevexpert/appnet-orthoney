@@ -3067,6 +3067,18 @@ class OAM_Ajax{
             $values[] = sanitize_text_field($_REQUEST['selected_order_status']);
         }
 
+         if (!empty($_REQUEST['custom_payment_method']) && $_REQUEST['custom_payment_method'] !== "all") {
+            if($_REQUEST['custom_payment_method'] == 'Check payments'){
+                $where[] = "(orders.payment_method_title = %s OR orders.payment_method_title = %s)";
+                $values[] = 'Check payments';
+                $values[] = 'Pay by Check';
+            }else{
+                $where[] = "orders.payment_method_title = %s";
+                $values[] = sanitize_text_field($_REQUEST['custom_payment_method']);
+            }
+            
+        }
+        
         if (
             isset($_REQUEST['selected_min_qty'], $_REQUEST['selected_max_qty']) &&
             is_numeric($_REQUEST['selected_min_qty']) &&
