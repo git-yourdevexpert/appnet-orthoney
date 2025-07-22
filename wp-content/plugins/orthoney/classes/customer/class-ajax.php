@@ -2864,7 +2864,6 @@ class OAM_Ajax{
             $update_status = 1;
         }
         
-        $update_status;
         $update_result = $wpdb->update(
             $oh_affiliate_customer_linker,
             ['status' => $update_status],
