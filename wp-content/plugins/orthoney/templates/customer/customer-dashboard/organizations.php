@@ -32,6 +32,9 @@ $dashboard_link_label = 'Return to Dashboard';
 
 if (!empty($result) && isset($result['success']) && $result['success']) {
     $affiliates = $result['data']['user_info'];
+    usort($affiliates, function($a, $b) {
+        return strcmp($a['token'], $b['token']);
+    });
     $blocked_affiliates = $result['data']['affiliates'];    
     ?>
     <style>
