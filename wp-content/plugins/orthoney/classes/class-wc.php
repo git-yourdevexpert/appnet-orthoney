@@ -62,7 +62,7 @@ class OAM_WC_Customizer {
         add_filter( 'woocommerce_email_recipient_customer_processing_order', array($this,'orthoney_custom_email_recipient'), 10, 2 );
         add_filter( 'woocommerce_email_recipient_customer_failed_order', array($this,'orthoney_custom_email_recipient'), 10, 2 );
         // Add CC to 'customer_processing_order' email headers
-        add_filter( 'woocommerce_email_headers', array($this,'orthoney_add_cc_to_email_headers'), 10, 2 );
+        add_filter( 'woocommerce_email_headers', array($this,'orthoney_add_cc_to_email_headers'), 9999, 3 );
 
         add_filter('woocommerce_available_payment_gateways', array($this,'cash_on_carry_gateway_filter'));
 
@@ -123,7 +123,21 @@ class OAM_WC_Customizer {
     }
 
 
-    public function orthoney_add_cc_to_email_headers( $headers, $email_id ) {
+     public function orthoney_add_cc_to_email_headers( $headers, $email_id, $order ) {
+
+        if ( $email_id === 'customer_processing_order' ) {
+
+            $cc_email = 'support@orthoney.com';
+
+            if ( is_array( $headers ) ) {
+                $headers[] = 'Cc: ' . $cc_email;
+            } else {
+                $headers .= 'Cc: ' . $cc_email . "\r\n";
+            }
+        }
+
+        return $headers;
+    }
 
         if ( $email_id === 'customer_processing_order' ) {
 
