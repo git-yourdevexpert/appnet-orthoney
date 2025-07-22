@@ -11,7 +11,7 @@ $order = wc_get_order($order_id);
 
 if (!$order) return;
 $order_date = $order->get_date_created(); // May be WC_DateTime or null
-
+$payment_method_title = $order->get_payment_method_title() == 'Pay by Check' ? 'Check payments' : $order->get_payment_method_title();
 
 // If it's a WC_DateTime object, convert to native DateTime
 if (is_object($order_date) && method_exists($order_date, 'date')) {
@@ -205,6 +205,7 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
             <strong>Total Jars in Order: </strong><?php echo esc_html($quantity); ?><br>
                 <strong>Total Price: </strong><?php echo wc_price($order->get_total()); ?><br>
                 <strong>Shipping: </strong><?php echo wc_price($order->get_shipping_total()); ?><br>
+                 <strong>Payment Method: </strong><?php echo esc_html($payment_method_title); ?><br>
                 
             </div>
         </div>
