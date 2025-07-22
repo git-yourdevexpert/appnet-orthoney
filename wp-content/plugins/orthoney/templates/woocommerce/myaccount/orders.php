@@ -54,6 +54,7 @@ if ($first_segment == 'dashboard'){
    ?>
    <style>
      .customer-select-filter{display:none}
+     .customer-select-filter.search-by-organization{display:block}
    </style>
    <?php 
 }

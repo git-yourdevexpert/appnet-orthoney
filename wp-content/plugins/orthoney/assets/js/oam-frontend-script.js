@@ -3680,7 +3680,7 @@ jQuery(function ($) {
              Search by Recipient Name:
              <input type="text" class="search-recipient-name" placeholder="Search by Recipient Name" >
              </label>
-             <label class="affiliate-token-filter">
+             <label class="affiliate-token-filter" style="display:none">
              Search By Org Code:
               <input id="dsr_affiliate_token" class="form-control" placeholder="Search By Org Code" >
             </label>
@@ -4159,7 +4159,7 @@ jQuery(function ($) {
                     </select>
                 </label>
 
-                 <label class="affiliate-token-filter">
+                 <label class="affiliate-token-filter" style="display:none">
              Search By Org Code:
               <input id="jar_dsr_affiliate_token" class="form-control" placeholder="Search By Org Code">
             </label>
