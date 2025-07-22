@@ -3578,6 +3578,7 @@ jQuery(function ($) {
           d.security = oam_ajax.nonce;
           d.custom_order_type = $("#custom-order-type-filter").val();
           d.custom_order_status = $("#custom-order-status-filter").val();
+          d.custom_payment_method = $("#custom-payment-method-filter").val();
           d.table_order_type = $(
             'input[name="table_order_type"]:checked'
           ).val();
