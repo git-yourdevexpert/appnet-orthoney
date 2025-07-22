@@ -67,6 +67,39 @@ if ($first_segment == 'administrator-dashboard'){
    </style> 
     <?php
 }
+if ($first_segment == 'dashboard') {
+    global $wpdb;
+
+    $user_id = get_current_user_id();
+    $affiliate_customer_linker = $wpdb->prefix . 'oh_affiliate_customer_linker';
+    $affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';
+
+    $affiliates_ids = $wpdb->get_col($wpdb->prepare(
+        "SELECT affiliate_id FROM {$affiliate_customer_linker} WHERE customer_id = %d",
+        $user_id
+    ));
+
+    $tokens = [];
+
+    foreach ($affiliates_ids as $affiliate_id) {
+
+        $associated_affiliate_id = get_user_meta($affiliate_id, 'associated_affiliate_id', true);
+
+        $associated_id = !empty($associated_affiliate_id) ? $associated_affiliate_id : $affiliate_id;
+
+        $token = $wpdb->get_var($wpdb->prepare(
+            "SELECT token FROM {$affiliates_table} WHERE user_id = %d",
+            $associated_id
+        ));
+
+        if (!empty($token)) {
+            $tokens[] = sanitize_text_field($token);
+        }
+    }
+
+    $affiliate_token = implode(',', $tokens);
+}
+
 if ($first_segment == 'organization-dashboard'){
     global $wpdb;
 

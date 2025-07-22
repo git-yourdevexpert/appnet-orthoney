@@ -3608,7 +3608,7 @@ jQuery(function ($) {
 
             d.search_by_organization = organizationInput;
           }
-          d.dsr_affiliate_token = $("select#dsr_affiliate_token").val();
+          d.dsr_affiliate_token = $("input#dsr_affiliate_token").val();
         },
         beforeSend: function () {
           process_group_popup("Please wait while we process your request.");
@@ -3681,10 +3681,8 @@ jQuery(function ($) {
              <input type="text" class="search-recipient-name" placeholder="Search by Recipient Name" >
              </label>
              <label class="affiliate-token-filter">
-             Select organization
-              <select id="dsr_affiliate_token" class="form-control">
-                <option value="">Select organization</option>
-              </select>
+             Search By Org Code:
+              <input id="dsr_affiliate_token" class="form-control" placeholder="Search By Org Code" >
             </label>
               <label class="customer-select-filter search-by-organization">
               Search By Org Code:
@@ -3848,22 +3846,22 @@ jQuery(function ($) {
           }
         });
 
-        const tokenString = $("#customer-orders-table").data("affiliate_token"); // e.g. "A1,BSL,XYZ"
+        // const tokenString = $("#customer-orders-table").data("affiliate_token"); // e.g. "A1,BSL,XYZ"
 
-        // Step 2: Split and create option elements
-        const tokens = tokenString
-          ? tokenString.split(",").map((t) => t.trim())
-          : [];
+        // // Step 2: Split and create option elements
+        // const tokens = tokenString
+        //   ? tokenString.split(",").map((t) => t.trim())
+        //   : [];
 
-        tokens.forEach((token) => {
-          const option = new Option(token, token, false, false); // text, value, selected, defaultSelected
-          $("#dsr_affiliate_token").append(option);
-        });
+        // tokens.forEach((token) => {
+        //   const option = new Option(token, token, false, false); // text, value, selected, defaultSelected
+        //   $("#dsr_affiliate_token").append(option);
+        // });
 
-        $("#dsr_affiliate_token").select2({
-          placeholder: "Select organization...",
-          allowClear: false
-        });
+        // $("#dsr_affiliate_token").select2({
+        //   placeholder: "Select organization...",
+        //   allowClear: false
+        // });
 
         $("#select-affiliate").select2({
           placeholder: "Select affiliate...",
@@ -4117,7 +4115,7 @@ jQuery(function ($) {
             d.search_by_organization = organizationInput;
 
           }
-          d.jar_dsr_affiliate_token = $("select#jar_dsr_affiliate_token").val();
+          d.jar_dsr_affiliate_token = $("input#jar_dsr_affiliate_token").val();
         },
         beforeSend: function () {
           process_group_popup("Please wait while we process your request.");
@@ -4162,10 +4160,8 @@ jQuery(function ($) {
                 </label>
 
                  <label class="affiliate-token-filter">
-             Select organization
-              <select id="jar_dsr_affiliate_token" class="form-control">
-                <option value="">Select organization</option>
-              </select>
+             Search By Org Code:
+              <input id="jar_dsr_affiliate_token" class="form-control" placeholder="Search By Org Code">
             </label>
                 <label class="customer-select-filter jar-search-by-organization">
                       Search By Org Code:
@@ -4248,24 +4244,24 @@ jQuery(function ($) {
           }
         });
 
-        const tokenString = $("#customer-jar-orders-table").data(
-          "affiliate_token"
-        ); // e.g. "A1,BSL,XYZ"
+        // const tokenString = $("#customer-jar-orders-table").data(
+        //   "affiliate_token"
+        // ); // e.g. "A1,BSL,XYZ"
 
-        // Step 2: Split and create option elements
-        const tokens = tokenString
-          ? tokenString.split(",").map((t) => t.trim())
-          : [];
+        // // Step 2: Split and create option elements
+        // const tokens = tokenString
+        //   ? tokenString.split(",").map((t) => t.trim())
+        //   : [];
 
-        tokens.forEach((token) => {
-          const option = new Option(token, token, false, false); // text, value, selected, defaultSelected
-          $("#jar_dsr_affiliate_token").append(option);
-        });
+        // tokens.forEach((token) => {
+        //   const option = new Option(token, token, false, false); // text, value, selected, defaultSelected
+        //   $("#jar_dsr_affiliate_token").append(option);
+        // });
 
-        $("#jar_dsr_affiliate_token").select2({
-          placeholder: "Select organization...",
-          allowClear: false
-        });
+        // $("#jar_dsr_affiliate_token").select2({
+        //   placeholder: "Select organization...",
+        //   allowClear: false
+        // });
 
         // $(document).on('change', '#jar-select-customer, #jars-select-year', function () {
         //     table.ajax.reload();
