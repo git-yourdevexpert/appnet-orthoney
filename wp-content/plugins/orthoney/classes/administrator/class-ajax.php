@@ -87,7 +87,7 @@ class OAM_ADMINISTRATOR_AJAX {
             'phone'               => $org_data['phone_number'],
             'mission'             => $org_data['mission_statement'],
             'gift_card'           => $org_data['gift_card'],
-            'product_price'       => $org_data['product_price'] ?: $selling_minimum_price,
+            'product_price' => (is_numeric($org_data['product_price']) && $org_data['product_price'] > 0) ? $org_data['product_price'] : $selling_minimum_price,
             'tax_id'              => $org_data['tax_id'],
             'check_payable'       => $org_data['check_payable'],
             'address_check'       => $org_data['address_check'],
