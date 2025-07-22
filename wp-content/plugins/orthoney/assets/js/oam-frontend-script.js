@@ -3721,7 +3721,7 @@ jQuery(function ($) {
                 <label class="custom-payment-method-filter-wrapper">
                     Order by Status:
                     <select id="custom-payment-method-filter" class="custom-select form-control">
-                        <option value="all">All Payments Methods</option>
+                        <option value="all">All Payment Methods</option>
                         <option value="Credit card">Credit Card</option>
                         <option value="Check payments">Check payments</option>
                         <option value="PayPal">PayPal</option>
