@@ -173,6 +173,12 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                 </p>
             </div>
             <div>
+                <?php 
+                $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
+                if (in_array('administrator', $user_roles)) {
+                ?>
+                <button data-popup="#order-switch-org-popup" class="w-btn us-btn-style_1 orderchangeorg" data-organization_data="<?php echo $organization_data ?>" data-wc_order_id="<?php echo $order_id ?>" data-order_id="<?php echo $sub_order_id ?>" data-currentorg="<?php echo $token ?>">Switch ORG</button>
+                <?php } ?>
                 <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
             </div>
         </div>
@@ -404,6 +410,91 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
     ?>
     </div>
     <!-- Popups -->
+     <div id="order-switch-org-popup" class="lity-popup-normal lity-hide">
+            <div class="popup-show order-process-block orthoney-datatable-warraper">
+                <h3 class="popup-title"><span></span> Switch Organization</h3>
+                <p><strong><span class="org-details-div"></span></strong> </p>
+                <div class="affiliate-dashboard pb-40 mb-40">
+                    <?php 
+                    global $wpdb;
+
+                    $affiliate = (!isset($token) || $token === '') ? 'Orthoney' : $token;
+
+                    $yith_wcaf_affiliates_table = OAM_Helper::$yith_wcaf_affiliates_table;
+
+                    // Fetch all active and non-banned affiliates
+                    $query = "SELECT * FROM {$yith_wcaf_affiliates_table} WHERE enabled = 1 AND banned = 0 ORDER BY token";
+                    $affiliateList = $wpdb->get_results($query);
+
+                    // Reorder list to move 'ATL' token to the top
+                    $aha_item = null;
+                    $reordered = [];
+
+                    if (!empty($affiliateList)) {
+                        foreach ($affiliateList as $index => $item) {
+                            if ($item->token === 'ATL') {
+                                $aha_item = $item;
+                                unset($affiliateList[$index]);
+                                break;
+                            }
+                        }
+                    }
+
+                    $affiliateList = array_values($affiliateList); // Reindex
+                    if ($aha_item) {
+                        $reordered[] = $aha_item;
+                    }
+                    $affiliateListReordered = array_merge($reordered, $affiliateList);
+                    ?>
+                    <!-- Search and filter options -->
+                    <div class="filter-container orthoney-datatable-warraper">
+                        <div class="customer-email-search linked-customer-search">
+                            <input type="hidden" name="wc_order_id" id="wc_order_id" value="">
+                            <input type="hidden" name="order_id" id="order_id" value="">
+                            <select id="order-org-search" class="form-control" required data-error-message="Please select an organization">
+                                <option data-token="Orthoney" value="Orthoney">Honey from the Heart</option>
+
+                                <?php
+                                if (!empty($affiliateListReordered)) {
+                                    foreach ($affiliateListReordered as $data) {
+                                        if (empty($data->token)) continue;
+
+                                        $user_id = $data->user_id;
+                                        $states = WC()->countries->get_states('US');
+
+                                        $state = get_user_meta($user_id, '_yith_wcaf_state', true) ?: 
+                                                get_user_meta($user_id, 'billing_state', true) ?: 
+                                                get_user_meta($user_id, 'shipping_state', true);
+
+                                        $city = get_user_meta($user_id, '_yith_wcaf_city', true) ?: 
+                                                get_user_meta($user_id, 'billing_city', true) ?: 
+                                                get_user_meta($user_id, 'shipping_city', true);
+
+                                        $orgName = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true) ?: 
+                                                get_user_meta($user_id, '_orgName', true);
+
+                                        $state_name = $states[$state] ?? $state;
+
+                                        $value = '[' . $data->token . '] ' . ($orgName ?: $data->display_name);
+                                        if (!empty($city)) $value .= ', ' . $city;
+                                        if (!empty($state_name)) $value .= ', ' . $state_name;
+
+                                        echo '<option data-token="' . esc_attr($data->token) . '" value="' . esc_attr($user_id) . '">' . esc_html($value) . '</option>';
+                                    }
+                                }
+                                ?>
+                            </select>
+
+                            <div id="suggestions"></div>
+                            <span class="error-message"></span>
+                            <button id="switch-org-button" class="w-btn us-btn-style_2">Switch Organization</button>
+                            <ul id="order-org-search-results"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="recipient-order-manage-popup" class="lity-popup-normal lity-hide">
             <div class="popup-show order-process-block orthoney-datatable-warraper">
                 <h3 class="popup-title"><span></span> Order Details</h3>

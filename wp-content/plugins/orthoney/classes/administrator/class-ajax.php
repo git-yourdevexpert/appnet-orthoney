@@ -15,6 +15,100 @@ class OAM_ADMINISTRATOR_AJAX {
         add_action('wp_ajax_orthoney_admin_get_sales_representative_data', array($this,'orthoney_admin_get_sales_representative_data_handler'));
         add_action('wp_ajax_orthoney_activate_affiliate_account_ajax', array($this,'orthoney_orthoney_activate_affiliate_account_ajax_handler'));
         add_action('wp_ajax_get_org_details_base_id', array($this, 'orthoney_get_org_details_base_id_callback'));
+        add_action('wp_ajax_switch_org_to_order', array($this, 'orthoney_switch_org_to_order_callback'));
+    }
+
+    public function orthoney_switch_org_to_order_callback() {
+         check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+
+        $wc_order_relation     = $wpdb->prefix . 'oh_wc_order_relation';
+        $order_process_table   = $wpdb->prefix . 'oh_order_process';
+        $recipient_order       = $wpdb->prefix . 'oh_recipient_order';
+        $order_meta            = $wpdb->prefix . 'wc_order_meta';
+
+        // Sanitize and validate POST values
+        $org_token    = isset($_POST['org_token']) && !empty($_POST['org_token']) ? sanitize_text_field($_POST['org_token']) : 'Orthoney';
+        $org_user_id  = isset($_POST['org_user_id']) ? intval($_POST['org_user_id']) : 0;
+        $wc_order_id  = isset($_POST['wc_order_id']) ? intval($_POST['wc_order_id']) : 0;
+        $order_id     = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
+
+        if($wc_order_id == 0 OR $order_id == 0){
+             wp_send_json_error(['message' => 'The order number does not match. Please try again.']);
+        }
+
+        $wc_order_check = wc_get_order($wc_order_id);
+        if (!$wc_order_check) {
+            wp_send_json_error(['message' => 'The order number does not match. Please try again.']);
+        }
+
+        $result = $wpdb->get_row(
+            $wpdb->prepare("SELECT data FROM {$order_process_table} WHERE order_id = %d", $wc_order_id)
+        );
+        $json_data = $result->data ?? '';
+        $decoded_data = json_decode($json_data, true);
+        $decoded_data['affiliate_select'] = $org_user_id;
+
+        // 1. Order Process on update affiliate select value on data
+
+        $update_result = $wpdb->update(
+            $order_process_table,
+            [
+                'data'       => wp_json_encode($decoded_data),
+            ],
+            ['order_id' => $wc_order_id]
+        );
+
+        // 2. update affiliate_code and affiliate_user_id form wc_order_relation table
+        $wc_order_relation_result = $wpdb->get_results(
+            $wpdb->prepare("SELECT * FROM {$wc_order_relation} WHERE wc_order_id= %d", $wc_order_id)
+        );
+
+        if(!empty($wc_order_relation_result)){
+            $update_result = $wpdb->update(
+                $wc_order_relation,
+                [
+                     'affiliate_code' => $org_token,
+                     'affiliate_user_id' => $org_user_id,
+                ],
+                [
+                    'wc_order_id' => $wc_order_id,
+                ]
+            );
+        }
+
+        // 3. $recipient_order
+        $recipient_orderresult = $wpdb->get_results(
+            $wpdb->prepare("SELECT * FROM {$recipient_order} WHERE order_id = %s", $order_id)
+        );
+
+        if(!empty($wc_order_relation_result)){
+            $update_result = $wpdb->update(
+                $recipient_order,
+                [
+                     'affiliate_token' => $org_token,
+                ],
+                [
+                    'order_id' => $order_id,
+                ]
+            );
+        }
+
+        // 4. Order meta.
+        
+        $update_result = $wpdb->update(
+            $order_meta,
+            [
+                    'id' => $wc_order_id,
+            ],
+            [
+                '_orthoney_OrderID' => $order_id,
+            ]
+        );
+
+        wp_send_json_success(['message' => 'You have successfully switched to the selected organization.']);
+
+
     }
     
     public function orthoney_get_org_details_base_id_callback() {

@@ -4940,3 +4940,111 @@ document.addEventListener("click", function (event) {
         });
     }
 });
+
+
+
+
+document.addEventListener("click", function (event) {
+    const target = event.target;
+    if (target.classList.contains("orderchangeorg")) {
+        const popup = lity(target.getAttribute("data-popup"));
+        const org_details = target.getAttribute("data-organization_data");
+        const wc_order_id = target.getAttribute("data-wc_order_id");
+        const order_id = target.getAttribute("data-order_id");
+        if(org_details != ''){
+          document.querySelector('#order-switch-org-popup .org-details-div').innerHTML = 'This order will support ' + org_details;
+        }
+        document.querySelector('#order-switch-org-popup #wc_order_id').value  = wc_order_id;
+        document.querySelector('#order-switch-org-popup #order_id').value  =  order_id;
+
+        setTimeout(() => {
+            const lityElement = document.querySelector('.lity');
+            if (lityElement) {
+                // Override the click handler to prevent closing on backdrop
+                lityElement.addEventListener('click', function(e) {
+                    // Only prevent closing if clicking on the backdrop (not the content)
+                    if (e.target === lityElement || e.target.classList.contains('lity-wrap')) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        return false;
+                    }
+                }, true); // Use capture phase
+                
+                // Ensure close button still works
+                const closeBtn = lityElement.querySelector('.lity-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        popup.close();
+                    });
+                }
+            }
+        }, 50);
+    }
+});
+
+
+const switchOrgButton = document.querySelector('#switch-org-button');
+
+if (switchOrgButton) {
+    switchOrgButton.addEventListener('click', async function () {
+        const affiliateSelect = document.querySelector("#order-switch-org-popup #order-org-search");
+        const selectedOption = affiliateSelect.options[affiliateSelect.selectedIndex];
+        const org_token = selectedOption.getAttribute("data-token");  
+     
+        const org_user_id = affiliateSelect.value;
+        const wc_order_id =document.querySelector("#order-switch-org-popup #wc_order_id").value;
+        const order_id =document.querySelector("#order-switch-org-popup #order_id").value;
+  
+        console.log(org_token + ' ' + org_user_id + ' ' + wc_order_id + ' ' + order_id);
+        const result = await Swal.fire({
+            html: "<b>Are you sure you want to switch the organization for this order?</b>",
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, I want",
+            cancelButtonText: "Cancel",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+            reverseButtons: true,
+        });
+
+        if (result.isConfirmed) {
+            process_group_popup();
+
+            const requestParams = new URLSearchParams({
+                action: 'switch_org_to_order',
+                org_token: org_token,
+                org_user_id: org_user_id,
+                wc_order_id: wc_order_id,
+                order_id: order_id,
+                security: oam_ajax?.nonce || ''
+            });
+
+            const addResponse = await fetch(oam_ajax.ajax_url, {
+                method: 'POST',
+                body: requestParams,
+            });
+
+            const addData = await addResponse.json();
+
+            if (addData.success) {
+                Swal.fire({
+                    title: "Success",
+                    text: 'You have successfully switched to the selected organization.',
+                    icon: "success",
+                    showConfirmButton: false,
+                });
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                Swal.fire({
+                    title: "Error",
+                    text: 'The order number does not match. Please try again.',
+                    icon: "error",
+                });
+            }
+        }
+    });
+}
