@@ -4055,6 +4055,7 @@ jQuery(function ($) {
           $(".search-by-organization").val(""); // Set default
           $("#order_status").val("all"); // Set default
           $("#custom-order-type-filter").val("all"); // Set default
+          $("#custom-payment-method-filter").val("all");
           jQuery('#customer-orders-table_filter input[type="search"]').val("");
            table.search("").draw();
 
