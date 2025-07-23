@@ -229,7 +229,7 @@ if ($first_segment == 'sales-representative-dashboard') {
             <th>Order Date</th>
             <th><?php echo ($first_segment == 'dashboard') ? 'Billing Name': 'Billing Name'  ?></th>
             <th>Recipient Name</th>
-            <th>Organization Code</th>
+            <th>Org Code</th>
             <th>Qty</th>
             <th>Total Recipient</th>
             <th>Payment Method</th>

@@ -3648,7 +3648,7 @@ jQuery(function ($) {
         { data: "total_recipient", orderable: false, searchable: false },
         { data: "payment_method", orderable: false, searchable: false },
         //{ data: 'type', orderable: false, searchable: false },
-        //{ data: 'status', orderable: false, searchable: false },
+        { data: 'status', orderable: false, searchable: false },
         { data: "price", orderable: false, searchable: false },
         { data: "action", orderable: false, searchable: false }
       ],
