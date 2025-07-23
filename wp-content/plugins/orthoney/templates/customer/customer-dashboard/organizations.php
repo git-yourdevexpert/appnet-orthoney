@@ -69,9 +69,9 @@ if (!empty($result) && isset($result['success']) && $result['success']) {
                 <?php 
                 
                 if(!empty($affiliates)){
-                    usort($affiliates, function($a, $b) {
-        return strcmp($a['token'], $b['token']);
-    });
+    //                 usort($affiliates, function($a, $b) {
+    //     return strcmp($a['token'], $b['token']);
+    // });
                 foreach ($affiliates as $key => $affiliate){
                     $is_blocked = $result['data']['affiliates'][$key]['status'];
                     $token = $result['data']['affiliates'][$key]['token'];
