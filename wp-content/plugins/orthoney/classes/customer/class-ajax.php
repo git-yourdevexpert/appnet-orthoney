@@ -3148,6 +3148,7 @@ class OAM_Ajax{
     public function orthoney_handle_sub_order_request() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
+        $orders_table = $wpdb->prefix . 'wc_orders';
 
         $user_id = get_current_user_id();
         $draw = intval($_POST['draw']);
