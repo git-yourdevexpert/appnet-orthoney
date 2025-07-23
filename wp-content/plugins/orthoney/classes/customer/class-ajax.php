@@ -3065,6 +3065,11 @@ class OAM_Ajax{
         if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] !== "all") {
             $where[] = "orders.status = %s";
             $values[] = sanitize_text_field($_REQUEST['selected_order_status']);
+        }else{
+            $statuses = ['wc-cancelled', 'wc-refunded', 'wc-failed'];
+            $placeholders = implode(',', array_fill(0, count($statuses), '%s'));
+            $where[] = "orders.status NOT IN ($placeholders)";
+            $values = array_merge($values, $statuses);
         }
 
          if (!empty($_REQUEST['custom_payment_method']) && $_REQUEST['custom_payment_method'] !== "all") {
@@ -3120,7 +3125,7 @@ class OAM_Ajax{
             }
         }
 
-        $where[] = "orders.status NOT IN ('trash')";
+        $where[] = "orders.status NOT IN ('trash', 'wc-checkout-draft')";
 
        $sql = $wpdb->prepare(
             "SELECT  COUNT( DISTINCT orders.id) FROM {$orders_table} AS orders
@@ -3165,16 +3170,16 @@ class OAM_Ajax{
         $year = is_numeric($_REQUEST['selected_year'] ?? null) ? (int) $_REQUEST['selected_year'] : '';
         $selected_customer_id = is_numeric($_REQUEST['selected_customer_id'] ?? null) ? (int) $_REQUEST['selected_customer_id'] : null;
 
-        $where[] = "quantity BETWEEN %d AND %d";
+        $where[] = "{$jar_table}.quantity BETWEEN %d AND %d";
         $values[] = $min_qty;
         $values[] = $max_qty;
 
         if (!isset($_REQUEST['selected_year'])) {
-            $where[] = "YEAR(created_date) = %d";
+            $where[] = "YEAR({$jar_table}.created_date) = %d";
             $values[] = date("Y");
         }else{
             if (!empty($_REQUEST['selected_year'])) {
-                $where[] = "YEAR(created_date) = %d";
+                $where[] = "YEAR({$jar_table}.created_date) = %d";
                 $values[] = $year;
             }
         }
@@ -3191,7 +3196,7 @@ class OAM_Ajax{
             }
 
             foreach ($search_terms as $term) {
-                $org_clauses[] = "(affiliate_token LIKE %s)";
+                $org_clauses[] = "({$jar_table}.affiliate_token LIKE %s)";
                 $values[] = '%' . $wpdb->esc_like($term) . '%';
             }
 
@@ -3203,15 +3208,16 @@ class OAM_Ajax{
 
         
         if (!empty($search_val)) {
-            $where[] = "(order_id LIKE %s OR full_name LIKE %s)";
+            $where[] = "(o.id LIKE %s OR {$jar_table}.recipient_order_id LIKE %s OR {$jar_table}.full_name LIKE %s)";
             $search_param = '%' . $wpdb->esc_like($search_val) . '%';
+            $values[] = $search_param;
             $values[] = $search_param;
             $values[] = $search_param;
         }
 
         if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard' || $tabletype == 'sales-representative-dashboard') {
             if ($selected_customer_id) {
-                $where[] = "user_id = %d";
+                $where[] = "{$jar_table}.user_id = %d";
                 $values[] = $selected_customer_id;
             }
 
@@ -3225,10 +3231,10 @@ class OAM_Ajax{
             LEFT JOIN {$orders_table} o ON oor.wc_order_id = o.id
         ";
 
-        $where[] = "o.status != %s";
-        $values[] = 'trash';
+        $where[] = "o.status NOT IN ('trash', 'wc-checkout-draft') ";
+
         $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-        $sql = $wpdb->prepare("SELECT COUNT(id) FROM {$jar_table} $where_sql", ...$values);
+        $sql = $wpdb->prepare("SELECT COUNT({$jar_table}.id) FROM {$jar_table} $joins $where_sql", ...$values);
 
         
         $total_orders = $wpdb->get_var($sql);

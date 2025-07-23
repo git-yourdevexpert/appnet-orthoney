@@ -197,6 +197,7 @@ class OAM_Helper{
    public static function get_jars_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length) {
         global $wpdb;
         $orders_table = $wpdb->prefix . 'wc_orders'; 
+        $jar_table = $wpdb->prefix . 'oh_recipient_order';
         $filtered_orders = [];
         $tabletype = isset($_POST['tabletype']) ? sanitize_text_field($_POST['tabletype']) : 'administrator-dashboard';
 
@@ -213,17 +214,17 @@ class OAM_Helper{
         $params = [];
 
         // Quantity filter
-        $where_clauses[] = "quantity BETWEEN %d AND %d";
+        $where_clauses[] = "{$jar_table}.quantity BETWEEN %d AND %d";
         $params[] = $min_qty;
         $params[] = $max_qty;
 
         // Year filter
         if (!isset($_REQUEST['selected_year'])) {
-            $where_clauses[] = "YEAR(created_date) = %d";
+            $where_clauses[] = "YEAR({$jar_table}.created_date) = %d";
             $params[] = date("Y");
         }else{
             if (!empty($_REQUEST['selected_year'])) {
-                $where_clauses[] = "YEAR(created_date) = %d";
+                $where_clauses[] = "YEAR({$jar_table}.created_date) = %d";
                 $params[] = $selected_year;
             }
         }
@@ -248,7 +249,7 @@ class OAM_Helper{
                     $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
 
                     $where_clauses[] = "(
-                        affiliate_token IN ($placeholders)
+                        {$jar_table}.affiliate_token IN ($placeholders)
                     )";
 
                     // ✅ Merge safely with existing $params
@@ -260,24 +261,25 @@ class OAM_Helper{
     }
 
         if (!empty($search_val)) {
-            $where_clauses[] = "(recipient_order_id LIKE %s OR full_name LIKE %s)";
+            $where_clauses[] = "(o.id LIKE %s OR {$jar_table}.recipient_order_id LIKE %s OR {$jar_table}.full_name LIKE %s)";
             $search_param = '%' . $wpdb->esc_like($search_val) . '%';
+            $params[] = $search_param;
             $params[] = $search_param;
             $params[] = $search_param;
         }
 
         if ($tabletype == 'administrator-dashboard' || $tabletype == 'organization-dashboard' || $tabletype == 'sales-representative-dashboard') {
             if ($selected_customer_id) {
-                $where_clauses[] = "user_id = %d";
+                $where_clauses[] = "{$jar_table}.user_id = %d";
                 $params[] = $selected_customer_id;
             }
         } else {
-            $where_clauses[] = "user_id = %d";
+            $where_clauses[] = "{$jar_table}.user_id = %d";
             $params[] = get_current_user_id();
         }
 
         if (!empty($_REQUEST['search_by_organization'])) {
-             $where_clauses[] = "affiliate_token IS NOT NULL ";
+             $where_clauses[] = "{$jar_table}.affiliate_token IS NOT NULL ";
         }
 
         $joins = "
@@ -285,8 +287,7 @@ class OAM_Helper{
             LEFT JOIN {$orders_table} o ON oor.wc_order_id = o.id
         ";
 
-        $where_clauses[] = "o.status != %s";
-        $params[] = 'trash';
+         $where_clauses[] = "o.status NOT IN ('trash', 'wc-checkout-draft') ";
 
         $where_sql = '';
         if (!empty($where_clauses)) {
@@ -296,22 +297,20 @@ class OAM_Helper{
         // Add pagination
         $params[] = $limit;
         $params[] = $page;
-        
-        $jar_table = $wpdb->prefix . 'oh_recipient_order';
+    
 
        $sql = $wpdb->prepare(
-            "
-            SELECT 
-                recipient_order_id AS jar_no,
-                order_id AS order_no,
-                created_date AS date,
+            "SELECT 
+                {$jar_table}.recipient_order_id AS jar_no,
+                {$jar_table}.order_id AS order_no,
+                {$jar_table}.created_date AS date,
                 full_name AS billing_name,
                 full_name AS shipping_name,
-                affiliate_token AS affiliate_code,
-                quantity AS total_jar,
-                order_type AS type
+                {$jar_table}.affiliate_token AS affiliate_code,
+               {$jar_table}.quantity AS total_jar,
+               {$jar_table}.order_type AS type
             FROM {$jar_table}
-            $where_sql
+            $joins $where_sql
             LIMIT %d OFFSET %d
             ",
             ...$params
@@ -330,7 +329,7 @@ class OAM_Helper{
             $order_no = esc_attr($order['order_no']);
             $recipient_name = esc_attr($order['billing_name']);
 
-            if (isset($order['affiliate_code']) && $order['affiliate_code'] === 'Orthoney') {
+            if (isset($order['affiliate_code']) && ($order['affiliate_code'] === 'Orthoney' OR $order['affiliate_code'] === '')) {
                 $order['affiliate_code'] = 'Honey from the Heart';
             }
 
@@ -485,14 +484,12 @@ class OAM_Helper{
         if (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] !== "all") {
             $where_conditions[] = "orders.status = %s";
             $where_values[] = sanitize_text_field($_REQUEST['selected_order_status']);
-        } 
-        // elseif (!empty($_REQUEST['selected_order_status']) && $_REQUEST['selected_order_status'] === "all") {
-        //     // Default behavior: show all relevant statuses when 'all' is selected or no status is specified
-        //     $statuses = ['wc-pending', 'wc-processing', 'wc-on-hold', 'wc-completed'];
-        //     $placeholders = implode(',', array_fill(0, count($statuses), '%s'));
-        //     $where_conditions[] = "orders.status IN ($placeholders)";
-        //     $where_values = array_merge($where_values, $statuses);
-        // }
+        } else{
+            $statuses =  ['wc-cancelled', 'wc-refunded', 'wc-failed'];
+            $placeholders = implode(',', array_fill(0, count($statuses), '%s'));
+            $where_conditions[] = "orders.status NOT IN ($placeholders)";
+            $where_values = array_merge($where_values, $statuses);
+        }
 
         if (!empty($_REQUEST['custom_payment_method']) && $_REQUEST['custom_payment_method'] !== "all") {
             if($_REQUEST['custom_payment_method'] == 'Check payments'){
@@ -552,7 +549,7 @@ class OAM_Helper{
                 $where_conditions[] = "(rel.affiliate_user_id = 0 )";
             }
         }
-        $where_conditions[] = "orders.status NOT IN ('trash') ";
+         $where_conditions[] = "orders.status NOT IN ('trash', 'wc-checkout-draft') ";
         $where_conditions[] = "(rel.order_id != 0 )";
 
          $sql = $wpdb->prepare(
@@ -681,28 +678,34 @@ class OAM_Helper{
         }
         
     }
-        // Status HTML
-        $status_html = '';
-        if ($order_type === 'Multi Address' && $order_data->parent_order_id == 0) {
-            $status_counts = $wpdb->get_results($wpdb->prepare(
-                "SELECT status, COUNT(*) as count FROM $orders_table WHERE customer_id = %d AND parent_order_id = %d GROUP BY status",
-                $user_id, $order_data->id
-            ));
-            foreach ($status_counts as $status) {
-                $status_html .= sprintf(
-                    '<span class="%s">(%d) %s</span> ',
-                    esc_attr($status->status),
-                    esc_html($status->count),
-                    esc_html(wc_get_order_status_name($status->status))
-                );
-            }
-        } else {
-            $status_html .= sprintf(
-                '<span class="%s">%s</span> ',
+        // // Status HTML
+        // $status_html = '';
+        // if ($order_type === 'Multi Address' && $order_data->parent_order_id == 0) {
+        //     $status_counts = $wpdb->get_results($wpdb->prepare(
+        //         "SELECT status, COUNT(*) as count FROM $orders_table WHERE customer_id = %d AND parent_order_id = %d GROUP BY status",
+        //         $user_id, $order_data->id
+        //     ));
+        //     foreach ($status_counts as $status) {
+        //         $status_html .= sprintf(
+        //             '<span class="%s">(%d) %s</span> ',
+        //             esc_attr($status->status),
+        //             esc_html($status->count),
+        //             esc_html(wc_get_order_status_name($status->status))
+        //         );
+        //     }
+        // } else {
+        //     $status_html .= sprintf(
+        //         '<span class="%s">%s</span> ',
+        //         esc_attr($order_data->status),
+        //         esc_html(wc_get_order_status_name($order_data->status))
+        //     );
+        // }
+        $status_html .= sprintf(
+                '<mark class="order-status status-%s tips"><span class="%s">%s</span></mark>',
+                esc_attr($order_data->status),
                 esc_attr($order_data->status),
                 esc_html(wc_get_order_status_name($order_data->status))
             );
-        }
         
         $return_url = '?return_url=admin';
             if($tabletype == 'organization-dashboard' )  {
@@ -724,7 +727,7 @@ class OAM_Helper{
         }
         return [
             'jar_no' => esc_html($order_data->id),
-             'order_no' => OAM_COMMON_Custom::get_order_meta(($order_data->parent_order_id == 0) ? $order_data->id : $order_data->parent_order_id, '_orthoney_OrderID'),
+             'order_no' => OAM_COMMON_Custom::get_order_meta(($order_data->parent_order_id == 0) ? $order_data->id : $order_data->parent_order_id, '_orthoney_OrderID'). '<br> Ref. ID '. $order_data->id,,
             'date' => esc_html($created_date),
             'billing_name' => esc_html($billing_name),
             'shipping_name' => esc_html($shipping_name),
@@ -735,7 +738,7 @@ class OAM_Helper{
 
            // 'total_recipient' => "<a id=".$jar_order_id." onclick='jarfilter_trigger(\"$jar_order_id\")' class='filter-jar-order-by-wc-order' href='javascript:;'>".$jarsorder_count."</a>",
             //'type' => esc_html($order_type),
-            //'status' => !empty($status_html) ? $status_html : 'Recipient Order is Preparing.',
+            'status' => !empty($status_html) ? $status_html : 'Order is Preparing.',
             'price' => $order_total,
             'action' =>'<a data-tippy="View Order" href="' . $resume_url . '" class="far fa-eye"></a>'. $reorderbutton
         ];
