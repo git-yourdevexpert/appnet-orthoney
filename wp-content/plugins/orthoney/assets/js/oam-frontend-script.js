@@ -4998,7 +4998,7 @@ if (switchOrgButton) {
   
         console.log(org_token + ' ' + org_user_id + ' ' + wc_order_id + ' ' + order_id);
         const result = await Swal.fire({
-            html: "<b>Are you sure you want to switch the organization for this order?</b>",
+           html: "<b>Are you sure you want to switch the organization for this order?</b><br><p style='line-height: 1.3;padding-top: 20px;'><span style='color: red;font-weight: 900;line-height: 1.1;'>Switching the organization will assign the commission for this order to the newly selected organization. This may result in a mismatch in commission calculations</span></p>",
             showCancelButton: true,
             showConfirmButton: true,
             confirmButtonColor: "#3085d6",
