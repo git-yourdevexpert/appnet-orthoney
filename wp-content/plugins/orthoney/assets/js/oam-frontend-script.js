@@ -5004,7 +5004,7 @@ if (switchOrgButton) {
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             confirmButtonText: "Yes",
-            cancelButtonText: "Cancel",
+            cancelButtonText: "No",
             allowOutsideClick: false,
             allowEscapeKey: false,
             allowEnterKey: false,
