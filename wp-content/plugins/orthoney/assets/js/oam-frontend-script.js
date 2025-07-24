@@ -3635,7 +3635,7 @@ jQuery(function ($) {
           searchable: false,
           className: "checkbox-col",
           render: function (data, type, row) {
-            return `<input type="checkbox" class="row-checkbox" value="${row.order_no}" data-order-id="${row.order_no}">`;
+            return `<input type="checkbox" class="row-checkbox" value="${row.orthoney_order_id}" data-order-id="${row.orthoney_order_id}">`;
           }
         },
         { data: "jar_no" },

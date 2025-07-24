@@ -727,6 +727,7 @@ class OAM_Helper{
         }
         return [
             'jar_no' => esc_html($order_data->id),
+            'orthoney_order_id' => OAM_COMMON_Custom::get_order_meta(($order_data->parent_order_id == 0) ? $order_data->id : $order_data->parent_order_id, '_orthoney_OrderID'),
              'order_no' => OAM_COMMON_Custom::get_order_meta(($order_data->parent_order_id == 0) ? $order_data->id : $order_data->parent_order_id, '_orthoney_OrderID'). '<br> Ref. ID '. $order_data->id,
             'date' => esc_html($created_date),
             'billing_name' => esc_html($billing_name),
