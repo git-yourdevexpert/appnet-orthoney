@@ -58,7 +58,7 @@
                         <h6 class="block-title">Your account is inactive. Submit your Tax ID to activate your account and become eligible for this year`s commission.</h6>
                         <div>';
                         if (!empty($tax_id)) {
-                            echo '<button data-userid="' . esc_attr($affiliate_id) . '" class="w-btn us-btn-style_1 activate_affiliate_account">Activate Account</button>';
+                            echo '<button data-userid="' . esc_attr($associated_id) . '" class="w-btn us-btn-style_1 activate_affiliate_account">Activate Account</button>';
                         } else {
                             echo '<a href="'.ORGANIZATION_DASHBOARD_LINK.'my-profile/" class="w-btn us-btn-style_1">Update Tax ID</a>';
                         }
