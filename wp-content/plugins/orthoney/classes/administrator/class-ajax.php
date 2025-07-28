@@ -106,6 +106,21 @@ class OAM_ADMINISTRATOR_AJAX {
             ]
         );
 
+        $order = wc_get_order($wc_order_id);
+        if($org_token == 'Orthoney'){
+              $order->update_meta_data('affiliate_account_status', 1);
+        }else{
+            $activate_affiliate_account = get_user_meta($org_user_id, 'activate_affiliate_account', true) ?: 0;
+
+            if($activate_affiliate_account == 0){
+                $order->update_meta_data('affiliate_account_status', 0);
+            }else{
+                $order->update_meta_data('affiliate_account_status', 1);
+            }
+        }
+         $order->save();
+        
+
         wp_send_json_success(['message' => 'You have successfully switched to the selected organization.']);
 
 
@@ -801,7 +816,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
         $unit_profit = wc_price(0);
         if($commission_array['unit_profit'] != 0){
-           $unit_profit = wc_price($commission_array['unit_profit']).'<br><small>( '.wc_price($commission_array["selling_min_price"]).' - '.wc_price($commission_array["unit_cost"]).' )</small>';
+           $unit_profit = wc_price($commission_array['unit_profit']).'<br><small>( '.wc_price($commission_array["product_price"]).' - '.wc_price($commission_array["unit_cost"]).' )</small>';
         } 
       
         $cost = '';
@@ -828,14 +843,14 @@ class OAM_ADMINISTRATOR_AJAX {
             'dist_cost'       => $dist_cost,
             'selling_min_price'       => esc_html($commission_array['selling_min_price']),
             'total_order'       => esc_html($commission_array['total_order']),
-            'total_qty'       => esc_html($commission_array['total_quantity']),
+            'total_qty'       => esc_html($commission_array['total_all_quantity']),
             'wholesale_qty'       => esc_html($commission_array['wholesale_qty']),
             'fundraising_qty'       => esc_html($commission_array['fundraising_qty']),
             'fundraising_orders'       => esc_html($commission_array['fundraising_orders']),
             'total_all_quantity'       => esc_html($commission_array['total_all_quantity']),
             'unit_cost'       => esc_html($commission_array['unit_cost']),
             'unit_profit'       => $unit_profit,
-            'total_commission'       => wc_price($commission_array['total_commission']),
+            'total_commission'       => ($commission_array['fundraising_qty'] < 50) ? wc_price(0) : wc_price($commission_array['total_commission']),
         ];
     }
     
@@ -846,6 +861,7 @@ class OAM_ADMINISTRATOR_AJAX {
         'data'            => $data,
     ]);
 }
+
 
     public function orthoney_admin_get_organizations_data_handler() {
         global $wpdb;
