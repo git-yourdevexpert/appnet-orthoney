@@ -4997,8 +4997,8 @@ if (switchOrgButton) {
         const order_id =document.querySelector("#order-switch-org-popup #order_id").value;
   
         console.log(org_token + ' ' + org_user_id + ' ' + wc_order_id + ' ' + order_id);
-        const result = await Swal.fire({
-            html: "<b>Are you sure you want to switch the organization for this order?</b><br>",
+       const result = await Swal.fire({
+            html: "<b>Are you sure you want to switch the organization for this order?</b><br><p style='line-height: 1.3;padding-top: 20px;'><span style='color: red;font-weight: 900;line-height: 1.1;'>Switching the organization will assign the commission for this order to the newly selected organization. This may result in a mismatch in commission calculations</span></p>",
             showCancelButton: true,
             showConfirmButton: true,
             confirmButtonColor: "#3085d6",
@@ -5009,16 +5009,6 @@ if (switchOrgButton) {
             allowEscapeKey: false,
             allowEnterKey: false,
             reverseButtons: true,
-             didOpen: () => {
-              const customNote = document.createElement('div');
-              customNote.innerHTML = `
-                  <div class="swal2-html-container">
-                      <p style='line-height: 1.3;padding-top: 20px;'><span style='color: red;font-weight: 900;line-height: 1.1;'>Switching the organization will assign the commission for this order to the newly selected organization. This may result in a mismatch in commission calculations</span></p>
-                  </div>
-              `;
-              const popup = Swal.getPopup();
-              if (popup) popup.appendChild(customNote);
-          }
         });
         if (result.isConfirmed) {
             process_group_popup();

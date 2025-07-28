@@ -806,17 +806,17 @@ class OAM_ADMINISTRATOR_AJAX {
       
         $cost = '';
         if($commission_array['total_order'] != 0){
-            $cost = '<strong>Total: </strong>'. wc_price(($commission_array['total_quantity'] * $commission_array['selling_min_price']));
-            $cost .= '<br><small><strong>Fundraising: </strong>'. wc_price(($commission_array['fundraising_qty'] * $commission_array['selling_min_price']));
-            $cost .= '<br><strong>Wholesale: </strong>'. wc_price(($commission_array['wholesale_qty'] * $commission_array['selling_min_price']));
+            $cost = '<strong>Total: </strong>'. wc_price($commission_array['ort_cost']);
+            $cost .= '<br><small><strong>Fundraising: </strong>'. wc_price($commission_array['fundraising_cost'] );
+            $cost .= '<br><strong>Wholesale: </strong>'. wc_price($commission_array['wholesale_cost']);
             $cost .= '</small>';
         }
         
         $dist_cost = '';
         if($commission_array['total_order'] != 0){
-            $dist_cost = '<strong>Total: </strong>'. wc_price(($commission_array['total_quantity'] * $commission_array['unit_cost']));
-            $dist_cost .= '<br><small><strong>Fundraising: </strong>'. wc_price(($commission_array['fundraising_qty'] * $commission_array['unit_cost']));
-            $dist_cost .= '<br><strong>Wholesale: </strong>'. wc_price(($commission_array['wholesale_qty'] * $commission_array['unit_cost']));
+            $dist_cost = '<strong>Total: </strong>'. wc_price($commission_array['ort_dist']);
+            $dist_cost .= '<br><small><strong>Fundraising: </strong>'. wc_price($commission_array['fundraising_dist']);
+            $dist_cost .= '<br><strong>Wholesale: </strong>'. wc_price($commission_array['wholesale_dist']);
             $dist_cost .= '</small>';
         }
 
@@ -846,7 +846,6 @@ class OAM_ADMINISTRATOR_AJAX {
         'data'            => $data,
     ]);
 }
-
 
     public function orthoney_admin_get_organizations_data_handler() {
         global $wpdb;

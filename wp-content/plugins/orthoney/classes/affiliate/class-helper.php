@@ -20,6 +20,18 @@ class OAM_AFFILIATE_Helper
         shuffle($stringArray);
         return strtoupper(implode('', array_slice($stringArray, 0, $length)));
     }
+    
+    public static function get_quantity_by_order_id($order_id)
+    {
+        $order = wc_get_order($order_id);
+        $quantity = 0;
+        if ( $order ) {
+            foreach ($order->get_items() as $item) {
+                $quantity += (int) $item->get_quantity();
+            }
+        }
+        return $quantity;
+    }
 
     public static function affiliate_status_check($user_id)
     {
@@ -51,7 +63,7 @@ class OAM_AFFILIATE_Helper
         } elseif (isset($affiliate->enabled)) {
 
             if ($affiliate->enabled == 0) {
-?>
+                ?>
                 <style>
                     .l-subheader.at_middle .hidden_for_tablets,
                     .login-container>a,
@@ -60,7 +72,7 @@ class OAM_AFFILIATE_Helper
                         display: none;
                     }
                 </style>
-        <?php
+            <?php
                 return json_encode([
                     'success' => false,
                     'message' => 'Your application is pending approval. Thank you for reaching out!',
@@ -235,10 +247,7 @@ class OAM_AFFILIATE_Helper
             $order = wc_get_order($order_id);
             if (!$order) continue;
             $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
-            $quantity = 0;
-            foreach ($order->get_items() as $item) {
-                $quantity += (int) $item->get_quantity();
-            }
+            $quantity = OAM_COMMON_Custom::get_quantity_by_order_id($order_id);
 
             $exclude_coupon = EXCLUDE_COUPON;
 
@@ -284,25 +293,18 @@ class OAM_AFFILIATE_Helper
 
 
 
-    public static function affiliate_current_year_order_list($details, $limit = 9999999)
+    public static function affiliate_current_year_order_list($limit = 9999999)
     {
-        if (empty($details['current_year_orders_ids'])) {
+        $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
+        if (empty($commission_array)) {
             return '<p>No customer orders found for the current year</p>';
         }
 
         $total_commission = 0;
-        $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
+        
 
         $exclude_coupon = EXCLUDE_COUPON;
-        $total_all_quantity = 0;
-        $total_orders = 0;
-        $fundraising_qty = 0;
-        $wholesale_qty = 0;
-        $wholesale_order = 0;
-        $fundraising_orders = 0;
-        $unit_price = 0;
-        $unit_cost = 0;
-        $dist_unit_profit  = 0;
+       
         foreach ($commission_array as $key => $data) {
             if ($data['affiliate_account_status'] == 1) {
                 $unit_price = $data['par_jar'];
@@ -323,30 +325,9 @@ class OAM_AFFILIATE_Helper
                 }
             }
         }
-        $fundraising_qty = $total_all_quantity - $wholesale_qty;
-        $fundraising_orders = $total_orders - $wholesale_order;
-
-        $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
-        if ($unit_price >= $selling_minimum_price) {
-            if (OAM_AFFILIATE_Helper::is_user_created_this_year(get_current_user_id())) {
-                if ($total_all_quantity < 99) {
-                    $dist_unit_profit = get_field('new_minimum_price_50', 'option');
-                } else {
-                    $dist_unit_profit = get_field('new_minimum_price_100', 'option');
-                }
-            } else {
-                if ($total_all_quantity < 99) {
-                    $dist_unit_profit = get_field('ex_minimum_price_50', 'option');
-                } else {
-                    $dist_unit_profit = get_field('ex_minimum_price_100', 'option');
-                }
-            }
-        }
+        
 
         $html = '';
-        $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate();
-
-
 
         //rsort($details['current_year_orders_ids']);
         $orders = $details['current_year_orders_ids'];
@@ -368,28 +349,23 @@ class OAM_AFFILIATE_Helper
                             </tr>
                         </thead>
                         <tbody>';
-        $count = 0;
-        foreach ($orders as $order_id) {
-            if (++$count > $limit) break;
-            $order = wc_get_order($order_id);
-            if (!$order) continue;
-            $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
-            $quantity = 0;
-            foreach ($order->get_items() as $item) {
-                $quantity += (int) $item->get_quantity();
-            }
+       
 
-            $exclude_coupon = EXCLUDE_COUPON;
-
-            if ($commission_array[$custom_order_id]['affiliate_account_status'] == 1) {
-                $coupon_array = !empty($commission_array[$custom_order_id]['is_voucher_used']) 
-                    ? explode(",", $commission_array[$custom_order_id]['is_voucher_used']) 
+        foreach ($commission_array as $key => $data) {
+            $order = wc_get_order($data['order_id']);
+            $quantity = $data['order_quantity'];
+            $custom_order_id = $data['custom_order_id'];
+            $par_ja_price = $data['par_jar'];
+            $dist_unit_profit = $data['par_jar'] - $data['minimum_price'];
+           if ($data['affiliate_account_status'] == 1) {
+                $coupon_array = !empty($data['is_voucher_used']) 
+                    ? explode(",", $data['is_voucher_used']) 
                     : [];
 
                 $coupon_array = array_diff($coupon_array, $exclude_coupon);
 
                 if (empty($coupon_array)) {
-                    $commission_price = wc_price($quantity * ($unit_price - $dist_unit_profit));
+                    $commission_price = wc_price($quantity * ($dist_unit_profit));
                 } else {
                     $commission_price = wc_price(0) . ' <span style="color:red">(used voucher: '.implode(",", $coupon_array).')</span>';
                 }
@@ -397,30 +373,22 @@ class OAM_AFFILIATE_Helper
                 $commission_price = wc_price(0) . ' <span style="color:red">(Account deactivated)</span>';
             }
 
-
-            // $commission_price = '';
-            // if ($commission_array[$custom_order_id]['affiliate_account_status'] == 1) {
-            //     $commission_price = wc_price($commission_array[$custom_order_id]['commission']);
-            // } else {
-            //     $commission_price = wc_price(0) . ' <span style="color:red">(Account deactivated)</span>';
-            // }
-
-            if ($commission_array[$custom_order_id]['affiliate_account_status'] == 1) {
             $html .= '<tr>
-                        <td><div class="thead-data">Order ID</div>#' . esc_html($custom_order_id) . '</td>
-                        <td><div class="thead-data">Billing Name</div>' . esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()) . '</td>
-                        <td><div class="thead-data">Qty</div>' . esc_html($quantity) . '</td>
-                        <td><div class="thead-data">Type</div>' . esc_html('Wholesale') . '</td>
-                        <td><div class="thead-data">Fundrs total<br><small>(Fundraising Qty * Dist Unit Price )</small></div>' . wc_price($order->get_total()) . '<br><small>('.$quantity.' * '.wc_price($unit_price).')</small></td>
-                        
-                        <td><div class="thead-data">CommDistributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></div>' . $commission_price . '<br><small>('.$quantity.' * '.wc_price(($unit_price - $dist_unit_profit)).')</small></td>
-                        <td><div class="thead-data">Date</div>' . date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order->get_date_created())) . '</td>
-                    </tr>';
-            }
+                         <td><div class="thead-data">Order ID</div>#' . esc_html($custom_order_id) . '</td>
+                         <td><div class="thead-data">Billing Name</div>' . esc_html($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()) . '</td>
+                         <td><div class="thead-data">Qty</div>' . esc_html($quantity) . '</td>
+                         <td><div class="thead-data">Type</div>' . (empty($coupon_array) ? esc_html('Retail') : esc_html('Wholesale')) . '</td>
+                         <td><div class="thead-data">Fundrs total<br><small>(Fundraising Qty * Dist Unit Price )</small></div>' . wc_price($quantity * $par_ja_price) . '<br><small>('.$quantity.' * '.wc_price($par_ja_price).')</small></td>
+
+                         <td><div class="thead-data">CommDistributor Sales Profit<br><small>(Fundraising Qty * Dist Unit Profit )</small></div>' . $commission_price . '<br><small>('.$quantity.' * '.wc_price(($dist_unit_profit)).')</small></td>
+
+                         <td><div class="thead-data">Date</div>' . date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order->get_date_created())) . '</td>
+                     </tr>';
         }
-        if ($count === 0) {
-            $html .= '<tr><td colspan="4" class="no-available-msg">Order not found!</td></tr>';
-        }
+        
+        // if ($count === 0) {
+        //     $html .= '<tr><td colspan="4" class="no-available-msg">Order not found!</td></tr>';
+        // }
         $html .=    '</tbody>
                     </table>
                 </div>
@@ -447,6 +415,12 @@ class OAM_AFFILIATE_Helper
         $fundraising_orders = 0;
         $unit_price = 0;
         $unit_cost = 0;
+        $total_cost = 0;
+        $total_ort_share_cost = 0;
+        $fundraising_total = 0;
+        $wholesale_total = 0;
+        $fundraising_ort_share_cost = 0;
+        $wholesale_ort_share_cost = 0;
         foreach ($commission_array as $key => $data) {
             $fundraising_qty = $data['total_quantity'];
             $wholesale_qty = $data['wholesale_qty'];
@@ -455,6 +429,10 @@ class OAM_AFFILIATE_Helper
                 $unit_cost = $data['minimum_price'];
                  $total_all_quantity = $data['total_quantity'];
                  $total_orders++;
+                 $total_cost = $total_cost + ($unit_price *  $data['order_quantity']);
+                 $total_ort_share_cost = $total_ort_share_cost + ($unit_cost *  $data['order_quantity']);
+                
+
                 $common = [];
                 $coupon_array = !empty($data['is_voucher_used']) ? explode(",", $data['is_voucher_used']) : [];
                 if(count($coupon_array) > 0){
@@ -463,13 +441,18 @@ class OAM_AFFILIATE_Helper
                 }
                 if(count($coupon_array) == 0){
                     $total_commission += $data['commission'];
-                }else{
+                     $fundraising_total = $fundraising_total + ($unit_cost *  $data['order_quantity']);
+                     $fundraising_ort_share_cost = $fundraising_ort_share_cost + ($unit_price *  $data['order_quantity']);
+                    }else{
+                        $wholesale_total = $wholesale_total + ($unit_cost *  $data['order_quantity']);
+                    $wholesale_ort_share_cost = $wholesale_ort_share_cost + ($unit_price *  $data['order_quantity']);
                      $wholesale_order++;
                 }
             }
         }
+        
         $total_all_quantity = $fundraising_qty + $wholesale_qty;
-         $fundraising_orders = $total_orders - $wholesale_order;
+        $fundraising_orders = $total_orders - $wholesale_order;
          
          $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
             if ($unit_price >= $selling_minimum_price) {
@@ -603,56 +586,6 @@ class OAM_AFFILIATE_Helper
                 }
 
                  $html .= '<div class="block-row three-block-col">
-                    <div class="place-order item" style="display:none">
-                        <div class="row-block">
-                            <h4 class="block-title">Total Customer Orders</h4>
-                            <div class="see-all">
-                                <div class="icon-card"><img alt="speedicon" src="' . OH_PLUGIN_DIR_URL . '/assets/image/jar-icon.png" width="30"  height="30" /></div>
-                            </div>
-                        </div>
-                        <div class="sub-heading">
-                            <div>Total Orders : ' . (!empty($details['orders']) ? count($details['orders']) : '0') . '</div>
-                            <div> Current Year Orders: ' . (!empty($details['current_year_orders_ids']) ? count($details['current_year_orders_ids']) : '0') . '</div>
-                        </div>
-                    </div>
-                    <div class="place-order item" style="display:none">
-                        <div class="row-block">
-                            <h4 class="block-title">Total Sold Jar</h4>
-                            <div class="see-all">
-                                <div class="icon-card"><img alt="speedicon" src="' . OH_PLUGIN_DIR_URL . '/assets/image/jar-icon.png" width="30" height="30" /></div>
-                            </div>
-                        </div>
-                        <div class="sub-heading">
-                        <div>Total Jars: ' . (!empty($details['total_quantity']) ? esc_html($details['total_quantity']) : '0') . '</div>
-                        <div>Current Year Jars: ' . (!empty($details['current_year_total_quantity']) ? esc_html($details['current_year_total_quantity']) : '0') . '</div>
-                        </div>
-                    </div>
-                    <div class="place-order item" style="display:none">
-                        <div class="row-block">
-                            <h4 class="block-title">Total Commission</h4>
-                            <div class="see-all">
-                                <div class="icon-card"><img alt="speedicon" src="' . OH_PLUGIN_DIR_URL . '/assets/image/commission-icon.png" width="30" height="30" /></div>
-                            </div>
-                        </div>
-                        <div class="sub-heading">
-                            <div>' . wc_price($total_commission) . ' ' . (($details['total_quantity'] <= 50) ? '<p style="line-height: 1;"><small style="font-size: 70%; color: red;line-height: 1 !important;font-weight: 900;">You are not eligible for a commission. A minimum of 50 jars is required.</small></p>' : '') . '</div>
-                        </div>
-                    </div>
-                    <style>
-                    .commission-calc{
-                        list-style: none;
-                    margin: 0;
-                    font-size: 16px;
-                    color: #000;
-                                    }
-                    .commission-calc li{
-                    display: flex;
-                    justify-content: space-between;
-                        }
-                    .commission-calc li.total{    border-top: 2px solid #ddd;
-                    padding-top: 10px;
-                    }
-                    </style>
                      <div class="place-order item">
                         <div class="row-block">
                             <h4 class="block-title">Total(Fundraising + Wholesale)</h4>
@@ -669,10 +602,10 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Dist Unit Price </span><span>'.wc_price($unit_price).'</span></li>
                                     <li><span>Dist Unit Cost </span><span>'.wc_price($unit_cost).'</span></li>
                                     <li><span>Dist Unit Profit <div class="tooltip" data-tippy="(Dist Unit Price - Dist Unit Cost )"></div></span><span>'.wc_price($unit_price - $unit_cost).'</span></li>
-                                    <li><span>Total Cost <div class="tooltip" data-tippy="(Fundrs Total + Wholesale Total )"></div> </span><span>'.wc_price(($fundraising_qty * $unit_price) + ($wholesale_qty * $unit_price)).'</span></li>
+                                    <li><span>Total Cost <div class="tooltip" data-tippy="(Fundrs Total + Wholesale Total )"></div> </span><span>'.wc_price($total_cost).'</span></li>
                                  
                                     <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Total Qty * Dist Unit Cost )"></div></span><span>'.wc_price($total_all_quantity * $unit_cost).'</span></li>
-                                    <li class="total"><span>Distributor Sales Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div> </span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  :  wc_price($fundraising_qty * ($unit_price - $unit_cost)) ).'</span></li>
+                                    <li class="total"><span>Distributor Sales Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div> </span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  :  wc_price( ($total_commission)) ).'</span></li>
                                 </ul>
                             </div>
                         </div>
@@ -693,9 +626,9 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Dist Unit Price </span><span>'.wc_price($unit_price).'</span></li>
                                     <li><span>Dist Unit Cost </span><span>'.wc_price($unit_cost).'</span></li>
                                     <li><span>Dist Unit Profit <div class="tooltip" data-tippy="(Dist Unit Price - Dist Unit Cost )"></div></span><span>'.wc_price($unit_price - $unit_cost).'</span></li>
-                                     <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Price )"></div></span><span>'.wc_price($fundraising_qty * $unit_cost).'</span></li>
-                                    <li ><span>Fundraising Total <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Price )"></div></span><span>'.wc_price($fundraising_qty * $unit_price).'</span></li>
-                                    <li  class="total"><span>Fundraising Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price($fundraising_qty * ($unit_price - $unit_cost))).'</span></li>
+                                     <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Price )"></div></span><span>'.wc_price($fundraising_ort_share_cost).'</span></li>
+                                    <li ><span>Fundraising Total <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Price )"></div></span><span>'.wc_price($fundraising_total).'</span></li>
+                                    <li  class="total"><span>Fundraising Profit <div class="tooltip" data-tippy="(Fundraising Qty * Dist Unit Profit )"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price($total_commission)).'</span></li>
                                     
                                 </ul>
                             </div>
@@ -717,24 +650,10 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Dist Unit Price </span><span>'.wc_price($unit_price).'</span></li>
                                     <li><span>Dist Unit Cost </span><span>'.wc_price($unit_cost).'</span></li>
                                     <li><span>Dist Unit Profit <div class="tooltip" data-tippy="(Dist Unit Price - Dist Unit Cost )"></div></span><span>'.wc_price($unit_price - $unit_cost).'</span></li>
-                                     <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Wholesale Qty * Dist Unit Price )"></div></span><span>'.wc_price($wholesale_qty * $unit_cost).'</span></li>
-                                     <li><span>Wholesale Total <div class="tooltip" data-tippy="(Wholesale Qty * Dist Unit Price )"></div></span><span>'.wc_price($wholesale_qty * $unit_price).'</span></li>
-                                     <li class="total"><span>Wholesale Profit <div class="tooltip" data-tippy="(Wholesale Qty * Dist Unit Profit  )"></div></span><span>'.wc_price('00.00').'</span></li>
+                                     <li><span>Dist Total Cost (ORT share) <div class="tooltip" data-tippy="(Wholesale Qty * Dist Unit Price )"></div></span><span>'.wc_price($wholesale_ort_share_cost).'</span></li>
+                                     <li><span>Wholesale Total <div class="tooltip" data-tippy="(Wholesale Qty * Dist Unit Price )"></div></span><span>'.wc_price($wholesale_total).'</span></li>
+                                     <li class="total"><span>Wholesale Profit <div class="tooltip" data-tippy="(Wholesale Qty * Dist Unit Profit  )"></div></span><span>N/A</span></li>
                                 </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="place-order item" style="display:none">
-                        <div class="row-block">
-                            <h4 class="block-title">Claim Commission</h4>
-                            <div class="see-all">
-                                <div class="icon-card"><img alt="speedicon" src="' . OH_PLUGIN_DIR_URL . '/assets/image/commission-icon.png" width="30" height="30" /></div>
-                            </div>
-                        </div>
-                        <div class="sub-heading">
-                            <div>
-                            <p>' . (($details['total_quantity'] > 50)  ?  '<button data-orgid="' . $affiliate_id . '"  class="w-btn us-btn-style_1 org_account_statement">Account Statement</button>' : 'A minimum of 50 jars is required. You still need ' . (50 - $details['total_quantity']) . ' more jars.') . '</p>
-                            
                             </div>
                         </div>
                     </div>
@@ -787,8 +706,6 @@ class OAM_AFFILIATE_Helper
                 }
             }
 
-            
-
             $activate_affiliate_account = get_user_meta($affiliate_id, 'activate_affiliate_account', true);
 
             // Commission details
@@ -808,7 +725,7 @@ class OAM_AFFILIATE_Helper
                 AND o.status IN ('wc-processing', 'wc-completed')
                 GROUP BY c.wc_order_id", $affiliate_token));
 
-            $total_quantity = (int) $wpdb->get_var($wpdb->prepare("SELECT 
+            $total_orders_quantity = (int) $wpdb->get_var($wpdb->prepare("SELECT 
                 SUM(CAST(om.meta_value AS UNSIGNED))
                 FROM {$wpdb->prefix}oh_wc_order_relation c
                 INNER JOIN {$wpdb->prefix}wc_orders o ON c.wc_order_id = o.id
@@ -830,11 +747,16 @@ class OAM_AFFILIATE_Helper
 
             $exclude_coupon = EXCLUDE_COUPON;
             $total_all_quantity = $wholesale_qty = 0;
-        
+
+            $ort_cost = $wholesale_cost = $fundraising_cost = 0;
+            $ort_profit = $wholesale_profit = $fundraising_profit = 0;
+            $dist_ort_profit = $dist_wholesale_profit = $dist_fundraising_profit = 0;
+            
+     
 
             if (!empty($commission_year_results)) {
                 foreach ($commission_year_results as $value) {
-                    $order_id = $value->order_id;
+                    $order_id = $value->wc_order_id;
                     $affiliate_status = (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status');
                     $coupon_codes = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($order_id);
                     $coupons = array_filter(array_diff(explode(',', $coupon_codes), $exclude_coupon));
@@ -850,31 +772,36 @@ class OAM_AFFILIATE_Helper
 
                 foreach ($commission_year_results as $commission) {
                     $order_id = $commission->wc_order_id;
+                    $coupon_codes = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($order_id);
                     $total_qty = (int) $commission->total_quantity;
                     $par_jar = $commission->line_subtotal / $total_qty;
 
                     $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
                     if ($par_jar >= $selling_min_price) {
                         if (OAM_AFFILIATE_Helper::is_user_created_this_year($affiliate_data->user_id)) {
-                            if ($total_qty < 99) {
-                                
+                            if ($total_orders_quantity < 99) {
                                 $minimum_price = get_field('new_minimum_price_50', 'option');
                             } else {
-                                
                                 $minimum_price = get_field('new_minimum_price_100', 'option');
                             }
                         } else {
-                            if ($total_qty < 99) {
-                                
+                            if ($total_orders_quantity < 99) {
                                 $minimum_price = get_field('ex_minimum_price_50', 'option');
                             } else {
-                                
                                 $minimum_price = get_field('ex_minimum_price_100', 'option');
                             }
                         }
                     }
 
-                   
+                    if($coupon_codes != '' && !empty($coupon_codes)){
+                        $fundraising_cost += $total_qty * $par_jar;
+                        $wholesale_profit += $total_qty * ($par_jar - $minimum_price);
+                        $dist_wholesale_profit += $total_qty * $minimum_price;
+                    }else{
+                        $wholesale_cost += $total_qty * $par_jar ;
+                        $fundraising_profit += $total_qty * ($par_jar - $minimum_price);
+                        $dist_fundraising_profit += $total_qty * $minimum_price;
+                    }
                     
                     $data = [
                         'total_exclude_quantity' => $total_exclude_quantity,
@@ -889,20 +816,23 @@ class OAM_AFFILIATE_Helper
                         'product_price' => $product_price,
                         'minimum_price' => $minimum_price,
                         'is_voucher_used' => $coupon_codes,
+                        'order_quantity' => self::get_quantity_by_order_id($order_id),
                         'affiliate_account_status' => (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status'),
                         'commission' => ($par_jar >= $selling_min_price ? (($par_jar - $minimum_price) * $total_qty) : 0)
                     ];
-
 
                     $commission_array[$data['custom_order_id']] = $data;
                 }
             }
 
+
             $fundraising_orders = $total_orders = $wholesale_order = $unit_price = $unit_cost = 0;
             $product_price = 0;
             $fundraising_qty = 0;
+            $total_order_commission = 0;
             foreach ($commission_array as $data) {
                 if ((int)$data['affiliate_account_status'] === 1) {
+                    // echo $data['commission']. "<br>";
                     $unit_price = $data['par_jar'];
                     $product_price = $data['product_price'];
                     $fundraising_qty = $data['total_quantity'];
@@ -911,12 +841,10 @@ class OAM_AFFILIATE_Helper
                     $unit_cost = $data['minimum_price'];
                     $total_orders++;
 
-                    $coupons = array_filter(array_diff(explode(',', $data['is_voucher_used']), $exclude_coupon));
-
-                    if (empty($coupons)) {
-                        $total_commission += $data['commission'];
-                    } else {
+                    if ($data['is_voucher_used'] != '' && !empty($data['is_voucher_used'])) {
                         $wholesale_order++;
+                    } else {
+                        $total_order_commission += $data['commission'];
                     }
                 }
             }
@@ -926,6 +854,15 @@ class OAM_AFFILIATE_Helper
 
            
             return [
+                'wholesale_cost' => $wholesale_cost,
+                'fundraising_cost' => $fundraising_cost,
+                'ort_cost' => $wholesale_cost + $fundraising_cost,
+                'wholesale_profit' => $wholesale_profit,
+                'fundraising_profit' => $fundraising_profit,
+                'ort_profit' => $fundraising_profit,
+                'wholesale_dist' => $dist_wholesale_profit,
+                'fundraising_dist' => $dist_fundraising_profit,
+                'ort_dist' => $dist_fundraising_profit + $dist_wholesale_profit,
                 'total_order' => count($commission_array),
                 'selling_min_price' => $selling_min_price,
                 'total_quantity' => $total_quantity,
@@ -936,9 +873,10 @@ class OAM_AFFILIATE_Helper
                 'total_all_quantity' => $total_all_quantity,
                 'unit_cost' => $unit_cost,
                 'unit_profit' => ($unit_cost != 0 ) ? $product_price - $unit_cost : 0,
-                'total_commission' => ($product_price - $unit_cost) * $fundraising_qty
+                'total_commission' => $fundraising_profit
             ];
         }
+
 
     public static function get_commission_affiliate($affiliate_id_attr = '')
     {
@@ -1015,7 +953,6 @@ class OAM_AFFILIATE_Helper
             $affiliate_token
         ));
 
-     
 
         $total_quantity = $wpdb->get_var($wpdb->prepare(
             "SELECT 
@@ -1054,7 +991,10 @@ class OAM_AFFILIATE_Helper
                 $wholesale_qty = 0;
                
                 $exclude_coupon = EXCLUDE_COUPON;
+
+        
                 foreach ($commission_year_results as $key => $value) {
+
                     $affiliate_account_status =  OAM_COMMON_Custom::get_order_meta($value->wc_order_id, 'affiliate_account_status') ?: 0;
                     if($affiliate_account_status == 1){
                         $common = [];
@@ -1066,20 +1006,14 @@ class OAM_AFFILIATE_Helper
                         }
 
                         if(count($coupon_array) == 0){
-                           $total_all_quantity += $value->total_quantity;
+                            $total_all_quantity += $value->total_quantity;
                         }else{
                             $wholesale_qty += $value->total_quantity;
                         }
                     }
                 }
 
-                // echo $total_all_quantity;
-                // echo "<br>";
-                // echo $total_all_quantity - $wholesale_qty;
-                // echo "<br>";
-
                 foreach ($commission_year_results as $key => $commission) {
-                   
                  
                     $total_exclude_quantity = $total_exclude_quantity ?: 0;
                     $total_quantity = $total_quantity;
@@ -1111,7 +1045,8 @@ class OAM_AFFILIATE_Helper
 
                     $data['total_exclude_quantity'] = $total_exclude_quantity;
                     $data['total_all_quantity'] = $total_quantity;
-                    $data['wholesale_qty'] = $wholesale_qty;
+                    $data['wholesale_qty'] = $wholesale_qty?: 0;
+                    $data['fundraising_commission'] = (($par_jar - $minimum_price) * $total_all_quantity);
                     $data['order_id'] = $commission->wc_order_id;
                     $data['custom_order_id'] = $custom_order_id;
                     $data['total_quantity'] =  $total_all_quantity;
@@ -1119,9 +1054,10 @@ class OAM_AFFILIATE_Helper
                     $data['line_subtotal'] = $line_subtotal;
                     $data['par_jar'] = $par_jar;
                     $data['minimum_price'] = $minimum_price;
-                    $data['is_voucher_used'] = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($commission->order_id);
+                    $data['order_quantity'] = self::get_quantity_by_order_id($commission->wc_order_id);
+                    $data['is_voucher_used'] = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($commission->wc_order_id);
                     $data['affiliate_account_status'] = $affiliate_account_status ?: 0;
-                    $data['commission'] = ($par_jar >= $selling_minimum_price ? (($par_jar - $minimum_price) * $total_all_quantity) : 0);
+                    $data['commission'] = ($par_jar >= $selling_minimum_price ? (($par_jar - $minimum_price) * self::get_quantity_by_order_id($commission->wc_order_id)) : 0);
 
                     $commission_array[$custom_order_id] = $data;
                 }
@@ -1131,6 +1067,9 @@ class OAM_AFFILIATE_Helper
                 //  end
             // }
         }
+        // echo "<pre>";
+        // print_r($commission_array);
+        // echo "</pre>";
 
         if ($affiliate_id_attr == '') {
             return $commission_array;
