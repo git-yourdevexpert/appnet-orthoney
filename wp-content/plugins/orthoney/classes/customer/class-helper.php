@@ -198,7 +198,10 @@ class OAM_Helper{
         global $wpdb;
         $orders_table = $wpdb->prefix . 'wc_orders'; 
         $jar_table = $wpdb->prefix . 'oh_recipient_order';
+
         $filtered_orders = [];
+
+        // ✅ Define tabletype from $_POST or default
         $tabletype = isset($_POST['tabletype']) ? sanitize_text_field($_POST['tabletype']) : 'administrator-dashboard';
 
         // Pagination calculation
@@ -222,43 +225,34 @@ class OAM_Helper{
         if (!isset($_REQUEST['selected_year'])) {
             $where_clauses[] = "YEAR({$jar_table}.created_date) = %d";
             $params[] = date("Y");
-        }else{
+        } else {
             if (!empty($_REQUEST['selected_year'])) {
                 $where_clauses[] = "YEAR({$jar_table}.created_date) = %d";
                 $params[] = $selected_year;
             }
         }
 
-       if (!empty($_REQUEST['search_by_organization'])) {
-        $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
+        if (!empty($_REQUEST['search_by_organization'])) {
+            $search_by_organization = sanitize_text_field($_REQUEST['search_by_organization']);
+            if (!empty($search_by_organization)) {
+                $search_terms_raw = explode(',', $search_by_organization);
+                $dsr_token = (isset($_REQUEST['jar_dsr_affiliate_token']) && $_REQUEST['jar_dsr_affiliate_token'] != '') ? sanitize_text_field($_REQUEST['jar_dsr_affiliate_token']) : null;
 
-        if (!empty($search_by_organization)) {
-            $search_terms_raw = explode(',', $search_by_organization);
+                if ($dsr_token != null) {
+                    $search_terms_raw = [$dsr_token];
+                }
 
-           $dsr_token = (isset($_REQUEST['jar_dsr_affiliate_token']) && $_REQUEST['jar_dsr_affiliate_token'] != '') ? sanitize_text_field($_REQUEST['jar_dsr_affiliate_token']) : null;
-            if ($dsr_token != null) {
-            
-                $search_terms_raw = [];
-                $search_terms_raw[] = $dsr_token;
-            }
+                if (is_array($search_terms_raw)) {
+                    $search_terms = array_filter(array_map('trim', $search_terms_raw));
 
-            if (is_array($search_terms_raw)) {
-                $search_terms = array_filter(array_map('trim', $search_terms_raw));
-
-                if (!empty($search_terms)) {
-                    $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
-
-                    $where_clauses[] = "(
-                        {$jar_table}.affiliate_token IN ($placeholders)
-                    )";
-
-                    // ✅ Merge safely with existing $params
-                    $params = array_merge($params, $search_terms);
+                    if (!empty($search_terms)) {
+                        $placeholders = implode(',', array_fill(0, count($search_terms), '%s'));
+                        $where_clauses[] = "({$jar_table}.affiliate_token IN ($placeholders))";
+                        $params = array_merge($params, $search_terms);
+                    }
                 }
             }
         }
-        
-    }
 
         if (!empty($search_val)) {
             $where_clauses[] = "(o.id LIKE %s OR {$jar_table}.recipient_order_id LIKE %s OR {$jar_table}.full_name LIKE %s)";
@@ -279,7 +273,7 @@ class OAM_Helper{
         }
 
         if (!empty($_REQUEST['search_by_organization'])) {
-             $where_clauses[] = "{$jar_table}.affiliate_token IS NOT NULL ";
+            $where_clauses[] = "{$jar_table}.affiliate_token IS NOT NULL";
         }
 
         $joins = "
@@ -287,28 +281,25 @@ class OAM_Helper{
             LEFT JOIN {$orders_table} o ON oor.wc_order_id = o.id
         ";
 
-         $where_clauses[] = "o.status NOT IN ('trash', 'wc-checkout-draft') ";
+        $where_clauses[] = "o.status NOT IN ('trash', 'wc-checkout-draft')";
 
-        $where_sql = '';
-        if (!empty($where_clauses)) {
-            $where_sql = 'WHERE ' . implode(' AND ', $where_clauses);
-        }
+        $where_sql = !empty($where_clauses) ? 'WHERE ' . implode(' AND ', $where_clauses) : '';
 
         // Add pagination
         $params[] = $limit;
         $params[] = $page;
-    
 
-       $sql = $wpdb->prepare(
-            "SELECT 
+        $sql = $wpdb->prepare(
+            "
+            SELECT 
                 {$jar_table}.recipient_order_id AS jar_no,
                 {$jar_table}.order_id AS order_no,
                 {$jar_table}.created_date AS date,
                 full_name AS billing_name,
                 full_name AS shipping_name,
                 {$jar_table}.affiliate_token AS affiliate_code,
-               {$jar_table}.quantity AS total_jar,
-               {$jar_table}.order_type AS type
+                {$jar_table}.quantity AS total_jar,
+                {$jar_table}.order_type AS type
             FROM {$jar_table}
             $joins $where_sql
             LIMIT %d OFFSET %d
@@ -318,18 +309,14 @@ class OAM_Helper{
 
         $jarsorder = $wpdb->get_results($sql, ARRAY_A);
 
-      
-
-        // Process each order
-        $filtered_orders = array_map(function($order) use ($wpdb) {
+        // ✅ FIXED: Include $tabletype in closure
+        $filtered_orders = array_map(function($order) use ($wpdb, $tabletype) {
             $order['status'] = '';
-            
-
             $recipient_order_id = esc_attr($order['jar_no']);
             $order_no = esc_attr($order['order_no']);
             $recipient_name = esc_attr($order['billing_name']);
 
-            if (isset($order['affiliate_code']) && ($order['affiliate_code'] === 'Orthoney' OR $order['affiliate_code'] === '')) {
+            if (isset($order['affiliate_code']) && ($order['affiliate_code'] === 'Orthoney' || $order['affiliate_code'] === '')) {
                 $order['affiliate_code'] = 'Honey from the Heart';
             }
 
@@ -341,57 +328,47 @@ class OAM_Helper{
                 $order_no
             ));
 
-            $resume_url = '';
             $order_created_date = $order['date'];
-
             if (is_string($order_created_date)) {
                 [$date_part, $time_part] = explode(' ', $order_created_date);
                 [$year, $month, $day] = explode('-', $date_part);
                 [$hour, $minute, $second] = explode(':', $time_part);
                 $formatted_string = sprintf('%04d-%02d-%02d %02d:%02d:%02d', $year, $month, $day, $hour, $minute, $second);
                 $order_created_date = DateTime::createFromFormat('Y-m-d H:i:s', $formatted_string);
-                
-
             }
-            
-            $resume_url = '';
+
             $editLink = '';
             $deleteLink = '';
-            $editable = false;
-
             $editable = OAM_COMMON_Custom::check_order_editable($order_created_date);
-            
-            // Pass WC_DateTime object to the checker
-            // $order['date'] = $order_timestamp = $order_date->getTimestamp();
 
             if ($editable === true) {
                 $editLink = '<button class="far fa-edit editRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>';
-                // $deleteLink = '<button class="deleteRecipient far fa-times" data-order="' . $recipient_order_id . '" data-tippy="Cancel Recipient Order" data-recipientname="' . $recipient_name . '"></button>';
             }
 
             $order['jar_tracking'] = '<a href="#view-order-tracking-popup" data-lity data-tippy="View Tracking">Tracking Numbers</a>';
 
-
             $return_url = '&return_url=admin';
-            if($tabletype == 'organization-dashboard' )  {
+            if ($tabletype == 'organization-dashboard') {
                 $return_url = '&return_url=organization';
-            }elseif($tabletype == 'administrator-dashboard' )  {
+            } elseif ($tabletype == 'administrator-dashboard') {
                 $return_url = '&return_url=admin';
-            }else{
+            } else {
                 $return_url = '&return_url=customer';
-            } 
+            }
 
-            $order['action'] = '<a class="far fa-eye" href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id}?recipient-order={$recipient_order_id}") . ''.$return_url.'"></a>' . $editLink . $deleteLink;
+            $order['action'] = '<a class="far fa-eye" href="' . esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/{$wc_order_id}?recipient-order={$recipient_order_id}") . $return_url . '"></a>' . $editLink . $deleteLink;
 
             $order['date'] = date_i18n(
                 OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format,
                 strtotime($order['date'])
             );
+
             return $order;
         }, $jarsorder);
 
         return $filtered_orders;
     }
+
 
 
     public static function get_filtered_orders($user_id, $table_order_type, $custom_order_type, $custom_order_status, $search, $is_export = false, $page, $length, $selected_customer_id) {
@@ -549,7 +526,9 @@ class OAM_Helper{
                 $where_conditions[] = "(rel.affiliate_user_id = 0 )";
             }
         }
-         $where_conditions[] = "orders.status NOT IN ('trash', 'wc-checkout-draft') ";
+
+
+        $where_conditions[] = "orders.status NOT IN ('trash', 'wc-checkout-draft') ";
         $where_conditions[] = "(rel.order_id != 0 )";
 
          $sql = $wpdb->prepare(
@@ -557,11 +536,13 @@ class OAM_Helper{
             FROM $orders_table AS orders
             $join
             WHERE " . implode(' AND ', $where_conditions) . "
+            
             GROUP BY orders.id 
             ORDER BY orders.date_updated_gmt DESC
             LIMIT %d OFFSET %d",
             ...$where_values
         );
+
 
         $main_orders = $wpdb->get_results($sql);
 
@@ -600,8 +581,10 @@ class OAM_Helper{
 
 
     // Helper to build row array for a main or sub order
-    public static function build_order_row($order_data, $order_obj, $order_type, $total_quantity, $parent_order = null) {
+   public static function build_order_row($order_data, $order_obj, $order_type, $total_quantity, $parent_order = null) {
         global $wpdb;
+
+
         $jar_order_id = $order_data->rel_oid;
         $year = isset($_REQUEST['selected_year']) ? intval($_REQUEST['selected_year']) : date("Y");
 
@@ -679,7 +662,7 @@ class OAM_Helper{
         
     }
         // // Status HTML
-        // $status_html = '';
+        //$status_html = '';
         // if ($order_type === 'Multi Address' && $order_data->parent_order_id == 0) {
         //     $status_counts = $wpdb->get_results($wpdb->prepare(
         //         "SELECT status, COUNT(*) as count FROM $orders_table WHERE customer_id = %d AND parent_order_id = %d GROUP BY status",
@@ -693,14 +676,9 @@ class OAM_Helper{
         //             esc_html(wc_get_order_status_name($status->status))
         //         );
         //     }
-        // } else {
-        //     $status_html .= sprintf(
-        //         '<span class="%s">%s</span> ',
-        //         esc_attr($order_data->status),
-        //         esc_html(wc_get_order_status_name($order_data->status))
-        //     );
-        // }
-        $status_html .= sprintf(
+        // } 
+
+         $status_html = sprintf(
                 '<mark class="order-status status-%s tips"><span class="%s">%s</span></mark>',
                 esc_attr($order_data->status),
                 esc_attr($order_data->status),
@@ -726,7 +704,7 @@ class OAM_Helper{
             $total_recipient = '-';
         }
         return [
-            'jar_no' => esc_html($order_data->id),
+            'jar_no' => esc_html($order_data->id ),
             'orthoney_order_id' => OAM_COMMON_Custom::get_order_meta(($order_data->parent_order_id == 0) ? $order_data->id : $order_data->parent_order_id, '_orthoney_OrderID'),
              'order_no' => OAM_COMMON_Custom::get_order_meta(($order_data->parent_order_id == 0) ? $order_data->id : $order_data->parent_order_id, '_orthoney_OrderID'). '<br> Ref. ID '. $order_data->id,
             'date' => esc_html($created_date),
@@ -1199,7 +1177,6 @@ class OAM_Helper{
         $verifyRecordHtml = '';
         $unverifiedRecordHtml = '';
         $total_quantity = 0;
-       
         
         $unverifiedTableStart ='<table><thead><tr><th>Full Name</th><th>Company Name</th><th>Address</th><th>Quantity</th><th>Reason</th><th>Greeting</th><th>Action</th></tr></thead><tbody>';
 
@@ -1208,7 +1185,6 @@ class OAM_Helper{
 
         $tableEnd = '</tbody></table>';
 
-        
         $getGreetingQuery = $wpdb->prepare(
             "SELECT greeting, name FROM {$order_process_table} WHERE id = %d",
             $order_process_id
@@ -1517,13 +1493,13 @@ class OAM_Helper{
                     <input type="text" id="zipcode" name="zipcode" required data-error-message="Please enter a valid zipcode.">
                     <span class="error-message"></span>
                 </div>
+                
                 <div class="form-row gfield--width-half">
                     <label for="phone_number">Phone Number<span class="required">*</span></label>
                     <input type="text" id="phone_number" name="phone_number" required data-error-message="Please enter a valid phone number.">
                     <span class="error-message"></span>
                 </div>
                 
-
                 <div class="footer-btn gfield--width-full">
                 <button type='button' class=" w-btn us-btn-style_4" data-lity-close>Cancel</button>
                 <button type="submit">Edit Billing Details</button>
