@@ -69,12 +69,11 @@ class OAM_WC_Customizer {
     }
 
     public function cash_on_carry_gateway_filter($gateways) {
-
         if (is_checkout()) {
-
             $cash_on_carry_user_copy = get_field('cash_on_carray_user_copy', 'option');
             $allowed_emails = [];
 
+            // Collect allowed emails from ACF option
             if (!empty($cash_on_carry_user_copy) && is_array($cash_on_carry_user_copy)) {
                 foreach ($cash_on_carry_user_copy as $user) {
                     if (!empty($user['user_email'])) {
@@ -86,20 +85,11 @@ class OAM_WC_Customizer {
                 }
             }
 
+            // Get current logged-in user
             $current_user = wp_get_current_user();
-            $billing_email = '';
+            $billing_email = strtolower($current_user->user_email);
 
-            // Get billing email for logged-in user
-            if ($current_user->ID) {
-                $billing_email = strtolower($current_user->user_email);
-            }
-
-            // For guest checkout, get email from checkout form
-            if (empty($billing_email) && !empty($_POST['billing_email'])) {
-                $billing_email = strtolower(sanitize_email($_POST['billing_email']));
-            }
-
-            // Disable COD if user email is not in allowed list
+            // If user's email is not in allowed list, remove COD
             if (!in_array($billing_email, $allowed_emails)) {
                 unset($gateways['cod']);
             }
@@ -107,6 +97,9 @@ class OAM_WC_Customizer {
 
         return $gateways;
     }
+
+
+
     public function orthoney_custom_email_recipient( $recipient, $order ) {
 
         if ( ! is_a( $order, 'WC_Order' ) ) {
