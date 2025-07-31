@@ -17,7 +17,7 @@ class OAM_WC_CRON_Suborder
         // Order status is change then init CRON job.
         add_action('woocommerce_order_status_changed', array($this, 'oam_maybe_schedule_sub_order_on_status_change'), 10, 4);
 
-        add_action('init', array($this, 'oam_schedule_remaining_order_update_every_3_hours'));
+        // add_action('init', array($this, 'oam_schedule_remaining_order_update_every_3_hours'));
         add_action('remaining_order_update_for_every_3_hours', array($this, 'remaining_order_update_for_every_3_hours_callback'), 10, 1);
     }
 
