@@ -607,11 +607,11 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Total Quantity </span><span>'.$total_all_quantity.'</span></li>
                                     <li><span>Your Selling Price </span><span>'.wc_price($selling_price).'</span></li>
                                     <li><span>Your Unit Cost </span><span>'.wc_price($unit_cost).'</span></li>
-                                    <li><span>Your Unit Profit <div class="tooltip" data-tippy="(Your Selling Price - Your Unit Cost )"></div></span><span>'.($unit_cost != 0 ? wc_price($selling_price - $unit_cost) : wc_price(0)).'</span></li>
-                                    <li><span>Your Total Sales <div class="tooltip" data-tippy="(Fundraising Total + Wholesale Total )"></div> </span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0) : wc_price($total_cost)).'</span></li>
+                                    <li><span>Your Unit Profit <div class="tooltip" data-tippy="(Your Selling Price - Your Unit Cost)"></div></span><span>'.($unit_cost != 0 ? wc_price($selling_price - $unit_cost) : wc_price(0)).'</span></li>
+                                    <li><span>Your Total Sales <div class="tooltip" data-tippy="(Your Fundraising Sales + Your Wholesale Sales)"></div> </span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0) : wc_price($total_cost)).'</span></li>
 
                                     <li><span>Your Total Cost (ORT`s Share) <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0) : wc_price($total_all_quantity * $unit_cost)).'</span></li>
-                                    <li class="total"><span>Your Total Profit <div class="tooltip" data-tippy="(Your Total Quantity * Your Unit Profit )"></div> </span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  :  wc_price( ($total_commission)) ).'</span></li>
+                                    <li class="total"><span>Your Total Profit <div class="tooltip" data-tippy="(Your Total Quantity * Your Unit Profit)"></div> </span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  :  wc_price( ($total_commission)) ).'</span></li>
                                 </ul>
                             </div>
                         </div>
@@ -631,13 +631,13 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Fundraising Quantity </span><span>'.$fundraising_qty.'</span></li>
                                     <li><span>Your Selling Price </span><span>'.wc_price($selling_price).'</span></li>
                                     <li><span>Your Unit Cost </span><span>'.wc_price($unit_cost).'</span></li>
-                                    <li><span>Your Unit Profit <div class="tooltip" data-tippy="(Your Selling Price - Your Unit Cost )"></div></span><span>'. ($unit_cost != 0 ? wc_price($selling_price - $unit_cost) : wc_price(0)).'</span></li>
+                                    <li><span>Your Unit Profit <div class="tooltip" data-tippy="(Your Selling Price - Your Unit Cost)"></div></span><span>'. ($unit_cost != 0 ? wc_price($selling_price - $unit_cost) : wc_price(0)).'</span></li>
 
-                                     <li><span>Your Total Purchase <div class="tooltip" data-tippy="(Fundraising Quantity * Your Selling Price )"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price($fundraising_ort_share_cost)).'</span></li>
+                                     <li><span>Your Total Purchase <div class="tooltip" data-tippy="(Your Fundraising Quantity * Your Selling Price)"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price($fundraising_ort_share_cost)).'</span></li>
 
-                                    <li ><span>Your Total Cost (ORT`s Share) <div class="tooltip" data-tippy="(Fundraising Quantity * Your Selling Price )"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price($fundraising_total)).'</span></li>
+                                    <li ><span>Your Total Cost (ORT`s Share) <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price($fundraising_total)).'</span></li>
 
-                                    <li  class="total"><span>Your Total Fundraising Profit <div class="tooltip" data-tippy="(Fundraising Quantity * Your Unit Profit )"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price($total_commission)).'</span></li>
+                                    <li  class="total"><span>Your Total Fundraising Profit <div class="tooltip" data-tippy="(Your Total Quantity * Your Unit Profit)"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price($total_commission)).'</span></li>
 
                                 </ul>
                             </div>
@@ -659,9 +659,9 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Your Selling Price </span><span>N/A</span></li>
                                     <li><span>Your Unit Cost </span><span>'.wc_price($unit_cost).'</span></li>
                                     <li><span>Your Unit Profit</span><span>N/A</span></li>
-                                     <li><span>Your Wholesale Total Sales <div class="tooltip" data-tippy="(Wholesale Quantity * Your Selling Price )"></div></span><span>'.wc_price($wholesale_ort_share_cost).'</span></li>
+                                     <li><span>Your Wholesale Total Sales <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.wc_price($wholesale_ort_share_cost).'</span></li>
 
-                                     <li><span>Your Total Cost (ORT`s Share) <div class="tooltip" data-tippy="(Wholesale Quantity * Your Selling Price )"></div></span><span>'.wc_price($wholesale_total).'</span></li>
+                                     <li><span>Your Total Cost (ORT`s Share) <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.wc_price($wholesale_total).'</span></li>
 
                                      <li class="total"><span>Your Total Wholesale Profit</span><span>N/A</span></li>
                                 </ul>
