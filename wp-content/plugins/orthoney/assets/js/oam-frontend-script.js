@@ -5047,3 +5047,135 @@ if (switchOrgButton) {
         }
     });
 }
+
+
+
+jQuery(document).ready(function ($) {
+    const today = moment();
+    const nextWeek = moment().add(7, 'days');
+
+    $('#date_range_picker').daterangepicker({
+        startDate: today,
+        endDate: nextWeek,
+        drops: 'auto',
+        opens: 'center',
+        maxYear : moment().year(),
+        minYear: 2025,
+        minDate: moment('01/01/2025', 'MM/DD/YYYY'),
+        showDropdowns: false,
+        locale: {
+            format: 'MM/DD/YYYY'
+        }
+    }, function (start, end, label) {
+        console.log("Date range selected: " + start.format('MM/DD/YYYY') + ' to ' + end.format('MM/DD/YYYY'));
+    });
+});
+jQuery(document).ready(function ($) {
+    $('#fulfillment-report-generate_report').on('click', function (e) {
+        e.preventDefault();
+
+        const date_range = $('#date_range_picker').val();
+        const sendmail = $('#fulfillment_send_mail').val();
+
+        if (!date_range) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Missing date range',
+                text: 'Please select a date range.',
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: "Generating Fulfillment Report",
+            html: `
+                <p>Please wait, your report is being generated.</p>
+                <div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
+                    <div id="progress-bar" style="width: 0%; height: 10px; background-color: #3085d6;"></div>
+                </div>
+                <p id="progress-text">0%</p>
+            `,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false
+        });
+
+        // Start processing
+        processFulfillmentChunk(0, date_range, sendmail);
+    });
+
+    function processFulfillmentChunk(offset, date_range, sendmail) {
+        $.ajax({
+            url: oam_ajax.ajax_url,
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'generate_fulfillment_report',
+                security: oam_ajax.nonce,
+                offset: offset,
+                date_range: date_range,
+                sendmail: sendmail
+            },
+            success: function (response) {
+                if (response.success) {
+                    const data = response.data;
+                    const progress = data.progress || 100;
+
+                    $('#progress-bar').css('width', progress + '%');
+                    $('#progress-text').text(progress + '%');
+
+                    if (data.done) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Report Ready',
+                            text: 'Your CSV files are ready and download will begin shortly.',
+                            showConfirmButton: false,
+                            timer: 2500
+                        });
+
+                        // Auto-download fulfillment CSV
+                        if (data.fulfillment_url && data.filenames?.fulfillment) {
+                            const a1 = document.createElement('a');
+                            a1.href = data.fulfillment_url;
+                            a1.download = data.filenames.fulfillment;
+                            document.body.appendChild(a1);
+                            a1.click();
+                            document.body.removeChild(a1);
+                        }
+
+                        // Auto-download greetings-per-jar CSV
+                        if (data.greetings_url && data.filenames?.greetings) {
+                            const a2 = document.createElement('a');
+                            a2.href = data.greetings_url;
+                            a2.download = data.filenames.greetings;
+                            document.body.appendChild(a2);
+                            a2.click();
+                            document.body.removeChild(a2);
+                        }
+
+                    } else {
+                        // Continue with next chunk
+                        setTimeout(() => {
+                            processFulfillmentChunk(offset + 10, date_range, sendmail);
+                        }, 300);
+                    }
+
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.data.message || 'Something went wrong.',
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'AJAX request failed.',
+                });
+            }
+        });
+    }
+});

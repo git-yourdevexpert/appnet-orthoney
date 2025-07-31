@@ -40,11 +40,11 @@ if (!in_array('sales_representative', $user_roles)) {
                 <tr>
                     <th>Organization</th>
                     <th>Total Order</th>
-                    <th>Total Qty</th>
-                    <th>Total Cost</th>
-                    <th>Dist Total Cost</th>
-                    <th>Unit Profit <br><small>(Dist Unit Price - Dist Unit Cost)</small></th>
-                    <th>Total Commission <br><small>(Total Qty * Unit Profit)</small></th>
+                    <th>Total Quantity</th>
+                    <th>Your Total Sales</th>
+                    <th>Your Total Cost (ORT`s Share)</th>
+                    <th>Your Unit Profit <br><small>(Your Selling Price - Your Unit Cost)</small></th>
+                    <th>Total Profit <br><small>(Total Quantity * Your Selling Profit)</small></th>
                 </tr>
             </thead>
             <tbody></tbody>

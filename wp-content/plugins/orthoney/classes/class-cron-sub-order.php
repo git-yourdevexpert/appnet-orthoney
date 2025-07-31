@@ -16,13 +16,150 @@ class OAM_WC_CRON_Suborder
         add_filter('woocommerce_email_enabled_customer_processing_order', array($this, 'oam_disable_processing_email_temporarily'), 10, 2);
         // Order status is change then init CRON job.
         add_action('woocommerce_order_status_changed', array($this, 'oam_maybe_schedule_sub_order_on_status_change'), 10, 4);
+
+        add_action('init', array($this, 'oam_schedule_remaining_order_update_every_3_hours'));
+        add_action('remaining_order_update_for_every_3_hours', array($this, 'remaining_order_update_for_every_3_hours_callback'), 10, 1);
+    }
+
+    
+
+    public function trigger_processing_by_order_id($order_id) {
+        $order = wc_get_order($order_id);
+    
+        if (!$order) {
+            OAM_COMMON_Custom::sub_order_error_log('Order not found for ID: ' . $order_id, 'scheduled-3-hours');
+            return false;
+        }
+    
+        // Change order status to processing if it isn't already
+        if ($order->get_status() !== 'processing') {
+            $order->update_status('processing');
+            OAM_COMMON_Custom::sub_order_error_log('Order status changed to processing for order ID: ' . $order_id, 'scheduled-3-hours');
+        }
+    
+        // Manually trigger the hook
+        do_action('woocommerce_order_status_processing', $order_id, $order);
+        OAM_COMMON_Custom::sub_order_error_log('Processing hook triggered for order ID: ' . $order_id, 'scheduled-3-hours');
+    
+        // Trigger email notification specifically
+        WC()->mailer()->emails['WC_Email_Customer_Processing_Order']->trigger($order_id);
+        OAM_COMMON_Custom::sub_order_error_log('Customer processing email triggered for order ID: ' . $order_id, 'scheduled-3-hours');
+    
+        OAM_COMMON_Custom::sub_order_error_log('Processing trigger completed successfully for order ID: ' . $order_id, 'scheduled-3-hours');
+        return true;
+    }
+
+    public function oam_schedule_remaining_order_update_every_3_hours() {
+        // Check if ActionScheduler is available
+        if (!function_exists('as_next_scheduled_action')) {
+            OAM_COMMON_Custom::sub_order_error_log('ActionScheduler not available', date('Y-m-d H:i:s'));
+            return;
+        }
+        
+        // Only schedule if not already scheduled
+        if (!as_next_scheduled_action('remaining_order_update_for_every_3_hours')) {
+            $scheduled = as_schedule_recurring_action(
+                time(),                         
+                3 * HOUR_IN_SECONDS,             // Interval (3 hours)
+                'remaining_order_update_for_every_3_hours', // Hook name
+                [],                              // No arguments
+                'oam-sub-order-group'            // Optional group name
+            );
+            
+            if ($scheduled) {
+                
+                OAM_COMMON_Custom::sub_order_error_log('3-hour recurring action scheduled successfully', 'scheduled-3-hours');
+            } else {
+                OAM_COMMON_Custom::sub_order_error_log('Failed to schedule 3-hour recurring action', 'scheduled-3-hours');
+            }
+        }
+    }
+
+    public function remaining_order_update_for_every_3_hours_callback() {
+        // Log that the callback is being executed
+        OAM_COMMON_Custom::sub_order_error_log('3-hour callback started', 'scheduled-3-hours');
+        
+        global $wpdb;
+        
+        // Improved query with better error handling
+        $results = $wpdb->get_col(
+            $wpdb->prepare(
+                "
+                SELECT o.ID
+                FROM {$wpdb->prefix}wc_orders o
+                LEFT JOIN {$wpdb->prefix}oh_wc_order_relation rel ON o.ID = rel.wc_order_id
+                WHERE rel.wc_order_id IS NULL
+                AND o.status IN (%s, %s)
+                AND o.type = %s
+                ORDER BY o.ID ASC
+                ",
+                'wc-completed',
+                'wc-processing',
+                'shop_order'
+            )
+        );
+        
+        // Check for database errors
+        if ($wpdb->last_error) {
+            OAM_COMMON_Custom::sub_order_error_log('Database error: ' . $wpdb->last_error, 'scheduled-3-hours');
+            return;
+        }
+        
+        if (!empty($results)) {
+            $order_count = count($results);
+            $order_ids_string = implode(',', array_map('intval', $results));
+            OAM_COMMON_Custom::sub_order_error_log("Processing {$order_count} orders: " . $order_ids_string, 'scheduled-3-hours');
+            
+            foreach ($results as $order_id) {
+                // Add error handling for individual order processing
+                try {
+                //    $this->trigger_processing_by_order_id($order_id);
+                    $this->schedule_create_sub_order_cron_handler($order_id);
+                    OAM_COMMON_Custom::sub_order_error_log("Processed order ID: {$order_id}", 'scheduled-3-hours');
+                } catch (Exception $e) {
+                    OAM_COMMON_Custom::sub_order_error_log("Error processing order {$order_id}: " . $e->getMessage(), 'scheduled-3-hours');
+                }
+            }
+        } else {
+            OAM_COMMON_Custom::sub_order_error_log('No orders found to process in 3-hour callback', 'scheduled-3-hours');
+        }
+        
+        OAM_COMMON_Custom::sub_order_error_log('3-hour callback completed', 'scheduled-3-hours');
+    }
+
+    // Optional: Method to manually trigger the callback for testing
+    public function manual_trigger_3_hour_callback() {
+        if (current_user_can('manage_options')) {
+            $this->remaining_order_update_for_every_3_hours_callback();
+            wp_die('Manual trigger completed. Check logs.');
+        }
+    }
+
+    // Optional: Method to clear/reschedule the action
+    public function reschedule_3_hour_action() {
+        if (current_user_can('manage_options')) {
+            // Clear existing scheduled actions
+            as_unschedule_all_actions('remaining_order_update_for_every_3_hours', [], 'oam-sub-order-group');
+            
+            // Reschedule
+            $this->oam_schedule_remaining_order_update_every_3_hours();
+            
+            wp_die('Action rescheduled successfully.');
+        }
     }
 
     public function oam_maybe_schedule_sub_order_on_status_change($order_id, $from_status, $to_status, $order)
     {
-        if (in_array($to_status, ['processing']) && !wp_next_scheduled('oam_create_sub_orders_async', [$order_id])) {
-            wp_schedule_single_event(time() + 30, 'oam_create_sub_orders_async', [$order_id]);
-        }
+        if (in_array($to_status, ['processing'])) {
+            $hook = 'oam_create_sub_orders_async';
+            $args = [$order_id];
+
+            // Check if the action is already scheduled
+            if (!as_next_scheduled_action($hook, $args)) {
+                // Schedule it 30 seconds in the future
+                as_schedule_single_action(time() + 30, $hook, $args, 'oam-sub-order-group');
+            }
+        }   
     }
 
     public function oam_disable_processing_email_temporarily($enabled, $order)
@@ -57,8 +194,13 @@ class OAM_WC_CRON_Suborder
                 $custom_order_id = $wc_order_id_exist->order_id;
             }
 
+            $custom_check_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID')?: 0;
+            if($custom_check_order_id != 0){
+                $order->update_meta_data('_orthoney_OrderID', $custom_check_order_id);
+            }else{
+                $order->update_meta_data('_orthoney_OrderID', $formatted_count);
+            }
 
-            $order->update_meta_data('_orthoney_OrderID', $formatted_count);
             $order->update_meta_data('order_process_by', OAM_COMMON_Custom::old_user_id());
             $order->save();
 
@@ -67,8 +209,13 @@ class OAM_WC_CRON_Suborder
                 return; // Do NOT schedule
             }
 
-            if (!wp_next_scheduled('oam_create_sub_orders_async', [$order_id])) {
-                wp_schedule_single_event(time() + 30, 'oam_create_sub_orders_async', [$order_id]);
+            $hook = 'oam_create_sub_orders_async';
+            $args = [$order_id];
+
+            // Check if the action is already scheduled
+            if (!as_next_scheduled_action($hook, $args)) {
+                // Schedule it 30 seconds in the future
+                as_schedule_single_action(time() + 30, $hook, $args, 'oam-sub-order-group');
             }
         }
     }
@@ -76,6 +223,7 @@ class OAM_WC_CRON_Suborder
     /**
      * The actual heavy sub-order processing
      */
+   
     public function schedule_create_sub_order_cron_handler($order_id)
     {
         if (empty($order_id) || !is_numeric($order_id)) return;
@@ -113,7 +261,7 @@ class OAM_WC_CRON_Suborder
 
         if (!$process_id) return;
 
-        $order_type = $single_order ? 'single-order' : 'multi-recipient-order';
+        $order_type = 'multi-recipient-order';
         
         $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
         $wc_order_id_exist = $wpdb->get_row($wpdb->prepare(
@@ -153,7 +301,7 @@ class OAM_WC_CRON_Suborder
             $affiliate_token  = $wpdb->get_var($wpdb->prepare("SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d", $affiliate));
             $affiliate_id     = $affiliate_token ? $wpdb->get_var($wpdb->prepare("SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE token = %s", $affiliate_token)) : 0;
 
-            OAM_COMMON_Custom::sub_order_error_log("affiliate: {$affiliate}, token: {$affiliate_token}", $order_id);
+            OAM_COMMON_Custom::sub_order_error_log("affiliate: {$affiliate}, token: {$affiliate_token}, 'order type: {$order_type}'", $order_id);
 
             if ($order_type !== 'multi-recipient-order') return;
 

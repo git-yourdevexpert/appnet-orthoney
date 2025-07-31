@@ -4,6 +4,12 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// $commission = OAM_AFFILIATE_Helper::get_commission_affiliate_base_token('TTT');
+
+// echo "<pre>";
+// print_r($commission);
+// echo "</pre>";
+
 $affiliate_id = get_current_user_id();
 $user_roles = OAM_COMMON_Custom::get_user_role_by_id($affiliate_id);
 

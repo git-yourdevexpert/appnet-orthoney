@@ -269,12 +269,22 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                         $sub_order->zipcode
                     ]));
 
-                    $jarOrderResult = $wpdb->get_results($wpdb->prepare(
-                        "SELECT * FROM {$oh_wc_jar_order} 
-                        WHERE recipient_order_id = %s AND order_id != %d
-                        GROUP BY recipient_order_id",
-                        $sub_order->recipient_order_id, 0
-                    ));
+                    if($sub_order->quantity > 6){
+                    
+                        $jarOrderResult = $wpdb->get_results($wpdb->prepare(
+                            "SELECT * FROM {$oh_wc_jar_order} 
+                            WHERE recipient_order_id = %s AND order_id != %d
+                            GROUP BY recipient_order_id",
+                            $sub_order->recipient_order_id, 0
+                        ));
+                    }else{
+                         $jarOrderResult = $wpdb->get_results($wpdb->prepare(
+                            "SELECT * FROM {$oh_wc_jar_order} 
+                            WHERE recipient_order_id = %s AND order_id != %d
+                            GROUP BY jar_order_id",
+                            $sub_order->recipient_order_id, 0
+                        ));
+                    }
                     ?>
                     <tr class="group-header" data-count="<?php echo count($jarOrderResult) ?>" data-group="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-id="<?php echo esc_attr($sub_order->recipient_order_id); ?>">
                         <td colspan="8" style="background: #cbdac7 !important;">
@@ -452,7 +462,7 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                             <input type="hidden" name="wc_order_id" id="wc_order_id" value="">
                             <input type="hidden" name="order_id" id="order_id" value="">
                             <select id="order-org-search" class="form-control" required data-error-message="Please select an organization">
-                                <option data-token="Orthoney" value="Orthoney">Honey from the Heart</option>
+                                <!-- <option data-token="Orthoney" value="Orthoney">Honey from the Heart</option> -->
 
                                 <?php
                                 if (!empty($affiliateListReordered)) {

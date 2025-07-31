@@ -22,6 +22,12 @@ class OAM_Scripts
 
     // Enqueue front-end assets
     public function enqueue_frontend_assets() {
+        wp_enqueue_script('moment-js', 'https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js', [], '2.29.1', true);
+
+    // Date Range Picker
+        wp_enqueue_script('daterangepicker', 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js', ['jquery', 'moment-js'], '3.1', true);
+        wp_enqueue_style('daterangepicker-style', 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css');
+        
         $plugin_url = OH_PLUGIN_DIR_URL . 'assets/';
         
         // Library Scripts & Styles

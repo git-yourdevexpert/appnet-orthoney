@@ -580,19 +580,43 @@ public function orthoney_get_filtered_customers() {
                 $commission_array = OAM_AFFILIATE_Helper::get_commission_affiliate_base_token($token);
 
                 $unit_profit = wc_price(0);
-                if ($commission_array['unit_profit'] != 0) {
-                    $unit_profit = wc_price($commission_array['unit_profit']) . '<br><small>( ' . wc_price($commission_array["selling_min_price"]) . ' - ' . wc_price($commission_array["unit_cost"]) . ' )</small>';
+                if($commission_array['unit_profit'] != 0){
+                $unit_profit = wc_price($commission_array['unit_profit']).'<br><small>( '.wc_price($commission_array["product_price"]).' - '.wc_price($commission_array["unit_cost"]).' )</small>';
+                } 
+            
+                $cost = '';
+                if($commission_array['total_all_quantity'] < 50){
+                    if($commission_array['total_order'] != 0){
+                        $cost = '<strong>Total: </strong>'. wc_price(0);
+                        $cost .= '<br><small><strong>Fundraising: </strong>'. wc_price(0);
+                        $cost .= '<br><strong>Wholesale: </strong>'. wc_price(0);
+                        $cost .= '</small>';
+                    }
+                }else{
+                    if($commission_array['total_order'] != 0){
+                        $cost = '<strong>Total: </strong>'. wc_price($commission_array['ort_cost']);
+                        $cost .= '<br><small><strong>Fundraising: </strong>'. wc_price($commission_array['fundraising_cost'] );
+                        $cost .= '<br><strong>Wholesale: </strong>'. wc_price($commission_array['wholesale_cost']);
+                        $cost .= '</small>';
+                    }
                 }
-
-                $cost = $dist_cost = '';
-                if ($commission_array['total_order'] != 0) {
-                    $cost = '<strong>Total: </strong>' . wc_price($commission_array['total_quantity'] * $commission_array['selling_min_price']);
-                    $cost .= '<br><small><strong>Fundraising: </strong>' . wc_price($commission_array['fundraising_qty'] * $commission_array['selling_min_price']);
-                    $cost .= '<br><strong>Wholesale: </strong>' . wc_price($commission_array['wholesale_qty'] * $commission_array['selling_min_price']) . '</small>';
-
-                    $dist_cost = '<strong>Total: </strong>' . wc_price($commission_array['total_quantity'] * $commission_array['unit_cost']);
-                    $dist_cost .= '<br><small><strong>Fundraising: </strong>' . wc_price($commission_array['fundraising_qty'] * $commission_array['unit_cost']);
-                    $dist_cost .= '<br><strong>Wholesale: </strong>' . wc_price($commission_array['wholesale_qty'] * $commission_array['unit_cost']) . '</small>';
+                
+                
+                $dist_cost = '';
+                if($commission_array['total_all_quantity'] < 50){
+                    if($commission_array['total_order'] != 0){
+                        $dist_cost = '<strong>Total: </strong>'. wc_price(0);
+                        $dist_cost .= '<br><small><strong>Fundraising: </strong>'. wc_price(0);
+                        $dist_cost .= '<br><strong>Wholesale: </strong>'. wc_price(0);
+                        $dist_cost .= '</small>';
+                    }
+                }else{
+                    if($commission_array['total_order'] != 0){
+                        $dist_cost = '<strong>Total: </strong>'. wc_price($commission_array['ort_dist']);
+                        $dist_cost .= '<br><small><strong>Fundraising: </strong>'. wc_price($commission_array['fundraising_dist']);
+                        $dist_cost .= '<br><strong>Wholesale: </strong>'. wc_price($commission_array['wholesale_dist']);
+                        $dist_cost .= '</small>';
+                    }
                 }
 
                 $data[] = [
@@ -602,7 +626,7 @@ public function orthoney_get_filtered_customers() {
                     'dist_cost'            => $dist_cost,
                     'selling_min_price'    => esc_html($commission_array['selling_min_price']),
                     'total_order'          => esc_html($commission_array['total_order']),
-                    'total_qty'            => esc_html($commission_array['total_quantity']),
+                    'total_qty'            => esc_html($commission_array['total_all_quantity']),
                     'wholesale_qty'        => esc_html($commission_array['wholesale_qty']),
                     'fundraising_qty'      => esc_html($commission_array['fundraising_qty']),
                     'fundraising_orders'   => esc_html($commission_array['fundraising_orders']),
