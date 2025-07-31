@@ -69,34 +69,39 @@ class OAM_WC_Customizer {
     }
 
     public function cash_on_carry_gateway_filter($gateways) {
-        
-        $cash_on_carry_user_copy = get_field('cash_on_carray_user_copy', 'option');
-        $allowed_emails = [];
+        if (is_checkout()) {
+            $cash_on_carry_user_copy = get_field('cash_on_carray_user_copy', 'option');
+            $allowed_emails = [];
 
-        // Collect allowed emails from ACF option
-        if (!empty($cash_on_carry_user_copy) && is_array($cash_on_carry_user_copy)) {
-            foreach ($cash_on_carry_user_copy as $user) {
-                if (!empty($user['user_email'])) {
-                    $email = sanitize_email($user['user_email']);
-                    if (is_email($email) && email_exists($email)) {
-                        $allowed_emails[] = strtolower($email);
+            // Build list of allowed emails from ACF
+            if (!empty($cash_on_carry_user_copy) && is_array($cash_on_carry_user_copy)) {
+                foreach ($cash_on_carry_user_copy as $user) {
+                    if (!empty($user['user_email'])) {
+                        $email = sanitize_email($user['user_email']);
+                        if (is_email($email) && email_exists($email)) {
+                            $allowed_emails[] = strtolower($email);
+                        }
                     }
+                }
+            }
+
+            $current_user = wp_get_current_user();
+            $user_email = strtolower($current_user->user_email ?? '');
+
+            // Always remove COD by default
+            unset($gateways['cod']);
+
+            // If current user is allowed, re-add COD
+            if (in_array($user_email, $allowed_emails)) {
+                $available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
+                if (isset($available_gateways['cod'])) {
+                    $gateways['cod'] = $available_gateways['cod'];
                 }
             }
         }
 
-        // Get current logged-in user
-        $current_user = wp_get_current_user();
-        $billing_email = strtolower($current_user->user_email);
-
-        // If user's email is not in allowed list, remove COD
-        if (!in_array($billing_email, $allowed_emails)) {
-            unset($gateways['cod']);
-        }
-
         return $gateways;
     }
-
 
 
     public function orthoney_custom_email_recipient( $recipient, $order ) {
