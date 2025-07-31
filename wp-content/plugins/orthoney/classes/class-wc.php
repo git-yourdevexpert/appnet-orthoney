@@ -69,7 +69,7 @@ class OAM_WC_Customizer {
     }
 
     public function cash_on_carry_gateway_filter($gateways) {
-       
+        if (is_checkout()) {
             $cash_on_carry_user_copy = get_field('cash_on_carray_user_copy', 'option');
             $allowed_emails = [];
 
@@ -98,7 +98,7 @@ class OAM_WC_Customizer {
                     $gateways['cod'] = $available_gateways['cod'];
                 }
             }
-        
+        }
 
         return $gateways;
     }
