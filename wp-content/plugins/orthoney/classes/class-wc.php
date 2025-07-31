@@ -69,30 +69,29 @@ class OAM_WC_Customizer {
     }
 
     public function cash_on_carry_gateway_filter($gateways) {
-        if (is_checkout()) {
-            $cash_on_carry_user_copy = get_field('cash_on_carray_user_copy', 'option');
-            $allowed_emails = [];
+        
+        $cash_on_carry_user_copy = get_field('cash_on_carray_user_copy', 'option');
+        $allowed_emails = [];
 
-            // Collect allowed emails from ACF option
-            if (!empty($cash_on_carry_user_copy) && is_array($cash_on_carry_user_copy)) {
-                foreach ($cash_on_carry_user_copy as $user) {
-                    if (!empty($user['user_email'])) {
-                        $email = sanitize_email($user['user_email']);
-                        if (is_email($email) && email_exists($email)) {
-                            $allowed_emails[] = strtolower($email);
-                        }
+        // Collect allowed emails from ACF option
+        if (!empty($cash_on_carry_user_copy) && is_array($cash_on_carry_user_copy)) {
+            foreach ($cash_on_carry_user_copy as $user) {
+                if (!empty($user['user_email'])) {
+                    $email = sanitize_email($user['user_email']);
+                    if (is_email($email) && email_exists($email)) {
+                        $allowed_emails[] = strtolower($email);
                     }
                 }
             }
+        }
 
-            // Get current logged-in user
-            $current_user = wp_get_current_user();
-            $billing_email = strtolower($current_user->user_email);
+        // Get current logged-in user
+        $current_user = wp_get_current_user();
+        $billing_email = strtolower($current_user->user_email);
 
-            // If user's email is not in allowed list, remove COD
-            if (!in_array($billing_email, $allowed_emails)) {
-                unset($gateways['cod']);
-            }
+        // If user's email is not in allowed list, remove COD
+        if (!in_array($billing_email, $allowed_emails)) {
+            unset($gateways['cod']);
         }
 
         return $gateways;
