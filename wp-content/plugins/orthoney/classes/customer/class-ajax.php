@@ -441,8 +441,8 @@ class OAM_Ajax{
             }
         }
 
-        $user_query = new WP_User_Query($args);
-        $users = $user_query->get_results();
+            $user_query = new WP_User_Query($args);
+            $users = $user_query->get_results();
 
         $total_users = $user_query->get_total();
 

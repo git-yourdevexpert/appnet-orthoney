@@ -311,3 +311,37 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 //     }
 //     return $query;
 // });
+
+add_action('pre_user_query', 'custom_full_name_user_search');
+function custom_full_name_user_search($query) {
+    global $wpdb;
+
+    if (isset($query->query_vars['search']) && !empty($query->query_vars['search'])) {
+        $search = $query->query_vars['search'];
+        $search = trim($search, '*'); // Remove wildcards
+
+        // Prevent default search from running
+        $query->query_where = str_replace(
+            "AND 1=1",
+            "AND (
+                {$wpdb->users}.ID IN (
+                    SELECT user_id FROM {$wpdb->usermeta} fn 
+                    WHERE fn.meta_key = 'first_name' AND fn.meta_value LIKE '%" . esc_sql($search) . "%'
+                )
+                OR {$wpdb->users}.ID IN (
+                    SELECT user_id FROM {$wpdb->usermeta} ln 
+                    WHERE ln.meta_key = 'last_name' AND ln.meta_value LIKE '%" . esc_sql($search) . "%'
+                )
+                OR {$wpdb->users}.ID IN (
+                    SELECT user_id FROM {$wpdb->usermeta} fl 
+                    WHERE CONCAT(
+                        COALESCE((SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = fl.user_id AND meta_key = 'first_name'), ''),
+                        ' ',
+                        COALESCE((SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = fl.user_id AND meta_key = 'last_name'), '')
+                    ) LIKE '%" . esc_sql($search) . "%'
+                )
+            )",
+            $query->query_where
+        );
+    }
+}
