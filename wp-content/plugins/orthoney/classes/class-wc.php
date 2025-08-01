@@ -64,45 +64,93 @@ class OAM_WC_Customizer {
         // Add CC to 'customer_processing_order' email headers
         add_filter( 'woocommerce_email_headers', array($this,'orthoney_add_cc_to_email_headers'), 9999, 3 );
 
+        // Hook into WooCommerce payment gateways filter
         add_filter('woocommerce_available_payment_gateways', array($this,'cash_on_carry_gateway_filter'));
-
     }
 
-    public function cash_on_carry_gateway_filter($gateways) {
-        if (is_checkout()) {
-            $cash_on_carry_user_copy = get_field('cash_on_carray_user_copy', 'option');
-            $allowed_emails = [];
+    /**
+     * Filter COD payment gateway based on allowed users
+     *
+     * @param array $available_gateways Available payment gateways
+     * @return array Modified gateways array
+     */
+    public function cash_on_carry_gateway_filter($available_gateways) {
+        // Only proceed if COD is available
+        if (!isset($available_gateways['cod'])) {
+            return $available_gateways;
+        }
 
-            // Build list of allowed emails from ACF
-            if (!empty($cash_on_carry_user_copy) && is_array($cash_on_carry_user_copy)) {
-                foreach ($cash_on_carry_user_copy as $user) {
-                    if (!empty($user['user_email'])) {
-                        $email = sanitize_email($user['user_email']);
-                        if (is_email($email) && email_exists($email)) {
-                            $allowed_emails[] = strtolower($email);
-                        }
-                    }
-                }
-            }
-
-            $current_user = wp_get_current_user();
-            $user_email = strtolower($current_user->user_email ?? '');
-
-            // Always remove COD by default
-            unset($gateways['cod']);
-
-            // If current user is allowed, re-add COD
-            if (in_array($user_email, $allowed_emails)) {
-                $available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
-                if (isset($available_gateways['cod'])) {
-                    $gateways['cod'] = $available_gateways['cod'];
+        // Check if user is switched (using User Switching plugin)
+        if (function_exists('current_user_switched') && current_user_switched()) {
+            // Get the original (parent) user
+            $original_user = current_user_switched();
+            
+            // Check if the original user's email is in the allowed list
+            if ($original_user instanceof WP_User) {
+                $parent_email = strtolower($original_user->user_email);
+                $allowed_emails = $this->get_valid_emails_from_acf();
+                
+                // Allow COD if parent user is in the allowed list
+                if (!empty($allowed_emails) && in_array($parent_email, $allowed_emails)) {
+                    return $available_gateways;
                 }
             }
         }
 
-        return $gateways;
+        // Get allowed emails from ACF
+        $allowed_emails = $this->get_valid_emails_from_acf();
+        
+        // If no valid emails in ACF field, disable COD for everyone
+        if (empty($allowed_emails)) {
+            unset($available_gateways['cod']);
+            return $available_gateways;
+        }
+
+        // Get current user's email
+        $current_email = $this->get_current_user_email();
+
+        // Remove COD if email doesn't match or can't be retrieved
+        if (empty($current_email) || !in_array($current_email, $allowed_emails)) {
+            unset($available_gateways['cod']);
+        }
+
+        return $available_gateways;
     }
 
+    /**
+     * Helper function to get valid emails from ACF cash_on_carray_allowed_users field
+     */
+    function get_valid_emails_from_acf() {
+        $allowed_emails_field = get_field('cash_on_carray_allowed_users', 'option');
+        
+        if (empty($allowed_emails_field)) {
+            return array();
+        }
+
+        // Process and validate emails
+        $emails = array_filter(
+            array_map('trim', explode(',', $allowed_emails_field)),
+            function($email) {
+                return !empty($email) && is_email($email);
+            }
+        );
+
+        return array_map('strtolower', $emails);
+    }
+
+    /**
+     * Helper function to get current user's email
+     */
+    function get_current_user_email() {
+        $email = '';
+        
+        if (is_user_logged_in()) {
+            $current_user = wp_get_current_user();
+            $email = strtolower($current_user->user_email);
+        }
+        
+        return $email;
+    }
 
     public function orthoney_custom_email_recipient( $recipient, $order ) {
 
@@ -118,7 +166,6 @@ class OAM_WC_Customizer {
 
         return $recipient;
     }
-
 
      public function orthoney_add_cc_to_email_headers( $headers, $email_id, $order ) {
 

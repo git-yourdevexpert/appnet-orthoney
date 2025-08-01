@@ -775,11 +775,11 @@
         },
         {
             "key": "field_687a4ab4616d8",
-            "label": "Select User for allow Cash on Carry Payment",
-            "name": "cash_on_carray_user_copy",
+            "label": "Insert User emails to allow Cash on Carry Payment",
+            "name": "cash_on_carray_allowed_users",
             "aria-label": "",
-            "type": "user",
-            "instructions": "",
+            "type": "text",
+            "instructions": "Enter email separate by comma to allow Cash on Carry Payment on checkout page",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -787,18 +787,12 @@
                 "class": "",
                 "id": ""
             },
-            "role": [
-                "administrator",
-                "yith_affiliate",
-                "affiliate_team_member",
-                "sales_representative"
-            ],
-            "return_format": "array",
-            "multiple": 1,
-            "allow_null": 0,
-            "allow_in_bindings": 0,
-            "bidirectional": 0,
-            "bidirectional_target": []
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 1,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
         }
     ],
     "location": [
@@ -819,5 +813,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1754040267
+    "modified": 1754046186
 }
