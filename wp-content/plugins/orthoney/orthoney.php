@@ -313,7 +313,7 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 // });
 
 
-add_action('pre_user_query', 'custom_user_query_search_full_name_fix');
+add_action('pre_user_query', 'custom_user_query_search_full_name_fix_v2');
 
 function custom_user_query_search_full_name_fix($query) {
     global $wpdb;
