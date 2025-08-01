@@ -352,11 +352,11 @@ class OAM_Ajax{
          $args = [
             'role'    => 'customer',
             'search'  => '*' . esc_attr($customer) . '*',
-            'orderby' => 'display_name',
+            'orderby' => 'first_name',
             'order'   => 'ASC',
             'number'  => $per_page,
             'offset'  => $offset,
-            'fields'  => ['ID', 'display_name', 'user_email'],
+            // 'fields'  => ['ID', 'display_name', 'user_email'],
         ];
 
         $uri = $_SERVER['REQUEST_URI'];
