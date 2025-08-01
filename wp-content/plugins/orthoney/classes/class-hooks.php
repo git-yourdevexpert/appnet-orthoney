@@ -190,7 +190,7 @@ class OAM_Hooks {
                         'id' => 22, // Menu ID
                         'items' => [
                             'Dashboard' => ADMINISTRATOR_DASHBOARD_LINK,
-                            'Fulfillment Reports' => ADMINISTRATOR_DASHBOARD_LINK . 'fulfillment-reports/',
+                            'Fulfillment Reports' => ADMINISTRATOR_DASHBOARD_LINK . 'fulfillment-report/',
                             'Orders' => ADMINISTRATOR_DASHBOARD_LINK . 'orders/',
                             'Manage Customers' => ADMINISTRATOR_DASHBOARD_LINK . 'customers/',
                             'Manage Organizations' => ADMINISTRATOR_DASHBOARD_LINK . 'organizations/',

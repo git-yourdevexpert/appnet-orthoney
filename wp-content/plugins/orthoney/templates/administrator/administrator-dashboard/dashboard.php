@@ -92,7 +92,7 @@ if ($redirect_back_user_id) {
                             <div class="row-block">
                                 <h4>Fulfillment Reports</h4>
                                 <div class="see-all">
-                                    <a class="w-btn us-btn-style_1" href="<?php echo esc_url(OAM_Helper::$administrator_dashboard_link.'fulfillment-reports/'); ?>">See All</a> 
+                                    <a class="w-btn us-btn-style_1" href="<?php echo esc_url(OAM_Helper::$administrator_dashboard_link.'fulfillment-report/'); ?>">See All</a> 
                                 </div>
                             </div>
                         </div>
