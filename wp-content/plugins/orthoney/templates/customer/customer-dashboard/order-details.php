@@ -178,7 +178,7 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                 if (in_array('administrator', $user_roles)) {
                 ?>
                 <button data-popup="#order-switch-org-popup" class="w-btn us-btn-style_1 orderchangeorg" data-organization_data="<?php echo $organization_data ?>" data-wc_order_id="<?php echo $order_id ?>" data-order_id="<?php echo $sub_order_id ?>" data-currentorg="<?php echo $token ?>">Switch ORG</button>
-                <a href="<?php echo admin_url('post.php?post=' . $order_id . '&action=edit') ?>">View WP Admin Order</a>
+                <a class="w-btn us-btn-style_1" href="<?php echo admin_url('post.php?post=' . $order_id . '&action=edit') ?>">View WP Admin Order</a>
                 <?php } ?>
                 <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
             </div>
