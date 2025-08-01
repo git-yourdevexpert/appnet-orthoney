@@ -775,11 +775,11 @@
         },
         {
             "key": "field_687a4ab4616d8",
-            "label": "Insert User emails to allow Cash on Carry Payment",
+            "label": "Allowed Users for Cash on Carry",
             "name": "cash_on_carray_allowed_users",
             "aria-label": "",
             "type": "text",
-            "instructions": "Enter email separate by comma to allow Cash on Carry Payment on checkout page",
+            "instructions": "Insert user emails to allow Cash on Carry payment. Enter emails separated by commas to allow COD on checkout page",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -813,5 +813,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1754046186
+    "modified": 1754048129
 }
