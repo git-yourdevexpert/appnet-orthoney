@@ -65,7 +65,106 @@ class OAM_YITH_Affilate {
     }
 
    public  function custom_token_validation($user_id) {
+    
+    /**
+         * 
+         * Start Token change
+         */
         global $wpdb;
+
+            $yith_wcaf_affiliates_table = OAM_helper::$yith_wcaf_affiliates_table;
+            $wc_order_relation          = $wpdb->prefix . 'oh_wc_order_relation';
+            $order_process_table        = $wpdb->prefix . 'oh_order_process';
+            $recipient_order            = $wpdb->prefix . 'oh_recipient_order';
+
+            OAM_COMMON_Custom::sub_order_error_log(print_r($_POST, true), 'change-org-token');
+            $orgNewToken = $_POST['yith_wcaf_affiliate_meta']['token'] ?? '';
+            $a_id = $_POST['affiliate_id'];
+
+            // Get current (old) token from DB
+            $orgOldToken = $wpdb->get_var($wpdb->prepare(
+                "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE ID = %d",
+                $a_id
+            ));
+
+            $orgUserID = $wpdb->get_var($wpdb->prepare(
+                "SELECT user_id FROM {$yith_wcaf_affiliates_table} WHERE ID = %d",
+                $a_id
+            ));
+
+            OAM_COMMON_Custom::sub_order_error_log("Start Affiliate token update: $orgOldToken => $orgNewToken (User ID: $orgUserID)", 'change-org-token');
+            OAM_COMMON_Custom::sub_order_error_log("Process by {$user_id}", 'change-org-token');
+            
+            if ($orgNewToken !== $orgOldToken) {
+                OAM_COMMON_Custom::sub_order_error_log("Affiliate Token changed from $orgOldToken to $orgNewToken", 'change-org-token');
+
+                update_user_meta( $orgUserID, '_orgCode', $orgNewToken);
+                update_user_meta( $orgUserID, '_affiliate_org_code', $orgNewToken);
+                // Update all wc_order_relation records
+
+                $order_relations = $wpdb->get_results(
+                    $wpdb->prepare("SELECT DISTINCT wc_order_id FROM {$wc_order_relation} WHERE affiliate_code = %s", $orgOldToken)
+                );
+
+                if ($order_relations) {
+                    error_log("wc_order_relation data update");
+                    $wpdb->update(
+                        $wc_order_relation,
+                        ['affiliate_code' => $orgNewToken],
+                        ['affiliate_code' => $orgOldToken]
+                    );
+
+                    $yith_wcaf_referral[] = $orgNewToken;
+
+                    foreach ($order_relations as $data) {
+                        
+                        OAM_COMMON_Custom::sub_order_error_log("Effected oder data update ".$data->wc_order_id, 'change-org-token');
+                        $order = wc_get_order($data->wc_order_id);
+                        if ($order) {
+                            $order_id = $order->get_id();
+                            $order->update_meta_data('_yith_wcaf_referral', $orgNewToken);
+                            $order->update_meta_data('_yith_wcaf_referral_history', maybe_serialize($yith_wcaf_referral));
+                            $order->save();
+
+                            // $result = $wpdb->get_row($wpdb->prepare(
+                            //     "SELECT data FROM {$order_process_table} WHERE order_id = %d",
+                            //     $order_id
+                            // ));
+
+                            // if ($result) {
+                            //     $decoded_data = json_decode($result->data, true);
+                            //     $decoded_data['affiliate_select'] = $orgUserID;
+
+                            //     $wpdb->update(
+                            //         $order_process_table,
+                            //         ['data' => wp_json_encode($decoded_data)],
+                            //         ['order_id' => $order_id]
+                            //     );
+                            // }
+                        }
+                    }
+                }
+                // Update recipient order table
+                $recipient_rows = $wpdb->get_results($wpdb->prepare(
+                    "SELECT * FROM {$recipient_order} WHERE affiliate_token = %s",
+                    $orgOldToken
+                ));
+
+                if ($recipient_rows) {
+                    $wpdb->update(
+                        $recipient_order,
+                        ['affiliate_token' => $orgNewToken],
+                        ['affiliate_token' => $orgOldToken]
+                    );
+                }
+                OAM_COMMON_Custom::sub_order_error_log("Finish Affiliate token update", 'change-org-token');
+            }
+        /**
+         * End Token change
+         */
+
+
+
         $token = $_POST['yith_wcaf_affiliate_meta']['token'];
         
 

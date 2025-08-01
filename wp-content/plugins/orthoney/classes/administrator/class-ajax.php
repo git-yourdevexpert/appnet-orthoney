@@ -354,7 +354,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $wpdb->prepare("SELECT * FROM {$recipient_order} WHERE order_id = %s", $order_id)
         );
 
-        if(!empty($wc_order_relation_result)){
+        if(!empty($recipient_orderresult)){
             $update_result = $wpdb->update(
                 $recipient_order,
                 [
@@ -367,7 +367,6 @@ class OAM_ADMINISTRATOR_AJAX {
         }
 
         // 4. Order meta.
-        
         $update_result = $wpdb->update(
             $order_meta,
             [
