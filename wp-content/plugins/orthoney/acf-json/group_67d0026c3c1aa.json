@@ -755,7 +755,7 @@
         {
             "key": "field_687a4ab4616d8",
             "label": "Select User for allow Cash on Carry Payment",
-            "name": "cash_on_carray_user_copy",
+            "name": "cash_on_carray_allowed_users",
             "aria-label": "",
             "type": "user",
             "instructions": "",
@@ -766,7 +766,10 @@
                 "class": "",
                 "id": ""
             },
-            "role": "",
+            "role": [
+                "administrator",
+                "sales_representative"
+            ],
             "return_format": "array",
             "multiple": 1,
             "allow_null": 0,
