@@ -946,7 +946,7 @@ class OAM_ADMINISTRATOR_AJAX {
         if (!empty($search)) {
             $search_conditions[] = "(
                 COALESCE(org_name.meta_value, CONCAT(first_name.meta_value, ' ', last_name.meta_value)) LIKE %s OR
-                COALESCE(org_name.meta_value, CONCAT(first_name1.meta_value, ' ', last_name1.meta_value)) LIKE %s OR
+                COALESCE(CONCAT(first_name1.meta_value, ' ', last_name1.meta_value)) LIKE %s OR
                 COALESCE(city1.meta_value, city2.meta_value, city3.meta_value) LIKE %s OR
                 COALESCE(state1.meta_value, state2.meta_value, state3.meta_value) LIKE %s OR
                 COALESCE(address.meta_value) LIKE %s OR
