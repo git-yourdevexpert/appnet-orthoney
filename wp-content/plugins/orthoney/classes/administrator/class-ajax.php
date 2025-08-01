@@ -949,6 +949,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 COALESCE(CONCAT(first_name1.meta_value, ' ', last_name1.meta_value)) LIKE %s OR
                 COALESCE(city1.meta_value, city2.meta_value, city3.meta_value) LIKE %s OR
                 COALESCE(state1.meta_value, state2.meta_value, state3.meta_value) LIKE %s OR
+                COALESCE(phone.meta_value) LIKE %s OR
                 COALESCE(address.meta_value) LIKE %s OR
                 af.token LIKE %s OR
                 u.user_email LIKE %s
