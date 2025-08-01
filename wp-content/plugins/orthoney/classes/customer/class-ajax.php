@@ -356,7 +356,7 @@ class OAM_Ajax{
             'order'   => 'ASC',
             'number'  => $per_page,
             'offset'  => $offset,
-            // 'fields'  => ['ID', 'display_name', 'user_email'],
+            'fields'  => ['ID', 'display_name', 'user_email'],
         ];
 
         $uri = $_SERVER['REQUEST_URI'];
@@ -442,6 +442,7 @@ class OAM_Ajax{
         }
 
             $user_query = new WP_User_Query($args);
+
             $users = $user_query->get_results();
 
         $total_users = $user_query->get_total();
