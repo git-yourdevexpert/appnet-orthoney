@@ -314,21 +314,21 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 
 
 
-add_action('pre_user_query', 'custom_user_query_first_or_last_name_per_term');
-function custom_user_query_first_or_last_name_per_term($query) {
+add_action('pre_user_query', 'custom_user_query_search_full_name_fix');
+function custom_user_query_search_full_name_fix($query) {
     global $wpdb;
 
     if (!empty($query->query_vars['search'])) {
+        // Remove leading/trailing asterisks and split terms
         $search_raw = trim($query->query_vars['search'], '*');
-        $search_terms = preg_split('/\s+/', $search_raw); // Split by space
+        $search_terms = preg_split('/\s+/', $search_raw);
 
-        $term_conditions = [];
+        $meta_conditions = [];
 
         foreach ($search_terms as $term) {
             $like = '%' . esc_sql($term) . '%';
 
-            // Match term in either first_name or last_name
-            $term_conditions[] = "(
+            $meta_conditions[] = "(
                 EXISTS (
                     SELECT 1 FROM {$wpdb->usermeta} um1
                     WHERE um1.user_id = {$wpdb->users}.ID
@@ -345,8 +345,10 @@ function custom_user_query_first_or_last_name_per_term($query) {
             )";
         }
 
-        if (!empty($term_conditions)) {
-            $query->query_where .= ' AND (' . implode(' OR ', $term_conditions) . ')';
+        // Combine with OR logic for all terms
+        if (!empty($meta_conditions)) {
+            $custom_where = ' AND (' . implode(' OR ', $meta_conditions) . ')';
+            $query->query_where .= $custom_where;
         }
     }
 }
