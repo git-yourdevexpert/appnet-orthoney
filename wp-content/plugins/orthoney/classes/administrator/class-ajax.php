@@ -203,7 +203,7 @@ class OAM_ADMINISTRATOR_AJAX {
         $row['affiliate_code'] = trim($row['affiliate_code']);
         if ($row['affiliate_code'] === '' || strtolower($row['affiliate_code']) === 'orthoney') {
             $row['affiliate_code'] = 'Honey from the Heart';
-            $row['affiliate_name'] = '';
+            $row['affiliate_name'] = 'Honey from the Heart';
             $row['affiliate_full_card'] = get_field('honey_from_the_heart_gift_card', 'option') ?: '';
             $row['affiliate_full_card_name'] = 'In celebration of the New Year, a donation has been made in your name to ' . $row['affiliate_full_card'];
         } else {
