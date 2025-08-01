@@ -313,42 +313,106 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 // });
 
 
-
 add_action('pre_user_query', 'custom_user_query_search_full_name_fix');
+
 function custom_user_query_search_full_name_fix($query) {
     global $wpdb;
-
-    if (!empty($query->query_vars['search'])) {
-        // Remove leading/trailing asterisks and split terms
-        $search_raw = trim($query->query_vars['search'], '*');
-        $search_terms = preg_split('/\s+/', $search_raw);
-
-        $meta_conditions = [];
-
+    
+    // Only modify search queries
+    if (empty($query->query_vars['search'])) {
+        return;
+    }
+    
+    // Get the search term and clean it
+    $search_term = trim($query->query_vars['search'], '*');
+    
+    if (empty($search_term)) {
+        return;
+    }
+    
+    // Split search terms by spaces
+    $search_terms = preg_split('/\s+/', $search_term);
+    
+    // Build meta query conditions
+    $meta_conditions = [];
+    
+    foreach ($search_terms as $term) {
+        if (empty($term)) continue;
+        
+        $like = '%' . $wpdb->esc_like($term) . '%';
+        
+        $meta_conditions[] = "(
+            EXISTS (
+                SELECT 1 FROM {$wpdb->usermeta} um_first
+                WHERE um_first.user_id = {$wpdb->users}.ID
+                AND um_first.meta_key = 'first_name'
+                AND um_first.meta_value LIKE %s
+            )
+            OR
+            EXISTS (
+                SELECT 1 FROM {$wpdb->usermeta} um_last
+                WHERE um_last.user_id = {$wpdb->users}.ID
+                AND um_last.meta_key = 'last_name'
+                AND um_last.meta_value LIKE %s
+            )
+        )";
+    }
+    
+    if (!empty($meta_conditions)) {
+        // Prepare the query with proper escaping
+        $prepare_args = [];
         foreach ($search_terms as $term) {
-            $like = '%' . esc_sql($term) . '%';
-
-            $meta_conditions[] = "(
-                EXISTS (
-                    SELECT 1 FROM {$wpdb->usermeta} um1
-                    WHERE um1.user_id = {$wpdb->users}.ID
-                    AND um1.meta_key = 'first_name'
-                    AND um1.meta_value LIKE '{$like}'
-                )
-                OR
-                EXISTS (
-                    SELECT 1 FROM {$wpdb->usermeta} um2
-                    WHERE um2.user_id = {$wpdb->users}.ID
-                    AND um2.meta_key = 'last_name'
-                    AND um2.meta_value LIKE '{$like}'
-                )
-            )";
+            if (empty($term)) continue;
+            $like = '%' . $wpdb->esc_like($term) . '%';
+            $prepare_args[] = $like; // for first_name
+            $prepare_args[] = $like; // for last_name
         }
+        
+        $custom_where = ' AND (' . implode(' OR ', $meta_conditions) . ')';
+        $prepared_where = $wpdb->prepare($custom_where, $prepare_args);
+        
+        $query->query_where .= $prepared_where;
+    }
+}
 
-        // Combine with OR logic for all terms
-        if (!empty($meta_conditions)) {
-            $custom_where = ' AND (' . implode(' OR ', $meta_conditions) . ')';
-            $query->query_where .= $custom_where;
-        }
+// Alternative approach using query_fields and query_from for better performance
+function custom_user_query_search_full_name_fix_v2($query) {
+    global $wpdb;
+    
+    if (empty($query->query_vars['search'])) {
+        return;
+    }
+    
+    $search_term = trim($query->query_vars['search'], '*');
+    
+    if (empty($search_term)) {
+        return;
+    }
+    
+    // Add joins for meta fields
+    $query->query_from .= " LEFT JOIN {$wpdb->usermeta} um_first ON ({$wpdb->users}.ID = um_first.user_id AND um_first.meta_key = 'first_name')";
+    $query->query_from .= " LEFT JOIN {$wpdb->usermeta} um_last ON ({$wpdb->users}.ID = um_last.user_id AND um_last.meta_key = 'last_name')";
+    
+    // Split search terms
+    $search_terms = preg_split('/\s+/', $search_term);
+    $conditions = [];
+    $prepare_args = [];
+    
+    foreach ($search_terms as $term) {
+        if (empty($term)) continue;
+        
+        $like = '%' . $wpdb->esc_like($term) . '%';
+        $conditions[] = "(um_first.meta_value LIKE %s OR um_last.meta_value LIKE %s)";
+        $prepare_args[] = $like;
+        $prepare_args[] = $like;
+    }
+    
+    if (!empty($conditions)) {
+        $where_clause = ' AND (' . implode(' OR ', $conditions) . ')';
+        $prepared_where = $wpdb->prepare($where_clause, $prepare_args);
+        $query->query_where .= $prepared_where;
+        
+        // Add GROUP BY to avoid duplicates
+        $query->query_fields = "DISTINCT " . $query->query_fields;
     }
 }
