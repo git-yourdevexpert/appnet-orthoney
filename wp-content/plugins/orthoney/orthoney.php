@@ -314,44 +314,39 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 
 
 
-add_action('pre_user_query', 'custom_user_query_full_name_search');
-function custom_user_query_full_name_search($query) {
+add_action('pre_user_query', 'custom_user_query_first_or_last_name_per_term');
+function custom_user_query_first_or_last_name_per_term($query) {
     global $wpdb;
 
-
     if (!empty($query->query_vars['search'])) {
-        $search = trim($query->query_vars['search'], '*');
-        $like   = '%' . esc_sql($search) . '%';
+        $search_raw = trim($query->query_vars['search'], '*');
+        $search_terms = preg_split('/\s+/', $search_raw); // Split by space
 
-        // Build extra WHERE clause for full name search
-        $custom_where = "
-            OR {$wpdb->users}.display_name LIKE '{$like}'
-            OR EXISTS (
-                SELECT 1 FROM {$wpdb->usermeta} um1
-                WHERE um1.user_id = {$wpdb->users}.ID
-                AND um1.meta_key = 'first_name'
-                AND um1.meta_value LIKE '{$like}'
-            )
-            OR EXISTS (
-                SELECT 1 FROM {$wpdb->usermeta} um2
-                WHERE um2.user_id = {$wpdb->users}.ID
-                AND um2.meta_key = 'last_name'
-                AND um2.meta_value LIKE '{$like}'
-            )
-            OR EXISTS (
-                SELECT 1 FROM {$wpdb->usermeta} umf
-                WHERE umf.user_id = {$wpdb->users}.ID
-                AND (
-                    CONCAT(
-                        COALESCE((SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = umf.user_id AND meta_key = 'first_name'), ''),
-                        ' ',
-                        COALESCE((SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = umf.user_id AND meta_key = 'last_name'), '')
-                    ) LIKE '{$like}'
+        $term_conditions = [];
+
+        foreach ($search_terms as $term) {
+            $like = '%' . esc_sql($term) . '%';
+
+            // Match term in either first_name or last_name
+            $term_conditions[] = "(
+                EXISTS (
+                    SELECT 1 FROM {$wpdb->usermeta} um1
+                    WHERE um1.user_id = {$wpdb->users}.ID
+                    AND um1.meta_key = 'first_name'
+                    AND um1.meta_value LIKE '{$like}'
                 )
-            )
-        ";
+                OR
+                EXISTS (
+                    SELECT 1 FROM {$wpdb->usermeta} um2
+                    WHERE um2.user_id = {$wpdb->users}.ID
+                    AND um2.meta_key = 'last_name'
+                    AND um2.meta_value LIKE '{$like}'
+                )
+            )";
+        }
 
-        // Inject into the WHERE clause at the end
-        $query->query_where .= $custom_where;
+        if (!empty($term_conditions)) {
+            $query->query_where .= ' AND (' . implode(' OR ', $term_conditions) . ')';
+        }
     }
 }
