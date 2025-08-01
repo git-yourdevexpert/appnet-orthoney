@@ -352,6 +352,27 @@
             "allow_in_bindings": 0
         },
         {
+            "key": "field_688c8709c3b7d",
+            "label": "Honey from the Heart Gift Card",
+            "name": "honey_from_the_heart_gift_card",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "This content show on fulfillment sheet.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "In celebration of the New Year, a donation has been made in your name to",
+            "append": ""
+        },
+        {
             "key": "field_67ecc9308156c",
             "label": "Links Settings",
             "name": "",
@@ -755,7 +776,7 @@
         {
             "key": "field_687a4ab4616d8",
             "label": "Select User for allow Cash on Carry Payment",
-            "name": "cash_on_carray_allowed_users",
+            "name": "cash_on_carray_user_copy",
             "aria-label": "",
             "type": "user",
             "instructions": "",
@@ -768,6 +789,8 @@
             },
             "role": [
                 "administrator",
+                "yith_affiliate",
+                "affiliate_team_member",
                 "sales_representative"
             ],
             "return_format": "array",
@@ -796,5 +819,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1754032927
+    "modified": 1754040267
 }

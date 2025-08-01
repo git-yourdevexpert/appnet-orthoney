@@ -204,8 +204,8 @@ class OAM_ADMINISTRATOR_AJAX {
         if ($row['affiliate_code'] === '' || strtolower($row['affiliate_code']) === 'orthoney') {
             $row['affiliate_code'] = 'Honey from the Heart';
             $row['affiliate_name'] = '';
-            $row['affiliate_full_card'] = '';
-            $row['affiliate_full_card_name'] = '';
+            $row['affiliate_full_card'] = get_field('honey_from_the_heart_gift_card', 'option') ?: '';
+            $row['affiliate_full_card_name'] = 'In celebration of the New Year, a donation has been made in your name to ' . $row['affiliate_full_card'];
         } else {
             $affiliate_user_id = $wpdb->get_var($wpdb->prepare(
                 "SELECT user_id FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE token = %s",
