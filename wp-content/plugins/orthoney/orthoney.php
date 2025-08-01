@@ -312,3 +312,28 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 //     return $query;
 // });
 
+
+
+// Add this before your query
+add_action('pre_user_query', 'search_users_by_name');
+
+function search_users_by_name($query) {
+    global $wpdb;
+
+    // Check if we're doing a search and it's your custom query
+    if (isset($query->query_vars['search']) && !empty($query->query_vars['search'])) {
+        $search = trim($query->query_vars['search'], '*');
+
+        // Join usermeta to search first_name and last_name
+        $query->query_from .= " 
+            LEFT JOIN {$wpdb->usermeta} AS first_name_meta ON ({$wpdb->users}.ID = first_name_meta.user_id AND first_name_meta.meta_key = 'first_name')
+            LEFT JOIN {$wpdb->usermeta} AS last_name_meta ON ({$wpdb->users}.ID = last_name_meta.user_id AND last_name_meta.meta_key = 'last_name')
+        ";
+
+        // Add search condition for first_name and last_name
+        $query->query_where .= $wpdb->prepare("
+            OR first_name_meta.meta_value LIKE %s 
+            OR last_name_meta.meta_value LIKE %s
+        ", '%' . $search . '%', '%' . $search . '%');
+    }
+}
