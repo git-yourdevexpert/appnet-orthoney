@@ -955,7 +955,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 u.user_email LIKE %s
             )";
             $search_like = '%' . $wpdb->esc_like(strtolower($search)) . '%';
-            $search_params = array_merge($search_params, array_fill(0, 7, $search_like));
+            $search_params = array_merge($search_params, array_fill(0, 8, $search_like));
         }
 
         $where_clause = '';
