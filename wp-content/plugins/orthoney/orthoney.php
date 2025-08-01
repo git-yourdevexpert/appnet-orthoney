@@ -312,33 +312,44 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 //     return $query;
 // });
 
-add_action('pre_user_query', 'custom_full_name_user_search');
-function custom_full_name_user_search($query) {
+add_action('pre_user_query', 'custom_user_query_full_name_search');
+function custom_user_query_full_name_search($query) {
     global $wpdb;
 
-    if (isset($query->query_vars['search']) && !empty($query->query_vars['search'])) {
-        $search = $query->query_vars['search'];
-        $search = trim($search, '*'); // Remove wildcards
+    // Only modify if 'search' is set and not empty
+    if (!empty($query->query_vars['search'])) {
+        $search = trim($query->query_vars['search'], '*');
+        $like   = '%' . esc_sql($search) . '%';
 
-        // Prevent default search from running
+        // Replace the default WHERE clause
         $query->query_where = str_replace(
-            "AND 1=1",
+            'AND 1=1',
             "AND (
-                {$wpdb->users}.ID IN (
-                    SELECT user_id FROM {$wpdb->usermeta} fn 
-                    WHERE fn.meta_key = 'first_name' AND fn.meta_value LIKE '%" . esc_sql($search) . "%'
+                {$wpdb->users}.user_login LIKE '{$like}'
+                OR {$wpdb->users}.user_email LIKE '{$like}'
+                OR {$wpdb->users}.display_name LIKE '{$like}'
+                OR EXISTS (
+                    SELECT 1 FROM {$wpdb->usermeta} um1
+                    WHERE um1.user_id = {$wpdb->users}.ID
+                    AND um1.meta_key = 'first_name'
+                    AND um1.meta_value LIKE '{$like}'
                 )
-                OR {$wpdb->users}.ID IN (
-                    SELECT user_id FROM {$wpdb->usermeta} ln 
-                    WHERE ln.meta_key = 'last_name' AND ln.meta_value LIKE '%" . esc_sql($search) . "%'
+                OR EXISTS (
+                    SELECT 1 FROM {$wpdb->usermeta} um2
+                    WHERE um2.user_id = {$wpdb->users}.ID
+                    AND um2.meta_key = 'last_name'
+                    AND um2.meta_value LIKE '{$like}'
                 )
-                OR {$wpdb->users}.ID IN (
-                    SELECT user_id FROM {$wpdb->usermeta} fl 
-                    WHERE CONCAT(
-                        COALESCE((SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = fl.user_id AND meta_key = 'first_name'), ''),
-                        ' ',
-                        COALESCE((SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = fl.user_id AND meta_key = 'last_name'), '')
-                    ) LIKE '%" . esc_sql($search) . "%'
+                OR EXISTS (
+                    SELECT 1 FROM {$wpdb->usermeta} umf
+                    WHERE umf.user_id = {$wpdb->users}.ID
+                    AND (
+                        CONCAT(
+                            COALESCE((SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = umf.user_id AND meta_key = 'first_name'), ''),
+                            ' ',
+                            COALESCE((SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = umf.user_id AND meta_key = 'last_name'), '')
+                        ) LIKE '{$like}'
+                    )
                 )
             )",
             $query->query_where
