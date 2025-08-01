@@ -352,7 +352,7 @@ class OAM_Ajax{
          $args = [
             'role'    => 'customer',
             'search'  => '*' . esc_attr($customer) . '*',
-            'orderby' => 'first_name',
+            'orderby' => 'user_email',
             'order'   => 'ASC',
             'number'  => $per_page,
             'offset'  => $offset,
