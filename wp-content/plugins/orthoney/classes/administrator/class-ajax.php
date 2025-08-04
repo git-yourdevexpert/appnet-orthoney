@@ -949,7 +949,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 COALESCE(city1.meta_value, city2.meta_value, city3.meta_value) LIKE %s OR
                 COALESCE(state1.meta_value, state2.meta_value, state3.meta_value) LIKE %s OR
                 COALESCE(phone.meta_value, phone1.meta_value, phone2.meta_value) LIKE %s OR
-                COALESCE(email.meta_value) LIKE %s OR
+                COALESCE(email1.meta_value) LIKE %s OR
                 COALESCE(address.meta_value) LIKE %s OR
                 af.token LIKE %s OR
                 u.user_email LIKE %s
@@ -982,7 +982,7 @@ class OAM_ADMINISTRATOR_AJAX {
             LEFT JOIN {$wpdb->users} u ON af.user_id = u.ID
             LEFT JOIN {$wpdb->usermeta} org_name ON af.user_id = org_name.user_id AND org_name.meta_key = '_yith_wcaf_name_of_your_organization'
             LEFT JOIN {$wpdb->usermeta} first_name ON af.user_id = first_name.user_id AND first_name.meta_key = 'first_name'
-            LEFT JOIN {$wpdb->usermeta} email ON af.user_id = email.user_id AND email.meta_key = '_yith_wcaf_email'
+            LEFT JOIN {$wpdb->usermeta} email1 ON af.user_id = email1.user_id AND email1.meta_key = '_yith_wcaf_email'
             LEFT JOIN {$wpdb->usermeta} first_name1 ON af.user_id = first_name1.user_id AND first_name1.meta_key = '_yith_wcaf_first_name'
             LEFT JOIN {$wpdb->usermeta} last_name ON af.user_id = last_name.user_id AND last_name.meta_key = 'last_name'
             LEFT JOIN {$wpdb->usermeta} last_name1 ON af.user_id = last_name1.user_id AND last_name1.meta_key = '_yith_wcaf_last_name'
