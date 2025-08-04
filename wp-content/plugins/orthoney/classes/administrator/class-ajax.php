@@ -1115,198 +1115,194 @@ class OAM_ADMINISTRATOR_AJAX {
     public function orthoney_admin_get_organizations_data_handler() {
         global $wpdb;
 
-    $sales_reps = get_users(['role' => 'sales_representative']);
-    $sales_reps_data = [];
+        $sales_reps = get_users(['role' => 'sales_representative']);
+        $sales_reps_data = [];
 
-    foreach ($sales_reps as $user) {
-        if (in_array('sales_representative', $user->roles) && !empty($user->user_email)) {
-            $select_organization = get_user_meta($user->ID, 'select_organization', true);
-            $choose_organization = get_user_meta($user->ID, 'choose_organization', true);
+        foreach ($sales_reps as $user) {
+            if (in_array('sales_representative', $user->roles) && !empty($user->user_email)) {
+                $select_organization = get_user_meta($user->ID, 'select_organization', true);
+                $choose_organization = get_user_meta($user->ID, 'choose_organization', true);
 
-            if ($select_organization === 'choose_organization') {
-                if (!empty($choose_organization)) {
-                    $choose_ids_array = array_map('intval', (array) $choose_organization);
-                    $choose_ids = implode(',', $choose_ids_array);
-                    if (!empty($choose_ids)) {
-                        $ids_array = array_map('intval', explode(',', $choose_ids));
-                        $placeholders = implode(',', array_fill(0, count($ids_array), '%d'));
-                        $query = $wpdb->prepare(
-                            "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id IN ($placeholders)",
-                            ...$ids_array
-                        );
-                        $results = $wpdb->get_col($query);
-                        $sales_reps_data[$user->ID] = $results;
+                if ($select_organization === 'choose_organization') {
+                    if (!empty($choose_organization)) {
+                        $choose_ids_array = array_map('intval', (array) $choose_organization);
+                        $choose_ids = implode(',', $choose_ids_array);
+                        if (!empty($choose_ids)) {
+                            $ids_array = array_map('intval', explode(',', $choose_ids));
+                            $placeholders = implode(',', array_fill(0, count($ids_array), '%d'));
+                            $query = $wpdb->prepare(
+                                "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id IN ($placeholders)",
+                                ...$ids_array
+                            );
+                            $results = $wpdb->get_col($query);
+                            $sales_reps_data[$user->ID] = $results;
+                        }
                     }
+                } else {
+                    $sales_reps_data[$user->ID] = 'all';
                 }
-            } else {
-                $sales_reps_data[$user->ID] = 'all';
             }
         }
-    }
 
-    $start  = intval($_POST['start'] ?? 0);
-    $length = intval($_POST['length'] ?? 10);
-    $draw   = intval($_POST['draw'] ?? 1);
-    $search = sanitize_text_field($_POST['search']['value'] ?? '');
-    $nonce  = wp_create_nonce('customer_login_nonce');
+        $start  = intval($_POST['start'] ?? 0);
+        $length = intval($_POST['length'] ?? 10);
+        $draw   = intval($_POST['draw'] ?? 1);
+        $search = sanitize_text_field($_POST['search']['value'] ?? '');
+        $nonce  = wp_create_nonce('customer_login_nonce');
 
-    $raw_users = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}yith_wcaf_affiliates");
+        $raw_users = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}yith_wcaf_affiliates");
 
-    if (empty($raw_users)) {
-        wp_send_json([
-            'draw' => $draw,
-            'recordsTotal' => 0,
-            'recordsFiltered' => 0,
-            'data' => [],
-        ]);
-    }
-
-    $user_ids = wp_list_pluck($raw_users, 'user_id');
-    $user_meta_cache = [];
-    $user_status_map = [];
-    $aff_data_array  = [];
-
-    foreach ($raw_users as $row) {
-        $user_id = intval($row->user_id);
-        $enabled = intval($row->enabled);
-        $banned  = intval($row->banned);
-        $aff_data_array[$user_id] = intval($row->ID);
-
-        $status = 'New request';
-        if ($banned === 1) {
-            $status = 'Banned';
-        } elseif ($enabled === 1) {
-            $status = 'Accepted and enabled';
-        } elseif ($enabled === -1) {
-            $status = 'Rejected';
+        if (empty($raw_users)) {
+            wp_send_json([
+                'draw' => $draw,
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => [],
+            ]);
         }
 
-        $user_status_map[$user_id] = [
-            'enabled' => $enabled,
-            'banned'  => $banned,
-            'label'   => $status,
-        ];
+        $user_ids = wp_list_pluck($raw_users, 'user_id');
+        $user_meta_cache = [];
+        $user_status_map = [];
+        $aff_data_array  = [];
 
-        $user_obj = get_userdata($user_id);
+        foreach ($raw_users as $row) {
+            $user_id = intval($row->user_id);
+            $enabled = intval($row->enabled);
+            $banned  = intval($row->banned);
+            $aff_data_array[$user_id] = intval($row->ID);
 
-        $email   = get_user_meta($user_id, '_yith_wcaf_email', true) ?: $user_obj->user_email ?: '';
-        $address = get_user_meta($user_id, '_yith_wcaf_address', true) ?: $user_obj->user_address ?: '';
+            $status = 'New request';
+            if ($banned === 1) {
+                $status = 'Banned';
+            } elseif ($enabled === 1) {
+                $status = 'Accepted and enabled';
+            } elseif ($enabled === -1) {
+                $status = 'Rejected';
+            }
 
-        $city = get_user_meta($user_id, '_yith_wcaf_city', true)
-            ?: get_user_meta($user_id, 'billing_city', true)
-            ?: get_user_meta($user_id, 'shipping_city', true) ?: '';
+            $user_status_map[$user_id] = [
+                'enabled' => $enabled,
+                'banned'  => $banned,
+                'label'   => $status,
+            ];
 
-        $state = get_user_meta($user_id, '_yith_wcaf_state', true)
-            ?: get_user_meta($user_id, 'billing_state', true)
-            ?: get_user_meta($user_id, 'shipping_state', true) ?: '';
+            $user_obj = get_userdata($user_id);
 
-        $organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
-        if (!$organization) {
-            $organization = get_user_meta($user_id, '_yith_wcaf_first_name', true) . ' ' . get_user_meta($user_id, '_yith_wcaf_last_name', true);
+            $email = get_user_meta($user_id, '_yith_wcaf_email', true)
+                ?: $user_obj->user_email ?: '';
+
+
+            $city = get_user_meta($user_id, '_yith_wcaf_city', true)
+                ?: get_user_meta($user_id, 'billing_city', true)
+                ?: get_user_meta($user_id, 'shipping_city', true) ?: '';
+
+            $state = get_user_meta($user_id, '_yith_wcaf_state', true)
+                ?: get_user_meta($user_id, 'billing_state', true)
+                ?: get_user_meta($user_id, 'shipping_state', true) ?: '';
+
+            $organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
+            if (!$organization) {
+                $organization = get_user_meta($user_id, 'first_name', true) . ' ' . get_user_meta($user_id, 'last_name', true);
+            }
+
+            $organization_phone = get_user_meta($user_id, '_yith_wcaf_phone_number', true);
+
+            $user_meta_cache[$user_id] = [
+                'organization' => $organization,
+                'city'         => $city,
+                'state'        => $state,
+                'code'         => $row->token,
+                'email'        => $email,
+                'phone'        => $organization_phone,
+            ];
         }
 
-        $organization_phone = get_user_meta($user_id, '_yith_wcaf_phone_number', true)
-            ?: get_user_meta($user_id, 'billing_phone', true)
-            ?: get_user_meta($user_id, 'shipping_phone', true);
+        $status_filter = sanitize_text_field($_POST['status_filter'] ?? '');
+        $session_status_filter = sanitize_text_field($_POST['session_status_filter'] ?? '');
+        $organization_search = stripslashes($_POST['organization_search'] ?? '');
+        $organization_code_search = stripslashes($_POST['organization_code_search'] ?? '');
+       
+        $filtered_user_ids = array_filter($user_ids, function ($user_id) use (
+            $search, $user_meta_cache, $user_status_map, $status_filter, $session_status_filter, $organization_search, $organization_code_search, $sales_reps_data
+        ) {
+            $status = strtolower($user_status_map[$user_id]['label']);
+            $meta = $user_meta_cache[$user_id];
+            $organization = $meta['organization'];
+            $code = strtolower($meta['code']);
 
-        $user_meta_cache[$user_id] = [
-            'organization' => $organization,
-            'city'         => $city,
-            'state'        => $state,
-            'code'         => $row->token,
-            'email'        => $email,
-            'phone'        => $organization_phone,
-            'address'      => $address,
-        ];
-    }
+            $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true);
 
-    $status_filter = sanitize_text_field($_POST['status_filter'] ?? '');
-    $session_status_filter = sanitize_text_field($_POST['session_status_filter'] ?? '');
-    $organization_search = stripslashes($_POST['organization_search'] ?? '');
-    $organization_code_search = stripslashes($_POST['organization_code_search'] ?? '');
+           if (!empty($organization_search)) {
+                $org_search = strtolower(stripslashes($organization_search));
+                if (strpos(strtolower($organization), $org_search) === false) {
+                    return false;
+                }
+            }
 
-    $filtered_user_ids = array_filter($user_ids, function ($user_id) use (
-        $search, $user_meta_cache, $user_status_map, $status_filter, $session_status_filter, $organization_search, $organization_code_search, $sales_reps_data
-    ) {
-        $status = strtolower($user_status_map[$user_id]['label']);
-        $meta = $user_meta_cache[$user_id];
-        $organization = $meta['organization'];
-        $code = strtolower($meta['code']);
-
-        $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true);
-
-        if (!empty($organization_search)) {
-            $org_search = strtolower(stripslashes($organization_search));
-            if (strpos(strtolower($organization), $org_search) === false) {
+            if (!empty($organization_code_search) && strpos($code, strtolower($organization_code_search)) === false) {
                 return false;
             }
-        }
 
-        if (!empty($organization_code_search) && strpos($code, strtolower($organization_code_search)) === false) {
-            return false;
-        }
+            if (!empty($status_filter) && strtolower($status_filter) !== $status) {
+                return false;
+            }
 
-        if (!empty($status_filter) && strtolower($status_filter) !== $status) {
-            return false;
-        }
+            if ($session_status_filter === 'active' && intval($activate_affiliate_account) !== 1) {
+                return false;
+            }
 
-        if ($session_status_filter === 'active' && intval($activate_affiliate_account) !== 1) {
-            return false;
-        }
+            if ($session_status_filter === 'deactivate' && intval($activate_affiliate_account) === 1) {
+                return false;
+            }
 
-        if ($session_status_filter === 'deactivate' && intval($activate_affiliate_account) === 1) {
-            return false;
-        }
+            if (empty($search)) return true;
 
-        if (empty($search)) return true;
+            $search_lc = strtolower($search);
+            $search_value = $meta['code'];
 
-        $search_lc = strtolower($search);
-        $search_value = $meta['code'];
+            // === Associated Affiliate Search ===
+            $associated_affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true) ?: $user_id;
+            $assoc_first = strtolower(get_user_meta($associated_affiliate_id, 'first_name', true));
+            $assoc_last  = strtolower(get_user_meta($associated_affiliate_id, 'last_name', true));
+            $assoc_full  = trim("$assoc_first $assoc_last");
+            $assoc_email = strtolower(get_userdata($associated_affiliate_id)->user_email ?? '');
 
-        // === Associated Affiliate Search ===
-        $associated_affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true) ?: $user_id;
-        $assoc_first = strtolower(get_user_meta($associated_affiliate_id, '_yith_wcaf_first_name', true));
-        $assoc_last  = strtolower(get_user_meta($associated_affiliate_id, '_yith_wcaf_last_name', true));
-        $assoc_full  = trim("$assoc_first $assoc_last");
-        $assoc_email = strtolower(get_userdata($associated_affiliate_id)->user_email ?? '');
+            // === Sales Rep Match Check ===
+            $salesrep_match = false;
+            foreach ($sales_reps_data as $key => $value) {
+                if ($value === 'all' || (is_array($value) && in_array($search_value, $value))) {
+                    $sr_first = strtolower(get_user_meta($key, 'first_name', true));
+                    $sr_last  = strtolower(get_user_meta($key, 'last_name', true));
+                    $sr_full  = trim("$sr_first $sr_last");
+                    $sr_email = strtolower(get_userdata($key)->user_email ?? '');
 
-        // === Sales Rep Match Check ===
-        $salesrep_match = false;
-        foreach ($sales_reps_data as $key => $value) {
-            if ($value === 'all' || (is_array($value) && in_array($search_value, $value))) {
-                $sr_first = strtolower(get_user_meta($key, 'first_name', true));
-                $sr_last  = strtolower(get_user_meta($key, 'last_name', true));
-                $sr_full  = trim("$sr_first $sr_last");
-                $sr_email = strtolower(get_userdata($key)->user_email ?? '');
-
-                if (
-                    strpos($sr_first, $search_lc) !== false ||
-                    strpos($sr_last, $search_lc) !== false ||
-                    strpos($sr_full, $search_lc) !== false ||
-                    strpos($sr_email, $search_lc) !== false
-                ) {
-                    $salesrep_match = true;
-                    break;
+                    if (
+                        strpos($sr_first, $search_lc) !== false ||
+                        strpos($sr_last, $search_lc) !== false ||
+                        strpos($sr_full, $search_lc) !== false ||
+                        strpos($sr_email, $search_lc) !== false
+                    ) {
+                        $salesrep_match = true;
+                        break;
+                    }
                 }
             }
-        }
 
-        return (
-            strpos(strtolower($organization), $search_lc) !== false ||
-            strpos(strtolower($meta['city']), $search_lc) !== false ||
-            strpos(strtolower($meta['state']), $search_lc) !== false ||
-            strpos(strtolower($meta['code']), $search_lc) !== false ||
-            strpos(strtolower($meta['email']), $search_lc) !== false ||
-            strpos(strtolower($meta['phone']), $search_lc) !== false ||    
-            strpos(strtolower($meta['address']), $search_lc) !== false ||  
-            strpos($status, $search_lc) !== false ||
-            strpos($assoc_first, $search_lc) !== false ||
-            strpos($assoc_last, $search_lc) !== false ||
-            strpos($assoc_full, $search_lc) !== false ||
-            strpos($assoc_email, $search_lc) !== false ||
-            $salesrep_match
-        );
-    });
+            return (
+                strpos($organization, $search_lc) !== false ||
+                strpos(strtolower($meta['city']), $search_lc) !== false ||
+                strpos(strtolower($meta['state']), $search_lc) !== false ||
+                strpos(strtolower($meta['code']), $search_lc) !== false ||
+                strpos(strtolower($meta['email']), $search_lc) !== false ||
+                strpos($status, $search_lc) !== false ||
+                strpos($assoc_first, $search_lc) !== false ||
+                strpos($assoc_last, $search_lc) !== false ||
+                strpos($assoc_full, $search_lc) !== false ||
+                strpos($assoc_email, $search_lc) !== false ||
+                $salesrep_match
+            );
+        });
 
        $recordsTotal    = count(array_unique($user_ids));
         $recordsFiltered = count(array_unique($filtered_user_ids));
