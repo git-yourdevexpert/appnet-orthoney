@@ -1314,7 +1314,7 @@ class OAM_ADMINISTRATOR_AJAX {
         // Step 5: Ordering
         $order_column_index = $_POST['order'][0]['column'] ?? 0;
         $order_direction = $_POST['order'][0]['dir'] ?? 'asc';
-        $columns = ['code', 'email', 'organization', 'city', 'state', 'status'];
+        $columns = ['code', 'email', 'organization', 'phone', 'address', 'city', 'state', 'status'];
         $orderby_key = $columns[$order_column_index] ?? 'code';
 
         usort($filtered_user_ids, function ($a, $b) use ($orderby_key, $order_direction, $user_meta_cache, $user_status_map) {
