@@ -1048,9 +1048,10 @@ class OAM_ADMINISTRATOR_AJAX {
             $city = get_user_meta($user_id, '_yith_wcaf_city', true) ?: get_user_meta($user_id, 'billing_city', true) ?: get_user_meta($user_id, 'shipping_city', true);
             $state = get_user_meta($user_id, '_yith_wcaf_state', true) ?: get_user_meta($user_id, 'billing_state', true) ?: get_user_meta($user_id, 'shipping_state', true);
             $phone = get_user_meta($user_id, '_yith_wcaf_phone_number', true) ?: get_user_meta($user_id, 'billing_phone', true) ?: get_user_meta($user_id, 'shipping_phone', true);
+            $email = get_user_meta($user_id, '_yith_wcaf_email', true) ?: $user_obj->user_email ?: '';
 
             if (!empty($organization)) $organizationdata[] = '<strong> ['.esc_html($user->token).'] ' . esc_html($organization) . '</strong>';
-            if (!empty($user->user_email)) $organizationdata[] = esc_html($user->user_email);
+            $organizationdata[] = esc_html($email);
             if (!empty($phone)) $organizationdata[] = esc_html($phone);
 
             $organization_display = implode('<br>', array_filter($organizationdata));
