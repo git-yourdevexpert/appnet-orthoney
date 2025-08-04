@@ -1113,7 +1113,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
 
     public function orthoney_admin_get_organizations_data_handler() {
-    global $wpdb;
+        global $wpdb;
 
     $sales_reps = get_users(['role' => 'sales_representative']);
     $sales_reps_data = [];
@@ -1308,11 +1308,126 @@ class OAM_ADMINISTRATOR_AJAX {
         );
     });
 
-    // Continue unchanged below this point...
-    // Sorting, pagination, response formatting
-    // [Unchanged, so truncated here for brevity — already in your original paste]
-}
+       $recordsTotal    = count(array_unique($user_ids));
+        $recordsFiltered = count(array_unique($filtered_user_ids));
 
+        // Step 5: Ordering
+        $order_column_index = $_POST['order'][0]['column'] ?? 0;
+        $order_direction = $_POST['order'][0]['dir'] ?? 'asc';
+        $columns = ['code', 'email', 'organization', 'city', 'state', 'status'];
+        $orderby_key = $columns[$order_column_index] ?? 'code';
+
+        usort($filtered_user_ids, function ($a, $b) use ($orderby_key, $order_direction, $user_meta_cache, $user_status_map) {
+            $a_val = ($orderby_key === 'status') ? $user_status_map[$a]['label'] : ($user_meta_cache[$a][$orderby_key] ?? '');
+            $b_val = ($orderby_key === 'status') ? $user_status_map[$b]['label'] : ($user_meta_cache[$b][$orderby_key] ?? '');
+            $comparison = strnatcasecmp($a_val, $b_val);
+            return $order_direction === 'asc' ? $comparison : -$comparison;
+        });
+
+        // Step 6: Pagination
+        $paged_user_ids = array_unique(array_slice(array_values($filtered_user_ids), $start, $length));
+
+        // Step 7: Format and output
+        $data = [];
+
+        foreach ($paged_user_ids as $user_id) {
+            $meta = $user_meta_cache[$user_id];
+            $status = $user_status_map[$user_id]['label'];
+
+            $associated_affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true) ?: $user_id;
+            $activate_affiliate_account = get_user_meta($user_id, 'activate_affiliate_account', true) ?: 0;
+            $yith_wcaf_phone_number = get_user_meta($user_id, '_yith_wcaf_phone_number', true) ?: '';
+            $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
+            $product_price = get_user_meta($user_id, 'DJarPrice', true);
+            $new_organization = OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Returning';
+
+            $show_price = ($product_price >= $selling_minimum_price) ? $product_price : $selling_minimum_price;
+
+            $organizationdata = array_filter([
+                '<strong>' . esc_html($meta['organization']) . '</strong>',
+                trim(esc_html($meta['city']) . (!empty($meta['city']) && !empty($meta['state']) ? ', ' : '') . esc_html($meta['state'])),
+                esc_html($meta['email']),
+                esc_html($meta['phone']),
+            ]);
+
+            $organization = implode('<br>', $organizationdata);
+
+            $org_admin_user = '';
+            if ($associated_affiliate_id) {
+                $org_user = get_userdata($associated_affiliate_id);
+                $first_name = get_user_meta($associated_affiliate_id, 'first_name', true);
+                $last_name  = get_user_meta($associated_affiliate_id, 'last_name', true);
+                $yith_wcaf_phone_number = get_user_meta($user_id, 'user_registration_customer_phone_number', true) ?: '';
+                $org_user_name = trim($first_name . ' ' . $last_name) ?: $org_user->display_name;
+                $org_email = $org_user->user_email;
+                $org_admin_user = '<strong>'.$org_user_name . '</strong><br>' . $org_email . '<br>' . $yith_wcaf_phone_number;
+            }
+
+            if (!empty($meta['email']) && !empty($meta['code'])) {
+                $userid_keys = [];
+                $search_value = $meta['code'];
+
+                foreach ($sales_reps_data as $key => $value) {
+                    if ($value === 'all' || (is_array($value) && in_array($search_value, $value))) {
+                        $first_name = get_user_meta($key, 'first_name', true);
+                        $last_name = get_user_meta($key, 'last_name', true);
+
+                        $suser_info = get_userdata($key);
+                        $semail = $suser_info ? $suser_info->user_email : '';
+
+                        $cbr_phone_number = get_user_meta($key, 'user_registration_customer_phone_number', true);
+                        $parts = array_filter([
+                            trim("$first_name $last_name") ? '<strong>'.trim("$first_name $last_name").'</strong>' : '',
+                            trim($semail),
+                            trim($cbr_phone_number),
+                        ]);
+
+                        $combined_info = implode('<br>', $parts);
+                        $userid_keys[] = $combined_info;
+                    }
+                }
+
+                $filtered_keys = array_filter($userid_keys);
+                $last_index = count($filtered_keys) - 1;
+
+                $csr_name = implode('', array_map(function ($val, $index) use ($filtered_keys, $last_index) {
+                    // Escape the content, but allow HTML formatting (br, hr)
+                    $output = nl2br($val); // escape content safely, preserve line breaks if any
+                    if ($index < $last_index) {
+                        $output .= '<br><hr>';
+                    }
+                    return $output;
+                }, $filtered_keys, array_keys($filtered_keys)));
+
+                $new_organization_block = implode('<br>', array_filter([
+                    '<strong>Org Status:</strong> ' . esc_html($new_organization),
+                    esc_html($status),
+                    '<strong>Season Status:</strong> ' . esc_html($activate_affiliate_account == 1 ? 'Activated' : 'Deactivated'),
+                ]));
+
+                $admin_url = admin_url() . '/admin.php?page=yith_wcaf_panel&affiliate_id=' . intval($aff_data_array[$user_id]) . '&tab=affiliates';
+
+                $data[] = [
+                    'code' => esc_html($meta['code']),
+                    'organization' => $organization,
+                    'csr_name' => $csr_name,
+                    'organization_admin' => $org_admin_user,
+                    'new_organization' => $new_organization_block,
+                    'status' => esc_html($status),
+                    'price' => wc_price($show_price),
+                    'login' => '<button class="customer-login-btn icon-txt-btn" data-user-id="' . intval($user_id) . '" data-nonce="' . esc_attr($nonce) . '"><img src="' . OH_PLUGIN_DIR_URL . 'assets/image/login-customer-icon.png"> Login As Org</button><a href="' . $admin_url . '" class="icon-txt-btn"><img src="' . OH_PLUGIN_DIR_URL . '/assets/image/user-avatar.png">Edit Org Prf</a><button class="view_order_details icon-txt-btn" data-popup="#view_org_details_popup" data-org-id="' . intval($user_id) . '"><i class="far fa-eye"></i>View Org Details</button>'
+                ];
+
+            }
+        }
+
+        wp_send_json([
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ]);
+    }
 
 
 
