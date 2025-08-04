@@ -743,7 +743,7 @@ class OAM_AFFILIATE_Helper
             INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
             WHERE c.affiliate_code = %s 
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
-            AND o.status IN ('wc-processing', 'wc-completed')", $affiliate_token));
+            AND o.status IN ('wc-processing', 'wc-completed') GROUP BY c.wc_order_id", $affiliate_token));
 
         $total_exclude_quantity = (int) $wpdb->get_var($wpdb->prepare("SELECT 
             SUM(CAST(om.meta_value AS UNSIGNED))
@@ -753,7 +753,7 @@ class OAM_AFFILIATE_Helper
             INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id
             INNER JOIN {$wpdb->prefix}wc_orders_meta wm ON wm.order_id = o.id
             WHERE c.affiliate_code = %s AND om.meta_key = '_qty' AND wm.meta_key = 'affiliate_account_status' AND wm.meta_value = '1'
-            AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) AND o.status IN ('wc-processing', 'wc-completed')", $affiliate_token));
+            AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) AND o.status IN ('wc-processing', 'wc-completed') GROUP BY c.wc_order_id", $affiliate_token));
 
         $exclude_coupon = EXCLUDE_COUPON;
         $total_all_quantity = $wholesale_qty = 0;
@@ -974,7 +974,7 @@ class OAM_AFFILIATE_Helper
             INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
             WHERE c.affiliate_code = %s
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
-            AND o.status IN ('wc-processing', 'wc-completed')",
+            AND o.status IN ('wc-processing', 'wc-completed') GROUP BY c.wc_order_id",
             $affiliate_token
         ));
 
@@ -991,7 +991,8 @@ class OAM_AFFILIATE_Helper
                 AND wm.meta_key = 'affiliate_account_status'
                 AND wm.meta_value = '1'
                 AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
-                AND o.status IN ('wc-processing', 'wc-completed')",
+                AND o.status IN ('wc-processing', 'wc-completed')
+                GROUP BY c.wc_order_id",
            $affiliate_token
         ));
 
