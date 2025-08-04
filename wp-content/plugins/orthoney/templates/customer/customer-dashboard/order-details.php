@@ -147,7 +147,7 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
 
 <div class="order-process-block customer-order-details-section">
 
-        <div class="heading-title">
+        <div class="heading-title order-details-header">
             <div class="order-number">
                 <h3>#<?php echo esc_html($sub_order_id); ?> Order Details </h3>
                 <p>
