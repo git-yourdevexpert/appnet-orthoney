@@ -1003,6 +1003,7 @@ class OAM_ADMINISTRATOR_AJAX {
             $query = call_user_func_array([$wpdb, 'prepare'], array_merge([$query], $search_params));
         }
 
+        echo $query;
         $raw_users = $wpdb->get_results($query);
 
         if (empty($raw_users)) {
