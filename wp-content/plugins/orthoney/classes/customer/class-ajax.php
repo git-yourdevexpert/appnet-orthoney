@@ -2478,11 +2478,11 @@ class OAM_Ajax{
             )
         );
 
-        $full_name      = $recipientOrderDetails->full_name;
-        $company_name   = $recipientOrderDetails->company_name;
-        $address_1      = $recipientOrderDetails->address_1;
-        $address_2      = $recipientOrderDetails->address_2;
-        $city           = $recipientOrderDetails->city;
+        $full_name      = html_entity_decode(stripslashes($recipientOrderDetails->full_name));
+        $company_name   = html_entity_decode(stripslashes($recipientOrderDetails->company_name));
+        $address_1      = html_entity_decode(stripslashes($recipientOrderDetails->address_1));
+        $address_2      = html_entity_decode(stripslashes($recipientOrderDetails->address_2));
+        $city           = html_entity_decode(stripslashes($recipientOrderDetails->city));
         $state          = $recipientOrderDetails->state;
         $postcode       = $recipientOrderDetails->zipcode;
         $country        = $recipientOrderDetails->country ?? 'US';
