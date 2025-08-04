@@ -985,6 +985,8 @@ class OAM_ADMINISTRATOR_AJAX {
             LEFT JOIN {$wpdb->usermeta} last_name ON af.user_id = last_name.user_id AND last_name.meta_key = 'last_name'
             LEFT JOIN {$wpdb->usermeta} last_name1 ON af.user_id = last_name1.user_id AND last_name1.meta_key = '_yith_wcaf_last_name'
             LEFT JOIN {$wpdb->usermeta} phone ON af.user_id = phone.user_id AND phone.meta_key = '_yith_wcaf_phone_number'
+            LEFT JOIN {$wpdb->usermeta} phone1 ON af.user_id = phone1.user_id AND phone1.meta_key = 'billing_phone'
+            LEFT JOIN {$wpdb->usermeta} phone2 ON af.user_id = phone2.user_id AND phone2.meta_key = 'shipping_phone'
             LEFT JOIN {$wpdb->usermeta} address ON af.user_id = address.user_id AND address.meta_key = '_yith_wcaf_address'
             LEFT JOIN {$wpdb->usermeta} city1 ON af.user_id = city1.user_id AND city1.meta_key = '_yith_wcaf_city'
             LEFT JOIN {$wpdb->usermeta} city2 ON af.user_id = city2.user_id AND city2.meta_key = 'billing_city'
