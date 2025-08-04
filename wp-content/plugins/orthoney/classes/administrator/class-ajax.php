@@ -1202,7 +1202,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
         $organization = get_user_meta($user_id, '_yith_wcaf_name_of_your_organization', true);
         if (!$organization) {
-            $organization = get_user_meta($user_id, 'first_name', true) . ' ' . get_user_meta($user_id, 'last_name', true);
+            $organization = get_user_meta($user_id, '_yith_wcaf_first_name', true) . ' ' . get_user_meta($user_id, '_yith_wcaf_last_name', true);
         }
 
         $organization_phone = get_user_meta($user_id, '_yith_wcaf_phone_number', true)
@@ -1297,8 +1297,8 @@ class OAM_ADMINISTRATOR_AJAX {
             strpos(strtolower($meta['state']), $search_lc) !== false ||
             strpos(strtolower($meta['code']), $search_lc) !== false ||
             strpos(strtolower($meta['email']), $search_lc) !== false ||
-            strpos(strtolower($meta['phone']), $search_lc) !== false ||     // ✅ PHONE SEARCH
-            strpos(strtolower($meta['address']), $search_lc) !== false ||   // ✅ ADDRESS SEARCH
+            strpos(strtolower($meta['phone']), $search_lc) !== false ||    
+            strpos(strtolower($meta['address']), $search_lc) !== false ||  
             strpos($status, $search_lc) !== false ||
             strpos($assoc_first, $search_lc) !== false ||
             strpos($assoc_last, $search_lc) !== false ||
