@@ -139,127 +139,131 @@ function affiliateDatatable() {
     }
   });
 
-  
-["affiliate-orderlist-table"].forEach((id) => {
-  const div = document.getElementById(id);
-  if (div && div.innerHTML.trim() !== "") {
-    const tableEl = div.querySelector("table");
-    if (tableEl && !jQuery(tableEl).hasClass("dataTable")) {
-      const $table = jQuery(tableEl);
-      const dateColIndex = 5; // Change if Date column index is different
-      const lastColIndex = $table.find("thead th").length - 1;
+  ["affiliate-orderlist-table"].forEach((id) => {
+    const div = document.getElementById(id);
+    if (div && div.innerHTML.trim() !== "") {
+      const tableEl = div.querySelector("table");
+      if (tableEl && !jQuery(tableEl).hasClass("dataTable")) {
+        const $table = jQuery(tableEl);
+        const dateColIndex = 5; // Change if Date column index is different
+        const lastColIndex = $table.find("thead th").length - 1;
 
-      // Custom sort: ignore '#' in the first column
-      jQuery.fn.dataTable.ext.type.order["ignore-hash-asc"] = function (a, b) {
-        return (
-          (parseInt(a.replace(/^#/, ""), 10) || 0) -
-          (parseInt(b.replace(/^#/, ""), 10) || 0)
-        );
-      };
-      jQuery.fn.dataTable.ext.type.order["ignore-hash-desc"] = function (a, b) {
-        return (
-          (parseInt(b.replace(/^#/, ""), 10) || 0) -
-          (parseInt(a.replace(/^#/, ""), 10) || 0)
-        );
-      };
+        // Custom sort: ignore '#' in the first column
+        jQuery.fn.dataTable.ext.type.order["ignore-hash-asc"] = function (
+          a,
+          b
+        ) {
+          return (
+            (parseInt(a.replace(/^#/, ""), 10) || 0) -
+            (parseInt(b.replace(/^#/, ""), 10) || 0)
+          );
+        };
+        jQuery.fn.dataTable.ext.type.order["ignore-hash-desc"] = function (
+          a,
+          b
+        ) {
+          return (
+            (parseInt(b.replace(/^#/, ""), 10) || 0) -
+            (parseInt(a.replace(/^#/, ""), 10) || 0)
+          );
+        };
 
-      // Create Year filter dropdown with spacing
-      const yearSelect = jQuery(`
+        // Create Year filter dropdown with spacing
+        const yearSelect = jQuery(`
         <select id="yearFilter" class="form-control" style="margin-left: 10px;">
           <option value="">Filter by Year</option>
         </select>
       `);
 
-      // Initialize DataTable
-      const dataTable = $table.DataTable({
-        paging: true,
-        pageLength: 50,
-        lengthMenu: [
-          [10, 25, 50, 100],
-          [10, 25, 50, 100]
-        ],
-        fixedHeader: true,
-        scrollCollapse: false,
-        info: true,
-        searching: true,
-        responsive: true,
-        deferRender: false,
-        order: [[0, "desc"]], // Sort by first column (ignoring #)
-        lengthChange: false,
-        language: {
-          search: "",
-          searchPlaceholder: "Search..."
-        },
-        columnDefs: [
-          {
-            targets: 0, // First column
-            type: "ignore-hash" // Use custom sort type
+        // Initialize DataTable
+        const dataTable = $table.DataTable({
+          paging: true,
+          pageLength: 50,
+          lengthMenu: [
+            [10, 25, 50, 100],
+            [10, 25, 50, 100]
+          ],
+          fixedHeader: true,
+          scrollCollapse: false,
+          info: true,
+          searching: true,
+          responsive: true,
+          deferRender: false,
+          order: [[0, "desc"]], // Sort by first column (ignoring #)
+          lengthChange: false,
+          language: {
+            search: "",
+            searchPlaceholder: "Search..."
           },
-          {
-            targets: lastColIndex, // Last column (e.g., Actions)
-            orderable: false
+          columnDefs: [
+            {
+              targets: 0, // First column
+              type: "ignore-hash" // Use custom sort type
+            },
+            {
+              targets: lastColIndex, // Last column (e.g., Actions)
+              orderable: false
+            }
+          ],
+          initComplete: function () {
+            // Extract years from Date column
+            const years = new Set();
+            this.api()
+              .column(dateColIndex)
+              .data()
+              .each(function (d) {
+                const match = d.match(/\d{2}\/\d{2}\/(\d{4})/); // Match MM/DD/YYYY
+                if (match) {
+                  years.add(match[1]); // Get year
+                }
+              });
+
+            // Populate dropdown
+            Array.from(years)
+              .sort((a, b) => b - a)
+              .forEach((year) => {
+                yearSelect.append(`<option value="${year}">${year}</option>`);
+              });
+
+            // Append dropdown next to search box
+            jQuery(`.dataTables_filter label`).before(yearSelect);
           }
-        ],
-        initComplete: function () {
-          // Extract years from Date column
-          const years = new Set();
-          this.api()
-            .column(dateColIndex)
-            .data()
-            .each(function (d) {
-              const match = d.match(/\d{2}\/\d{2}\/(\d{4})/); // Match MM/DD/YYYY
-              if (match) {
-                years.add(match[1]); // Get year
-              }
-            });
+        });
 
-          // Populate dropdown
-          Array.from(years)
-            .sort((a, b) => b - a)
-            .forEach((year) => {
-              yearSelect.append(`<option value="${year}">${year}</option>`);
-            });
+        // Year filter change event
+        yearSelect.on("change", function () {
+          const selectedYear = this.value;
+          if (selectedYear) {
+            dataTable
+              .column(dateColIndex)
+              .search(`/${selectedYear}$`, true, false)
+              .draw();
+          } else {
+            dataTable.column(dateColIndex).search("").draw();
+          }
+        });
 
-          // Append dropdown next to search box
-          jQuery(`.dataTables_filter label`).before(yearSelect);
-        }
-      });
+        // Hide pagination/info if only one page
+        dataTable.on("draw", function () {
+          const pageInfo = dataTable.page.info();
+          const wrapper = $table.closest(".dataTables_wrapper");
+          const pagination = wrapper.find(".dataTables_paginate");
+          const infoText = wrapper.find(".dataTables_info");
 
-      // Year filter change event
-      yearSelect.on("change", function () {
-        const selectedYear = this.value;
-        if (selectedYear) {
-          dataTable
-            .column(dateColIndex)
-            .search(`/${selectedYear}$`, true, false)
-            .draw();
-        } else {
-          dataTable.column(dateColIndex).search("").draw();
-        }
-      });
+          if (pageInfo.pages <= 1) {
+            pagination.hide();
+            infoText.hide();
+          } else {
+            pagination.show();
+            infoText.show();
+          }
+        });
 
-      // Hide pagination/info if only one page
-      dataTable.on("draw", function () {
-        const pageInfo = dataTable.page.info();
-        const wrapper = $table.closest(".dataTables_wrapper");
-        const pagination = wrapper.find(".dataTables_paginate");
-        const infoText = wrapper.find(".dataTables_info");
-
-        if (pageInfo.pages <= 1) {
-          pagination.hide();
-          infoText.hide();
-        } else {
-          pagination.show();
-          infoText.show();
-        }
-      });
-
-      // Trigger initial draw
-      dataTable.draw();
+        // Trigger initial draw
+        dataTable.draw();
+      }
     }
-  }
-});
-
+  });
 }
 
 function VerifyRecipientsDatatable() {
@@ -352,10 +356,10 @@ jQuery("select").each(function ($) {
   if (jQuery(this).hasClass("gfield_select")) {
     placeholderText = "Please select a type";
   }
-  if (jQuery(this)[0].getAttribute('name') == 'input_8') {
-  placeholderText = "Please select a user type";
+  if (jQuery(this)[0].getAttribute("name") == "input_8") {
+    placeholderText = "Please select a user type";
   }
-  if (jQuery(this)[0].getAttribute('name') == 'input_18') {
+  if (jQuery(this)[0].getAttribute("name") == "input_18") {
     placeholderText = "Please select an inquiry type";
   }
 
@@ -3414,7 +3418,7 @@ document.addEventListener("click", function (event) {
         "city",
         "state",
         "zipcode",
-        "phone_number",
+        "phone_number"
       ];
       fields.forEach((field) => {
         const input = form.querySelector(`#${field}`);
@@ -3603,7 +3607,7 @@ jQuery(function ($) {
             let organizationInput = $("input.search-by-organization").val();
 
             if ($.trim(organizationInput).toLowerCase() === "hfth") {
-                organizationInput = "orthoney";
+              organizationInput = "orthoney";
             }
 
             d.search_by_organization = organizationInput;
@@ -3648,7 +3652,7 @@ jQuery(function ($) {
         { data: "total_recipient", orderable: false, searchable: false },
         { data: "payment_method", orderable: false, searchable: false },
         //{ data: 'type', orderable: false, searchable: false },
-        { data: 'status', orderable: false, searchable: false },
+        { data: "status", orderable: false, searchable: false },
         { data: "price", orderable: false, searchable: false },
         { data: "action", orderable: false, searchable: false }
       ],
@@ -4050,14 +4054,14 @@ jQuery(function ($) {
         jQuery(document).on("click", ".reset_btton", function (e) {
           const currentYear = new Date().getFullYear();
           $("#select-year").val(currentYear); // Set default
-          $("#select-customer").val('').empty().trigger("change");
+          $("#select-customer").val("").empty().trigger("change");
           $(".search-recipient-name").val(""); // Set default
           $(".search-by-organization").val(""); // Set default
           $("#order_status").val("all"); // Set default
           $("#custom-order-type-filter").val("all"); // Set default
           $("#custom-payment-method-filter").val("all");
           jQuery('#customer-orders-table_filter input[type="search"]').val("");
-           table.search("").draw();
+          table.search("").draw();
 
           const min = $("#slider-range").slider("option", "min");
           const max = $("#slider-range").slider("option", "max");
@@ -4111,10 +4115,9 @@ jQuery(function ($) {
             let organizationInput = $("input.jar-search-by-organization").val();
 
             if ($.trim(organizationInput).toLowerCase() === "hfth") {
-                organizationInput = "orthoney";
+              organizationInput = "orthoney";
             }
             d.search_by_organization = organizationInput;
-
           }
           d.jar_dsr_affiliate_token = $("input#jar_dsr_affiliate_token").val();
         },
@@ -4277,7 +4280,7 @@ jQuery(function ($) {
         jQuery(document).on("click", ".jar_reset_btton", function ($) {
           const currentYear = new Date().getFullYear();
           jQuery("#jars-select-year").val(currentYear); // Set default
-           jQuery("#jar-select-customer").val('').empty().trigger("change");
+          jQuery("#jar-select-customer").val("").empty().trigger("change");
           jQuery(".jar-search-by-organization").val(""); // Set default
           jQuery('#customer-jar-orders-table_filter input[type="search"]').val(
             ""
@@ -4852,330 +4855,369 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 })();
 
-
 document.addEventListener("click", function (event) {
-    const target = event.target;
+  const target = event.target;
 
-    if (target.classList.contains("view_order_details")) {
-        event.preventDefault();
+  if (target.classList.contains("view_order_details")) {
+    event.preventDefault();
 
-        const org_id = target.getAttribute("data-org-id");
-        const popupSelector = target.getAttribute("data-popup");
+    const org_id = target.getAttribute("data-org-id");
+    const popupSelector = target.getAttribute("data-popup");
 
-        // Show loader
-        process_group_popup("Loading organization details...");
+    // Show loader
+    process_group_popup("Loading organization details...");
 
-        fetch(oam_ajax.ajax_url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: new URLSearchParams({
-                action: "get_org_details_base_id",
-                org_id: org_id,
-                security: oam_ajax.nonce
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
+    fetch(oam_ajax.ajax_url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: new URLSearchParams({
+        action: "get_org_details_base_id",
+        org_id: org_id,
+        security: oam_ajax.nonce
+      })
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          // Inject data into the popup content
+          const popupContent = document.querySelector(popupSelector);
+          if (popupContent) {
+            popupContent.querySelector(".popup-title span").textContent =
+              data.data.org_name;
+            popupContent.querySelector("#org-website").textContent =
+              data.data.website;
+            popupContent.querySelector("#org-phone").textContent =
+              data.data.phone;
+            popupContent.querySelector("#org-tax-id").textContent =
+              data.data.tax_id;
+            popupContent.querySelector("#gift_card").textContent =
+              data.data.gift_card;
+            popupContent.querySelector("#product_price").textContent =
+              data.data.product_price;
+            popupContent.querySelector("#org-check_payable").textContent =
+              data.data.check_payable;
+            popupContent.querySelector("#org-check_address").textContent =
+              data.data.address_check;
+            popupContent.querySelector("#org-check_attention").textContent =
+              data.data.attention;
+            popupContent.querySelector("#org-check_office").textContent =
+              data.data.check_mailed_address;
+            popupContent.querySelector("#org-full-address").textContent =
+              data.data.full_address;
+          }
 
-                // Inject data into the popup content
-                const popupContent = document.querySelector(popupSelector);
-                if (popupContent) {
-                    popupContent.querySelector('.popup-title span').textContent = data.data.org_name;
-                    popupContent.querySelector('#org-website').textContent = data.data.website;
-                    popupContent.querySelector('#org-phone').textContent = data.data.phone;
-                    popupContent.querySelector('#org-tax-id').textContent = data.data.tax_id;
-                    popupContent.querySelector('#gift_card').textContent = data.data.gift_card;
-                    popupContent.querySelector('#product_price').textContent = data.data.product_price;
-                    popupContent.querySelector('#org-check_payable').textContent = data.data.check_payable;
-                    popupContent.querySelector('#org-check_address').textContent = data.data.address_check;
-                    popupContent.querySelector('#org-check_attention').textContent = data.data.attention;
-                    popupContent.querySelector('#org-check_office').textContent = data.data.check_mailed_address;
-                    popupContent.querySelector('#org-full-address').textContent = data.data.full_address;
+          // Open popup after data is loaded
+          const popup = lity(popupSelector);
+
+          // Disable outclick close
+          requestAnimationFrame(() => {
+            const lityElement = document.querySelector(".lity");
+            if (!lityElement) return;
+
+            lityElement.addEventListener(
+              "click",
+              function (e) {
+                if (
+                  e.target === lityElement ||
+                  e.target.classList.contains("lity-wrap")
+                ) {
+                  e.stopPropagation();
+                  e.preventDefault();
                 }
+              },
+              true
+            );
 
-                // Open popup after data is loaded
-                const popup = lity(popupSelector);
-
-                // Disable outclick close
-                requestAnimationFrame(() => {
-                    const lityElement = document.querySelector('.lity');
-                    if (!lityElement) return;
-
-                    lityElement.addEventListener('click', function(e) {
-                        if (e.target === lityElement || e.target.classList.contains('lity-wrap')) {
-                            e.stopPropagation();
-                            e.preventDefault();
-                        }
-                    }, true);
-
-                    // Allow close button to work
-                    const closeBtn = lityElement.querySelector('.lity-close');
-                    if (closeBtn) {
-                        closeBtn.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            popup.close();
-                        }, { once: true });
-                    }
-                });
-
-                Swal.close();
-
-            } else {
-                Swal.fire({
-                    title: "Error",
-                    text: data.data.message || "Failed to load organization details.",
-                    icon: "error"
-                });
+            // Allow close button to work
+            const closeBtn = lityElement.querySelector(".lity-close");
+            if (closeBtn) {
+              closeBtn.addEventListener(
+                "click",
+                function (e) {
+                  e.stopPropagation();
+                  popup.close();
+                },
+                { once: true }
+              );
             }
-        })
-        .catch(() => {
-            Swal.fire({
-                title: "Error",
-                text: "An error occurred while processing the request.",
-                icon: "error"
-            });
-        });
-    }
-});
+          });
 
-
-
-
-document.addEventListener("click", function (event) {
-    const target = event.target;
-    if (target.classList.contains("orderchangeorg")) {
-        const popup = lity(target.getAttribute("data-popup"));
-        const org_details = target.getAttribute("data-organization_data");
-        const wc_order_id = target.getAttribute("data-wc_order_id");
-        const order_id = target.getAttribute("data-order_id");
-        if(org_details != ''){
-          document.querySelector('#order-switch-org-popup .org-details-div').innerHTML = 'This order will support ' + org_details;
+          Swal.close();
+        } else {
+          Swal.fire({
+            title: "Error",
+            text: data.data.message || "Failed to load organization details.",
+            icon: "error"
+          });
         }
-        document.querySelector('#order-switch-org-popup #wc_order_id').value  = wc_order_id;
-        document.querySelector('#order-switch-org-popup #order_id').value  =  order_id;
-
-        setTimeout(() => {
-            const lityElement = document.querySelector('.lity');
-            if (lityElement) {
-                // Override the click handler to prevent closing on backdrop
-                lityElement.addEventListener('click', function(e) {
-                    // Only prevent closing if clicking on the backdrop (not the content)
-                    if (e.target === lityElement || e.target.classList.contains('lity-wrap')) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        return false;
-                    }
-                }, true); // Use capture phase
-                
-                // Ensure close button still works
-                const closeBtn = lityElement.querySelector('.lity-close');
-                if (closeBtn) {
-                    closeBtn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        popup.close();
-                    });
-                }
-            }
-        }, 50);
-    }
+      })
+      .catch(() => {
+        Swal.fire({
+          title: "Error",
+          text: "An error occurred while processing the request.",
+          icon: "error"
+        });
+      });
+  }
 });
 
+document.addEventListener("click", function (event) {
+  const target = event.target;
+  if (target.classList.contains("orderchangeorg")) {
+    const popup = lity(target.getAttribute("data-popup"));
+    const org_details = target.getAttribute("data-organization_data");
+    const wc_order_id = target.getAttribute("data-wc_order_id");
+    const order_id = target.getAttribute("data-order_id");
+    if (org_details != "") {
+      document.querySelector(
+        "#order-switch-org-popup .org-details-div"
+      ).innerHTML = "This order will support " + org_details;
+    }
+    document.querySelector("#order-switch-org-popup #wc_order_id").value =
+      wc_order_id;
+    document.querySelector("#order-switch-org-popup #order_id").value =
+      order_id;
 
-const switchOrgButton = document.querySelector('#switch-org-button');
+    setTimeout(() => {
+      const lityElement = document.querySelector(".lity");
+      if (lityElement) {
+        // Override the click handler to prevent closing on backdrop
+        lityElement.addEventListener(
+          "click",
+          function (e) {
+            // Only prevent closing if clicking on the backdrop (not the content)
+            if (
+              e.target === lityElement ||
+              e.target.classList.contains("lity-wrap")
+            ) {
+              e.stopPropagation();
+              e.preventDefault();
+              return false;
+            }
+          },
+          true
+        ); // Use capture phase
+
+        // Ensure close button still works
+        const closeBtn = lityElement.querySelector(".lity-close");
+        if (closeBtn) {
+          closeBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            popup.close();
+          });
+        }
+      }
+    }, 50);
+  }
+});
+
+const switchOrgButton = document.querySelector("#switch-org-button");
 
 if (switchOrgButton) {
-    switchOrgButton.addEventListener('click', async function () {
-        const affiliateSelect = document.querySelector("#order-switch-org-popup #order-org-search");
-        const selectedOption = affiliateSelect.options[affiliateSelect.selectedIndex];
-        const org_token = selectedOption.getAttribute("data-token");  
-     
-        const org_user_id = affiliateSelect.value;
-        const wc_order_id =document.querySelector("#order-switch-org-popup #wc_order_id").value;
-        const order_id =document.querySelector("#order-switch-org-popup #order_id").value;
-  
-        console.log(org_token + ' ' + org_user_id + ' ' + wc_order_id + ' ' + order_id);
-       const result = await Swal.fire({
-            html: "<b>Are you sure you want to switch the organization for this order?</b><br><p style='line-height: 1.3;padding-top: 20px;'><span style='color: red;font-weight: 900;line-height: 1.1;'>Switching the organization will assign the commission for this order to the newly selected organization. This may result in a mismatch in commission calculations</span></p>",
-            showCancelButton: true,
-            showConfirmButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes",
-            cancelButtonText: "No",
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            allowEnterKey: false,
-            reverseButtons: true,
-        });
-        if (result.isConfirmed) {
-            process_group_popup();
+  switchOrgButton.addEventListener("click", async function () {
+    const affiliateSelect = document.querySelector(
+      "#order-switch-org-popup #order-org-search"
+    );
+    const selectedOption =
+      affiliateSelect.options[affiliateSelect.selectedIndex];
+    const org_token = selectedOption.getAttribute("data-token");
 
-            const requestParams = new URLSearchParams({
-                action: 'switch_org_to_order',
-                org_token: org_token,
-                org_user_id: org_user_id,
-                wc_order_id: wc_order_id,
-                order_id: order_id,
-                security: oam_ajax?.nonce || ''
-            });
+    const org_user_id = affiliateSelect.value;
+    const wc_order_id = document.querySelector(
+      "#order-switch-org-popup #wc_order_id"
+    ).value;
+    const order_id = document.querySelector(
+      "#order-switch-org-popup #order_id"
+    ).value;
 
-            const addResponse = await fetch(oam_ajax.ajax_url, {
-                method: 'POST',
-                body: requestParams,
-            });
-
-            const addData = await addResponse.json();
-
-            if (addData.success) {
-                Swal.fire({
-                    title: "Success",
-                    text: 'You have successfully switched to the selected organization.',
-                    icon: "success",
-                    showConfirmButton: false,
-                });
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                Swal.fire({
-                    title: "Error",
-                    text: 'The order number does not match. Please try again.',
-                    icon: "error",
-                });
-            }
-        }
+    console.log(
+      org_token + " " + org_user_id + " " + wc_order_id + " " + order_id
+    );
+    const result = await Swal.fire({
+      html: "<b>Are you sure you want to switch the organization for this order?</b><br><p style='line-height: 1.3;padding-top: 20px;'><span style='color: red;font-weight: 900;line-height: 1.1;'>Switching the organization will assign the commission for this order to the newly selected organization. This may result in a mismatch in commission calculations</span></p>",
+      showCancelButton: true,
+      showConfirmButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+      cancelButtonText: "No",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false,
+      reverseButtons: true
     });
+    if (result.isConfirmed) {
+      process_group_popup();
+
+      const requestParams = new URLSearchParams({
+        action: "switch_org_to_order",
+        org_token: org_token,
+        org_user_id: org_user_id,
+        wc_order_id: wc_order_id,
+        order_id: order_id,
+        security: oam_ajax?.nonce || ""
+      });
+
+      const addResponse = await fetch(oam_ajax.ajax_url, {
+        method: "POST",
+        body: requestParams
+      });
+
+      const addData = await addResponse.json();
+
+      if (addData.success) {
+        Swal.fire({
+          title: "Success",
+          text: "You have successfully switched to the selected organization.",
+          icon: "success",
+          showConfirmButton: false
+        });
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: "The order number does not match. Please try again.",
+          icon: "error"
+        });
+      }
+    }
+  });
 }
 
-
-
 jQuery(document).ready(function ($) {
-    const today = moment();
-    const nextWeek = moment().add(7, 'days');
+  const today = moment();
+  const nextWeek = moment().add(7, "days");
 
-    $('#date_range_picker').daterangepicker({
-        startDate: today,
-        endDate: nextWeek,
-        drops: 'auto',
-        opens: 'center',
-        maxYear : moment().year(),
-        minYear: 2025,
-        minDate: moment('01/01/2025', 'MM/DD/YYYY'),
-        showDropdowns: false,
-        locale: {
-            format: 'MM/DD/YYYY'
-        }
-    }, function (start, end, label) {
-        console.log("Date range selected: " + start.format('MM/DD/YYYY') + ' to ' + end.format('MM/DD/YYYY'));
-    });
+  $("#date_range_picker").daterangepicker(
+    {
+      startDate: today,
+      endDate: nextWeek,
+      drops: "auto",
+      opens: "center",
+      maxYear: moment().year(),
+      minYear: 2025,
+      minDate: moment("01/01/2025", "MM/DD/YYYY"),
+      showDropdowns: false,
+      locale: {
+        format: "MM/DD/YYYY"
+      }
+    },
+    function (start, end, label) {
+      console.log(
+        "Date range selected: " +
+          start.format("MM/DD/YYYY") +
+          " to " +
+          end.format("MM/DD/YYYY")
+      );
+    }
+  );
 });
 jQuery(document).ready(function ($) {
-    $('#fulfillment-report-generate_report').on('click', function (e) {
-        e.preventDefault();
+  $("#fulfillment-report-generate_report").on("click", function (e) {
+    e.preventDefault();
 
-        const date_range = $('#date_range_picker').val();
-        const sendmail = $('#fulfillment_send_mail').val();
+    const date_range = $("#date_range_picker").val();
+    const sendmail = $("#fulfillment_send_mail").val();
 
-        if (!date_range) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Missing date range',
-                text: 'Please select a date range.',
-            });
-            return;
-        }
+    if (!date_range) {
+      Swal.fire({
+        icon: "error",
+        title: "Missing date range",
+        text: "Please select a date range."
+      });
+      return;
+    }
 
-        Swal.fire({
-            title: "Generating Fulfillment Report",
-            html: `
-                <p>Please wait, your report is being generated.</p>
+    Swal.fire({
+      title: "Generating Fulfillment Report",
+      html: `
+                <p>Please wait while your report is being generated.</p>
                 <div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
                     <div id="progress-bar" style="width: 0%; height: 10px; background-color: #3085d6;"></div>
                 </div>
                 <p id="progress-text">0%</p>
             `,
-            showConfirmButton: false,
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            allowEnterKey: false
-        });
-
-        // Start processing
-        processFulfillmentChunk(0, date_range, sendmail);
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false
     });
 
-    function processFulfillmentChunk(offset, date_range, sendmail) {
-        $.ajax({
-            url: oam_ajax.ajax_url,
-            method: 'POST',
-            dataType: 'json',
-            data: {
-                action: 'generate_fulfillment_report',
-                security: oam_ajax.nonce,
-                offset: offset,
-                date_range: date_range,
-                sendmail: sendmail
-            },
-            success: function (response) {
-                if (response.success) {
-                    const data = response.data;
-                    const progress = data.progress || 100;
+    // Start processing
+    processFulfillmentChunk(0, date_range, sendmail);
+  });
 
-                    $('#progress-bar').css('width', progress + '%');
-                    $('#progress-text').text(progress + '%');
+  function processFulfillmentChunk(offset, date_range, sendmail) {
+    $.ajax({
+      url: oam_ajax.ajax_url,
+      method: "POST",
+      dataType: "json",
+      data: {
+        action: "generate_fulfillment_report",
+        security: oam_ajax.nonce,
+        offset: offset,
+        date_range: date_range,
+        sendmail: sendmail
+      },
+      success: function (response) {
+        if (response.success) {
+          const data = response.data;
+          const progress = data.progress || 100;
 
-                    if (data.done) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Report Ready',
-                            text: 'Your CSV files are ready and download will begin shortly.',
-                            showConfirmButton: false,
-                            timer: 2500
-                        });
+          $("#progress-bar").css("width", progress + "%");
+          $("#progress-text").text(progress + "%");
 
-                        // Auto-download fulfillment CSV
-                        if (data.fulfillment_url && data.filenames?.fulfillment) {
-                            const a1 = document.createElement('a');
-                            a1.href = data.fulfillment_url;
-                            a1.download = data.filenames.fulfillment;
-                            document.body.appendChild(a1);
-                            a1.click();
-                            document.body.removeChild(a1);
-                        }
+          if (data.done) {
+            Swal.fire({
+              icon: "success",
+              title: "Your report is ready!",
+              text: "Your CSV files will begin downloading shortly.",
+              showConfirmButton: false,
+              timer: 2500
+            });
 
-                        // Auto-download greetings-per-jar CSV
-                        if (data.greetings_url && data.filenames?.greetings) {
-                            const a2 = document.createElement('a');
-                            a2.href = data.greetings_url;
-                            a2.download = data.filenames.greetings;
-                            document.body.appendChild(a2);
-                            a2.click();
-                            document.body.removeChild(a2);
-                        }
-
-                    } else {
-                        // Continue with next chunk
-                        setTimeout(() => {
-                            processFulfillmentChunk(offset + 10, date_range, sendmail);
-                        }, 300);
-                    }
-
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.data.message || 'Something went wrong.',
-                    });
-                }
-            },
-            error: function () {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'AJAX request failed.',
-                });
+            // Auto-download fulfillment CSV
+            if (data.fulfillment_url && data.filenames?.fulfillment) {
+              const a1 = document.createElement("a");
+              a1.href = data.fulfillment_url;
+              a1.download = data.filenames.fulfillment;
+              document.body.appendChild(a1);
+              a1.click();
+              document.body.removeChild(a1);
             }
+
+            // Auto-download greetings-per-jar CSV
+            if (data.greetings_url && data.filenames?.greetings) {
+              const a2 = document.createElement("a");
+              a2.href = data.greetings_url;
+              a2.download = data.filenames.greetings;
+              document.body.appendChild(a2);
+              a2.click();
+              document.body.removeChild(a2);
+            }
+          } else {
+            // Continue with next chunk
+            setTimeout(() => {
+              processFulfillmentChunk(offset + 10, date_range, sendmail);
+            }, 300);
+          }
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: response.data.message || "Something went wrong."
+          });
+        }
+      },
+      error: function () {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "AJAX request failed."
         });
-    }
+      }
+    });
+  }
 });

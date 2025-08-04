@@ -165,6 +165,7 @@
          <div class="heading-title">
             <div>
                 <h3 class="block-title">Remittance Form</h3>
+                <p><strong><br>Please indicate if check will be mailed to a home or your organization's office:</strong></p>
             </div>
         </div>
     </div>

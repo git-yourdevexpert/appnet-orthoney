@@ -37,7 +37,7 @@ if ($redirect_back_user_id) {
                         <div class="form-row gfield--width-full">
                             <label for="fulfillment_send_mail">Enter email address</label>
                             <input type="text" id="fulfillment_send_mail" name="fulfillment_send_mail" placeholder="Enter email address" />
-                            <span>Please enter mail for the <strong>fulfillment report</strong></span>
+                            <span>Please enter the email address where you'd like to receive the <strong>fulfillment report.</strong></span>
                         </div>
 
                         <div id="date_range_error" style="color: red; font-size: 13px; margin-top: 4px;"></div>
