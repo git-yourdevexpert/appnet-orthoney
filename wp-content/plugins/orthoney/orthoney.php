@@ -313,35 +313,3 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 // });
 
 
-
-add_action('pre_user_query', 'search_users_by_fullname');
-
-function search_users_by_fullname($query) {
-    global $wpdb;
-
-    if (!empty($query->query_vars['search'])) {
-        $search = trim($query->query_vars['search'], '*');
-        $search = sanitize_text_field($search);
-
-        // Join first_name and last_name
-        $query->query_from .= "
-            LEFT JOIN {$wpdb->usermeta} AS fn_meta ON ({$wpdb->users}.ID = fn_meta.user_id AND fn_meta.meta_key = 'first_name')
-            LEFT JOIN {$wpdb->usermeta} AS ln_meta ON ({$wpdb->users}.ID = ln_meta.user_id AND ln_meta.meta_key = 'last_name')
-        ";
-
-        // Build LIKE conditions for both "First Last" and "Last First"
-        $search1 = '%' . $wpdb->esc_like($search) . '%';
-
-        // Add full name matching
-        $full_name = "CONCAT(fn_meta.meta_value, ' ', ln_meta.meta_value)";
-        $query->query_where .= $wpdb->prepare(
-            " OR {$full_name} LIKE %s",
-            $search1,
-            $search1
-        );
-
-        // Ensure DISTINCT selection and GROUP BY user ID to remove duplicates
-        $query->query_fields = 'DISTINCT ' . $query->query_fields;
-        $query->query_groupby = "{$wpdb->users}.ID";
-    }
-}
