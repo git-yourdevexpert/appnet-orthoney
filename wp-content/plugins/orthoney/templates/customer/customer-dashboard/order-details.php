@@ -329,9 +329,9 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                               <tr data-id="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-group="<?php echo esc_attr($sub_order->recipient_order_id); ?>">
                                 <td><?php echo esc_html($sub_order->recipient_order_id); ?></td>
                                 <td><?php echo esc_html($jar_order->jar_order_id); ?></td>
-                                <td><?php echo esc_html($sub_order->full_name); ?></td>
-                                <td><?php echo esc_html($sub_order->company_name); ?></td>
-                                <td><?php echo esc_html($address); ?></td>
+                                <td><?php echo esc_html(html_entity_decode(stripslashes($sub_order->full_name))); ?></td>
+                                <td><?php echo esc_html(html_entity_decode(stripslashes($sub_order->company_name))); ?></td>
+                                <td><?php echo esc_html(html_entity_decode(stripslashes($address))); ?></td>
                                 <td><?php echo esc_html( ($sub_order->quantity > 6 ? $sub_order->quantity : 1)); ?></td>
                                 <th></th>
                                 <td>Processing</td>
@@ -387,9 +387,9 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                     ?>
                     <tr data-id="<?php echo esc_attr($sub_order->recipient_order_id); ?>">
                         <td><?php echo esc_html($sub_order->recipient_order_id); ?></td>
-                        <td><?php echo esc_html($sub_order->full_name); ?></td>
-                        <td><?php echo esc_html($sub_order->company_name); ?></td>
-                        <td><?php echo esc_html($address); ?></td>
+                        <td><?php echo esc_html(html_entity_decode(stripslashes($sub_order->full_name))); ?></td>
+                        <td><?php echo esc_html(html_entity_decode(stripslashes($sub_order->company_name))); ?></td>
+                        <td><?php echo esc_html(html_entity_decode(stripslashes($address))); ?></td>
                         <td><?php echo esc_html($sub_order->quantity); ?></td>
                         <td></td>
                         <td>
