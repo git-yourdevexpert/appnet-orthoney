@@ -1189,10 +1189,9 @@ class OAM_ADMINISTRATOR_AJAX {
 
             $user_obj = get_userdata($user_id);
 
-        
-
-            $email = get_user_meta($user_id, '_yith_wcaf_email', true)
-                ?: $user_obj->user_email ?: '';
+    
+            $email = get_user_meta($user_id, '_yith_wcaf_email', true) ?: $user_obj->user_email ?: '';
+            $address = get_user_meta($user_id, '_yith_wcaf_address', true) ?: $user_obj->user_address ?: '';
 
 
             $city = get_user_meta($user_id, '_yith_wcaf_city', true)
@@ -1208,7 +1207,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 $organization = get_user_meta($user_id, 'first_name', true) . ' ' . get_user_meta($user_id, 'last_name', true);
             }
 
-            $organization_phone = get_user_meta($user_id, '_yith_wcaf_phone_number', true);
+            $organization_phone = get_user_meta($user_id, '_yith_wcaf_phone_number', true) ?: get_user_meta($user_id, 'billing_phone', true) ?: get_user_meta($user_id, 'shipping_phone', true);
 
             $user_meta_cache[$user_id] = [
                 'organization' => $organization,
@@ -1217,6 +1216,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 'code'         => $row->token,
                 'email'        => $email,
                 'phone'        => $organization_phone,
+                'address'        => $address,
             ];
         }
 
