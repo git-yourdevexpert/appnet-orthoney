@@ -1265,8 +1265,8 @@ class OAM_ADMINISTRATOR_AJAX {
 
         // === Associated Affiliate Search ===
         $associated_affiliate_id = get_user_meta($user_id, 'associated_affiliate_id', true) ?: $user_id;
-        $assoc_first = strtolower(get_user_meta($associated_affiliate_id, 'first_name', true));
-        $assoc_last  = strtolower(get_user_meta($associated_affiliate_id, 'last_name', true));
+        $assoc_first = strtolower(get_user_meta($associated_affiliate_id, '_yith_wcaf_first_name', true));
+        $assoc_last  = strtolower(get_user_meta($associated_affiliate_id, '_yith_wcaf_last_name', true));
         $assoc_full  = trim("$assoc_first $assoc_last");
         $assoc_email = strtolower(get_userdata($associated_affiliate_id)->user_email ?? '');
 
