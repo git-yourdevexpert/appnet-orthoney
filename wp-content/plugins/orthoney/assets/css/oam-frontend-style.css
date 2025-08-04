@@ -4354,6 +4354,13 @@ table#customer-jar-orders-table thead tr th:last-child{
   }
 }
 
+@media (max-width: 1440px) {
+  .order-process-block .heading-title.order-details-header{
+    align-items: flex-start; 
+    flex-direction: column;
+  }
+}
+
 @media (max-width: 1350px) {
   .order-process-block .tab-selections .step-nav-item {
     padding: 12px 25px 12px 15px;
