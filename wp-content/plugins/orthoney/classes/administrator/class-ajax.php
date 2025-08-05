@@ -38,15 +38,26 @@ class OAM_ADMINISTRATOR_AJAX {
     }
 
     list($start, $end) = explode(' - ', $date_range);
-    $start_date = DateTime::createFromFormat('m/d/Y', trim($start));
-    $end_date = DateTime::createFromFormat('m/d/Y', trim($end));
-
+ 
+    $ny_timezone = new DateTimeZone('America/New_York');
+    $start_date = DateTime::createFromFormat('m/d/Y', trim($start), $ny_timezone);
+    $end_date   = DateTime::createFromFormat('m/d/Y', trim($end), $ny_timezone);
+ 
     if (!$start_date || !$end_date) {
-        wp_send_json_error(['message' => 'Invalid date format.']);
+        throw new Exception('Invalid date format.');
     }
-
-    $start_str = $start_date->format('Y-m-d 00:00:00');
-    $end_str = $end_date->format('Y-m-d 23:59:59');
+ 
+    $start_date->setTime(0, 0, 0);
+    $end_date->setTime(23, 59, 59);
+ 
+    $start_date_utc = clone $start_date;
+    $end_date_utc = clone $end_date;
+    $start_date_utc->setTimezone(new DateTimeZone('UTC'));
+    $end_date_utc->setTimezone(new DateTimeZone('UTC'));
+ 
+    $start_str = $start_date_utc->format('Y-m-d H:i:s');
+    $end_str   = $end_date_utc->format('Y-m-d H:i:s');
+ 
     $file_name_date_format = $start_date->format('mdY') . '-' . $end_date->format('mdY');
 
     $session_key = md5($date_range . $sendmail_raw);
