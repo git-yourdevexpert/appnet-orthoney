@@ -603,7 +603,9 @@ class OAM_Helper{
       
         $orders_table = $wpdb->prefix . 'wc_orders';
     
-        $created_date = date_i18n(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format, strtotime($order_data->date_created_gmt));
+        $datetime = new DateTime($order_data->date_created_gmt, new DateTimeZone('UTC'));
+        $datetime->setTimezone(new DateTimeZone('America/New_York'));
+        $created_date = $datetime->format(OAM_Helper::$date_format . ' ' . OAM_Helper::$time_format);
         $tabletype = isset($_POST['tabletype']) ? sanitize_text_field($_POST['tabletype']) : 'administrator-dashboard';
         
         $billing_name = $order_obj->get_billing_first_name() . ' ' . $order_obj->get_billing_last_name();
