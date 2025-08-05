@@ -838,10 +838,6 @@ class OAM_AFFILIATE_Helper
                         'commission' => ($par_jar >= $selling_min_price ? (($par_jar - $minimum_price) * $total_qty) : 0)
                     ];
 
-                    echo "<pre>";
-                    print_r($data);
-                    echo "</pre>";
-
                     $commission_array[$data['custom_order_id']] = $data;
                 }
             }
