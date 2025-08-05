@@ -260,14 +260,21 @@ class OAM_ADMINISTRATOR_AJAX {
                 ];
                 fputcsv($fulfillment_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
 
-                if($jar['order_type'] == 'internal') {
-                    $greeting_line = [
-                        $row['custom_order_id'],
-                        $recipient['recipient_order_id'],
-                        $jar['jar_order_id'],
-                        $recipient['greeting'],
-                    ];
-                    fputcsv($greetings_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $greeting_line));
+                $jar_order_rows = $wpdb->get_results($wpdb->prepare("
+                    SELECT * FROM {$wpdb->prefix}oh_wc_jar_order
+                    WHERE recipient_order_id = %s AND order_id != %d
+                ", $recipient['recipient_order_id'], 0), ARRAY_A);
+
+                foreach ($jar_order_rows as $jar) {
+                    if($jar['order_type'] == 'internal') {
+                        $greeting_line = [
+                            $row['custom_order_id'],
+                            $recipient['recipient_order_id'],
+                            $jar['jar_order_id'],
+                            $recipient['greeting'],
+                        ];
+                        fputcsv($greetings_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $greeting_line));
+                    }
                 }
             }
         }
