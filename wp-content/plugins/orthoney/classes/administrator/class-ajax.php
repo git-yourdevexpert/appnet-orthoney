@@ -1076,6 +1076,10 @@ class OAM_ADMINISTRATOR_AJAX {
                 $cost = '<strong>Total: </strong>'. wc_price($commission_array['ort_cost']);
                 $cost .= '<br><small><strong>Fundraising: </strong>'. wc_price($commission_array['fundraising_cost']);
                 $cost .= '<br><strong>Wholesale: </strong>'. wc_price($commission_array['wholesale_cost']) . '</small>';
+            }else{
+                $cost = '<strong>Total: </strong>'. wc_price(0);
+                $cost .= '<br><small><strong>Fundraising: </strong>'. wc_price(0);
+                $cost .= '<br><strong>Wholesale: </strong>'. wc_price(0) . '</small>';
             }
 
             $dist_cost = '';
@@ -1087,6 +1091,10 @@ class OAM_ADMINISTRATOR_AJAX {
                 $dist_cost = '<strong>Total: </strong>'. wc_price($commission_array['ort_dist']);
                 $dist_cost .= '<br><small><strong>Fundraising: </strong>'. wc_price($commission_array['fundraising_dist']);
                 $dist_cost .= '<br><strong>Wholesale: </strong>'. wc_price($commission_array['wholesale_dist']) . '</small>';
+            }else{
+                $dist_cost = '<strong>Total: </strong>'. wc_price(0);
+                $dist_cost .= '<br><small><strong>Fundraising: </strong>'. wc_price(0);
+                $dist_cost .= '<br><strong>Wholesale: </strong>'. wc_price(0) . '</small>';
             }
 
             $data[] = [
