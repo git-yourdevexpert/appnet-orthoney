@@ -132,7 +132,7 @@ class OAM_ADMINISTRATOR_AJAX {
     $order_ids = $wpdb->get_col($wpdb->prepare("
         SELECT ID FROM {$wpdb->prefix}wc_orders
         WHERE status IN ('wc-completed', 'wc-processing')
-        AND date_created_gmt BETWEEN %s AND %s
+        AND date_created_gmt BETWEEN %s AND %s AND type != 'shop_order_refund'; 
         ORDER BY date_created_gmt ASC
     ", $start_str, $end_str));
 
