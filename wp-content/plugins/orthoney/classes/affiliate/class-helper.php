@@ -603,7 +603,7 @@ class OAM_AFFILIATE_Helper
                  $html .= '<div class="block-row three-block-col">
                      <div class="place-order item">
                         <div class="row-block">
-                            <h4 class="block-title">Total(Fundraising + Wholesale)</h4>
+                            <h4 class="block-title">Total (Fundraising + Wholesale)</h4>
                             <div class="see-all">
                                 <div class="icon-card"><img alt="speedicon" src="' . OH_PLUGIN_DIR_URL . '/assets/image/commission-icon.png" width="30"  height="30" /></div>
                             </div>
@@ -668,9 +668,9 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Your Selling Price </span><span>N/A</span></li>
                                     <li><span>Your Unit Cost </span><span>'.wc_price($unit_cost).'</span></li>
                                     <li><span>Your Unit Profit</span><span>N/A</span></li>
-                                    <li><span>Your Total Wholesale Purchases <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.(($total_all_quantity < 50) ? wc_price(0)  : wc_price(($order_wholesale_quantity * $unit_cost))).'</span></li>
+                                    <li><span>Your Total Wholesale Purchases <div class="tooltip" data-tippy="(Wholesale Quantity * Your Unit Cost)"></div></span><span>'.(($total_all_quantity < 50) ? wc_price(0)  : wc_price(($order_wholesale_quantity * $unit_cost))).'</span></li>
 
-                                    <li><span>Your Total Wholesale Cost (ORT`s Share) <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.(($total_all_quantity < 50) ? wc_price(0)  : wc_price(($order_wholesale_quantity * $unit_cost))).'</span></li>
+                                    <li><span>Your Total Wholesale Cost (ORT`s Share) <div class="tooltip" data-tippy="(Wholesale Quantity * Your Unit Cost)"></div></span><span>'.(($total_all_quantity < 50) ? wc_price(0)  : wc_price(($order_wholesale_quantity * $unit_cost))).'</span></li>
 
                                     <li class="total"><span>Your Total Wholesale Profit</span><span>N/A</span></li>
                                     
