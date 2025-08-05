@@ -5085,15 +5085,15 @@ if (switchOrgButton) {
     }
   });
 }
-
 jQuery(document).ready(function ($) {
   const today = moment();
   const nextWeek = moment().add(7, "days");
+  const lastWeek = moment().subtract(7, 'days');
 
   $("#date_range_picker").daterangepicker(
     {
-      startDate: today,
-      endDate: nextWeek,
+      startDate: lastWeek,
+      endDate: today,
       drops: "auto",
       opens: "center",
       maxYear: moment().year(),
@@ -5114,6 +5114,7 @@ jQuery(document).ready(function ($) {
     }
   );
 });
+
 jQuery(document).ready(function ($) {
   $("#fulfillment-report-generate_report").on("click", function (e) {
     e.preventDefault();
