@@ -5099,6 +5099,7 @@ jQuery(document).ready(function ($) {
       maxYear: moment().year(),
       minYear: 2025,
       minDate: moment("01/01/2025", "MM/DD/YYYY"),
+      maxDate: today,
       showDropdowns: false,
       locale: {
         format: "MM/DD/YYYY"
