@@ -662,7 +662,7 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Your Selling Price </span><span>N/A</span></li>
                                     <li><span>Your Unit Cost </span><span>'.wc_price($unit_cost).'</span></li>
                                     <li><span>Your Unit Profit</span><span>N/A</span></li>
-                                    <li><span>Your Wholesale Total Sales <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.wc_price($wholesale_ort_share_cost).'</span></li>
+                                    <li><span>Your Wholesale Total Sales <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.(($total_all_quantity < 50) ? wc_price(0)  : wc_price(($wholesale_qty * $unit_cost))).'</span></li>
 
                                     <li><span>Your Total Cost (ORT`s Share) <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.(($total_all_quantity < 50) ? wc_price(0)  : wc_price(($wholesale_qty * $unit_cost))).'</span></li>
 
