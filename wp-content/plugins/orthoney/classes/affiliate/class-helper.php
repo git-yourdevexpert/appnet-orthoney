@@ -475,6 +475,10 @@ class OAM_AFFILIATE_Helper
                 }
             }
         }
+        
+        if( $selling_price < $selling_minimum_price){
+            $selling_price = $selling_minimum_price;
+        }
        
 
         $tax_id = get_user_meta($affiliate_id, '_yith_wcaf_tax_id', true);
@@ -635,7 +639,7 @@ class OAM_AFFILIATE_Helper
 
                                      <li><span>Your Total Purchase <div class="tooltip" data-tippy="(Your Fundraising Quantity * Your Selling Price)"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price($fundraising_ort_share_cost)).'</span></li>
 
-                                    <li ><span>Your Total Cost (ORT`s Share) <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price($fundraising_total)).'</span></li>
+                                   <li ><span>Your Total Cost (ORT`s Share) <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price(($fundraising_qty * $unit_cost))).'</span></li>
 
                                     <li  class="total"><span>Your Total Fundraising Profit <div class="tooltip" data-tippy="(Your Total Quantity * Your Unit Profit)"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price($total_commission)).'</span></li>
 
@@ -659,11 +663,12 @@ class OAM_AFFILIATE_Helper
                                     <li><span>Your Selling Price </span><span>N/A</span></li>
                                     <li><span>Your Unit Cost </span><span>'.wc_price($unit_cost).'</span></li>
                                     <li><span>Your Unit Profit</span><span>N/A</span></li>
-                                     <li><span>Your Wholesale Total Sales <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.wc_price($wholesale_ort_share_cost).'</span></li>
+                                    <li><span>Your Wholesale Total Sales <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.wc_price($wholesale_ort_share_cost).'</span></li>
 
-                                     <li><span>Your Total Cost (ORT`s Share) <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.wc_price($wholesale_total).'</span></li>
+                                    <li><span>Your Total Cost (ORT`s Share) <div class="tooltip" data-tippy="(Total Quantity * Your Unit Cost)"></div></span><span>'.(($details['current_year_total_quantity'] < 50) ? wc_price(0)  : wc_price(($wholesale_qty * $unit_cost))).'</span></li>
 
-                                     <li class="total"><span>Your Total Wholesale Profit</span><span>N/A</span></li>
+                                    <li class="total"><span>Your Total Wholesale Profit</span><span>N/A</span></li>
+                                    
                                 </ul>
                             </div>
                         </div>
@@ -1157,7 +1162,7 @@ class OAM_AFFILIATE_Helper
                 INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id AND oi.order_item_type = 'line_item'
                 INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
                 WHERE c.affiliate_code = %s
-                AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) AND o.status IN ('wc-processing', 'wc-completed')",
+                AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) AND o.status IN ('wc-processing', 'wc-completed')  GROUP BY c.wc_order_id",
                 $affiliate_token
             ));
 
