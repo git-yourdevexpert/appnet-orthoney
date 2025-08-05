@@ -3121,7 +3121,7 @@ class OAM_Ajax{
         }
 
         if (!empty($_REQUEST['search_by_organization'])) {
-            if($_REQUEST['search_by_organization'] != 'Orthoney'){
+            if($_REQUEST['search_by_organization'] != 'orthoney'){
                 $where[] = "(rel.affiliate_user_id != 0)";
             }
         }
