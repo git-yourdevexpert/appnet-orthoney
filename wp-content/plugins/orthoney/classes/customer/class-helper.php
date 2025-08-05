@@ -522,8 +522,6 @@ class OAM_Helper{
         if (!empty($_REQUEST['search_by_organization'])) {
             if($_REQUEST['search_by_organization'] != 'orthoney'){
                 $where_conditions[] = "(rel.affiliate_user_id != 0 )";
-            }else{
-                $where_conditions[] = "(rel.affiliate_user_id = 0 )";
             }
         }
 
