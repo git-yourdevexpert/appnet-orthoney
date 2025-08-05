@@ -1123,7 +1123,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 'dist_cost'             => $dist_cost,
                 'selling_min_price'     => esc_html($commission_array['selling_min_price']),
                 'total_order'           => esc_html($commission_array['total_order']),
-                'total_qty'             => esc_html($commission_array['total_all_quantity']),
+                'total_qty'             => esc_html($commission_array['total_all_quantity'] ?: 0),
                 'wholesale_qty'         => esc_html($commission_array['wholesale_qty']),
                 'fundraising_qty'       => esc_html($commission_array['fundraising_qty']),
                 'fundraising_orders'    => esc_html($commission_array['fundraising_orders']),
