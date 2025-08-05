@@ -553,12 +553,12 @@ class OAM_AFFILIATE_Helper
             $cbr_ids_array = array_unique($cbr_ids_array);
 
             $total_quantity_commission = '';
-            if($details['current_year_total_quantity'] < 50){
-                $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item success-message-box"><div class="row-block"><p >To qualify for commission, a minimum of 50 jars is required. You`re just ' . (50 - $details['current_year_total_quantity']) . ' jars away, keep going!</p></div></div></div>';
+            if($total_all_quantity < 50){
+                $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item success-message-box"><div class="row-block"><p >To qualify for commission, a minimum of 50 jars is required. You`re just ' . (50 - $total_all_quantity) . ' jars away, keep going!</p></div></div></div>';
             }
-            if($details['current_year_total_quantity'] >= 50 && $details['current_year_total_quantity'] < 100){
+            if($total_all_quantity >= 50 && $total_all_quantity < 100){
 
-                 $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item success-message-box"><div class="row-block"><p >You`re very close to your next Profit-Sharing level! Add just ' . (100 - $details['current_year_total_quantity']) . ' more jars to reach 100 jars and unlock additional benefits.</p></div></div></div>';
+                 $total_quantity_commission = '<div class="dashboard-heading block-row"><div class="item success-message-box"><div class="row-block"><p >You`re very close to your next Profit-Sharing level! Add just ' . (100 - $total_all_quantity) . ' more jars to reach 100 jars and unlock additional benefits.</p></div></div></div>';
             }
             $html .= '
                 <div class="dashboard-heading block-row">
@@ -782,64 +782,67 @@ class OAM_AFFILIATE_Helper
                 }
             }
 
+            
             foreach ($commission_year_results as $commission) {
                 $order_id = $commission->wc_order_id;
                 $affiliate_status = (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status');
                 if ((int)$affiliate_status === 1) {
-                $coupon_codes = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($order_id);
-                $coupons = array_filter(array_diff(explode(',', $coupon_codes), $exclude_coupon));
-                $total_qty = (int) $commission->total_quantity;
-                $par_jar = $commission->line_subtotal / $total_qty;
+                    $coupon_codes = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($order_id);
+                    $coupons = array_filter(array_diff(explode(',', $coupon_codes), $exclude_coupon));
+                    $total_qty = (int) $commission->total_quantity;
+                    $par_jar = $commission->line_subtotal / $total_qty;
 
-                $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
-                if ($par_jar >= $selling_min_price) {
-                    if (OAM_AFFILIATE_Helper::is_user_created_this_year($affiliate_data->user_id)) {
-                        if ($total_all_quantity < 99) {
-                            $minimum_price = get_field('new_minimum_price_50', 'option');
+                    $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
+                    if ($par_jar >= $selling_min_price) {
+                        if (OAM_AFFILIATE_Helper::is_user_created_this_year($affiliate_data->user_id)) {
+                            if ($total_all_quantity < 99) {
+                                $minimum_price = get_field('new_minimum_price_50', 'option');
+                            } else {
+                                $minimum_price = get_field('new_minimum_price_100', 'option');
+                            }
                         } else {
-                            $minimum_price = get_field('new_minimum_price_100', 'option');
-                        }
-                    } else {
-                        if ($total_all_quantity < 99) {
-                            $minimum_price = get_field('ex_minimum_price_50', 'option');
-                        } else {
-                            $minimum_price = get_field('ex_minimum_price_100', 'option');
+                            if ($total_all_quantity < 99) {
+                                $minimum_price = get_field('ex_minimum_price_50', 'option');
+                            } else {
+                                $minimum_price = get_field('ex_minimum_price_100', 'option');
+                            }
                         }
                     }
-                }
 
-                if (empty($coupons)) {
-                        $fundraising_cost += $total_qty * $par_jar;
-                        $fundraising_profit += $total_qty * ($par_jar - $minimum_price);
-                        $dist_fundraising_profit += $total_qty * $minimum_price;
-                    }else{
-                        $wholesale_profit += $total_qty * ($par_jar - $minimum_price);
-                        $dist_wholesale_profit += $total_qty * $minimum_price;
-                        $wholesale_cost += $total_qty * $par_jar ;
-                    }
-                
-                
-                $data = [
-                    'total_exclude_quantity' => $total_exclude_quantity,
-                    'total_all_quantity' => $total_quantity,
-                    'wholesale_qty' => $wholesale_qty,
-                    'order_id' => $order_id,
-                    'custom_order_id' => OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID'),
-                    'total_quantity' => $total_orders_quantity,
-                    'line_total' => $commission->line_total,
-                    'line_subtotal' => $commission->line_subtotal,
-                    'par_jar' => $par_jar,
-                    'product_price' => $product_price,
-                    'minimum_price' => $minimum_price,
-                    'is_voucher_used' => $coupon_codes,
-                    'order_quantity' => self::get_quantity_by_order_id($order_id),
-                    'affiliate_account_status' => (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status'),
-                    'commission' => ($par_jar >= $selling_min_price ? (($par_jar - $minimum_price) * $total_qty) : 0)
-                ];
+                    if (empty($coupons)) {
+                            $fundraising_cost += $total_qty * $par_jar;
+                            $fundraising_profit += $total_qty * ($par_jar - $minimum_price);
+                            $dist_fundraising_profit += $total_qty * $minimum_price;
+                        }else{
+                            $wholesale_profit += $total_qty * ($par_jar - $minimum_price);
+                            $dist_wholesale_profit += $total_qty * $minimum_price;
+                            $wholesale_cost += $total_qty * $par_jar ;
+                        }
+                    
+                    
+                    $data = [
+                        'total_exclude_quantity' => $total_exclude_quantity,
+                        'total_all_quantity' => $total_quantity,
+                        'wholesale_qty' => $wholesale_qty,
+                        'order_id' => $order_id,
+                        'custom_order_id' => OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID'),
+                        'total_quantity' => $total_orders_quantity,
+                        'line_total' => $commission->line_total,
+                        'line_subtotal' => $commission->line_subtotal,
+                        'par_jar' => $par_jar,
+                        'product_price' => $product_price,
+                        'minimum_price' => $minimum_price,
+                        'is_voucher_used' => $coupon_codes,
+                        'order_quantity' => self::get_quantity_by_order_id($order_id),
+                        'affiliate_account_status' => (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status'),
+                        'commission' => ($par_jar >= $selling_min_price ? (($par_jar - $minimum_price) * $total_qty) : 0)
+                    ];
 
-               
+                    echo "<pre>";
+                    print_r($data);
+                    echo "</pre>";
 
-                $commission_array[$data['custom_order_id']] = $data;
+                    $commission_array[$data['custom_order_id']] = $data;
                 }
             }
         }
