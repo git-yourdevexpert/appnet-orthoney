@@ -825,7 +825,7 @@ class OAM_AFFILIATE_Helper
                     'wholesale_qty' => $wholesale_qty,
                     'order_id' => $order_id,
                     'custom_order_id' => OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID'),
-                    'total_quantity' => $total_qty,
+                    'total_quantity' => $total_orders_quantity,
                     'line_total' => $commission->line_total,
                     'line_subtotal' => $commission->line_subtotal,
                     'par_jar' => $par_jar,
@@ -836,6 +836,8 @@ class OAM_AFFILIATE_Helper
                     'affiliate_account_status' => (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status'),
                     'commission' => ($par_jar >= $selling_min_price ? (($par_jar - $minimum_price) * $total_qty) : 0)
                 ];
+
+               
 
                 $commission_array[$data['custom_order_id']] = $data;
                 }
@@ -851,9 +853,9 @@ class OAM_AFFILIATE_Helper
                 // echo $data['commission']. "<br>";
                 $unit_price = $data['par_jar'];
                 $product_price = $data['product_price'];
-                $fundraising_qty = $data['total_quantity'];
-                $wholesale_qty = $data['wholesale_qty'];
-                $total_quantity =  $data['total_all_quantity'];
+                $fundraising_qty = $fundraising_qty + $data['total_quantity'];
+                $wholesale_qty = $wholesale_qty + $data['wholesale_qty'];
+                $total_quantity =  $total_quantity + $data['order_quantity'];
                 $unit_cost = $data['minimum_price'];
                 $total_orders++;
 
@@ -885,7 +887,7 @@ class OAM_AFFILIATE_Helper
             'product_price' => $product_price,
             'fundraising_qty' => $fundraising_qty,
             'fundraising_orders' => $fundraising_orders,
-            'total_all_quantity' => $total_orders_quantity,
+            'total_all_quantity' => $total_quantity,
             'unit_cost' => $unit_cost,
             'unit_profit' => ($unit_cost != 0 ) ? $product_price - $unit_cost : 0,
             'total_commission' => $fundraising_profit
