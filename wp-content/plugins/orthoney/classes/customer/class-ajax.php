@@ -3129,14 +3129,13 @@ class OAM_Ajax{
         $where[] = "orders.status NOT IN ('trash', 'wc-checkout-draft')";
 
        $sql = $wpdb->prepare(
-            "SELECT COUNT(*) FROM (SELECT {$jar_table}.recipient_order_id 
-            FROM {$jar_table} 
-            $joins 
-            $where_sql 
-            GROUP BY {$jar_table}.recipient_order_id) AS grouped_results;",
+            "SELECT  COUNT( DISTINCT orders.id) FROM {$orders_table} AS orders
+            $join
+            WHERE " . implode(' AND ', $where),
             ...$values
         );
 
+        
         $total_orders = $wpdb->get_var($sql);
 
         wp_send_json([
@@ -3145,7 +3144,6 @@ class OAM_Ajax{
             'recordsFiltered' => $total_orders,
             'data' => $filtered_orders,
         ]);
-
     }
 
     public function orthoney_handle_sub_order_request() {
@@ -3238,9 +3236,15 @@ class OAM_Ajax{
         $where[] = "o.status NOT IN ('trash', 'wc-checkout-draft') ";
 
         $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-        $sql = $wpdb->prepare("SELECT COUNT({$jar_table}.id) FROM {$jar_table} $joins $where_sql", ...$values);
+        $sql = $wpdb->prepare(
+            "SELECT COUNT(*) FROM (SELECT {$jar_table}.recipient_order_id 
+            FROM {$jar_table} 
+            $joins 
+            $where_sql 
+            GROUP BY {$jar_table}.recipient_order_id) AS grouped_results;",
+            ...$values
+        );
 
-        
         $total_orders = $wpdb->get_var($sql);
 
         wp_send_json([
