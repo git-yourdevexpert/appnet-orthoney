@@ -21,11 +21,12 @@ class OAM_ADMINISTRATOR_AJAX {
     }
 
 
-    public function orthoney_generate_fulfillment_report_callback() {
+   public function orthoney_generate_fulfillment_report_callback() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
 
         $exclude_coupon = EXCLUDE_COUPON;
+        $sheet_type = $_POST['sheet_type'] ?? 0;
 
         $date_range = sanitize_text_field($_POST['date_range'] ?? '');
         $sendmail_raw = $_POST['sendmail'] ?? '';
@@ -74,42 +75,59 @@ class OAM_ADMINISTRATOR_AJAX {
             wp_send_json_error(['message' => 'Directory not writable: ' . $custom_dir]);
         }
 
-        $base_name = 'download-order-fulfillment-' . $file_name_date_format . '-' . $session_key;
-        $greetings_base_name = 'download-greetings-per-jar-' . $file_name_date_format . '-' . $session_key;
+        if($sheet_type == 0){
+            $base_name = 'download-order-fulfillment-' . $file_name_date_format;
+            $greetings_base_name = 'download-greetings-per-jar-' . $file_name_date_format;
 
-        $fulfillment_filename = "{$base_name}.csv";
-        $greetings_filename = "{$greetings_base_name}.csv";
-        $fulfillment_path = $custom_dir . '/' . $fulfillment_filename;
-        $greetings_path = $custom_dir . '/' . $greetings_filename;
-        $fulfillment_url = $custom_url . '/' . $fulfillment_filename;
-        $greetings_url = $custom_url . '/' . $greetings_filename;
-
-        if ($offset === 0) {
-            $fulfillment_file = fopen($fulfillment_path, 'w');
-            $greetings_file = fopen($greetings_path, 'w');
-
-            if (!$fulfillment_file || !$greetings_file) {
-                wp_send_json_error(['message' => 'Unable to create CSVs.']);
-            }
-
-            fputcsv($fulfillment_file, [
-                'Status', 'WC_OID', 'ORDERID', 'RECIPIENTNO', 'JARNO', 'JARQTY',
-                'ORDERTYPE', 'VOUCHER', 'RECIPNAME', 'RECIPCOMPANY', 'RECIPADDRESS',
-                'RECIPADDRESS 2', 'RECIPCITY', 'RECIPState', 'RECIPZIP', 'RECIPCountry',
-                'Greeting', 'Bottom of card = In celebration of',
-                'Organization name (stub)', 'Code', 'Organization name (front of card)'
-            ]);
-
-            fputcsv($greetings_file, [
-                'WC_OID', 'ORDERID', 'RECIPIENTNO', 'JARNO', 'Greeting'
-            ]);
-
-            fclose($fulfillment_file);
-            fclose($greetings_file);
+            $fulfillment_filename = "{$base_name}.csv";
+            $greetings_filename = "{$greetings_base_name}.csv";
+            $fulfillment_path = $custom_dir . '/' . $fulfillment_filename;
+            $greetings_path = $custom_dir . '/' . $greetings_filename;
+            $fulfillment_url = $custom_url . '/' . $fulfillment_filename;
+            $greetings_url = $custom_url . '/' . $greetings_filename;
+        }else{
+            $full_export_base_name = 'full-export-' . $file_name_date_format;
+            $full_export_filename = "{$full_export_base_name}.csv";
+            $full_export_path = $custom_dir . '/' . $full_export_filename;
+            $full_export_url = $custom_url . '/' . $full_export_filename;
         }
 
-        if (!file_exists($fulfillment_path) || !file_exists($greetings_path)) {
-            wp_send_json_error(['message' => 'CSV session files not found. Please restart export.']);
+        if ($offset === 0) {
+            if($sheet_type == 0){
+                $fulfillment_file = fopen($fulfillment_path, 'w');
+                $greetings_file = fopen($greetings_path, 'w');
+                if (!$fulfillment_file || !$greetings_file) {
+                    wp_send_json_error(['message' => 'Unable to create CSVs.']);
+                }
+                fputcsv($fulfillment_file, [
+                    'Status', 'WC_OID', 'ORDERID', 'RECIPIENTNO', 'JARNO', 'JARQTY',
+                    'ORDERTYPE', 'VOUCHER', 'RECIPNAME', 'RECIPCOMPANY', 'RECIPADDRESS',
+                    'RECIPADDRESS 2', 'RECIPCITY', 'RECIPState', 'RECIPZIP', 'RECIPCountry',
+                    'Greeting', 'Bottom of card = In celebration of',
+                    'Organization name (stub)', 'Code', 'Organization name (front of card)'
+                ]);
+                fputcsv($greetings_file, [
+                    'WC_OID', 'ORDERID', 'RECIPIENTNO', 'JARNO', 'Greeting'
+                ]);
+                fclose($fulfillment_file);
+                fclose($greetings_file);
+            } else {
+                $full_export_file = fopen($full_export_path, 'w');
+                if (!$full_export_file) {
+                    wp_send_json_error(['message' => 'Unable to create CSVs.']);
+                }
+                fputcsv($full_export_file, [
+                    'List', 'uid', 'TAmount', 'JarsTotal', 'Code', 'OrderID', 'RecipientNo',
+                    'RecipName', 'RecipComp', 'RecipAddr1', 'RecipAddr2', 'RecipCity', 'RecipState',
+                    'RecipZip', 'Country', 'Greeting', 'RecipQty', 'TFirstName',
+                    'TLastName', 'CCorCheck', 'FirstName', 'LastName', 'City', 'State', 'Address',
+                    'ZipCode', 'Email', 'Phone', 'OrgName', 'DJarPrice', 'ShippingAmount',
+                    'user_id', 'status', 'confirmed', 'hold', 'paid', 'wc_oid', 
+                    'date_updated', 'order_date', 'checkout_timestamp', 'user_type',
+                    'order_type', 'Activate Status', 'ORG Status', 'Being with us since'
+                ]);
+                fclose($full_export_file);
+            }
         }
 
         $order_ids = $wpdb->get_col($wpdb->prepare("
@@ -125,10 +143,9 @@ class OAM_ADMINISTRATOR_AJAX {
 
         $total_orders = count($order_ids);
         $chunk_ids = array_slice($order_ids, $offset, $limit);
-
         if (empty($chunk_ids)) {
             $email_sent = false;
-            if (!empty($email_list) && file_exists($fulfillment_path)) {
+            if (!empty($email_list) && $sheet_type == 0 && file_exists($fulfillment_path)) {
                 $subject = 'Fulfillment Report: ' . $start_date->format('M d, Y') . ' - ' . $end_date->format('M d, Y');
                 ob_start();
                 wc_get_template('emails/fulfillment-report-email.php', [
@@ -136,25 +153,67 @@ class OAM_ADMINISTRATOR_AJAX {
                     'order_count' => $total_orders,
                 ]);
                 $message = ob_get_clean();
-
                 $headers = ['Content-Type: text/html; charset=UTF-8'];
                 $attachments = [$fulfillment_path, $greetings_path];
                 $email_sent = wp_mail($email_list, $subject, $message, $headers, $attachments);
+                wp_send_json_success([
+                    'done' => true,
+                    'progress' => 100,
+                    'fulfillment_url' => $fulfillment_url,
+                    'greetings_url' => $greetings_url,
+                    'filenames' => [
+                        'fulfillment' => $fulfillment_filename,
+                        'greetings' => $greetings_filename,
+                    ],
+                    'email_sent' => !empty($email_sent),
+                ]);
             }
 
-            wp_send_json_success([
-                'done' => true,
-                'progress' => 100,
-                'fulfillment_url' => $fulfillment_url,
-                'greetings_url' => $greetings_url,
-                'filenames' => [
-                    'fulfillment' => $fulfillment_filename,
-                    'greetings' => $greetings_filename,
-                ],
-                'email_sent' => !empty($email_sent),
-                'file_exists' => file_exists($fulfillment_path),
-                'file_size' => filesize($fulfillment_path),
-            ]);
+            if (!empty($email_list) && $sheet_type == 1 && file_exists($full_export_path)) {
+                $subject = 'Full Order Report: ' . $start_date->format('M d, Y') . ' - ' . $end_date->format('M d, Y');
+                ob_start();
+                wc_get_template('emails/full-export-report-email.php', [
+                    'date_range' => $date_range,
+                    'order_count' => $total_orders,
+                ]);
+                $message = ob_get_clean();
+                $headers = ['Content-Type: text/html; charset=UTF-8'];
+                $attachments = [$full_export_path];
+                $email_sent = wp_mail($email_list, $subject, $message, $headers, $attachments);
+
+                wp_send_json_success([
+                    'done' => true,
+                    'progress' => 100,
+                    'full_export_url' => $full_export_url,
+                    'filenames' => [
+                        'full_export' => $full_export_filename,
+                    ],
+                    'email_sent' => !empty($email_sent),
+                ]);
+            }
+
+            // NEW FINAL RETURN BLOCK to stop loop when done but no email
+            if ($sheet_type == 0) {
+                wp_send_json_success([
+                    'done' => true,
+                    'progress' => 100,
+                    'fulfillment_url' => $fulfillment_url,
+                    'greetings_url' => $greetings_url,
+                    'filenames' => [
+                        'fulfillment' => $fulfillment_filename,
+                        'greetings' => $greetings_filename,
+                    ],
+                ]);
+            } else {
+                wp_send_json_success([
+                    'done' => true,
+                    'progress' => 100,
+                    'full_export_url' => $full_export_url,
+                    'filenames' => [
+                        'full_export' => $full_export_filename,
+                    ],
+                ]);
+            }
         }
 
         $placeholders = implode(',', array_fill(0, count($chunk_ids), '%d'));
@@ -171,16 +230,30 @@ class OAM_ADMINISTRATOR_AJAX {
         ", ...$chunk_ids);
 
         $results = $wpdb->get_results($query, ARRAY_A);
-        $fulfillment_output = fopen($fulfillment_path, 'a');
-        $greetings_output = fopen($greetings_path, 'a');
 
-        if (!$fulfillment_output || !$greetings_output) {
-            wp_send_json_error(['message' => 'Unable to open CSVs for writing.']);
+        if($sheet_type == 0){
+            $fulfillment_output = fopen($fulfillment_path, 'a');
+            $greetings_output = fopen($greetings_path, 'a');
+
+            if (!$fulfillment_output || !$greetings_output) {
+                wp_send_json_error(['message' => 'Unable to open CSVs for writing.']);
+            }
+        }
+        if($sheet_type == 1){
+            $full_export_output = fopen($full_export_path, 'a');
+
+            if (!$full_export_output) {
+                wp_send_json_error(['message' => 'Unable to open CSVs for writing.']);
+            }
         }
 
+        
         foreach ($results as $row) {
             $wc_order_id = $row['wc_order_id'];
+            $affiliate_status = (int) OAM_COMMON_Custom::get_order_meta($wc_order_id, 'affiliate_account_status');
+
             $coupon_codes = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($wc_order_id);
+            
             $coupons = array_filter(array_diff(explode(',', $coupon_codes), $exclude_coupon));
 
             $row['affiliate_code'] = trim($row['affiliate_code']);
@@ -218,72 +291,242 @@ class OAM_ADMINISTRATOR_AJAX {
                     $jar_query
                 ", $recipient['recipient_order_id'], 0), ARRAY_A);
 
-                foreach ($jar_rows as $jar) {
-                    $line = [
-                        ucwords(strtolower($jar['order_type'])),
-                        $wc_order_id,
-                        $row['custom_order_id'],
-                        $recipient['recipient_order_id'],
-                        ($jar['order_type'] == 'external' ? $jar['jar_order_id'] : ''),
-                        ($jar['order_type'] == 'external' ? 1 : $jar['quantity']),
-                        (!empty($coupons) ? 'Wholesale' : 'Retail'),
-                        (!empty($coupons) ? implode(', ', $coupons) : ''),
-                        $recipient['full_name'],
-                        $recipient['company_name'],
-                        $recipient['address_1'],
-                        $recipient['address_2'],
-                        $recipient['city'],
-                        $recipient['state'],
-                        $recipient['zipcode'],
-                        $recipient['country'],
-                        ($jar['order_type'] != 'external' ? '' : $recipient['greeting']),
-                        $row['affiliate_full_card_name'],
-                        $row['affiliate_name'],
-                        $row['affiliate_code'],
-                        $row['affiliate_full_card'],
-                    ];
-                    fputcsv($fulfillment_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
-                }
+                if($sheet_type == 0){
+                    foreach ($jar_rows as $jar) {
+                        $line = [
+                            ucwords(strtolower($jar['order_type'])),
+                            $wc_order_id,
+                            $row['custom_order_id'],
+                            $recipient['recipient_order_id'],
+                            ($jar['order_type'] == 'external' ? $jar['jar_order_id'] : ''),
+                            ($jar['order_type'] == 'external' ? 1 : $jar['quantity']),
+                            (!empty($coupons) ? 'Wholesale' : 'Retail'),
+                            (!empty($coupons) ? implode(', ', $coupons) : ''),
+                            $recipient['full_name'],
+                            $recipient['company_name'],
+                            $recipient['address_1'],
+                            $recipient['address_2'],
+                            $recipient['city'],
+                            $recipient['state'],
+                            $recipient['zipcode'],
+                            $recipient['country'],
+                            ($jar['order_type'] != 'external' ? '' : html_entity_decode(stripslashes($recipient['greeting']))),
+                            $row['affiliate_full_card_name'],
+                            $row['affiliate_name'],
+                            $row['affiliate_code'],
+                            $row['affiliate_full_card'],
+                        ];
+                        fputcsv($fulfillment_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
+                    }
 
-                $jar_order_rows = $wpdb->get_results($wpdb->prepare("
-                    SELECT * FROM {$wpdb->prefix}oh_wc_jar_order
-                    WHERE recipient_order_id = %s AND order_id != %d
-                ", $recipient['recipient_order_id'], 0), ARRAY_A);
-
-                foreach ($jar_order_rows as $jar) {
-                    if ($jar['order_type'] == 'internal') {
                     
-                        for ($jar_qty = 0; $jar_qty <= $jar['quantity']; $jar_qty++) {
-                            $greeting_line = [
-                                 $wc_order_id,
-                                $row['custom_order_id'],
-                                $recipient['recipient_order_id'],
-                                $jar['jar_order_id'],
-                                $recipient['greeting'],
-                            ];
-                            fputcsv($greetings_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $greeting_line));
+                    $jar_order_rows = $wpdb->get_results($wpdb->prepare("
+                        SELECT * FROM {$wpdb->prefix}oh_wc_jar_order
+                        WHERE recipient_order_id = %s AND order_id != %d
+                    ", $recipient['recipient_order_id'], 0), ARRAY_A);
+
+                    foreach ($jar_order_rows as $jar) {
+                        if ($jar['order_type'] == 'internal') {
+                        
+                            for ($jar_qty = 0; $jar_qty <= $jar['quantity']; $jar_qty++) {
+                                $greeting_line = [
+                                    $wc_order_id,
+                                    $row['custom_order_id'],
+                                    $recipient['recipient_order_id'],
+                                    $jar['jar_order_id'],
+                                    html_entity_decode(stripslashes($recipient['greeting'])),
+                                ];
+                                fputcsv($greetings_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $greeting_line));
+                            }
                         }
                     }
+            
                 }
+
+                if($sheet_type == 1){
+                    $order = wc_get_order($wc_order_id);
+                    $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
+                    $custom_price = get_user_meta($affiliate_id, 'DJarPrice', true);
+
+                    $DJarPriceshow_price = $selling_minimum_price;
+                    if($product_price >= $selling_minimum_price){
+                        $DJarPriceshow_price = $product_price;
+                    }
+                    // 1. Payment Method
+                    $payment_method = $order->get_payment_method_title();
+
+                    // 2. Status
+                    $status = $order->get_status();
+
+                    // 3. User ID
+                    $user_id = $order->get_user_id();
+                    
+                    $user = get_userdata($user_id);
+                    $user_full_name = '';
+                    if ($user) {
+                        $first_name = get_user_meta($user_id, 'first_name', true);
+                        $last_name  = get_user_meta($user_id, 'last_name', true);
+
+                        if (!empty($first_name) || !empty($last_name)) {
+                            $user_full_name = trim($first_name . ' ' . $last_name);
+                        } elseif (!empty($user->display_name)) {
+                            $user_full_name = $user->display_name;
+                        } else {
+                            $user_full_name = $user->user_email;
+                        }
+                    }
+
+                    $application_date = get_user_meta($user_id, '_yith_wcaf_application_date', true);
+
+                    $formatted_date = '';
+                    if (!empty($application_date)) {
+                        // Format meta date if it's a timestamp or parseable string
+                        $formatted_date = date('Y', strtotime($application_date));
+                    } else {
+                        // Fallback: use user registration date
+                        $formatted_date = date('Y', strtotime($user->user_registered));
+                    }
+
+                    // 4. Billing Info
+                    $billing_info = [
+                        'first_name' => $order->get_billing_first_name(),
+                        'last_name'  => $order->get_billing_last_name(),
+                        'company'    => $order->get_billing_company(),
+                        'address_1'  => $order->get_billing_address_1(),
+                        'address_2'  => $order->get_billing_address_2(),
+                        'city'       => $order->get_billing_city(),
+                        'state'      => $order->get_billing_state(),
+                        'postcode'   => $order->get_billing_postcode(),
+                        'country'    => $order->get_billing_country(),
+                        'email'      => $order->get_billing_email(),
+                        'phone'      => $order->get_billing_phone(),
+                    ];
+
+                    // 5. Order Date
+                    $order_date = $order->get_date_created()->date('Y-m-d H:i:s');
+
+                    // 6. Checkout Timestamp
+                    $checkout_timestamp = $order->get_date_created()->getTimestamp();
+                    $checkout_time = $order->get_date_created()->format('Y-m-d H:i:s');
+                    $last_update_date_formatted = $order->get_date_modified()->date('Y');
+
+                    // 7. Total Amount
+                    $total_amount = $order->get_total();
+                    $shipping_total = $order->get_shipping_total();
+
+                    // 8. Total Quantity
+                    $total_quantity = 0;
+                    foreach ($order->get_items() as $item) {
+                        $total_quantity += $item->get_quantity();
+                    }
+
+                    $user_type = 'user';
+                    if ($user_id) {
+                        $user_roles = OAM_COMMON_Custom::get_user_role_by_id($user_id);
+                        if (in_array('yith_affiliate', $user_roles) || in_array('affiliate_team_member', $user_roles)) {
+                            $user_type = 'dist';
+                        }
+                        if (in_array('administrator', $user_roles)) {
+                            $user_type = 'admin';
+                        }
+                        if (in_array('sales_representative', $user_roles)) {
+                            $user_type = 'smgr';
+                        }
+                    }
+
+                    foreach ($jar_rows as $jar) {
+                        $line = [
+                            'List',
+                            $row['custom_order_id'],
+                            $total_amount,
+                            $total_quantity,
+                            $row['affiliate_code'],
+                            $row['custom_order_id'],
+                            $recipient['recipient_order_id'],
+                            $recipient['full_name'],
+                            $recipient['company_name'],
+                            $recipient['address_1'],
+                            $recipient['address_2'],
+                            $recipient['city'],
+                            $recipient['state'],
+                            $recipient['zipcode'],
+                            $recipient['country'],
+                            html_entity_decode(stripslashes($recipient['greeting'])),
+                            $recipient_qty,
+                            $billing_info['first_name'],
+                            $billing_info['last_name'],
+                            $payment_method,
+                            $billing_info['first_name'],
+                            $billing_info['last_name'],
+                            $billing_info['city'],
+                            $billing_info['state'],
+                            $billing_info['address_1'],
+                            $billing_info['postcode'],
+                            $billing_info['email'],
+                            $billing_info['phone'],
+                            $row['affiliate_name'],
+                            $DJarPriceshow_price,
+                            $shipping_total,
+                            $user_id,
+                            $status,
+                            ($order->is_paid() ? 1 : 0),
+                            ($order->get_status() === 'on-hold') ? 1 : 0,
+                            ($order->is_paid() ? 1 : 0),
+                            $wc_order_id,
+                            $last_update_date_formatted,
+                            $order_date,
+                            $checkout_time,
+                            $user_type,
+                            ucwords(strtolower($jar['order_type'])),
+                            OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Rep',
+                            $affiliate_status == 1 ? 'Active' : 'Deactivated',
+                            $formatted_date
+                        ];
+                        fputcsv($full_export_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
+                    }
+
+                
+                }
+
             }
         }
 
-        fclose($fulfillment_output);
-        fclose($greetings_output);
+        if($sheet_type == 0){
+            fclose($fulfillment_output);
+            fclose($greetings_output);
+        }
+        
+        if($sheet_type == 1){
+            fclose($full_export_output);
+        }
+
 
         $processed = min($offset + $limit, $total_orders);
         $progress = round(($processed / $total_orders) * 100);
 
-        wp_send_json_success([
-            'progress' => $progress,
-            'done' => false,
-            'processed' => $processed,
-            'total' => $total_orders,
-            'file_exists' => file_exists($fulfillment_path),
-            'file_size' => filesize($fulfillment_path),
-        ]);
-    }
+        
+        if($sheet_type == 0){
+            wp_send_json_success([
+                'progress' => $progress,
+                'done' => false,
+                'processed' => $processed,
+                'total' => $total_orders,
+                'file_exists' => file_exists($fulfillment_path),
+                'file_size' => filesize($fulfillment_path),
+            ]);
+        }
+        if($sheet_type == 1){
+            wp_send_json_success([
+                'progress' => $progress,
+                'done' => false,
+                'processed' => $processed,
+                'total' => $total_orders,
+                'file_exists' => file_exists($full_export_path),
+                'file_size' => filesize($full_export_path),
+            ]);
+        }
 
+    }
 
     public function orthoney_switch_org_to_order_callback() {
          check_ajax_referer('oam_nonce', 'security');

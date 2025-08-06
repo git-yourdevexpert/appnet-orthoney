@@ -40,6 +40,15 @@ if ($redirect_back_user_id) {
                             <span>Please enter the email address where you'd like to receive the <strong>fulfillment report.</strong></span>
                         </div>
 
+                        <br>
+                        <div class="form-row gfield--width-full">
+                            <label for="fulfillment_sheet_type">
+                            <input type="checkbox" id="fulfillment_sheet_type" name="fulfillment_sheet_type" />
+                            <span>If you want to receive the Full export report as a spreadsheet, please check this box.</span>
+                            </label>
+                        </div>
+                        <br>
+
                         <div id="date_range_error" style="color: red; font-size: 13px; margin-top: 4px;"></div>
                         <div class="form-row gfield--width-full">
                             <button id="fulfillment-report-generate_report" class="w-btn us-btn-style_2">Generate Report</button>
