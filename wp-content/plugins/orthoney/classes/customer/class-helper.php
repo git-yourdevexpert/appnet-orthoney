@@ -302,6 +302,7 @@ class OAM_Helper{
                 {$jar_table}.order_type AS type
             FROM {$jar_table}
             $joins $where_sql
+            GROUP BY {$jar_table}.recipient_order_id
             LIMIT %d OFFSET %d
             ",
             ...$params

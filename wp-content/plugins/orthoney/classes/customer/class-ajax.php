@@ -3129,19 +3129,20 @@ class OAM_Ajax{
         $where[] = "orders.status NOT IN ('trash', 'wc-checkout-draft')";
 
        $sql = $wpdb->prepare(
-            "SELECT  COUNT( DISTINCT orders.id) FROM {$orders_table} AS orders
-            $join
-            WHERE " . implode(' AND ', $where),
+            "SELECT COUNT({$jar_table}.recipient_order_id) 
+            FROM {$jar_table} 
+            $joins 
+            $where_sql 
+            GROUP BY {$jar_table}.recipient_order_id",
             ...$values
         );
 
-        
-        $total_orders = $wpdb->get_var($sql);
+        $total_orders = $wpdb->get_results($sql);
 
         wp_send_json([
             'draw' => $draw,
-            'recordsTotal' => $total_orders,
-            'recordsFiltered' => $total_orders,
+            'recordsTotal' => count($total_orders),
+            'recordsFiltered' => count($total_orders),
             'data' => $filtered_orders,
         ]);
     }
