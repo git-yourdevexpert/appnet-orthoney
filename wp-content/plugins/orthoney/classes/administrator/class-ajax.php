@@ -21,7 +21,7 @@ class OAM_ADMINISTRATOR_AJAX {
     }
 
 
-   public function orthoney_generate_fulfillment_report_callback() {
+    public function orthoney_generate_fulfillment_report_callback() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
 
@@ -41,8 +41,8 @@ class OAM_ADMINISTRATOR_AJAX {
         list($start, $end) = explode(' - ', $date_range);
 
         $ny_timezone = new DateTimeZone('America/New_York');
-        $start_date = DateTime::createFromFormat('m/d/Y', trim($start), $ny_timezone);
-        $end_date   = DateTime::createFromFormat('m/d/Y', trim($end), $ny_timezone);
+        $start_date = DateTime::createFromFormat('m/d/Y', trim($start));
+        $end_date   = DateTime::createFromFormat('m/d/Y', trim($end));
 
         if (!$start_date || !$end_date) {
             throw new Exception('Invalid date format.');
@@ -56,43 +56,86 @@ class OAM_ADMINISTRATOR_AJAX {
         $start_date_utc->setTimezone(new DateTimeZone('UTC'));
         $end_date_utc->setTimezone(new DateTimeZone('UTC'));
 
-        $start_str = $start_date_utc->format('Y-m-d H:i:s');
-        $end_str   = $end_date_utc->format('Y-m-d H:i:s');
+        $start_str = $start_date_utc->format('Y-m-d 00:00:00');
+        $end_str   = $end_date_utc->format('Y-m-d 23:59:59');
 
-        $file_name_date_format = $start_date->format('mdY') . '-' . $end_date->format('mdY');
-
-        $session_key = md5($date_range . $sendmail_raw);
-        $upload_dir = wp_upload_dir();
-        $custom_dir = $upload_dir['basedir'] . '/fulfillment-reports';
-        $custom_url = $upload_dir['baseurl'] . '/fulfillment-reports';
-
-        if (!file_exists($custom_dir)) {
-            wp_mkdir_p($custom_dir);
-            chmod($custom_dir, 0755);
-        }
-
-        if (!is_writable($custom_dir)) {
-            wp_send_json_error(['message' => 'Directory not writable: ' . $custom_dir]);
-        }
-
-        if($sheet_type == 0){
-            $base_name = 'download-order-fulfillment-' . $file_name_date_format;
-            $greetings_base_name = 'download-greetings-per-jar-' . $file_name_date_format;
-
-            $fulfillment_filename = "{$base_name}.csv";
-            $greetings_filename = "{$greetings_base_name}.csv";
-            $fulfillment_path = $custom_dir . '/' . $fulfillment_filename;
-            $greetings_path = $custom_dir . '/' . $greetings_filename;
-            $fulfillment_url = $custom_url . '/' . $fulfillment_filename;
-            $greetings_url = $custom_url . '/' . $greetings_filename;
-        }else{
-            $full_export_base_name = 'full-export-' . $file_name_date_format;
-            $full_export_filename = "{$full_export_base_name}.csv";
-            $full_export_path = $custom_dir . '/' . $full_export_filename;
-            $full_export_url = $custom_url . '/' . $full_export_filename;
-        }
+        // Create a consistent session key for this report generation
+        $session_key = 'fulfillment_report_' . md5($date_range . $sendmail_raw . $sheet_type);
+        
+        // Initialize file paths and URLs
+        $fulfillment_path = '';
+        $greetings_path = '';
+        $full_export_path = '';
+        $fulfillment_url = '';
+        $greetings_url = '';
+        $full_export_url = '';
+        $fulfillment_filename = '';
+        $greetings_filename = '';
+        $full_export_filename = '';
 
         if ($offset === 0) {
+            // First request - create new files and store paths in transient
+            $file_name_date_format = $start_date->format('mdY') . '-' . $end_date->format('mdY');
+            $upload_dir = wp_upload_dir();
+            $custom_dir = $upload_dir['basedir'] . '/fulfillment-reports';
+            $custom_url = $upload_dir['baseurl'] . '/fulfillment-reports';
+
+            if (!file_exists($custom_dir)) {
+                wp_mkdir_p($custom_dir);
+                chmod($custom_dir, 0755);
+            }
+
+            if (!is_writable($custom_dir)) {
+                wp_send_json_error(['message' => 'Directory not writable: ' . $custom_dir]);
+            }
+
+            if ($sheet_type == 0) {
+                $base_name = 'download-order-fulfillment-' . $file_name_date_format;
+                $greetings_base_name = 'download-greetings-per-jar-' . $file_name_date_format;
+
+                $fulfillment_filename = "{$base_name}.csv";
+                $greetings_filename = "{$greetings_base_name}.csv";
+
+                $counter = 1;
+                while (file_exists($custom_dir . '/' . $fulfillment_filename) || file_exists($custom_dir . '/' . $greetings_filename)) {
+                    $fulfillment_filename = "{$base_name}-{$counter}.csv";
+                    $greetings_filename = "{$greetings_base_name}-{$counter}.csv";
+                    $counter++;
+                }
+
+                $fulfillment_path = $custom_dir . '/' . $fulfillment_filename;
+                $greetings_path = $custom_dir . '/' . $greetings_filename;
+                $fulfillment_url = $custom_url . '/' . $fulfillment_filename;
+                $greetings_url = $custom_url . '/' . $greetings_filename;
+            } else {
+                $full_export_base_name = 'full-export-' . $file_name_date_format;
+                $full_export_filename = "{$full_export_base_name}.csv";
+
+                $counter = 1;
+                while (file_exists($custom_dir . '/' . $full_export_filename)) {
+                    $full_export_filename = "{$full_export_base_name}-{$counter}.csv";
+                    $counter++;
+                }
+
+                $full_export_path = $custom_dir . '/' . $full_export_filename;
+                $full_export_url = $custom_url . '/' . $full_export_filename;
+            }
+
+            // Store file paths in transient for subsequent requests
+            $file_data = [
+                'fulfillment_path' => $fulfillment_path,
+                'greetings_path' => $greetings_path,
+                'full_export_path' => $full_export_path,
+                'fulfillment_url' => $fulfillment_url,
+                'greetings_url' => $greetings_url,
+                'full_export_url' => $full_export_url,
+                'fulfillment_filename' => $fulfillment_filename,
+                'greetings_filename' => $greetings_filename,
+                'full_export_filename' => $full_export_filename,
+            ];
+            set_transient($session_key, $file_data, 2 * HOUR_IN_SECONDS);
+
+            // Create headers for CSV files
             if($sheet_type == 0){
                 $fulfillment_file = fopen($fulfillment_path, 'w');
                 $greetings_file = fopen($greetings_path, 'w');
@@ -128,6 +171,22 @@ class OAM_ADMINISTRATOR_AJAX {
                 ]);
                 fclose($full_export_file);
             }
+        } else {
+            // Subsequent requests - get file paths from transient
+            $file_data = get_transient($session_key);
+            if (!$file_data) {
+                wp_send_json_error(['message' => 'Session expired. Please restart the report generation.']);
+            }
+
+            $fulfillment_path = $file_data['fulfillment_path'];
+            $greetings_path = $file_data['greetings_path'];
+            $full_export_path = $file_data['full_export_path'];
+            $fulfillment_url = $file_data['fulfillment_url'];
+            $greetings_url = $file_data['greetings_url'];
+            $full_export_url = $file_data['full_export_url'];
+            $fulfillment_filename = $file_data['fulfillment_filename'];
+            $greetings_filename = $file_data['greetings_filename'];
+            $full_export_filename = $file_data['full_export_filename'];
         }
 
         $order_ids = $wpdb->get_col($wpdb->prepare("
@@ -143,7 +202,11 @@ class OAM_ADMINISTRATOR_AJAX {
 
         $total_orders = count($order_ids);
         $chunk_ids = array_slice($order_ids, $offset, $limit);
+        
         if (empty($chunk_ids)) {
+            // Clean up transient when done
+            delete_transient($session_key);
+            
             $email_sent = false;
             if (!empty($email_list) && $sheet_type == 0 && file_exists($fulfillment_path)) {
                 $subject = 'Fulfillment Report: ' . $start_date->format('M d, Y') . ' - ' . $end_date->format('M d, Y');
@@ -192,7 +255,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 ]);
             }
 
-            // NEW FINAL RETURN BLOCK to stop loop when done but no email
+            // Final return block when done but no email
             if ($sheet_type == 0) {
                 wp_send_json_success([
                     'done' => true,
@@ -247,7 +310,6 @@ class OAM_ADMINISTRATOR_AJAX {
             }
         }
 
-        
         foreach ($results as $row) {
             $wc_order_id = $row['wc_order_id'];
             $affiliate_status = (int) OAM_COMMON_Custom::get_order_meta($wc_order_id, 'affiliate_account_status');
@@ -282,6 +344,7 @@ class OAM_ADMINISTRATOR_AJAX {
             ", $row['custom_order_id'], 0), ARRAY_A);
 
             foreach ($recipient_rows as $recipient) {
+                $recipient_greeting = html_entity_decode(stripslashes($recipient['greeting']));
                 $recipient_qty = (int) $recipient['quantity'];
                 $jar_query = $recipient_qty > 6 ? "GROUP BY recipient_order_id" : "GROUP BY jar_order_id";
 
@@ -310,7 +373,7 @@ class OAM_ADMINISTRATOR_AJAX {
                             $recipient['state'],
                             $recipient['zipcode'],
                             $recipient['country'],
-                            ($jar['order_type'] != 'external' ? '' : html_entity_decode(stripslashes($recipient['greeting']))),
+                            ($jar['order_type'] != 'external' ? '' : $recipient_greeting),
                             $row['affiliate_full_card_name'],
                             $row['affiliate_name'],
                             $row['affiliate_code'],
@@ -319,7 +382,6 @@ class OAM_ADMINISTRATOR_AJAX {
                         fputcsv($fulfillment_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
                     }
 
-                    
                     $jar_order_rows = $wpdb->get_results($wpdb->prepare("
                         SELECT * FROM {$wpdb->prefix}oh_wc_jar_order
                         WHERE recipient_order_id = %s AND order_id != %d
@@ -327,8 +389,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
                     foreach ($jar_order_rows as $jar) {
                         if ($jar['order_type'] == 'internal') {
-                        
-                            for ($jar_qty = 0; $jar_qty <= $jar['quantity']; $jar_qty++) {
+                            for ($jar_qty = 1; $jar_qty <= $jar['quantity']; $jar_qty++) {
                                 $greeting_line = [
                                     $wc_order_id,
                                     $row['custom_order_id'],
@@ -340,18 +401,28 @@ class OAM_ADMINISTRATOR_AJAX {
                             }
                         }
                     }
-            
                 }
 
                 if($sheet_type == 1){
                     $order = wc_get_order($wc_order_id);
                     $selling_minimum_price = get_field('selling_minimum_price', 'option') ?: 18;
-                    $custom_price = get_user_meta($affiliate_id, 'DJarPrice', true);
+                    
+                    // Get affiliate_id from the row data
+                    $affiliate_user_id = $wpdb->get_var($wpdb->prepare(
+                        "SELECT user_id FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE token = %s",
+                        $row['affiliate_code']
+                    ));
+                    
+                    $custom_price = get_user_meta($affiliate_user_id, 'DJarPrice', true);
+                    
+                    // Fix undefined $product_price variable
+                    $product_price = $custom_price ?: $selling_minimum_price;
 
                     $DJarPriceshow_price = $selling_minimum_price;
                     if($product_price >= $selling_minimum_price){
                         $DJarPriceshow_price = $product_price;
                     }
+                    
                     // 1. Payment Method
                     $payment_method = $order->get_payment_method_title();
 
@@ -484,10 +555,7 @@ class OAM_ADMINISTRATOR_AJAX {
                         ];
                         fputcsv($full_export_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
                     }
-
-                
                 }
-
             }
         }
 
@@ -500,11 +568,9 @@ class OAM_ADMINISTRATOR_AJAX {
             fclose($full_export_output);
         }
 
-
         $processed = min($offset + $limit, $total_orders);
         $progress = round(($processed / $total_orders) * 100);
 
-        
         if($sheet_type == 0){
             wp_send_json_success([
                 'progress' => $progress,
@@ -525,8 +591,8 @@ class OAM_ADMINISTRATOR_AJAX {
                 'file_size' => filesize($full_export_path),
             ]);
         }
-
     }
+
 
     public function orthoney_switch_org_to_order_callback() {
          check_ajax_referer('oam_nonce', 'security');

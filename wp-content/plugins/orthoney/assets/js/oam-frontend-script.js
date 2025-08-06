@@ -5121,11 +5121,11 @@ jQuery(document).ready(function ($) {
 jQuery(document).ready(function ($) {
   $("#fulfillment-report-generate_report").on("click", function (e) {
     e.preventDefault();
-
+    
     const date_range = $("#date_range_picker").val();
     const sendmail = $("#fulfillment_send_mail").val();
-    const sheet_type = $("#fulfillment_sheet_type").is(":checked");
-
+    const sheet_type = $("#fulfillment_sheet_type").is(":checked") ? 1 : 0;
+    
     if (!date_range) {
       Swal.fire({
         icon: "error",
@@ -5134,26 +5134,30 @@ jQuery(document).ready(function ($) {
       });
       return;
     }
-
+    
+    // Show progress dialog
     Swal.fire({
       title: "Generating Fulfillment Report",
       html: `
         <p>Please wait while your report is being generated.</p>
-        <div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
-          <div id="progress-bar" style="width: 0%; height: 10px; background-color: #3085d6;"></div>
+        <div style="width: 100%; background-color: #f0f0f0; border-radius: 10px; overflow: hidden; margin: 20px 0;">
+          <div id="progress-bar" style="width: 0%; height: 20px; background: linear-gradient(90deg, #3085d6, #1e72d6); transition: width 0.3s ease;"></div>
         </div>
-        <p id="progress-text">0%</p>
+        <p id="progress-text">0% (0 of 0 orders processed)</p>
       `,
       showConfirmButton: false,
       allowOutsideClick: false,
       allowEscapeKey: false,
       allowEnterKey: false
     });
-
-    processFulfillmentChunk(0, date_range, sendmail);
+    
+    // Start processing from offset 0
+    processFulfillmentChunk(0, date_range, sendmail, sheet_type);
   });
 
-  function processFulfillmentChunk(offset, date_range, sendmail) {
+  function processFulfillmentChunk(offset, date_range, sendmail, sheet_type) {
+    console.log(`Processing chunk at offset: ${offset}, sheet_type: ${sheet_type}`);
+    
     $.ajax({
       url: oam_ajax.ajax_url,
       method: "POST",
@@ -5164,71 +5168,107 @@ jQuery(document).ready(function ($) {
         offset: offset,
         date_range: date_range,
         sendmail: sendmail,
-        sheet_type: $("#fulfillment_sheet_type").is(":checked") ? 1 : 0
+        sheet_type: sheet_type
       },
       success: function (response) {
+        console.log('AJAX Response:', response);
+        
         if (response.success) {
           const data = response.data;
-          const progress = data.progress || 100;
-
+          const progress = Math.min(data.progress || 0, 100);
+          const processed = data.processed || 0;
+          const total = data.total || 0;
+          
+          // Update progress bar and text
           $("#progress-bar").css("width", progress + "%");
-          $("#progress-text").text(progress + "%");
-
+          $("#progress-text").text(`${progress}% (${processed} of ${total} orders processed)`);
+          
           if (data.done) {
+            // Processing complete
+            console.log('Processing complete:', data);
+            
+            let downloadMessage = "Your CSV files will begin downloading shortly.";
+            if (data.email_sent) {
+              downloadMessage = "Your CSV files have been emailed and will also begin downloading shortly.";
+            }
+            
             Swal.fire({
               icon: "success",
               title: "Your report is ready!",
-              text: "Your CSV files will begin downloading shortly.",
+              text: downloadMessage,
               showConfirmButton: false,
-              timer: 2500
+              timer: 3000
             });
-
-            if ($("#fulfillment_sheet_type").is(":checked")) {
+            
+            // Handle downloads based on sheet type
+            if (sheet_type === 1) {
+              // Full export download
               if (data.full_export_url) {
-                const a2 = document.createElement("a");
-                a2.href = data.full_export_url;
-                a2.download = data.filenames.full_export;
-                document.body.appendChild(a2);
-                a2.click();
-                document.body.removeChild(a2);
+                setTimeout(() => {
+                  const link = document.createElement("a");
+                  link.href = data.full_export_url;
+                  link.download = data.filenames?.full_export || "full_export.csv";
+                  link.style.display = "none";
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }, 500);
               }
             } else {
+              // Fulfillment and greetings downloads
               if (data.fulfillment_url) {
-                const a1 = document.createElement("a");
-                a1.href = data.fulfillment_url;
-               a1.download = data.filenames.fulfillment;
-                document.body.appendChild(a1);
-                a1.click();
-                document.body.removeChild(a1);
+                setTimeout(() => {
+                  const link1 = document.createElement("a");
+                  link1.href = data.fulfillment_url;
+                  link1.download = data.filenames?.fulfillment || "fulfillment.csv";
+                  link1.style.display = "none";
+                  document.body.appendChild(link1);
+                  link1.click();
+                  document.body.removeChild(link1);
+                }, 500);
               }
-
+              
               if (data.greetings_url) {
-                const a2 = document.createElement("a");
-                a2.href = data.greetings_url;
-                a2.download = data.filenames.greetings;
-                document.body.appendChild(a2);
-                a2.click();
-                document.body.removeChild(a2);
+                setTimeout(() => {
+                  const link2 = document.createElement("a");
+                  link2.href = data.greetings_url;
+                  link2.download = data.filenames?.greetings || "greetings.csv";
+                  link2.style.display = "none";
+                  document.body.appendChild(link2);
+                  link2.click();
+                  document.body.removeChild(link2);
+                }, 1000);
               }
             }
           } else {
+            // Continue processing next chunk
+            const nextOffset = offset + 3; // Your limit is 3, so increment by 3
+            console.log(`Continuing with next offset: ${nextOffset}`);
+            
             setTimeout(() => {
-              processFulfillmentChunk(offset + 10, date_range, sendmail);
-            }, 300);
+              processFulfillmentChunk(nextOffset, date_range, sendmail, sheet_type);
+            }, 500); // Increased delay to prevent overwhelming the server
           }
         } else {
+          console.error('AJAX Error:', response);
           Swal.fire({
             icon: "error",
             title: "Error",
-            text: (response.data && response.data.message) || "Something went wrong."
+            text: (response.data && response.data.message) || "Something went wrong while generating the report."
           });
         }
       },
-      error: function () {
+      error: function (xhr, status, error) {
+        console.error('AJAX Request Failed:', {
+          status: status,
+          error: error,
+          responseText: xhr.responseText
+        });
+        
         Swal.fire({
           icon: "error",
-          title: "Error",
-          text: "AJAX request failed."
+          title: "Connection Error",
+          text: "Failed to connect to the server. Please check your internet connection and try again."
         });
       }
     });
