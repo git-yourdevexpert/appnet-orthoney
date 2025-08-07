@@ -370,14 +370,9 @@ class OAM_ADMINISTRATOR_AJAX {
                 $greeting_text = $recipient['greeting'] ?? '';
                 $greeting_text = stripslashes($greeting_text);
                 $greeting_text = html_entity_decode($greeting_text, ENT_QUOTES, 'UTF-8');
-                $recipient_greeting = mb_convert_encoding($greeting_text, 'UTF-8', 'UTF-8');
+                $recipient_greeting = mb_convert_encoding($greeting_text, 'UTF-8', 'Windows-1252');
 
-                $recipient_greeting = str_replace(
-                    ['â€™', 'â€œ', 'â€', 'â€“', 'â€”'],
-                    ["'", '"', '"', '-', '—'],
-                    $recipient_greeting
-                );
-
+            
     
                 $recipient_qty = (int) $recipient['quantity'];
                 $jar_query = $recipient_qty > 6 ? "GROUP BY recipient_order_id" : "GROUP BY jar_order_id";
