@@ -581,7 +581,7 @@ class OAM_ADMINISTRATOR_AJAX {
                             $user_type,
                             ucwords(strtolower($jar['order_type'])),
                             OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Rep',
-                            ((strtolower($row['affiliate_code']) === 'orthoney') ? 'Active' : ($affiliate_status == 1 ? 'Active' : 'Deactivated')),
+                            ((strtolower($row['affiliate_code']) === 'Honey from the Heart') ? 'Active' : ($affiliate_status == 1 ? 'Active' : 'Deactivated')),
                         ];
                         fputcsv($full_export_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
                     }
