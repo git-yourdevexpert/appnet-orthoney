@@ -44,7 +44,7 @@ if ($redirect_back_user_id) {
                         <div class="form-row gfield--width-full">
                             <label for="fulfillment_sheet_type">
                             <input type="checkbox" id="fulfillment_sheet_type" name="fulfillment_sheet_type" />
-                            <span>If you want to receive the Full export report as a spreadsheet, please check this box.</span>
+                            <span>Check this box to download the full manifest report as a spreadsheet.</span>
                             </label>
                         </div>
                         <br>
