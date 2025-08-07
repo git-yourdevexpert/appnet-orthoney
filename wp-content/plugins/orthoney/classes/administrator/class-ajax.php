@@ -167,7 +167,7 @@ class OAM_ADMINISTRATOR_AJAX {
                     'ZipCode', 'Email', 'Phone', 'OrgName', 'DJarPrice', 'ShippingAmount',
                     'user_id', 'status', 'confirmed', 'hold', 'paid', 'wc_oid', 
                     'date_updated', 'order_date', 'checkout_timestamp', 'user_type',
-                    'order_type', 'Activate Status', 'ORG Status', 'Being with us since'
+                    'order_type', 'Activate Status', 'ORG Status'
                 ]);
                 fclose($full_export_file);
             }
@@ -344,7 +344,12 @@ class OAM_ADMINISTRATOR_AJAX {
             ", $row['custom_order_id'], 0), ARRAY_A);
 
             foreach ($recipient_rows as $recipient) {
-                $recipient_greeting = html_entity_decode(stripslashes($recipient['greeting']));
+                $greeting_text = $recipient['greeting'] ?? '';
+                $greeting_text = stripslashes($greeting_text);
+                $greeting_text = html_entity_decode($greeting_text, ENT_QUOTES, 'UTF-8');
+                $recipient_greeting = mb_convert_encoding($greeting_text, 'UTF-8', 'UTF-8');
+
+
                 $recipient_qty = (int) $recipient['quantity'];
                 $jar_query = $recipient_qty > 6 ? "GROUP BY recipient_order_id" : "GROUP BY jar_order_id";
 
@@ -395,7 +400,7 @@ class OAM_ADMINISTRATOR_AJAX {
                                     $row['custom_order_id'],
                                     $recipient['recipient_order_id'],
                                     $jar['jar_order_id'],
-                                    html_entity_decode(stripslashes($recipient['greeting'])),
+                                    $recipient_greeting,
                                 ];
                                 fputcsv($greetings_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $greeting_line));
                             }
@@ -522,7 +527,7 @@ class OAM_ADMINISTRATOR_AJAX {
                             $recipient['state'],
                             $recipient['zipcode'],
                             $recipient['country'],
-                            html_entity_decode(stripslashes($recipient['greeting'])),
+                            $recipient_greeting,
                             $recipient_qty,
                             $billing_info['first_name'],
                             $billing_info['last_name'],
@@ -551,7 +556,6 @@ class OAM_ADMINISTRATOR_AJAX {
                             ucwords(strtolower($jar['order_type'])),
                             OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Rep',
                             $affiliate_status == 1 ? 'Active' : 'Deactivated',
-                            $formatted_date
                         ];
                         fputcsv($full_export_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
                     }
