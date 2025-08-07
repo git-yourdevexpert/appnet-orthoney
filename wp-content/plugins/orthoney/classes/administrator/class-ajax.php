@@ -209,7 +209,7 @@ class OAM_ADMINISTRATOR_AJAX {
             
             $email_sent = false;
             if (!empty($email_list) && $sheet_type == 0 && file_exists($fulfillment_path)) {
-                $subject = 'Fulfillment Report: ' . $start_date->format('M d, Y') . ' - ' . $end_date->format('M d, Y');
+                $subject = 'Fulfillment Report - ' . $start_date->format('m/d/Y') . ' - ' . $end_date->format('m/d/Y');
                 ob_start();
                 wc_get_template('emails/fulfillment-report-email.php', [
                     'date_range' => $date_range,
@@ -233,7 +233,7 @@ class OAM_ADMINISTRATOR_AJAX {
             }
 
             if (!empty($email_list) && $sheet_type == 1 && file_exists($full_export_path)) {
-                $subject = 'Full Order Report: ' . $start_date->format('M d, Y') . ' - ' . $end_date->format('M d, Y');
+                $subject = 'Manifest Report - ' . $start_date->format('m/d/Y') . ' - ' . $end_date->format('m/d/Y');
                 ob_start();
                 wc_get_template('emails/full-export-report-email.php', [
                     'date_range' => $date_range,
