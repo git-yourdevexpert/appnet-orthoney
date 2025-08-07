@@ -310,8 +310,10 @@ class OAM_ADMINISTRATOR_AJAX {
         $results = $wpdb->get_results($query, ARRAY_A);
 
         if($sheet_type == 0){
-            $fulfillment_output = fopen($fulfillment_path, 'a');
-            $greetings_output = fopen($greetings_path, 'a');
+            $fulfillment_output = fopen($fulfillment_file_path, 'w'); // 'w' is correct
+            fwrite($fulfillment_output, "\xEF\xBB\xBF");
+            $greetings_output = fopen($greetings_path, 'w');
+            fwrite($greetings_output, "\xEF\xBB\xBF");
 
             if (!$fulfillment_output || !$greetings_output) {
                 wp_send_json_error(['message' => 'Unable to open CSVs for writing.']);
@@ -407,6 +409,7 @@ class OAM_ADMINISTRATOR_AJAX {
                             html_entity_decode(stripslashes($row['affiliate_code'])),
                             html_entity_decode(stripslashes($row['affiliate_full_card'])),
                         ];
+                        
                         fputcsv($fulfillment_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
                     }
 
