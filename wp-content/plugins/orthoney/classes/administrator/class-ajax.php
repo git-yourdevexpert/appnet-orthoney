@@ -310,10 +310,11 @@ class OAM_ADMINISTRATOR_AJAX {
         $results = $wpdb->get_results($query, ARRAY_A);
 
         if($sheet_type == 0){
-            $fulfillment_output = fopen($fulfillment_file_path, 'w'); // 'w' is correct
-            fwrite($fulfillment_output, "\xEF\xBB\xBF");
-            $greetings_output = fopen($greetings_path, 'w');
-            fwrite($greetings_output, "\xEF\xBB\xBF");
+            $fulfillment_output = fopen($fulfillment_file_path, 'w');
+fwrite($fulfillment_output, "\xEF\xBB\xBF");
+
+$greetings_output = fopen($greetings_path, 'w');
+fwrite($greetings_output, "\xEF\xBB\xBF");
 
             if (!$fulfillment_output || !$greetings_output) {
                 wp_send_json_error(['message' => 'Unable to open CSVs for writing.']);
