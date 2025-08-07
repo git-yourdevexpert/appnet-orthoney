@@ -310,10 +310,10 @@ class OAM_ADMINISTRATOR_AJAX {
         $results = $wpdb->get_results($query, ARRAY_A);
 
         if($sheet_type == 0){
-            $fulfillment_output = fopen($fulfillment_file_path, 'w');
+            $fulfillment_output = fopen($fulfillment_file_path, 'a');
 fwrite($fulfillment_output, "\xEF\xBB\xBF");
 
-$greetings_output = fopen($greetings_path, 'w');
+$greetings_output = fopen($greetings_path, 'a');
 fwrite($greetings_output, "\xEF\xBB\xBF");
 
             if (!$fulfillment_output || !$greetings_output) {
