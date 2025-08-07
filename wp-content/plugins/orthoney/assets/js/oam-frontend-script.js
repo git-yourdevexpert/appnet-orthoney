@@ -5154,8 +5154,7 @@ jQuery(document).ready(function ($) {
     // Start processing from offset 0
     processFulfillmentChunk(0, date_range, sendmail, sheet_type);
   });
-
-  function processFulfillmentChunk(offset, date_range, sendmail, sheet_type) {
+function processFulfillmentChunk(offset, date_range, sendmail, sheet_type, session_key = null) {
     console.log(`Processing chunk at offset: ${offset}, sheet_type: ${sheet_type}`);
     
     $.ajax({
@@ -5168,7 +5167,8 @@ jQuery(document).ready(function ($) {
         offset: offset,
         date_range: date_range,
         sendmail: sendmail,
-        sheet_type: sheet_type
+        sheet_type: sheet_type,
+        session_key: session_key
       },
       success: function (response) {
         console.log('AJAX Response:', response);
@@ -5246,7 +5246,7 @@ jQuery(document).ready(function ($) {
             console.log(`Continuing with next offset: ${nextOffset}`);
             
             setTimeout(() => {
-              processFulfillmentChunk(nextOffset, date_range, sendmail, sheet_type);
+              processFulfillmentChunk(nextOffset, date_range, sendmail, sheet_type, data.session_key);
             }, 500); // Increased delay to prevent overwhelming the server
           }
         } else {
