@@ -30,6 +30,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
         $date_range = sanitize_text_field($_POST['date_range'] ?? '');
         $sendmail_raw = $_POST['sendmail'] ?? '';
+        $session_key = $_POST['session_key'] ?? '';
         $email_list = array_filter(array_map('sanitize_email', explode(',', $sendmail_raw)));
         $offset = absint($_POST['offset'] ?? 0);
         $limit = 3;
@@ -60,7 +61,6 @@ class OAM_ADMINISTRATOR_AJAX {
         $end_str   = $end_date_utc->format('Y-m-d 23:59:59');
 
         // Create a consistent session key for this report generation
-        $session_key = 'fulfillment_report_' . md5($date_range . $sendmail_raw . $sheet_type);
         
         // Initialize file paths and URLs
         $fulfillment_path = '';
@@ -133,7 +133,8 @@ class OAM_ADMINISTRATOR_AJAX {
                 'greetings_filename' => $greetings_filename,
                 'full_export_filename' => $full_export_filename,
             ];
-            set_transient($session_key, $file_data, 2 * HOUR_IN_SECONDS);
+
+           
 
             // Create headers for CSV files
             if($sheet_type == 0){
@@ -171,8 +172,18 @@ class OAM_ADMINISTRATOR_AJAX {
                 ]);
                 fclose($full_export_file);
             }
+
+            if($sheet_type == 0){
+                $session_key = 'fulfillment_report_' . md5($date_range . $sendmail_raw . $sheet_type . $fulfillment_filename);
+            }else{
+                $session_key = 'full_export_report_' . md5($date_range . $sendmail_raw . $sheet_type . $full_export_filename);
+            }
+
+            error_log("Session key: " . $session_key);
+            set_transient($session_key, $file_data, 2 * HOUR_IN_SECONDS);
         } else {
             // Subsequent requests - get file paths from transient
+            error_log("GET Session key: " . $session_key);
             $file_data = get_transient($session_key);
             if (!$file_data) {
                 wp_send_json_error(['message' => 'Session expired. Please restart the report generation.']);
@@ -203,6 +214,7 @@ class OAM_ADMINISTRATOR_AJAX {
         $total_orders = count($order_ids);
         $chunk_ids = array_slice($order_ids, $offset, $limit);
         
+        error_log("Processing chunk: " . implode(',', $chunk_ids));
         if (empty($chunk_ids)) {
             // Clean up transient when done
             delete_transient($session_key);
@@ -230,6 +242,7 @@ class OAM_ADMINISTRATOR_AJAX {
                     ],
                     'email_sent' => !empty($email_sent),
                 ]);
+                
             }
 
             if (!empty($email_list) && $sheet_type == 1 && file_exists($full_export_path)) {
@@ -253,6 +266,8 @@ class OAM_ADMINISTRATOR_AJAX {
                     ],
                     'email_sent' => !empty($email_sent),
                 ]);
+               
+
             }
 
             // Final return block when done but no email
@@ -281,7 +296,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
         $placeholders = implode(',', array_fill(0, count($chunk_ids), '%d'));
         $query = $wpdb->prepare("
-            SELECT 
+            SELECT DISTINCT
                 o.ID AS wc_order_id,
                 rel.order_id AS custom_order_id,
                 rel.affiliate_code,
@@ -310,6 +325,8 @@ class OAM_ADMINISTRATOR_AJAX {
             }
         }
 
+        error_log("Processing results for orders: " . implode(',', array_column($results, 'wc_order_id')));
+
         foreach ($results as $row) {
             $wc_order_id = $row['wc_order_id'];
             $affiliate_status = (int) OAM_COMMON_Custom::get_order_meta($wc_order_id, 'affiliate_account_status');
@@ -337,6 +354,12 @@ class OAM_ADMINISTRATOR_AJAX {
                 }
             }
 
+
+            error_log($wpdb->prepare("
+                SELECT * FROM {$wpdb->prefix}oh_recipient_order
+                WHERE order_id = %d AND order_id != %d
+                GROUP BY recipient_order_id
+            ", $row['custom_order_id'], 0));
             $recipient_rows = $wpdb->get_results($wpdb->prepare("
                 SELECT * FROM {$wpdb->prefix}oh_recipient_order
                 WHERE order_id = %d AND order_id != %d
@@ -349,7 +372,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 $greeting_text = html_entity_decode($greeting_text, ENT_QUOTES, 'UTF-8');
                 $recipient_greeting = mb_convert_encoding($greeting_text, 'UTF-8', 'UTF-8');
 
-
+    
                 $recipient_qty = (int) $recipient['quantity'];
                 $jar_query = $recipient_qty > 6 ? "GROUP BY recipient_order_id" : "GROUP BY jar_order_id";
 
@@ -370,23 +393,28 @@ class OAM_ADMINISTRATOR_AJAX {
                             ($jar['order_type'] == 'external' ? 1 : $jar['quantity']),
                             (!empty($coupons) ? 'Wholesale' : 'Retail'),
                             (!empty($coupons) ? implode(', ', $coupons) : ''),
-                            $recipient['full_name'],
-                            $recipient['company_name'],
-                            $recipient['address_1'],
-                            $recipient['address_2'],
+                            html_entity_decode(stripslashes($recipient['full_name'])),
+                            html_entity_decode(stripslashes($recipient['company_name'])),
+                            html_entity_decode(stripslashes($recipient['address_1'])),
+                            html_entity_decode(stripslashes($recipient['address_2'])),
                             $recipient['city'],
                             $recipient['state'],
                             $recipient['zipcode'],
                             $recipient['country'],
                             ($jar['order_type'] != 'external' ? '' : $recipient_greeting),
-                            $row['affiliate_full_card_name'],
-                            $row['affiliate_name'],
-                            $row['affiliate_code'],
-                            $row['affiliate_full_card'],
+                            html_entity_decode(stripslashes($row['affiliate_full_card_name'])),
+                            html_entity_decode(stripslashes($row['affiliate_name'])),
+                            html_entity_decode(stripslashes($row['affiliate_code'])),
+                            html_entity_decode(stripslashes($row['affiliate_full_card'])),
                         ];
                         fputcsv($fulfillment_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
                     }
 
+
+                    error_log($wpdb->prepare("
+                        SELECT * FROM {$wpdb->prefix}oh_wc_jar_order
+                        WHERE recipient_order_id = %s AND order_id != %d
+                    ", $recipient['recipient_order_id'], 0));
                     $jar_order_rows = $wpdb->get_results($wpdb->prepare("
                         SELECT * FROM {$wpdb->prefix}oh_wc_jar_order
                         WHERE recipient_order_id = %s AND order_id != %d
@@ -394,16 +422,14 @@ class OAM_ADMINISTRATOR_AJAX {
 
                     foreach ($jar_order_rows as $jar) {
                         if ($jar['order_type'] == 'internal') {
-                            for ($jar_qty = 1; $jar_qty <= $jar['quantity']; $jar_qty++) {
-                                $greeting_line = [
-                                    $wc_order_id,
-                                    $row['custom_order_id'],
-                                    $recipient['recipient_order_id'],
-                                    $jar['jar_order_id'],
-                                    $recipient_greeting,
-                                ];
-                                fputcsv($greetings_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $greeting_line));
-                            }
+                            $greeting_line = [
+                                $wc_order_id,
+                                $row['custom_order_id'],
+                                $recipient['recipient_order_id'],
+                                $jar['jar_order_id'],
+                                $recipient_greeting,
+                            ];
+                            fputcsv($greetings_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $greeting_line));
                         }
                     }
                 }
@@ -519,28 +545,28 @@ class OAM_ADMINISTRATOR_AJAX {
                             $row['affiliate_code'],
                             $row['custom_order_id'],
                             $recipient['recipient_order_id'],
-                            $recipient['full_name'],
-                            $recipient['company_name'],
-                            $recipient['address_1'],
-                            $recipient['address_2'],
+                            html_entity_decode(stripslashes($recipient['full_name'])),
+                            html_entity_decode(stripslashes($recipient['company_name'])),
+                            html_entity_decode(stripslashes($recipient['address_1'])),
+                            html_entity_decode(stripslashes($recipient['address_2'])),
                             $recipient['city'],
                             $recipient['state'],
                             $recipient['zipcode'],
                             $recipient['country'],
                             $recipient_greeting,
                             $recipient_qty,
-                            $billing_info['first_name'],
-                            $billing_info['last_name'],
+                            html_entity_decode(stripslashes($billing_info['first_name'])),
+                            html_entity_decode(stripslashes($billing_info['last_name'])),
                             $payment_method,
-                            $billing_info['first_name'],
-                            $billing_info['last_name'],
+                            html_entity_decode(stripslashes($billing_info['first_name'])),
+                            html_entity_decode(stripslashes($billing_info['last_name'])),
                             $billing_info['city'],
                             $billing_info['state'],
-                            $billing_info['address_1'],
-                            $billing_info['postcode'],
+                            html_entity_decode(stripslashes($billing_info['address_1'])),
+                            html_entity_decode(stripslashes($billing_info['postcode'])),
                             $billing_info['email'],
                             $billing_info['phone'],
-                            $row['affiliate_name'],
+                            html_entity_decode(stripslashes($row['affiliate_name'])),
                             $DJarPriceshow_price,
                             $shipping_total,
                             $user_id,
@@ -555,7 +581,7 @@ class OAM_ADMINISTRATOR_AJAX {
                             $user_type,
                             ucwords(strtolower($jar['order_type'])),
                             OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Rep',
-                            $affiliate_status == 1 ? 'Active' : 'Deactivated',
+                            ((strtolower($row['affiliate_code']) === 'orthoney') ? 'Active' : ($affiliate_status == 1 ? 'Active' : 'Deactivated')),
                         ];
                         fputcsv($full_export_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
                     }
@@ -583,6 +609,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 'total' => $total_orders,
                 'file_exists' => file_exists($fulfillment_path),
                 'file_size' => filesize($fulfillment_path),
+                'session_key' => $session_key,
             ]);
         }
         if($sheet_type == 1){
@@ -593,6 +620,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 'total' => $total_orders,
                 'file_exists' => file_exists($full_export_path),
                 'file_size' => filesize($full_export_path),
+                'session_key' => $session_key,
             ]);
         }
     }
