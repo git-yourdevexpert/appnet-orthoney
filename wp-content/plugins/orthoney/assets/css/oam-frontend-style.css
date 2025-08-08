@@ -611,7 +611,7 @@ body .select2-container--default .select2-results__option--highlighted.select2-r
 .popup-show .recipient-view-details-wrapper ul li span,
 .recipient-view-greeting-box span {
   min-height: 39px !important;
-  line-height: 39px !important;
+  line-height: 1.8 !important;
   font-family: var(--inputs-font-family, inherit);
   font-size: var(--inputs-font-size, inherit);
   font-weight: var(--inputs-font-weight, inherit);

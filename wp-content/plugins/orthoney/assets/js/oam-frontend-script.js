@@ -3188,7 +3188,7 @@ document.addEventListener("click", function (event) {
                         }</span></li>
                     </ul>
                     <div class='recipient-view-greeting-box'>
-                        <label>Greeting</label><span>${d.greeting || ""}</span>
+                         <label>Greeting</label> <span>${(d.greeting || "").replace(/\n/g, "<br>")}</span>
                     </div>`;
       }
 
