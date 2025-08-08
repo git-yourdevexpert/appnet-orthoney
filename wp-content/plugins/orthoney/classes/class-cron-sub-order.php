@@ -431,7 +431,7 @@ class OAM_WC_CRON_Suborder
                         'recipient_order_id' => $sub_order_id,
                         'jar_order_id'       => $jar_id,
                         'tracking_no'        => '',
-                        'quantity'           => 1,
+                        'quantity'           => ($jar_order_type === 'internal') ? $recipient->quantity : 1,
                         'order_type'         => $jar_order_type,
                         'status'             => ''
                     ]);
