@@ -259,12 +259,14 @@ class OAM_COMMON_Custom {
             return false;
          }else{
              if ($current_time <= $start_timestamp) {
-                return true;
-             }else{
-                // Allow editing within 4 hours of order time
-                $editable_until = $order_timestamp + (4 * HOUR_IN_SECONDS);
-                if ($current_time <= $editable_until) {
+                if ($order_timestamp >= $start_timestamp && $order_timestamp <= $end_timestamp) {
                     return true;
+                }else{
+                    // Allow editing within 4 hours of order time
+                    $editable_until = $order_timestamp + (4 * HOUR_IN_SECONDS);
+                    if ($current_time <= $editable_until) {
+                        return true;
+                    }
                 }
              }
          }
