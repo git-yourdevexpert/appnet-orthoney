@@ -161,12 +161,12 @@ class OAM_ADMINISTRATOR_AJAX {
                     wp_send_json_error(['message' => 'Unable to create CSVs.']);
                 }
                 fputcsv($full_export_file, [
-                    'uid', 'TAmount', 'JarsTotal', 'Code', 'OrderID', 'RecipientNo',
+                    'uid', 'TAmount', 'JarsTotal', 'Code', 'wc_oid', 'OrderID', 'RecipientNo',
                     'RecipName', 'RecipComp', 'RecipAddr1', 'RecipAddr2', 'RecipCity', 'RecipState',
                     'RecipZip', 'Country', 'Greeting', 'RecipQty', 'TFirstName',
                     'TLastName', 'CCorCheck', 'Free Shipping', 'FirstName', 'LastName', 'City', 'State', 'Address',
                     'ZipCode', 'Email', 'Phone', 'OrgName', 'DJarPrice', 'ShippingAmount',
-                    'user_id', 'status', 'confirmed', 'hold', 'paid', 'wc_oid', 
+                    'user_id', 'status', 'confirmed', 'hold', 'paid',  
                     'date_updated', 'order_date', 'checkout_timestamp', 'user_type',
                     'order_type', 'Activate Status', 'ORG Status'
                 ]);
@@ -548,6 +548,7 @@ class OAM_ADMINISTRATOR_AJAX {
                             $total_amount,
                             $total_quantity,
                             $row['affiliate_code'],
+                            $wc_order_id,
                             $row['custom_order_id'],
                             $recipient['recipient_order_id'],
                             html_entity_decode(stripslashes($recipient['full_name'])),
@@ -580,7 +581,6 @@ class OAM_ADMINISTRATOR_AJAX {
                             ($order->is_paid() ? 1 : 0),
                             ($order->get_status() === 'on-hold') ? 1 : 0,
                             ($order->is_paid() ? 1 : 0),
-                            $wc_order_id,
                             $last_update_date_formatted,
                             $order_date,
                             $checkout_time,
