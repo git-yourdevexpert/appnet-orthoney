@@ -161,10 +161,10 @@ class OAM_ADMINISTRATOR_AJAX {
                     wp_send_json_error(['message' => 'Unable to create CSVs.']);
                 }
                 fputcsv($full_export_file, [
-                    'List', 'uid', 'TAmount', 'JarsTotal', 'Code', 'OrderID', 'RecipientNo',
+                    'uid', 'TAmount', 'JarsTotal', 'Code', 'OrderID', 'RecipientNo',
                     'RecipName', 'RecipComp', 'RecipAddr1', 'RecipAddr2', 'RecipCity', 'RecipState',
                     'RecipZip', 'Country', 'Greeting', 'RecipQty', 'TFirstName',
-                    'TLastName', 'CCorCheck', 'FirstName', 'LastName', 'City', 'State', 'Address',
+                    'TLastName', 'CCorCheck', 'Free Shipping', 'FirstName', 'LastName', 'City', 'State', 'Address',
                     'ZipCode', 'Email', 'Phone', 'OrgName', 'DJarPrice', 'ShippingAmount',
                     'user_id', 'status', 'confirmed', 'hold', 'paid', 'wc_oid', 
                     'date_updated', 'order_date', 'checkout_timestamp', 'user_type',
