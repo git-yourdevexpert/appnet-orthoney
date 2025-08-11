@@ -33,7 +33,7 @@ class OAM_ADMINISTRATOR_AJAX {
         $session_key = $_POST['session_key'] ?? '';
         $email_list = array_filter(array_map('sanitize_email', explode(',', $sendmail_raw)));
         $offset = absint($_POST['offset'] ?? 0);
-        $limit = 3;
+        $limit = 500;
 
         if (empty($date_range)) {
             wp_send_json_error(['message' => 'Date range is required.']);
