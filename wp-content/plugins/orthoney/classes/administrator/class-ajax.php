@@ -328,6 +328,7 @@ class OAM_ADMINISTRATOR_AJAX {
         error_log("Processing results for orders: " . implode(',', array_column($results, 'wc_order_id')));
 
         foreach ($results as $row) {
+            $org_activate_status = 'Rep';
             $wc_order_id = $row['wc_order_id'];
             $affiliate_status = (int) OAM_COMMON_Custom::get_order_meta($wc_order_id, 'affiliate_account_status');
 
@@ -337,6 +338,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
             $row['affiliate_code'] = trim($row['affiliate_code']);
             if ($row['affiliate_code'] === '' || strtolower($row['affiliate_code']) === 'orthoney') {
+                $org_activate_status = 'Rep';
                 $row['affiliate_code'] = 'Honey from the Heart';
                 $row['affiliate_name'] = 'Honey from the Heart';
                 $row['affiliate_full_card'] = get_field('honey_from_the_heart_gift_card', 'option') ?: '';
@@ -347,6 +349,8 @@ class OAM_ADMINISTRATOR_AJAX {
                     $row['affiliate_code']
                 ));
                 if ($affiliate_user_id) {
+
+                    $org_activate_status = OAM_AFFILIATE_Helper::is_user_created_this_year($affiliate_user_id) ? 'New' : 'Rep',
                     $orgName = get_user_meta($affiliate_user_id, '_yith_wcaf_name_of_your_organization', true);
                     $row['affiliate_name'] = $orgName ?: '';
                     $row['affiliate_full_card'] = get_user_meta($affiliate_user_id, 'gift_card', true) ?: $orgName;
@@ -354,12 +358,6 @@ class OAM_ADMINISTRATOR_AJAX {
                 }
             }
 
-
-            error_log($wpdb->prepare("
-                SELECT * FROM {$wpdb->prefix}oh_recipient_order
-                WHERE order_id = %d AND order_id != %d
-                GROUP BY recipient_order_id
-            ", $row['custom_order_id'], 0));
             $recipient_rows = $wpdb->get_results($wpdb->prepare("
                 SELECT * FROM {$wpdb->prefix}oh_recipient_order
                 WHERE order_id = %d AND order_id != %d
@@ -417,10 +415,6 @@ class OAM_ADMINISTRATOR_AJAX {
                     }
 
 
-                    error_log($wpdb->prepare("
-                        SELECT * FROM {$wpdb->prefix}oh_wc_jar_order
-                        WHERE recipient_order_id = %s AND order_id != %d
-                    ", $recipient['recipient_order_id'], 0));
                     $jar_order_rows = $wpdb->get_results($wpdb->prepare("
                         SELECT * FROM {$wpdb->prefix}oh_wc_jar_order
                         WHERE recipient_order_id = %s AND order_id != %d
@@ -586,7 +580,7 @@ class OAM_ADMINISTRATOR_AJAX {
                             $checkout_time,
                             $user_type,
                            ucwords(strtolower($jar['order_type'])) == 'Internal' ? 'UPS' : 'External',
-                            OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Rep',
+                            $org_activate_status,
                             ((strtolower($row['affiliate_code']) === strtolower('Honey from the Heart')) ? 'Active' : ($affiliate_status == 1 ? 'Active' : 'Deactivated')),
                         ];
                         fputcsv($full_export_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
