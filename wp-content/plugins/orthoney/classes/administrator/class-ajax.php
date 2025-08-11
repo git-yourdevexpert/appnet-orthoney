@@ -544,7 +544,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
                     foreach ($jar_rows as $jar) {
                         $line = [
-                            $row['custom_order_id'],
+                            $wc_order_id,
                             $total_amount,
                             $total_quantity,
                             $row['affiliate_code'],
