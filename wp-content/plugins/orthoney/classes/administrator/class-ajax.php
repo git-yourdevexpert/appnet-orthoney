@@ -367,6 +367,7 @@ class OAM_ADMINISTRATOR_AJAX {
             ", $row['custom_order_id'], 0), ARRAY_A);
 
             foreach ($recipient_rows as $recipient) {
+                $recipient['zipcode'] = strlen(trim($recipient['zipcode'])) == 4 ? '0' . trim($recipient['zipcode']) : trim($recipient['zipcode']);
                 $greeting_text = $recipient['greeting'] ?? '';
                 $greeting_text = stripslashes($greeting_text);
                 $greeting_text = html_entity_decode($greeting_text, ENT_QUOTES, 'UTF-8');
@@ -543,7 +544,6 @@ class OAM_ADMINISTRATOR_AJAX {
 
                     foreach ($jar_rows as $jar) {
                         $line = [
-                            'List',
                             $row['custom_order_id'],
                             $total_amount,
                             $total_quantity,
@@ -574,6 +574,7 @@ class OAM_ADMINISTRATOR_AJAX {
                             html_entity_decode(stripslashes($row['affiliate_name'])),
                             $DJarPriceshow_price,
                             $shipping_total,
+                            $shipping_total == 0 ? "No" : 'Yes',
                             $user_id,
                             $status,
                             ($order->is_paid() ? 1 : 0),
@@ -584,7 +585,7 @@ class OAM_ADMINISTRATOR_AJAX {
                             $order_date,
                             $checkout_time,
                             $user_type,
-                            ucwords(strtolower($jar['order_type'])),
+                           ucwords(strtolower($jar['order_type'])) == 'Internal' ? 'UPS' : 'External',
                             OAM_AFFILIATE_Helper::is_user_created_this_year($user_id) ? 'New' : 'Rep',
                             ((strtolower($row['affiliate_code']) === strtolower('Honey from the Heart')) ? 'Active' : ($affiliate_status == 1 ? 'Active' : 'Deactivated')),
                         ];
