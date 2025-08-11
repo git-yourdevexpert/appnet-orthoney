@@ -350,7 +350,7 @@ class OAM_ADMINISTRATOR_AJAX {
                 ));
                 if ($affiliate_user_id) {
 
-                    $org_activate_status = OAM_AFFILIATE_Helper::is_user_created_this_year($affiliate_user_id) ? 'New' : 'Rep',
+                    $org_activate_status = OAM_AFFILIATE_Helper::is_user_created_this_year($affiliate_user_id) ? 'New' : 'Rep';
                     $orgName = get_user_meta($affiliate_user_id, '_yith_wcaf_name_of_your_organization', true);
                     $row['affiliate_name'] = $orgName ?: '';
                     $row['affiliate_full_card'] = get_user_meta($affiliate_user_id, 'gift_card', true) ?: $orgName;
