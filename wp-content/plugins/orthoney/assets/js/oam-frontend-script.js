@@ -5242,7 +5242,7 @@ function processFulfillmentChunk(offset, date_range, sendmail, sheet_type, sessi
             }
           } else {
             // Continue processing next chunk
-            const nextOffset = offset + 500; // Your limit is 3, so increment by 3
+            const nextOffset = offset + 100; // Your limit is 3, so increment by 3
             console.log(`Continuing with next offset: ${nextOffset}`);
             
             setTimeout(() => {
