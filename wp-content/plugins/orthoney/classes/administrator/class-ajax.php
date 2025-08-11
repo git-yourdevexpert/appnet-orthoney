@@ -563,7 +563,7 @@ class OAM_ADMINISTRATOR_AJAX {
                             html_entity_decode(stripslashes($billing_info['first_name'])),
                             html_entity_decode(stripslashes($billing_info['last_name'])),
                             $payment_method,
-                            $shipping_total == 0 ? "No" : 'Yes',
+                            $shipping_total == 0 ? "Yes" : 'No',
                             html_entity_decode(stripslashes($billing_info['first_name'])),
                             html_entity_decode(stripslashes($billing_info['last_name'])),
                             $billing_info['city'],
