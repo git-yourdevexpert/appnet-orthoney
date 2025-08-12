@@ -392,7 +392,7 @@ class OAM_WC_CRON_Suborder
                     'city'               => sanitize_text_field($recipient->city),
                     'state'              => sanitize_text_field($recipient->state),
                     'zipcode'            => sanitize_text_field($recipient->zipcode),
-                    'greeting'           => sanitize_text_field($recipient->greeting),
+                    'greeting'           => sanitize_textarea_field($recipient->greeting),
                     'quantity'           => sanitize_text_field($recipient->quantity),
                     'address_verified'   => sanitize_text_field($recipient->address_verified),
                 ];
