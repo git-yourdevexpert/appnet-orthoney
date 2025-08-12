@@ -1511,8 +1511,12 @@ document.addEventListener("click", function (event) {
                 "</span></li>";
 
               html += "</ul>";
-              html +=
-                "<div class='recipient-view-greeting-box'><label>Greeting </label><span>"+${(greeting || "").replace(/\n/g, "<br>")}+"</span></div>";
+              html += `
+                <div class='recipient-view-greeting-box'>
+                  <label>Greeting </label>
+                  <span>${(greeting || "").replace(/\n/g, "<br>")}</span>
+                </div>
+              `;
 
               const viewpopup = document.querySelector(
                 "#recipient-view-details-popup .recipient-view-details-wrapper"
