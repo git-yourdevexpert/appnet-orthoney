@@ -529,10 +529,11 @@ class OAM_ADMINISTRATOR_AJAX {
                             $user_type = 'smgr';
                         }
                     }
-
+                    
                     foreach ($jar_rows as $jar) {
+                        if ($jar['order_type'] == 'external') {
                         $line = [
-                            $wc_order_id,
+                            $jar['jar_order_id'],
                             $total_amount,
                             $total_quantity,
                             $row['affiliate_code'],
@@ -578,6 +579,65 @@ class OAM_ADMINISTRATOR_AJAX {
                             ((strtolower($row['affiliate_code']) === strtolower('Honey from the Heart')) ? 'Active' : ($affiliate_status == 1 ? 'Active' : 'Deactivated')),
                         ];
                         fputcsv($full_export_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
+                    }
+                    }
+
+                    $jar_order_rows = $wpdb->get_results($wpdb->prepare("
+                        SELECT * FROM {$wpdb->prefix}oh_wc_jar_order
+                        WHERE recipient_order_id = %s AND order_id != %d
+                    ", $recipient['recipient_order_id'], 0), ARRAY_A);
+
+                    foreach ($jar_order_rows as $jar) {
+                        if ($jar['order_type'] == 'internal') {
+                            $line = [
+                            $jar['jar_order_id'],
+                            $total_amount,
+                            $total_quantity,
+                            $row['affiliate_code'],
+                            $wc_order_id,
+                            $row['custom_order_id'],
+                            $recipient['recipient_order_id'],
+                            html_entity_decode(stripslashes($recipient['full_name'])),
+                            html_entity_decode(stripslashes($recipient['company_name'])),
+                            html_entity_decode(stripslashes($recipient['address_1'])),
+                            html_entity_decode(stripslashes($recipient['address_2'])),
+                            $recipient['city'],
+                            $recipient['state'],
+                            $recipient['zipcode'],
+                            $recipient['country'],
+                            $recipient_greeting,
+                            $recipient_qty,
+                            html_entity_decode(stripslashes($billing_info['first_name'])),
+                            html_entity_decode(stripslashes($billing_info['last_name'])),
+                            $payment_method,
+                            html_entity_decode(stripslashes($billing_info['first_name'])),
+                            html_entity_decode(stripslashes($billing_info['last_name'])),
+                            $billing_info['city'],
+                            $billing_info['state'],
+                            html_entity_decode(stripslashes($billing_info['address_1'])),
+                            html_entity_decode(stripslashes($billing_info['postcode'])),
+                            $billing_info['email'],
+                            $billing_info['phone'],
+                            html_entity_decode(stripslashes($row['affiliate_name'])),
+                            $DJarPriceshow_price,
+                            $shipping_total,
+                            $shipping_total == 0 ? "Yes" : 'No',
+                            $user_id,
+                            $status,
+                            ($order->is_paid() ? 1 : 0),
+                            ($order->get_status() === 'on-hold') ? 1 : 0,
+                            ($order->is_paid() ? 1 : 0),
+                            $last_update_date_formatted,
+                            $order_date,
+                            $checkout_time,
+                            $user_type,
+                           ucwords(strtolower($jar['order_type'])) == 'Internal' ? 'UPS' : 'External',
+                            $org_activate_status,
+                            ((strtolower($row['affiliate_code']) === strtolower('Honey from the Heart')) ? 'Active' : ($affiliate_status == 1 ? 'Active' : 'Deactivated')),
+                        ];
+                        fputcsv($full_export_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
+
+                        }
                     }
                 }
             }
