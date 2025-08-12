@@ -367,15 +367,9 @@ class OAM_ADMINISTRATOR_AJAX {
             foreach ($recipient_rows as $recipient) {
                 $recipient['zipcode'] = strlen(trim($recipient['zipcode'])) == 4 ? '0' . trim($recipient['zipcode']) : trim($recipient['zipcode']);
                 $greeting_text = $recipient['greeting'] ?? '';
-                $greeting_text = stripslashes($greeting_text);
-                $greeting_text = html_entity_decode($greeting_text, ENT_QUOTES, 'UTF-8');
-                $recipient_greeting = mb_convert_encoding($greeting_text, 'UTF-8', 'UTF-8');
-                $recipient_greeting = str_replace(
-                    ['â€™', 'â€œ', 'â€', 'â€“', 'â€”'],
-                    ["'", '"', '"', '-', '—'],
-                    $recipient_greeting
-                );
-    
+                
+                $recipient_greeting = OAM_ADMINISTRATOR_AJAX::cleanup_pure_text($greeting_text);
+
                 $recipient_qty = (int) $recipient['quantity'];
                 $jar_query = $recipient_qty > 6 ? "GROUP BY recipient_order_id" : "GROUP BY jar_order_id";
 
