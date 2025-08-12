@@ -16,7 +16,11 @@ class OAM_ADMINISTRATOR_HELPER {
         if($text != ''){
             // 1. Fix UTF-8 misencoding
             $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
-
+           
+            $text = stripslashes($text);
+            $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+           
+            
             // 2. Fix specific broken characters (misencoded sequences)
             $text = str_replace(
                 ['â€™', 'â€œ', 'â€', 'â€“', 'â€”'],
