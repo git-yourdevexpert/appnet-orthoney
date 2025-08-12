@@ -306,12 +306,10 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                                 <button class="far fa-eye viewRecipientOrder" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-popup="#recipient-order-edit-popup"></button>
 
                                 <?php 
-                                if($editable === true ){
-                                    if(isset($_GET['return_url']) && $_GET['return_url'] !='organization'){
+                                if($editable === true OR in_array('administrator', $user_roles)){
                                     ?>
                                     <button class="far fa-edit editRecipientOrder" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-popup="#recipient-order-manage-popup"></button>
                                     <?php
-                                    }
                                 }
                             }
                             ?>
