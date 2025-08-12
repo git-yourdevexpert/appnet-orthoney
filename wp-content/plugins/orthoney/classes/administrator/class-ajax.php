@@ -328,7 +328,7 @@ class OAM_ADMINISTRATOR_AJAX {
         error_log("Processing results for orders: " . implode(',', array_column($results, 'wc_order_id')));
 
         foreach ($results as $row) {
-            $org_activate_status = 'Rep';
+            $org_activate_status = 'New';
             $wc_order_id = $row['wc_order_id'];
             $affiliate_status = (int) OAM_COMMON_Custom::get_order_meta($wc_order_id, 'affiliate_account_status');
 

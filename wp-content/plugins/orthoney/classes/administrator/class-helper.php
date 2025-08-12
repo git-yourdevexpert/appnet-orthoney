@@ -80,7 +80,7 @@ class OAM_ADMINISTRATOR_HELPER {
             $output .= '<div class="btn"><a href="' . esc_url(wp_logout_url(home_url())) . '">Logout</a></div>';
             $output .= '</div>';
         }
-        return $output;
+        return '';
     }
     
     public static function org_details_popup_callback() {
