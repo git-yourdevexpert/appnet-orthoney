@@ -161,7 +161,7 @@ class OAM_ADMINISTRATOR_AJAX {
                     wp_send_json_error(['message' => 'Unable to create CSVs.']);
                 }
                 fputcsv($full_export_file, [
-                    'uid', 'TAmount', 'JarsTotal', 'Code', 'wc_id', 'OrderID', 'RecipientNo',
+                    'uid', 'TAmount', 'JarsTotal', 'Code', 'wc_id', 'OrderID', 'RecipientNo','JarNo',
                     'RecipName', 'RecipComp', 'RecipAddr1', 'RecipAddr2', 'RecipCity', 'RecipState',
                     'RecipZip', 'Country', 'Greeting', 'RecipQty', 'TFirstName',
                     'TLastName', 'CCorCheck', 'FirstName', 'LastName', 'City', 'State', 'Address',
@@ -540,6 +540,7 @@ class OAM_ADMINISTRATOR_AJAX {
                             $wc_order_id,
                             $row['custom_order_id'],
                             $recipient['recipient_order_id'],
+                            $jar['jar_order_id'],
                             html_entity_decode(stripslashes($recipient['full_name'])),
                             html_entity_decode(stripslashes($recipient['company_name'])),
                             html_entity_decode(stripslashes($recipient['address_1'])),
@@ -597,6 +598,7 @@ class OAM_ADMINISTRATOR_AJAX {
                             $wc_order_id,
                             $row['custom_order_id'],
                             $recipient['recipient_order_id'],
+                            $jar['jar_order_id'],
                             html_entity_decode(stripslashes($recipient['full_name'])),
                             html_entity_decode(stripslashes($recipient['company_name'])),
                             html_entity_decode(stripslashes($recipient['address_1'])),
