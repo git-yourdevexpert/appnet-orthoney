@@ -795,7 +795,7 @@ class OAM_AFFILIATE_Helper
                 if ((int)$affiliate_status === 1) {
                     $coupon_codes = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($order_id);
                     $coupons = array_filter(array_diff(explode(',', $coupon_codes), $exclude_coupon));
-                    $total_qty = (int) $commission->total_quantity;
+                    $total_qty = (int) self::get_quantity_by_order_id($order_id);
                     $par_jar = $commission->line_subtotal / $total_qty;
 
                     $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
@@ -816,7 +816,7 @@ class OAM_AFFILIATE_Helper
                     }
 
                     if (empty($coupons)) {
-                            $fundraising_cost += $total_qty * $par_jar;
+                            $fundraising_cost += $total_qty * $selling_min_price;
                             $fundraising_profit += $total_qty * ($par_jar - $minimum_price);
                             $dist_fundraising_profit += $total_qty * $minimum_price;
                         }else{
@@ -828,7 +828,7 @@ class OAM_AFFILIATE_Helper
                     
                     $data = [
                         'total_exclude_quantity' => $total_exclude_quantity,
-                        'total_all_quantity' => $total_quantity,
+                        'total_all_quantity' => $total_all_quantity,
                         'wholesale_qty' => $wholesale_qty,
                         'order_id' => $order_id,
                         'custom_order_id' => OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID'),
@@ -841,14 +841,16 @@ class OAM_AFFILIATE_Helper
                         'is_voucher_used' => $coupon_codes,
                         'order_quantity' => self::get_quantity_by_order_id($order_id),
                         'affiliate_account_status' => (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status'),
-                        'commission' => ($par_jar >= $selling_min_price ? (($par_jar - $minimum_price) * $total_qty) : 0)
+                        'commission' => ($par_jar >= $selling_min_price ? (($par_jar - $minimum_price) * self::get_quantity_by_order_id($order_id)) : 0)
                     ];
 
                     $commission_array[$data['custom_order_id']] = $data;
+                  
                 }
             }
         }
 
+                 
         $fundraising_orders = $total_orders = $wholesale_order = $unit_price = $unit_cost = 0;
         $product_price = 0;
         $fundraising_qty = 0;
@@ -858,7 +860,7 @@ class OAM_AFFILIATE_Helper
                 // echo $data['commission']. "<br>";
                 $unit_price = $data['par_jar'];
                 $product_price = $data['product_price'];
-                $fundraising_qty = $fundraising_qty + $data['total_quantity'];
+                $fundraising_qty = $fundraising_qty + $data['order_quantity'];
                 $wholesale_qty = $wholesale_qty + $data['wholesale_qty'];
                 $total_quantity =  $total_quantity + $data['order_quantity'];
                 $unit_cost = $data['minimum_price'];
@@ -895,7 +897,7 @@ class OAM_AFFILIATE_Helper
             'total_all_quantity' => $total_quantity,
             'unit_cost' => $unit_cost,
             'unit_profit' => ($unit_cost != 0 ) ? $product_price - $unit_cost : 0,
-            'total_commission' => $fundraising_profit
+            'total_commission' => $total_order_commission
         ];
     }
 
