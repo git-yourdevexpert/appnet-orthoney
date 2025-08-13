@@ -787,15 +787,17 @@ class OAM_AFFILIATE_Helper
                     }
                 }
             }
-
             
             foreach ($commission_year_results as $commission) {
                 $order_id = $commission->wc_order_id;
+                 $total_qty = (int) $commission->total_quantity;
                 $affiliate_status = (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status');
                 if ((int)$affiliate_status === 1) {
+
+                   
                     $coupon_codes = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($order_id);
                     $coupons = array_filter(array_diff(explode(',', $coupon_codes), $exclude_coupon));
-                    $total_qty = (int) self::get_quantity_by_order_id($order_id);
+                   
                     $par_jar = $commission->line_subtotal / $total_qty;
 
                     $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
@@ -815,6 +817,7 @@ class OAM_AFFILIATE_Helper
                         }
                     }
 
+                    
                     if (empty($coupons)) {
                             $fundraising_cost += $total_qty * $selling_min_price;
                             $fundraising_profit += $total_qty * ($par_jar - $minimum_price);
@@ -845,12 +848,11 @@ class OAM_AFFILIATE_Helper
                     ];
 
                     $commission_array[$data['custom_order_id']] = $data;
-                  
+            
                 }
             }
         }
-
-                 
+         
         $fundraising_orders = $total_orders = $wholesale_order = $unit_price = $unit_cost = 0;
         $product_price = 0;
         $fundraising_qty = 0;
