@@ -39,11 +39,13 @@ $organization_address_data = '3495 Piedmont Rd NE, Atlanta, GA 30305';
 $affiliate_email = 'support@orthoney.com';
 
 if (!empty($affiliate) && $affiliate !== 'Orthoney') {
-    $affiliate_id = $affiliate;
+    
+    $affiliate_id = get_user_meta($affiliate, 'associated_affiliate_id', true);
     $token = $wpdb->get_var($wpdb->prepare(
     "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d",
     $affiliate_id
     ));
+
 
     
     $organization = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
