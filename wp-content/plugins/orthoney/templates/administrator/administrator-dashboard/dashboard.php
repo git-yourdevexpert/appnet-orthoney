@@ -4,15 +4,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$commission  = OAM_AFFILIATE_Helper::get_commission_affiliate_base_token('MAW');
-echo "<pre>";
-print_r($commission);
-echo "</pre>";
 
-// $commission  = OAM_AFFILIATE_Helper::get_commission_affiliate_base_token('ATL');
-// echo "<pre>";
-// print_r($commission);
-// echo "</pre>";
 
 $current_user_id = get_current_user_id();
 $redirect_back_user_id = get_transient('redirect_back_user_' . $current_user_id);
