@@ -28,14 +28,14 @@ foreach ($order->get_items() as $item_id => $item) {
 
 $sub_order_id = OAM_COMMON_Custom::get_order_meta($order->get_order_number(), '_orthoney_OrderID');
 
-// $recipientResult = $wpdb->get_results($wpdb->prepare(
-//     "SELECT * FROM {$order_process_recipient_table} WHERE order_id = %d",
-//     $sub_order_id 
-// ));
+$recipientResult = $wpdb->get_results($wpdb->prepare(
+    "SELECT * FROM {$order_process_recipient_table} WHERE order_id = %d",
+    $sub_order_id 
+));
 
-$organization = 'Orthoney';
+$token = $organization = 'Orthoney';
 $organization_data = 'Honey From The Heart';
-$organization_address_data = '1000 N. West Street, Suite 1200, Wilmington, DE 19801';
+$organization_address_data = '3495 Piedmont Rd NE, Atlanta, GA 30305';
 $affiliate_email = 'support@orthoney.com';
 
 if (!empty($affiliate) && $affiliate !== 'Orthoney') {
@@ -127,8 +127,7 @@ if ($organization != 'Orthoney') {
     echo esc_html($affiliate_email) . '<br />';
 } else {
     echo '<strong>Honey From The Heart</strong><br />';
-    echo '1000 N. West Street, Suite 1200<br />';
-    echo 'Wilmington, DE 19801<br />';
+    echo '3495 Piedmont Rd NE, Atlanta, GA 30305<br />';
     echo esc_html($affiliate_email) . '<br />';
 }
 ?>
