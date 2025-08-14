@@ -52,7 +52,7 @@ if (!empty($affiliate) OR $affiliate !== 'Orthoney') {
     $affiliate_id
     ));
     
-    $organization = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
+    $organization = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true) ?: '';
     $affiliate_email_meta_data = get_user_meta( $affiliate_id, '_yith_wcaf_email', true ) ?: '';
 
     if ($affiliate_email_meta_data == '' ) {
@@ -65,7 +65,7 @@ if (!empty($affiliate) OR $affiliate !== 'Orthoney') {
         $affiliate_email = $affiliate_email_meta_data;
     }
 
-    if ($organization != 'Orthoney') {
+    if ($organization != 'Orthoney' OR $organization != '') {
         $organization_data_query = $wpdb->get_row($wpdb->prepare(
             "SELECT 
                 aff.*,
