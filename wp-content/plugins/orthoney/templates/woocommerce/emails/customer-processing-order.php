@@ -47,9 +47,9 @@ if (!empty($affiliate) && $affiliate !== 'Orthoney') {
 
     
     $organization = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
-    $affiliate_email_meta_data = get_user_meta( $affiliate_id, '_yith_wcaf_email', true );
+    $affiliate_email_meta_data = get_user_meta( $affiliate_id, '_yith_wcaf_email', true ) ?: '';
 
-    if ( empty( $affiliate_email_meta_data ) ) {
+    if ($affiliate_email_meta_data != '' ) {
         $user = get_userdata( $affiliate_id );
         
         if ( $user && ! empty( $user->user_email ) ) {
