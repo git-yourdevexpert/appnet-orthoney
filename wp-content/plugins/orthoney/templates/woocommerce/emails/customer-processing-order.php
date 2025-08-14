@@ -40,6 +40,7 @@ $organization_data = 'Honey From The Heart';
 $organization_address_data = '3495 Piedmont Rd NE, Atlanta, GA 30305';
 $affiliate_email = 'support@orthoney.com';
 
+
 if (!empty($affiliate) OR $affiliate !== 'Orthoney') {
     
     $affiliate_id = get_user_meta($affiliate, 'associated_affiliate_id', true)?:0;
@@ -65,7 +66,10 @@ if (!empty($affiliate) OR $affiliate !== 'Orthoney') {
         $affiliate_email = $affiliate_email_meta_data;
     }
 
-    if ($organization != 'Orthoney' OR $organization != '') {
+   
+    if ($organization != 'Orthoney' AND $organization !== '') {
+
+       
         $organization_data_query = $wpdb->get_row($wpdb->prepare(
             "SELECT 
                 aff.*,
