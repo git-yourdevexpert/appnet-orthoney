@@ -802,13 +802,13 @@ class OAM_AFFILIATE_Helper
                     $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
                     if ($par_jar >= $selling_min_price) {
                         if (OAM_AFFILIATE_Helper::is_user_created_this_year($affiliate_data->user_id)) {
-                            if ($total_all_quantity < 99) {
+                            if (($total_all_quantity + $wholesale_qty) < 99) {
                                 $minimum_price = get_field('new_minimum_price_50', 'option');
                             } else {
                                 $minimum_price = get_field('new_minimum_price_100', 'option');
                             }
                         } else {
-                            if ($total_all_quantity < 99) {
+                            if (($total_all_quantity + $wholesale_qty) < 99) {
                                 $minimum_price = get_field('ex_minimum_price_50', 'option');
                             } else {
                                 $minimum_price = get_field('ex_minimum_price_100', 'option');
@@ -870,8 +870,8 @@ class OAM_AFFILIATE_Helper
                 if ($data['is_voucher_used'] != '' && !empty($data['is_voucher_used'])) {
                     $wholesale_order++;
                 } else {
-                     $fundraising_profit += $data['order_quantity'] * ($unit_price - $unit_cost);
-                            $dist_fundraising_profit += $data['order_quantity'] * $unit_cost;
+                    $fundraising_profit += $data['order_quantity'] * ($unit_price - $unit_cost);
+                    $dist_fundraising_profit += $data['order_quantity'] * $unit_cost;
                     $fundraising_cost += $data['order_quantity'] * $unit_price;
                     $fundraising_qty = $fundraising_qty + $data['order_quantity'];
                     $total_order_commission += $data['commission'];
