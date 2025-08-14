@@ -823,7 +823,7 @@ class OAM_AFFILIATE_Helper
                             // $dist_fundraising_profit += $total_qty * $minimum_price;
                         }else{
                             $wholesale_profit += $total_qty * ($par_jar - $minimum_price);
-                            $dist_wholesale_profit += $total_qty * $selling_min_price;
+                            $dist_wholesale_profit += $total_qty * $minimum_price;
                             $wholesale_cost += $total_qty * $selling_min_price ;
                         }
                     
