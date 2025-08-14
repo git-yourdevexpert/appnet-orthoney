@@ -33,6 +33,8 @@ $recipientResult = $wpdb->get_results($wpdb->prepare(
     $sub_order_id 
 ));
 
+
+
 $token = $organization = 'Orthoney';
 $organization_data = 'Honey From The Heart';
 $organization_address_data = '3495 Piedmont Rd NE, Atlanta, GA 30305';
@@ -40,7 +42,11 @@ $affiliate_email = 'support@orthoney.com';
 
 if (!empty($affiliate) OR $affiliate !== 'Orthoney') {
     
-    $affiliate_id = get_user_meta($affiliate, 'associated_affiliate_id', true);
+    $affiliate_id = get_user_meta($affiliate, 'associated_affiliate_id', true)?:0;
+
+    if($affiliate_id == 0){
+        $affiliate_id = $affiliate;
+    }
     $token = $wpdb->get_var($wpdb->prepare(
     "SELECT token FROM {$yith_wcaf_affiliates_table} WHERE user_id = %d",
     $affiliate_id
@@ -49,12 +55,14 @@ if (!empty($affiliate) OR $affiliate !== 'Orthoney') {
     $organization = get_user_meta($affiliate_id, '_yith_wcaf_name_of_your_organization', true);
     $affiliate_email_meta_data = get_user_meta( $affiliate_id, '_yith_wcaf_email', true ) ?: '';
 
-    if ($affiliate_email_meta_data != '' ) {
+    if ($affiliate_email_meta_data == '' ) {
         $user = get_userdata( $affiliate_id );
         
         if ( $user && ! empty( $user->user_email ) ) {
             $affiliate_email = $user->user_email;
         }
+    }else{
+        $affiliate_email = $affiliate_email_meta_data;
     }
 
     if ($organization != 'Orthoney') {
