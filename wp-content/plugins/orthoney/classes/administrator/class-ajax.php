@@ -151,7 +151,8 @@ class OAM_ADMINISTRATOR_AJAX {
                     'Organization name (stub)', 'Code', 'Organization name (front of card)'
                 ]);
                 fputcsv($greetings_file, [
-                    'WC_OID', 'ORDERID', 'RECIPIENTNO', 'JARNO', 'Greeting'
+                    'WC_OID', 'ORDERID', 'RECIPIENTNO', 'JARNO', 'Greeting', 'Bottom of card = In celebration of',
+                    'Organization name (stub)', 'Code', 'Organization name (front of card)'
                 ]);
                 fclose($fulfillment_file);
                 fclose($greetings_file);
@@ -422,6 +423,10 @@ class OAM_ADMINISTRATOR_AJAX {
                                 $recipient['recipient_order_id'],
                                 $jar['jar_order_id'],
                                 $recipient_greeting,
+                                OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($row['affiliate_full_card_name']))),
+                                OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($row['affiliate_name']))),
+                                OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($row['affiliate_code']))),
+                                OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($row['affiliate_full_card']))),
                             ];
                             fputcsv($greetings_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $greeting_line));
                         }

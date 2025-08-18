@@ -13,58 +13,64 @@ class OAM_ADMINISTRATOR_HELPER {
     }
 
     public static function cleanup_pure_text($text = '') {
-        if($text != ''){
-            
+        if ($text != '') {
             // Replace newlines with |||BR|||
             $text = str_replace(["\r\n", "\r", "\n"], '|||BR|||', $text);
             
-            $text = preg_replace('/[\x{0590}-\x{05FF}\x{FB1D}-\x{FB4F}]+/u', '', $text);
-            // 1. Fix UTF-8 misencoding
-            $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
-           
-            $text = stripslashes($text);
-            $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
-           
-            
-            // 2. Fix specific broken characters (misencoded sequences)
-            $text = str_replace(
-                ['â€™', 'â€œ', 'â€', 'â€“', 'â€”'],
-                ["'", '"', '"', '-', '—'],
-                $text
-            );
-
-            // 3. Replace curly quotes & special punctuation with ASCII equivalents
+            // 4. Replace curly quotes & special punctuation with ASCII equivalents
             $replacements = [
                 '’' => "'", '‘' => "'", '“' => '"', '”' => '"',
                 '…' => '...', '–' => '-', '—' => '-', '•' => '-'
             ];
+
             $text = strtr($text, $replacements);
-
-            // 4. Remove emojis & pictographs
-            $emoji_patterns = [
-                '/[\x{1F600}-\x{1F64F}]/u', // Emoticons
-                '/[\x{1F300}-\x{1F5FF}]/u', // Symbols & pictographs
-                '/[\x{1F680}-\x{1F6FF}]/u', // Transport & map
-                '/[\x{2600}-\x{26FF}]/u',   // Misc symbols
-                '/[\x{2700}-\x{27BF}]/u',   // Dingbats
-                '/[\x{1F900}-\x{1F9FF}]/u', // Supplemental Symbols
-                '/[\x{1FA70}-\x{1FAFF}]/u', // Symbols & Pictographs Extended-A
-            ];
-            foreach ($emoji_patterns as $pattern) {
-                $text = preg_replace($pattern, '', $text);
-            }
-
-            // 5. Remove leftover control characters
+            // 1. Fix double-encoded UTF-8 (e.g. â¤ -> ❤)
+            $text = utf8_encode(utf8_decode($text));
+            
+            // 2. Strip slashes and decode HTML entities
+            $text = stripslashes($text);
+            $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+            
+            
+            // 3. Fix specific broken characters (misencoded sequences)
+            $text = str_replace(
+                ['â€™', 'â€œ', 'â€', 'â€"', 'â€"'],
+                ["'", '"', '"', '-', '—'],
+                $text
+            );
+            
+            // 5. REMOVE ALL EMOJIS & PICTOGRAPHS - PLAIN TEXT ONLY
+            // Remove ALL emoji ranges for complete plain text
+            $text = preg_replace('/[\x{1F000}-\x{1FAFF}]/u', '', $text);     // All modern emojis
+            $text = preg_replace('/[\x{2600}-\x{27BF}]/u', '', $text);       // Symbols & Dingbats
+            $text = preg_replace('/[\x{2300}-\x{23FF}]/u', '', $text);       // Miscellaneous Technical
+            $text = preg_replace('/[\x{2B00}-\x{2BFF}]/u', '', $text);       // Miscellaneous Symbols and Arrows
+            $text = preg_replace('/[\x{25A0}-\x{25FF}]/u', '', $text);       // Geometric Shapes
+            $text = preg_replace('/[\x{2190}-\x{21FF}]/u', '', $text);       // Arrows
+            $text = preg_replace('/[\x{2000}-\x{206F}]/u', '', $text);       // General Punctuation symbols
+            $text = preg_replace('/[\x{FE00}-\x{FE0F}]/u', '', $text);       // Variation Selectors
+            $text = preg_replace('/\x{200D}/u', '', $text);                  // Zero Width Joiner
+            $text = preg_replace('/[\x{20D0}-\x{20FF}]/u', '', $text);       // Combining Diacritical Marks for Symbols
+            $text = preg_replace('/[\x{1F100}-\x{1F1FF}]/u', '', $text);     // Enclosed Alphanumeric Supplement
+            
+            // Remove any remaining non-ASCII symbols that might be decorative
+            $text = preg_replace('/[^\x{0020}-\x{007E}\x{00A0}-\x{024F}\x{1E00}-\x{1EFF}\s]/u', '', $text);
+            
+            // 6. Remove leftover control characters (non-printable)
             $text = preg_replace('/[^\P{C}\n]+/u', '', $text);
-
-            // 6. Normalize spaces
+            
+            // 7. Normalize spaces
             $text = preg_replace('/\s+/u', ' ', $text);
-
-            // 7. Trim final
+            
+            // 8. Remove leftover replacement chars (� or "??")
+            $text = preg_replace('/\x{FFFD}|\?{2,}/u', '', $text);
+            
+            // 9. Trim final
             return trim($text);
         }
         return $text;
     }
+
     
     public static function administrator_dashboard_navbar($user_roles = array()) {
         $output = '';
