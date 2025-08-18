@@ -352,8 +352,8 @@ class OAM_ADMINISTRATOR_AJAX {
 
                     $org_activate_status = OAM_AFFILIATE_Helper::is_user_created_this_year($affiliate_user_id) ? 'New' : 'Rep';
                     $orgName = get_user_meta($affiliate_user_id, '_yith_wcaf_name_of_your_organization', true);
-                    $row['affiliate_name'] = $orgName ?: '';
-                    $row['affiliate_full_card'] = get_user_meta($affiliate_user_id, 'gift_card', true) ?: $orgName;
+                    $row['affiliate_name'] = OAM_ADMINISTRATOR_Helper::cleanup_pure_text($orgName ?: '');
+                    $row['affiliate_full_card'] = OAM_ADMINISTRATOR_Helper::cleanup_pure_text(get_user_meta($affiliate_user_id, 'gift_card', true) ?: $orgName);
                     $row['affiliate_full_card_name'] = 'In celebration of the New Year, a donation has been made in your name to ' . $row['affiliate_full_card'];
                 }
             }
@@ -390,19 +390,19 @@ class OAM_ADMINISTRATOR_AJAX {
                             ($jar['order_type'] == 'external' ? 1 : $jar['quantity']),
                             (!empty($coupons) ? 'Wholesale' : 'Retail'),
                             (!empty($coupons) ? implode(', ', $coupons) : ''),
-                            html_entity_decode(stripslashes($recipient['full_name'])),
-                            html_entity_decode(stripslashes($recipient['company_name'])),
-                            html_entity_decode(stripslashes($recipient['address_1'])),
-                            html_entity_decode(stripslashes($recipient['address_2'])),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($recipient['full_name']))),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($recipient['company_name']))),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($recipient['address_1']))),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($recipient['address_2']))),
                             $recipient['city'],
                             $recipient['state'],
                             $recipient['zipcode'],
                             $recipient['country'],
                             ($jar['order_type'] != 'external' ? '' : $recipient_greeting),
-                            html_entity_decode(stripslashes($row['affiliate_full_card_name'])),
-                            html_entity_decode(stripslashes($row['affiliate_name'])),
-                            html_entity_decode(stripslashes($row['affiliate_code'])),
-                            html_entity_decode(stripslashes($row['affiliate_full_card'])),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($row['affiliate_full_card_name']))),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($row['affiliate_name']))),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($row['affiliate_code']))),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($row['affiliate_full_card']))),
                         ];
                         
                         fputcsv($fulfillment_output, array_map(fn($v) => mb_convert_encoding($v ?? '', 'UTF-8', 'auto'), $line));
@@ -541,28 +541,28 @@ class OAM_ADMINISTRATOR_AJAX {
                             $row['custom_order_id'],
                             $recipient['recipient_order_id'],
                             $jar['jar_order_id'],
-                            html_entity_decode(stripslashes($recipient['full_name'])),
-                            html_entity_decode(stripslashes($recipient['company_name'])),
-                            html_entity_decode(stripslashes($recipient['address_1'])),
-                            html_entity_decode(stripslashes($recipient['address_2'])),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($recipient['full_name']))),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($recipient['company_name']))),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($recipient['address_1']))),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($recipient['address_2']))),
                             $recipient['city'],
                             $recipient['state'],
                             $recipient['zipcode'],
                             $recipient['country'],
                             $recipient_greeting,
                             $recipient_qty,
-                            html_entity_decode(stripslashes($billing_info['first_name'])),
-                            html_entity_decode(stripslashes($billing_info['last_name'])),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($billing_info['first_name']))),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($billing_info['last_name']))),
                             $payment_method,
-                            html_entity_decode(stripslashes($billing_info['first_name'])),
-                            html_entity_decode(stripslashes($billing_info['last_name'])),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($billing_info['first_name']))),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($billing_info['last_name']))),
                             $billing_info['city'],
                             $billing_info['state'],
-                            html_entity_decode(stripslashes($billing_info['address_1'])),
-                            html_entity_decode(stripslashes($billing_info['postcode'])),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($billing_info['address_1']))),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($billing_info['postcode']))),
                             $billing_info['email'],
                             $billing_info['phone'],
-                            html_entity_decode(stripslashes($row['affiliate_name'])),
+                            OAM_ADMINISTRATOR_Helper::cleanup_pure_text(html_entity_decode(stripslashes($row['affiliate_name']))),
                             $DJarPriceshow_price,
                             $shipping_total,
                             $shipping_total == 0 ? "Yes" : 'No',

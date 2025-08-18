@@ -17,7 +17,7 @@ class OAM_ADMINISTRATOR_HELPER {
             
             // Replace newlines with |||BR|||
             $text = str_replace(["\r\n", "\r", "\n"], '|||BR|||', $text);
-
+            
             $text = preg_replace('/[\x{0590}-\x{05FF}\x{FB1D}-\x{FB4F}]+/u', '', $text);
             // 1. Fix UTF-8 misencoding
             $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
