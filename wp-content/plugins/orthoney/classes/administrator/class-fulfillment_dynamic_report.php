@@ -227,12 +227,12 @@ class OAM_FULFILLMENT_DYNAMIC_REPORT
             }
         }
         error_log(date('[Y-m-d H:i:s] ') . "Batch index: $one_based_index" . PHP_EOL, 3, $log_file);
-        $found_index = '';
-        if($one_based_index == -1){
+        // $found_index = '';
+        // if($one_based_index == -1){
             
-        }else{
-            $found_index = $one_based_index;
-        }
+        // }else{
+        //     $found_index = $one_based_index;
+        // }
         
         error_log(date('[Y-m-d H:i:s] ') . "Found index: $found_index" . PHP_EOL, 3, $log_file);
         //
