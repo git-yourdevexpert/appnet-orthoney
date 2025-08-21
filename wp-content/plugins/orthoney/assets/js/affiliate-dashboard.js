@@ -1057,3 +1057,245 @@ jQuery(document).ready(function ($) {
     });
 
 });
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("tracking-order-upload-form");
+  if (!form) return;
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput?.files?.[0];
+
+    if (!file) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Please select a file to upload!",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        allowEnterKey: false,
+        showConfirmButton: true
+      });
+      return;
+    }
+
+    if (!oam_ajax?.ajax_url || !oam_ajax?.nonce) {
+      Swal.fire({
+        icon: "error",
+        title: "Security Error",
+        text: "Security token missing. Please refresh the page and try again."
+      });
+      return;
+    }
+
+    // Show progress UI
+    Swal.fire({
+      title: "Uploading File",
+      html: `
+        <p>Please wait while your file is being uploaded...</p>
+        <div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
+          <div id="progress-bar" style="width: 0%; height: 10px;"></div>
+        </div>
+        <p id="progress-text">0%</p>
+      `,
+      didOpen: () => Swal.showLoading(),
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false,
+      showConfirmButton: false
+    });
+
+    const formData = new FormData();
+    formData.append("action", "oam_tracking_order_manual_upload");
+    formData.append("security", oam_ajax.nonce); // IMPORTANT: must match PHP check_ajax_referer()
+    formData.append("csv_file", file);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", oam_ajax.ajax_url, true);
+
+    // Progress bar (no custom colors to keep it theme-agnostic)
+    xhr.upload.addEventListener("progress", function (event) {
+      if (!event.lengthComputable) return;
+      const percent = Math.round((event.loaded / event.total) * 100);
+      const bar = document.getElementById("progress-bar");
+      const txt = document.getElementById("progress-text");
+      if (bar) bar.style.width = percent + "%";
+      if (txt) txt.textContent = percent + "%";
+    });
+
+    xhr.onload = function () {
+      if (xhr.status !== 200) {
+        Swal.fire({ icon: "error", title: "Error", text: "An error occurred during upload." });
+        return;
+      }
+
+      let response;
+      try { response = JSON.parse(xhr.responseText); }
+      catch {
+        Swal.fire({ icon: "error", title: "Invalid Response", text: "Server returned an invalid response." });
+        return;
+      }
+
+      if (response.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Upload Complete!",
+          text: response.data?.message || "Your file has been uploaded successfully.",
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          allowEnterKey: false,
+          timer: 1200
+        }).then(() => window.location.reload());
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Upload Failed",
+          text: response.data?.message || "File upload failed. Please try again."
+        });
+      }
+    };
+
+    xhr.onerror = function () {
+      Swal.fire({
+        icon: "error",
+        title: "Network Error",
+        text: "A network error occurred during upload."
+      });
+    };
+
+    xhr.send(formData);
+  });
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("tracking_order_import_button")) {
+      e.preventDefault();
+
+      const filename = e.target.getAttribute("data-filename"); // get data-filename from button
+      const fileid = e.target.getAttribute("data-fileid"); // get data-fileid from button
+      if (!filename) {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Filename not found!",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          allowEnterKey: false,
+          showConfirmButton: false,
+        });
+        return;
+      }
+
+      // Show processing popup first
+      process_group_popup();
+
+      let currentChunk = 0;
+      let totalRows = 0;
+
+      // Start processing after slight delay
+      setTimeout(() => {
+        function uploadChunk() {
+          const formData = new FormData();
+          formData.append("action", "tracking_order_number_insert");
+          formData.append("security", oam_ajax.nonce);
+          formData.append("current_chunk", currentChunk);
+          formData.append("filename", filename);
+          formData.append("fileid", fileid);
+
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", oam_ajax.ajax_url, true);
+
+          xhr.onload = function () {
+            if (xhr.status === 200) {
+              try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                  if (currentChunk === 0) {
+                    totalRows = response.data.total_rows;
+
+                    // Show progress bar popup only after first success
+                    Swal.fire({
+                      title: "Processing Tracking Orders",
+                      text: "Please wait, tracking order import is in progress.",
+                      html: `
+                        <p>Please wait, the tracking order import is in progress.</p>
+                        <div style="width: 100%; background-color: #ccc; border-radius: 5px; overflow: hidden;">
+                          <div id="progress-bar" style="width: 0%; height: 10px; background-color: #3085d6;"></div>
+                        </div>
+                        <p id="progress-text">0%</p>
+                      `,
+                      showConfirmButton: false,
+                      allowOutsideClick: false,
+                      allowEscapeKey: false,
+                      allowEnterKey: false,
+                    });
+                  }
+
+                  const progress = response.data.progress;
+                  document.getElementById("progress-bar").style.width =
+                    progress + "%";
+                  document.getElementById("progress-text").innerText =
+                    progress + "%";
+
+                  if (!response.data.finished) {
+                    currentChunk = response.data.next_chunk;
+                    uploadChunk();
+                  } else {
+                    Swal.fire({
+                      icon: "success",
+                      title: "Import Complete!",
+                      showConfirmButton: false,
+                      allowOutsideClick: false,
+                      allowEscapeKey: false,
+                      allowEnterKey: false,
+                    });
+                    setTimeout(() => {
+                      window.location.reload();
+                    }, 1000);
+                  }
+                } else {
+                  Swal.fire({
+                    icon: "error",
+                    title: "Import Failed",
+                    text: response.data.message,
+                  });
+                }
+              } catch (err) {
+                Swal.fire({
+                  icon: "error",
+                  title: "Error",
+                  text: "Invalid server response.",
+                });
+              }
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "An error occurred while processing the request.",
+              });
+            }
+          };
+
+          xhr.onerror = function () {
+            Swal.fire({
+              icon: "error",
+              title: "Network Error",
+              text: "A network error occurred during processing.",
+            });
+          };
+
+          xhr.send(formData);
+        }
+
+        uploadChunk(); // start
+      }, 500);
+    }
+  });
+});
