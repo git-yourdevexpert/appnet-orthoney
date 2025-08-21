@@ -196,35 +196,29 @@ class OAM_FULFILLMENT_DYNAMIC_REPORT
         }
 
         //
+        $found_index = false;
+        $one_based_index = '';
         $fulfillment_batchs = get_field('fulfillment_batchs', 'option');
 
-        $one_based_index = -1; // Default if not found
-
         if ($fulfillment_batchs && have_rows('fulfillment_batchs', 'option')) {
-            // Sanitize and get the 'end' date argument
-            $end = isset($args['end']) ? sanitize_text_field($args['end']) : '';
+            $date = DateTime::createFromFormat('m/d/Y', trim($end));
 
-            // Try to parse date from known formats
-            $date_obj = false;
-            if ($end) {
-                $date_obj = DateTime::createFromFormat('Y-m-d', trim($end));
-                if (!$date_obj) {
-                    $date_obj = DateTime::createFromFormat('m/d/Y', trim($end));
-                }
-                if ($date_obj) {
-                    $search_date = $date_obj->format('m/d/Y');
+            if ($date instanceof DateTime) {
+                $search_date = $date->format('m/d/Y');
 
-                    // Build array of formatted batch dates
-                    $dates_array = array_map(
-                        fn($b) => date("m/d/Y", strtotime($b['batch'])),
-                        $fulfillment_batchs
-                    );
+                $dates_only = array_map(function ($b) {
+                    return date("m/d/Y", strtotime($b['batch']));
+                }, $fulfillment_batchs);
 
-                    // Find 0-based index and convert to 1-based, or -1 if not found
-                    $found_index = array_search($search_date, $dates_array);
-                    $one_based_index = ($found_index !== false) ? $found_index + 1 : -1;
-                }
+                $found_index = array_search($search_date, $dates_only, true);
             }
+        }
+
+        // Output only index number if found
+        if ($found_index !== false) {
+            $one_based_index = $found_index + 1; // Convert to 1-based index
+        } else {
+            $one_based_index = '';
         }
         error_log(date('[Y-m-d H:i:s] ') . "Batch index: $one_based_index" . PHP_EOL, 3, $log_file);
         // $found_index = '';
@@ -233,12 +227,10 @@ class OAM_FULFILLMENT_DYNAMIC_REPORT
         // }else{
         //     $found_index = $one_based_index;
         // }
-        
-        error_log(date('[Y-m-d H:i:s] ') . "Found index: $found_index" . PHP_EOL, 3, $log_file);
         //
 
         $file_name_date_format = $start_date->format('mdY') . '-' . $end_date->format('mdY');
-        $base_name = "batch{$found_index}-orders-fulfillment-" . $file_name_date_format;
+        $base_name = "batch{$one_based_index}-orders-fulfillment-" . $file_name_date_format;
         $upload_dir = wp_upload_dir();
         $custom_dir = $upload_dir['basedir'] . '/fulfillment-reports';
         $custom_url = $upload_dir['baseurl'] . '/fulfillment-reports';
@@ -255,7 +247,7 @@ class OAM_FULFILLMENT_DYNAMIC_REPORT
             $index = 1;
             do {
                 $fulfillment_filename = "{$base_name}-{$index}.csv";
-                $greetings_filename = "batch{$found_index}-greetings-per-jar-{$file_name_date_format}-{$index}.csv";
+                $greetings_filename = "batch{$one_based_index}-greetings-per-jar-{$file_name_date_format}-{$index}.csv";
                 $fulfillment_path = $custom_dir . '/' . $fulfillment_filename;
                 $greetings_path = $custom_dir . '/' . $greetings_filename;
                 $fulfillment_url = $custom_url . '/' . $fulfillment_filename;
