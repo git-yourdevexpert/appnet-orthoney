@@ -1,0 +1,17 @@
+{
+    "name": "ashis/orthoney",
+    "autoload": {
+        "psr-4": {
+            "Ashis\\Orthoney\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Glide-Ashish",
+            "email": "aakash@glidedesign.com"
+        }
+    ],
+    "require": {
+        "league/flysystem-sftp-v3": "^3.30"
+    }
+}
