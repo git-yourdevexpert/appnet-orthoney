@@ -237,7 +237,7 @@ class OAM_FULFILLMENT_DYNAMIC_REPORT
         error_log(date('[Y-m-d H:i:s] ') . "Found index: $found_index" . PHP_EOL, 3, $log_file);
         //
 
-        $file_name_date_format = $start_date->format('mdY');
+        $file_name_date_format = $start_date->format('mdY') . '-' . $end_date->format('mdY');
         $base_name = "batch{$found_index}-orders-fulfillment-" . $file_name_date_format;
         $upload_dir = wp_upload_dir();
         $custom_dir = $upload_dir['basedir'] . '/fulfillment-reports';
