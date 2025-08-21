@@ -74,7 +74,10 @@ class OAM_FULFILLMENT_DYNAMIC_REPORT
             $batch_date_ts = $batch_timestamps[$batch_date_str];
             $schedule_time = strtotime('-1 day', $batch_date_ts);
 
-            $start_date = date('m/d/Y 00:00:00', $previous_date_ts);
+            $start_date = date('m/d/Y 00:00:00', $previous_date_ts + 86400);
+            if( $previous_date_ts == $season_start_ts){
+                $start_date = date('m/d/Y 00:00:00', $previous_date_ts);
+            }
             $end_date   = date('m/d/Y 24:00:00', $batch_date_ts);
 
             $args = [
