@@ -201,25 +201,34 @@ class OAM_FULFILLMENT_DYNAMIC_REPORT
         $fulfillment_batchs = get_field('fulfillment_batchs', 'option');
 
         if ($fulfillment_batchs && have_rows('fulfillment_batchs', 'option')) {
-            $date = DateTime::createFromFormat('m/d/Y', trim($end));
+            // Remove the time part from $end if it exists
+            $date_only_str = explode(' ', trim($end))[0];
+
+            // Create DateTime object from date only string with format m/d/Y
+            $date = DateTime::createFromFormat('m/d/Y', $date_only_str);
 
             if ($date instanceof DateTime) {
                 $search_date = $date->format('m/d/Y');
 
+                // Map the batch dates to the same format 'm/d/Y'
                 $dates_only = array_map(function ($b) {
                     return date("m/d/Y", strtotime($b['batch']));
                 }, $fulfillment_batchs);
 
+                // Use strict search for exact match
                 $found_index = array_search($search_date, $dates_only, true);
             }
         }
 
-        // Output only index number if found
+        // Output only index number if found, else empty string
         if ($found_index !== false) {
             $one_based_index = $found_index + 1; // Convert to 1-based index
         } else {
             $one_based_index = '';
         }
+
+        
+        error_log(date('[Y-m-d H:i:s] ') . "found index: $found_index" . PHP_EOL, 3, $log_file);
         error_log(date('[Y-m-d H:i:s] ') . "Batch index: $one_based_index" . PHP_EOL, 3, $log_file);
         // $found_index = '';
         // if($one_based_index == -1){
