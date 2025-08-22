@@ -18,82 +18,130 @@ class OAM_TRACKING_ORDER_CRON
         add_action('tracking_order_file_for_every_3_hours', array($this, 'tracking_order_file_for_every_3_hours_callback'), 10, 1);
         add_action('tracking_order_insert_mapping', array($this, 'tracking_order_insert_mapping_callback'), 10, 1);
     }
-    
-function oam_tracking_order_manual_upload_callback() {
-    global $wpdb;
-    // check_ajax_referer('oam_ajax_nonce', '_ajax_nonce');
+    public function next_tracking_order() {
+        global $wpdb;
+        $table    = $wpdb->prefix . 'oh_tracking_order';
+        $log_ctx = 'next_tracking_order';
 
-    $table = $wpdb->prefix . 'oh_tracking_order';
-    $upload_dir = WP_CONTENT_DIR . '/uploads/fulfillment-reports/tracking-orders/';
+        $next_file = $wpdb->get_row("SELECT id FROM $table WHERE status = 'pending' ORDER BY id ASC LIMIT 1");
+        OAM_COMMON_Custom::sub_order_error_log('Next file to process: ' . json_encode($next_file), $log_ctx);
 
-    if (!file_exists($upload_dir)) {
-        wp_mkdir_p($upload_dir);
+        if ($next_file && !empty($next_file->id)) {
+            $next_args = [
+                'id'     => (int) $next_file->id,
+                'offset' => 0
+            ];
+
+            // Check if same action is already scheduled
+            $existing = as_next_scheduled_action(
+                'tracking_order_insert_mapping',
+                [$next_args],               // must match args shape exactly
+                'tracking-order-group'
+            );
+
+            if (!$existing) {
+                $action_id = as_schedule_single_action(
+                    time() + 60,            // run in 1 minute
+                    'tracking_order_insert_mapping',
+                    [$next_args],           // wrap args inside array
+                    'tracking-order-group'
+                );
+
+                OAM_COMMON_Custom::sub_order_error_log(
+                    "[" . current_time('Y-m-d H:i:s') . "] Scheduled next chunk: action_id=$action_id args=" . json_encode($next_args),
+                    $log_ctx
+                );
+            } else {
+                OAM_COMMON_Custom::sub_order_error_log(
+                    "[" . current_time('Y-m-d H:i:s') . "] Next chunk already scheduled for args=" . json_encode($next_args),
+                    $log_ctx
+                );
+            }
+        } else {
+            OAM_COMMON_Custom::sub_order_error_log(
+                "[" . current_time('Y-m-d H:i:s') . "] No pending file found to schedule next chunk",
+                $log_ctx
+            );
+        }
+    }
+    public function oam_tracking_order_manual_upload_callback() {
+        global $wpdb;
+        // check_ajax_referer('oam_ajax_nonce', '_ajax_nonce');
+
+        $table = $wpdb->prefix . 'oh_tracking_order';
+        $upload_dir = WP_CONTENT_DIR . '/uploads/fulfillment-reports/tracking-orders/';
+
+        if (!file_exists($upload_dir)) {
+            wp_mkdir_p($upload_dir);
+        }
+
+        if (!isset($_FILES['csv_file'])) {
+            wp_send_json_error(['message' => '❌ No file uploaded']);
+        }
+
+        $file = $_FILES['csv_file'];
+        $originalName = sanitize_file_name($file['name']);
+        $newFileName  = time() . '_' . $originalName;
+        $localPath    = $upload_dir . $newFileName;
+
+        if (!move_uploaded_file($file['tmp_name'], $localPath)) {
+            wp_send_json_error(['message' => '❌ Failed to save uploaded file']);
+        }
+
+        // Check if originalName already exists in DB
+        $exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $table WHERE file_name = %s",
+            $originalName
+        ));
+
+        if ($exists > 0) {
+            $wpdb->update(
+                $table,
+                [
+                    'updated_file_name' => $newFileName,
+                    'status'            => 'pending',
+                    'uploaded_type'     => 'cron'
+                ],
+                ['file_name' => $originalName],
+                ['%s','%s'],
+                ['%s']
+            );
+            $msg = "Updated file entry for: $originalName";
+        } else {
+            $wpdb->insert(
+                $table,
+                [
+                    'file_name'         => $originalName,
+                    'updated_file_name' => $newFileName,
+                    'status'            => 'pending',
+                    'uploaded_type'     => 'cron'
+                ],
+                ['%s','%s','%s']
+            );
+            $msg = "✅ Inserted new file entry: $originalName";
+        }
+
+        OAM_COMMON_Custom::sub_order_error_log($msg, 'tracking-order-manual-upload');
+        wp_send_json_success(['message' => $msg]);
     }
 
-    if (!isset($_FILES['csv_file'])) {
-        wp_send_json_error(['message' => '❌ No file uploaded']);
-    }
-
-    $file = $_FILES['csv_file'];
-    $originalName = sanitize_file_name($file['name']);
-    $newFileName  = time() . '_' . $originalName;
-    $localPath    = $upload_dir . $newFileName;
-
-    if (!move_uploaded_file($file['tmp_name'], $localPath)) {
-        wp_send_json_error(['message' => '❌ Failed to save uploaded file']);
-    }
-
-    // Check if originalName already exists in DB
-    $exists = $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM $table WHERE file_name = %s",
-        $originalName
-    ));
-
-    if ($exists > 0) {
-        $wpdb->update(
-            $table,
-            [
-                'updated_file_name' => $newFileName,
-                'status'            => 'pending',
-                'uploaded_type'     => 'cron'
-            ],
-            ['file_name' => $originalName],
-            ['%s','%s'],
-            ['%s']
-        );
-        $msg = "Updated file entry for: $originalName";
-    } else {
-        $wpdb->insert(
-            $table,
-            [
-                'file_name'         => $originalName,
-                'updated_file_name' => $newFileName,
-                'status'            => 'pending',
-                'uploaded_type'     => 'cron'
-            ],
-            ['%s','%s','%s']
-        );
-        $msg = "✅ Inserted new file entry: $originalName";
-    }
-
-    OAM_COMMON_Custom::sub_order_error_log($msg, 'tracking-order-manual-upload');
-    wp_send_json_success(['message' => $msg]);
-}
-    
     public function tracking_order_insert_mapping_callback($args) {
         global $wpdb;
+        $failed  = isset($args['failed']) ? (int)$args['failed'] : 0;
+        $skipped = isset($args['skipped']) ? (int)$args['skipped'] : 0;
+        $success = isset($args['success']) ? (int)$args['success'] : 0;
 
-        $table      = $wpdb->prefix . 'oh_tracking_order';
-        $upload_dir = WP_CONTENT_DIR . '/uploads/fulfillment-reports/tracking-orders/'; // DIR, not URL
-        $log_ctx    = 'tracking_order_insert';
-        $limit      = 5;
+        $table        = $wpdb->prefix . 'oh_tracking_order';
+        $wc_jar_order = $wpdb->prefix . "oh_wc_jar_order";
+        $upload_dir   = WP_CONTENT_DIR . '/uploads/fulfillment-reports/tracking-orders/'; // DIR, not URL
+        $log_ctx      = 'tracking_order_insert';
+        $limit        = 100;
 
         // --- Resolve file + offset ---
         $file_id = isset($args['id']) ? absint($args['id']) : 0;
         $offset  = isset($args['offset']) ? max(0, absint($args['offset'])) : 0;
 
         if (!$file_id) {
-            // kick-off helper: if no args passed, start the oldest pending file
             $pending = $wpdb->get_row("SELECT id, file_name, updated_file_name, status FROM $table WHERE status = 'pending' ORDER BY id ASC LIMIT 1");
             if (!$pending) {
                 return; // nothing to do
@@ -110,13 +158,13 @@ function oam_tracking_order_manual_upload_callback() {
             return;
         }
 
-        // lock the file on first chunk
+        // lock the file
         if ($tracking->status === 'pending' && $offset === 0) {
             $wpdb->update($table, ['status' => 'processing'], ['id' => $file_id], ['%s'], ['%d']);
         }
 
         if (!in_array($tracking->status, ['pending', 'processing'], true)) {
-            return; // already done/failed
+            return; // already done or failed
         }
 
         $file_name = !empty($tracking->updated_file_name) ? $tracking->updated_file_name : $tracking->file_name;
@@ -134,10 +182,10 @@ function oam_tracking_order_manual_upload_callback() {
             return;
         }
 
-        // --- Fast-forward to the desired offset ---
-        $skipped = 0;
-        while ($skipped < $offset && fgetcsv($handle) !== false) {
-            $skipped++;
+        // --- Fast-forward to offset ---
+        $skipped_lines = 0;
+        while ($skipped_lines < $offset && fgetcsv($handle) !== false) {
+            $skipped_lines++;
         }
 
         // --- Process up to $limit rows ---
@@ -145,39 +193,64 @@ function oam_tracking_order_manual_upload_callback() {
         while ($processed < $limit && ($row = fgetcsv($handle)) !== false) {
             $processed++;
 
-            // TODO: Map your CSV columns here and insert/update your domain tables.
-            // Example placeholders (adjust to your schema):
-            // $order_id = isset($row[0]) ? trim($row[0]) : '';
-            // $jar_no   = isset($row[1]) ? trim($row[1]) : '';
-            // $status   = isset($row[2]) ? trim($row[2]) : '';
+            $RECIPIENTNO       = isset($row[2]) ? trim($row[2]) : '';
+            $JARNO             = isset($row[3]) ? trim($row[3]) : '';
+            $Trackingnumber    = isset($row[4]) ? trim($row[4]) : '';
+            $TrackingCompanyName = isset($row[5]) ? trim($row[5]) : '';
+            $TrackingURL       = isset($row[6]) ? trim($row[6]) : '';
+            $TrackingStatus    = isset($row[7]) ? trim($row[7]) : '';
 
-            // $wpdb->insert(
-            //     $wpdb->prefix . 'oh_tracking_order_mapping',
-            //     [
-            //         'tracking_order_id' => $file_id,
-            //         'order_id'          => $order_id,
-            //         'jar_no'            => $jar_no,
-            //         'status'            => $status,
-            //         'created_at'        => current_time('mysql'),
-            //     ],
-            //     ['%d','%s','%s','%s','%s']
-            // );
+            if (
+                !empty($RECIPIENTNO) && 
+                !empty($JARNO) &&
+                !empty($Trackingnumber) && 
+                !empty($TrackingCompanyName) && 
+                !empty($TrackingURL) && 
+                !empty($TrackingStatus)
+            ) {
+                $updated = $wpdb->update(
+                    $wc_jar_order,
+                    [
+                        'tracking_no'     => $Trackingnumber,
+                        'tracking_company'=> $TrackingCompanyName,
+                        'tracking_url'    => $TrackingURL,
+                        'status'          => $TrackingStatus,
+                    ],
+                    [
+                        'recipient_order_id' => $RECIPIENTNO,
+                        'jar_order_id'       => $JARNO,
+                    ]
+                );
+
+                if ($updated === false) {
+                    $failed++;
+                } else {
+                    $success++;
+                }
+            } else {
+                $skipped++;
+            }
         }
 
-        // Peek one more row to determine if there’s more BEFORE closing the handle
+        // Peek for more rows
         $has_more = (fgetcsv($handle) !== false);
         fclose($handle);
 
         if ($has_more) {
-            $next_args = ['id' => $file_id, 'offset' => $offset + $processed];
+            $next_args = [
+                'id'      => $file_id, 
+                'offset'  => $offset + $processed,
+                'failed'  => $failed,
+                'success' => $success,
+                'skipped' => $skipped
+            ];
 
-            // Avoid duplicate next-chunk if one is already queued with the SAME args shape.
             $existing = as_next_scheduled_action('tracking_order_insert_mapping', [$next_args], 'tracking-order-group');
             if (!$existing) {
                 $action_id = as_schedule_single_action(
-                    time() + 30,                               // run again in 30s
+                    time() + 20,
                     'tracking_order_insert_mapping',
-                    [$next_args],                              // IMPORTANT: wrap to pass a single array arg
+                    [$next_args],
                     'tracking-order-group'
                 );
                 OAM_COMMON_Custom::sub_order_error_log(
@@ -185,35 +258,44 @@ function oam_tracking_order_manual_upload_callback() {
                     $log_ctx
                 );
             }
-            return; // wait for the next chunk
+            return;
         }
 
-        // --- No more rows: mark success and queue the next pending file (if any) ---
-        $wpdb->update($table, ['status' => 'success'], ['id' => $file_id], ['%s'], ['%d']);
+        // --- No more rows: mark completed ---
+        $reasons_html = "Success: {$success}, Failed: {$failed}, Skipped: {$skipped}";
+
+        $wpdb->update(
+            $table, 
+            [
+                'status'  => 'success',
+                'reasons' => $reasons_html
+            ], 
+            [
+                'id' => $file_id
+            ], 
+            ['%s','%s'], 
+            ['%d']
+        );
+
         OAM_COMMON_Custom::sub_order_error_log(
-            "[" . current_time('Y-m-d H:i:s') . "] Completed file_id=$file_id total_processed_offset=" . ($offset + $processed) . "\n",
+            "[" . current_time('Y-m-d H:i:s') . "] Completed file_id=$file_id Results => $reasons_html \n",
             $log_ctx
         );
 
-        $next_file = $wpdb->get_row("SELECT id FROM $table WHERE status = 'pending' ORDER BY id ASC LIMIT 1");
-        if ($next_file) {
-            $nf_args   = ['id' => (int)$next_file->id, 'offset' => 0];
-            $existing2 = as_next_scheduled_action('tracking_order_insert_mapping', [$nf_args], 'tracking-order-group');
-            if (!$existing2) {
-                $action_id2 = as_schedule_single_action(time() + 30, 'tracking_order_insert_mapping', [$nf_args], 'tracking-order-group');
-                OAM_COMMON_Custom::sub_order_error_log(
-                    "[" . current_time('Y-m-d H:i:s') . "] Scheduled next pending file: action_id=$action_id2 args=" . json_encode($nf_args) . "\n",
-                    $log_ctx
-                );
-            }
-        }
+        // Schedule next pending file
+        $this->next_tracking_order();
     }
-
+    
     public function tracking_order_number_insert_callback() {
         // check_ajax_referer('oam_ajax_nonce', 'security'); // security check
 
         global $wpdb;
         $table_name = $wpdb->prefix . "oh_tracking_order";
+        $wc_jar_order = $wpdb->prefix . "oh_wc_jar_order";
+        $reasons_html = '';
+        $failed = 0;
+        $skipped = 0;
+        $success = 0;
 
         $upload_dir = WP_CONTENT_DIR . '/uploads/fulfillment-reports/tracking-orders/';
 
@@ -258,15 +340,15 @@ function oam_tracking_order_manual_upload_callback() {
         $start = ($current_chunk * $chunk_size) + 1;
         $end   = min($start + $chunk_size - 1, $total_rows - 1);
 
-        // if($start == 1){
-        //     $wpdb->update(
-        //         $table_name,
-        //         ['status' => 'processing'],
-        //         ['id' => $fileid],
-        //         ['%s'],
-        //         ['%d']
-        //     );
-        // }
+        if($start == 1){
+            $wpdb->update(
+                $table_name,
+                ['status' => 'processing'],
+                ['id' => $fileid],
+                ['%s'],
+                ['%d']
+            );
+        }
 
         $header = $rows[0];
         for ($i = $start; $i <= $end; $i++) {
@@ -277,27 +359,55 @@ function oam_tracking_order_manual_upload_callback() {
             
             $assoc_row = array_combine($header, $row);
 
-            echo "<pre>";
-            print_r($assoc_row['ORDERID']);
-            echo "</pre>";
-            // Example: first column is tracking number
-            // $tracking_number = sanitize_text_field($row[0] ?? '');
+            if (
+                !empty($assoc_row['Trackingnumber']) && 
+                !empty($assoc_row['TrackingCompanyName']) &&
+                !empty($assoc_row['TrackingURL']) && 
+                !empty($assoc_row['TrackingStatus']) && 
+                !empty($assoc_row['RECIPIENTNO']) && 
+                !empty($assoc_row['JARNO'])
+                ) {
+                $wpdb->update(
+                    $wc_jar_order,
+                    [
+                        'tracking_no' => $assoc_row['Trackingnumber'],
+                        'tracking_company' => $assoc_row['TrackingCompanyName'],
+                        'tracking_url' => $assoc_row['TrackingURL'],
+                        'status' => $assoc_row['TrackingStatus'],
+                    ],
+                    [
+                        'recipient_order_id' => $assoc_row['RECIPIENTNO'],
+                        'jar_order_id' => $assoc_row['JARNO'],
+                    ],
+                    
+                );
 
-            // if (!empty($tracking_number)) {
-            //     $wpdb->insert(
-            //         $table_name,
-            //         [
-            //             'updated_file_name' => $filename,
-            //             'status'            => 'pending',
-            //             'filetime'          => current_time('mysql'),
-            //         ],
-            //         ['%s','%s','%s']
-            //     );
-            // }
+                if ($updated === false) {
+                    $failed++;
+                } else {
+                    $success++;
+                }
+               
+            }else{
+                $skipped++;
+            }
         }
+        $reasons_html = "Success: {$success},Failed: {$failed},Skipped: {$skipped}";
 
         $next_chunk = $current_chunk + 1;
         $finished   = $end >= ($total_rows - 1);
+        if($finished == 1){
+            $wpdb->update(
+                $table_name,
+                [
+                    'status' => 'success',
+                    'reasons' => $reasons_html
+                ],
+                ['id' => $fileid],
+                ['%s'],
+                ['%d']
+            );
+        }
 
         $progress = round(($end / ($total_rows - 1)) * 100);
 
@@ -371,6 +481,7 @@ function oam_tracking_order_manual_upload_callback() {
         $files = $uploader->listFiles();
         if (!$files || !is_array($files) || empty($files)) {
             OAM_COMMON_Custom::sub_order_error_log('No files found on SFTP', $log_ctx);
+            $this->next_tracking_order();
             return;
         }
 
@@ -532,45 +643,7 @@ function oam_tracking_order_manual_upload_callback() {
             }
         }
 
-        $next_file = $wpdb->get_row("SELECT id FROM $table WHERE status = 'pending' ORDER BY id ASC LIMIT 1");
-
-        if ($next_file && !empty($next_file->id)) {
-            $next_args = [
-                'id'     => (int) $next_file->id,
-                'offset' => 0
-            ];
-
-            // Check if same action is already scheduled
-            $existing = as_next_scheduled_action(
-                'tracking_order_insert_mapping',
-                [$next_args],               // must match args shape exactly
-                'tracking-order-group'
-            );
-
-            if (!$existing) {
-                $action_id = as_schedule_single_action(
-                    time() + 60,            // run in 1 minute
-                    'tracking_order_insert_mapping',
-                    [$next_args],           // wrap args inside array
-                    'tracking-order-group'
-                );
-
-                OAM_COMMON_Custom::sub_order_error_log(
-                    "[" . current_time('Y-m-d H:i:s') . "] Scheduled next chunk: action_id=$action_id args=" . json_encode($next_args),
-                    $log_ctx
-                );
-            } else {
-                OAM_COMMON_Custom::sub_order_error_log(
-                    "[" . current_time('Y-m-d H:i:s') . "] Next chunk already scheduled for args=" . json_encode($next_args),
-                    $log_ctx
-                );
-            }
-        } else {
-            OAM_COMMON_Custom::sub_order_error_log(
-                "[" . current_time('Y-m-d H:i:s') . "] No pending file found to schedule next chunk",
-                $log_ctx
-            );
-        }
+        $this->next_tracking_order();
 
         // Summary
         OAM_COMMON_Custom::sub_order_error_log(
@@ -578,7 +651,6 @@ function oam_tracking_order_manual_upload_callback() {
             $log_ctx
         );
     }
-
 
 }
 
