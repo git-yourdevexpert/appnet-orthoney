@@ -182,10 +182,16 @@ class OAM_TRACKING_ORDER_CRON
             return;
         }
 
+        // Prepare temp file for output
+        $temp_path   = $path . '.tmp';
+        $temp_handle = fopen($temp_path, 'a'); // append mode across chunks
+
         // --- Fast-forward to offset ---
         $skipped_lines = 0;
-        while ($skipped_lines < $offset && fgetcsv($handle) !== false) {
+        while ($skipped_lines < $offset && ($row = fgetcsv($handle)) !== false) {
             $skipped_lines++;
+            // also write skipped rows back unchanged (so we don’t lose them)
+            fputcsv($temp_handle, $row);
         }
 
         // --- Process up to $limit rows ---
@@ -193,12 +199,14 @@ class OAM_TRACKING_ORDER_CRON
         while ($processed < $limit && ($row = fgetcsv($handle)) !== false) {
             $processed++;
 
-            $RECIPIENTNO       = isset($row[2]) ? trim($row[2]) : '';
-            $JARNO             = isset($row[3]) ? trim($row[3]) : '';
-            $Trackingnumber    = isset($row[4]) ? trim($row[4]) : '';
+            $RECIPIENTNO         = isset($row[2]) ? trim($row[2]) : '';
+            $JARNO               = isset($row[3]) ? trim($row[3]) : '';
+            $Trackingnumber      = isset($row[4]) ? trim($row[4]) : '';
             $TrackingCompanyName = isset($row[5]) ? trim($row[5]) : '';
-            $TrackingURL       = isset($row[6]) ? trim($row[6]) : '';
-            $TrackingStatus    = isset($row[7]) ? trim($row[7]) : '';
+            $TrackingURL         = isset($row[6]) ? trim($row[6]) : '';
+            $TrackingStatus      = isset($row[7]) ? trim($row[7]) : '';
+
+            $row_status = 'Skipped';
 
             if (
                 !empty($RECIPIENTNO) && 
@@ -211,10 +219,10 @@ class OAM_TRACKING_ORDER_CRON
                 $updated = $wpdb->update(
                     $wc_jar_order,
                     [
-                        'tracking_no'     => $Trackingnumber,
-                        'tracking_company'=> $TrackingCompanyName,
-                        'tracking_url'    => $TrackingURL,
-                        'status'          => $TrackingStatus,
+                        'tracking_no'      => $Trackingnumber,
+                        'tracking_company' => $TrackingCompanyName,
+                        'tracking_url'     => $TrackingURL,
+                        'status'           => $TrackingStatus,
                     ],
                     [
                         'recipient_order_id' => $RECIPIENTNO,
@@ -224,17 +232,25 @@ class OAM_TRACKING_ORDER_CRON
 
                 if ($updated === false) {
                     $failed++;
+                    $row_status = 'Failed';
                 } else {
                     $success++;
+                    $row_status = 'Success';
                 }
             } else {
                 $skipped++;
+                $row_status = 'Skipped';
             }
+
+            // Append status to row and write to new file
+            $row[] = $row_status;
+            fputcsv($temp_handle, $row);
         }
 
         // Peek for more rows
         $has_more = (fgetcsv($handle) !== false);
         fclose($handle);
+        fclose($temp_handle);
 
         if ($has_more) {
             $next_args = [
@@ -261,7 +277,13 @@ class OAM_TRACKING_ORDER_CRON
             return;
         }
 
-        // --- No more rows: mark completed ---
+        // --- No more rows: finalize file ---
+        // Replace original with updated temp file
+        if (file_exists($temp_path)) {
+            unlink($path); // remove original
+            rename($temp_path, $path); // replace
+        }
+
         $reasons_html = "Success: {$success}, Failed: {$failed}, Skipped: {$skipped}";
 
         $wpdb->update(
@@ -285,15 +307,16 @@ class OAM_TRACKING_ORDER_CRON
         // Schedule next pending file
         $this->next_tracking_order();
     }
+
     
     public function tracking_order_number_insert_callback() {
         // check_ajax_referer('oam_ajax_nonce', 'security'); // security check
 
         global $wpdb;
-        $table_name = $wpdb->prefix . "oh_tracking_order";
+        $table_name   = $wpdb->prefix . "oh_tracking_order";
         $wc_jar_order = $wpdb->prefix . "oh_wc_jar_order";
         $reasons_html = '';
-        $failed = 0;
+        $failed  = 0;
         $skipped = 0;
         $success = 0;
 
@@ -315,14 +338,13 @@ class OAM_TRACKING_ORDER_CRON
 
         // Load file into memory
         $rows = [];
-        $ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+        $ext  = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
 
         if ($ext === 'csv') {
             $rows = array_map('str_getcsv', file($file_path));
         } elseif (in_array($ext, ['xls', 'xlsx'])) {
             if (!class_exists('PhpOffice\PhpSpreadsheet\IOFactory')) {
                 require_once ABSPATH . 'wp-admin/includes/file.php';
-                // You need PhpSpreadsheet installed
                 wp_send_json_error(['message' => 'PhpSpreadsheet not available']);
             }
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file_path);
@@ -336,11 +358,18 @@ class OAM_TRACKING_ORDER_CRON
             wp_send_json_error(['message' => 'File is empty or only has headers']);
         }
 
-        // Skip header row
+        // --- Ensure header has ProcessStatus column ---
+        $header = $rows[0];
+        if (!in_array('ProcessStatus', $header, true)) {
+            $header[] = 'ProcessStatus';
+            $rows[0]  = $header;
+        }
+
+        // --- Process rows ---
         $start = ($current_chunk * $chunk_size) + 1;
         $end   = min($start + $chunk_size - 1, $total_rows - 1);
 
-        if($start == 1){
+        if ($start == 1) {
             $wpdb->update(
                 $table_name,
                 ['status' => 'processing'],
@@ -350,15 +379,16 @@ class OAM_TRACKING_ORDER_CRON
             );
         }
 
-        $header = $rows[0];
         for ($i = $start; $i <= $end; $i++) {
             $row = $rows[$i] ?? [];
             if (empty($row)) {
                 continue;
             }
-            
-            $assoc_row = array_combine($header, $row);
 
+            // Match header to row
+            $assoc_row = array_combine($header, $row + array_fill(0, count($header), ''));
+
+            $row_status = 'Skipped';
             if (
                 !empty($assoc_row['Trackingnumber']) && 
                 !empty($assoc_row['TrackingCompanyName']) &&
@@ -366,41 +396,66 @@ class OAM_TRACKING_ORDER_CRON
                 !empty($assoc_row['TrackingStatus']) && 
                 !empty($assoc_row['RECIPIENTNO']) && 
                 !empty($assoc_row['JARNO'])
-                ) {
-                $wpdb->update(
+            ) {
+                $updated = $wpdb->update(
                     $wc_jar_order,
                     [
-                        'tracking_no' => $assoc_row['Trackingnumber'],
+                        'tracking_no'      => $assoc_row['Trackingnumber'],
                         'tracking_company' => $assoc_row['TrackingCompanyName'],
-                        'tracking_url' => $assoc_row['TrackingURL'],
-                        'status' => $assoc_row['TrackingStatus'],
+                        'tracking_url'     => $assoc_row['TrackingURL'],
+                        'status'           => $assoc_row['TrackingStatus'],
                     ],
                     [
                         'recipient_order_id' => $assoc_row['RECIPIENTNO'],
-                        'jar_order_id' => $assoc_row['JARNO'],
-                    ],
-                    
+                        'jar_order_id'       => $assoc_row['JARNO'],
+                    ]
                 );
 
                 if ($updated === false) {
                     $failed++;
+                    $row_status = 'Failed';
                 } else {
                     $success++;
+                    $row_status = 'Success';
                 }
-               
-            }else{
+            } else {
                 $skipped++;
+                $row_status = 'Skipped';
             }
+
+            // Update ProcessStatus column
+            $rows[$i][array_search('ProcessStatus', $header)] = $row_status;
         }
-        $reasons_html = "Success: {$success},Failed: {$failed},Skipped: {$skipped}";
+
+        // --- Save updated rows back to file ---
+        if ($ext === 'csv') {
+            $fp = fopen($file_path, 'w');
+            foreach ($rows as $row) {
+                fputcsv($fp, $row);
+            }
+            fclose($fp);
+        } else {
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            foreach ($rows as $rIndex => $row) {
+                foreach ($row as $cIndex => $cell) {
+                    $sheet->setCellValueByColumnAndRow($cIndex + 1, $rIndex + 1, $cell);
+                }
+            }
+            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, ucfirst($ext));
+            $writer->save($file_path);
+        }
+
+        // --- Completion handling ---
+        $reasons_html = "Success: {$success}, Failed: {$failed}, Skipped: {$skipped}";
 
         $next_chunk = $current_chunk + 1;
         $finished   = $end >= ($total_rows - 1);
-        if($finished == 1){
+        if ($finished) {
             $wpdb->update(
                 $table_name,
                 [
-                    'status' => 'success',
+                    'status'  => 'success',
                     'reasons' => $reasons_html
                 ],
                 ['id' => $fileid],
