@@ -279,7 +279,8 @@ class OAM_FULFILLMENT_DYNAMIC_REPORT
             ]);
 
             fputcsv($greetings_file, [
-                'WC_OID', 'ORDERID', 'RECIPIENTNO', 'JARNO', 'Greeting'
+                'WC_OID', 'ORDERID', 'RECIPIENTNO', 'JARNO', 'Greeting', 'Bottom of card = In celebration of',
+                    'Organization name (stub)', 'Code', 'Organization name (front of card)'
             ]);
 
             fclose($fulfillment_file);
