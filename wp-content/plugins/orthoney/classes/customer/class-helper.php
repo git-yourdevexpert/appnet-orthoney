@@ -346,7 +346,7 @@ class OAM_Helper{
                 $editLink = '<button class="far fa-edit editRecipientOrder" data-order="' . $recipient_order_id . '" data-tippy="Edit Details" data-popup="#recipient-order-manage-popup"></button>';
             }
 
-            $order['jar_tracking'] = '<a href="#view-order-tracking-popup" data-lity data-tippy="View Tracking">Tracking Numbers</a>';
+            $order['jar_tracking'] = '<button data-popup="#view-order-tracking-popup" data-recipient_no="' . esc_attr($recipient_order_id) . '" class="recipientTrackingOrdersPopup icon-txt-btn" data-tippy="View Tracking">View Tracking</button>';
 
             $return_url = '&return_url=admin';
             if ($tabletype == 'organization-dashboard') {

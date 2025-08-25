@@ -323,16 +323,17 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                     <?php 
                     if(!empty($jarOrderResult)){
                         foreach ($jarOrderResult as $jar_order) {
+                            $tracking_url     = $jar_order->tracking_url ?: '';
                             ?>
                               <tr data-id="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-group="<?php echo esc_attr($sub_order->recipient_order_id); ?>">
                                 <td><?php echo esc_html($sub_order->recipient_order_id); ?></td>
-                                <td><?php echo esc_html($jar_order->jar_order_id); ?></td>
+                                <td><?php echo $jar_order->jar_order_id == 'order_type' ? esc_html($jar_order->jar_order_id) : '-'; ?></td>
                                 <td><?php echo esc_html(html_entity_decode(stripslashes($sub_order->full_name))); ?></td>
                                 <td><?php echo esc_html(html_entity_decode(stripslashes($sub_order->company_name))); ?></td>
                                 <td><?php echo esc_html(html_entity_decode(stripslashes($address))); ?></td>
                                 <td><?php echo esc_html( ($sub_order->quantity > 6 ? $sub_order->quantity : 1)); ?></td>
-                                <th></th>
-                                <td>Processing</td>
+                                <th><?php echo ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($jar_order->tracking_no) . '</a>' : '-'); ?></th>
+                                <td><?php echo $jar_order->status?: 'Processing' ?></td>
                             </tr>
                             <?php
                         }

@@ -278,42 +278,17 @@ if ($first_segment == 'sales-representative-dashboard') {
 </div>
 
 <div id="view-order-tracking-popup" class="lity-hide black-mask full-popup popup-show">
-    <h3>Order Tracking Details</h3>
-    <div class=" orthoney-datatable-warraper">
+    <h3><span></span> Order Tracking Details</h3>
+    <div class="orthoney-datatable-warraper">
         <table>
             <thead>
                 <tr>
-                    <th>Jar Order No</th>
                     <th>Tracking No.</th>
+                    <th>Tracking Company</th>
                     <th>Status</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>202504290004-1-1</td>
-                    <td>202504290004-1-1</td>
-                    <td>On the Way</td>
-                </tr>
-                <tr>
-                    <td>202504290004-1-1</td>
-                    <td>202504290004-1-1</td>
-                    <td>On the Way</td>
-                </tr>
-                <tr>
-                    <td>202504290004-1-1</td>
-                    <td>202504290004-1-1</td>
-                    <td>On the Way</td>
-                </tr>
-                <tr>
-                    <td>202504290004-1-1</td>
-                    <td>202504290004-1-1</td>
-                    <td>On the Way</td>
-                </tr>
-                <tr>
-                    <td>202504290004-1-1</td>
-                    <td>202504290004-1-1</td>
-                    <td>On the Way</td>
-                </tr>
             </tbody>
         </table>
     </div>

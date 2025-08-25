@@ -3,6 +3,8 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+$dashboard_link = ADMINISTRATOR_DASHBOARD_LINK;
+$dashboard_link_label = 'Return to Dashboard';
 
 $current_user_id = get_current_user_id();
 $redirect_back_user_id = get_transient('redirect_back_user_' . $current_user_id);
@@ -23,9 +25,15 @@ if ($redirect_back_user_id) {
 
 
 <div class="order-block-wrap">
-        <div class="order-process-dashboard">
-            <div class="dashboard-block">
-                <h3 class="block-title">Fulfillment Report Dashboard</h3>
+        <div class="order-process-dashboard order-process-block">
+            <div class="dashboard-block ">
+                <div class="heading-title">
+                    <h3 class="block-title">Fulfillment Report Dashboard</h3>
+                    <div>
+                        <a class="w-btn us-btn-style_1" href="<?php echo esc_url( ADMINISTRATOR_DASHBOARD_LINK.'tracking-order/') ?>">Manage Tracking Order</a>
+                        <a class="w-btn us-btn-style_1" href="<?php echo esc_url( $dashboard_link ) ?>"><?php echo esc_html( $dashboard_link_label ) ?></a>
+                    </div>
+                </div>
                 <div class="block-row">
                     <div class="fulfillment-report-wrap grid-two-col">
 

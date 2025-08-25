@@ -67,13 +67,16 @@ if(!empty($tracking_orders)) {
             <tbody>
                 <?php
                 foreach ($tracking_orders as $order) {
+
+                    $run_button = strtolower($order->status) == 'pending' ? '<button data-fileid="' . esc_attr($order->id) . '" data-filename="' . esc_attr($order->updated_file_name) . '" class="tracking_order_import_button w-btn us-btn-style_2">Run</button>' : '';
+                    $reasons = $order->reasons != '' ? '<br> ('.$order->reasons.')' : '';
                     echo '<tr>';
                     echo '<td>' . esc_html($order->file_name) . '</td>';
                     echo '<td>' . esc_html($order->file_time) . '</td>';
                     echo '<td>' . esc_html(ucwords(strtolower($order->uploaded_type))) . '</td>';
-                    echo '<td>' . esc_html(ucwords(strtolower($order->status))) . '</td>';
+                    echo '<td>' . esc_html(ucwords(strtolower($order->status))) .''.$reasons.'</td>';
                     echo '<td>
-                    <button data-fileid="' . esc_attr($order->id) . '" data-filename="' . esc_attr($order->updated_file_name) . '" class="tracking_order_import_button w-btn us-btn-style_2">Run</button>
+                    '.$run_button.'
                     <a href="' . esc_url($upload_dir.$order->updated_file_name) . '" class="button-icon-underline"><img src="' . esc_url(OH_PLUGIN_DIR_URL . 'assets/image/download.png') . '" alt="Download">Download File</a>
                     </td>';
                     echo '</tr>';

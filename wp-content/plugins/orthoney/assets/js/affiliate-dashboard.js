@@ -1299,3 +1299,68 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+
+
+document.addEventListener("click", function (event) {
+    if (event.target.classList.contains("recipientTrackingOrdersPopup")) {
+      event.preventDefault();
+    process_group_popup();
+
+    const target = event.target;
+    const popup = "#view-order-tracking-popup";
+
+    // FIX: use correct dataset keys
+    const recipientno = target.getAttribute("data-recipient_no");
+    const recipientname = target.getAttribute("data-recipient_name") || "";
+
+    if (!recipientno) {
+      Swal.fire({
+        title: "Error",
+        text: "Recipient number is missing.",
+        icon: "error",
+      });
+      return;
+    }
+
+    fetch(oam_ajax.ajax_url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "get_recipient_tracking_orders_popup",
+        recipientno: recipientno,
+        recipientname: recipientname,
+        security: oam_ajax.nonce,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          const recipientTrackingOrderPopup = document.querySelector(popup);
+          recipientTrackingOrderPopup.querySelector("tbody").innerHTML = data.data.data;
+          recipientTrackingOrderPopup.querySelector("h3 span").innerHTML = recipientname || recipientno;
+
+          setTimeout(function () {
+            lity(target.getAttribute("data-popup"));
+            Swal.close();
+          }, 500);
+
+        } else {
+          Swal.fire({
+            title: "Error",
+            text: "Could not fetch recipient tracking data.",
+            icon: "error",
+          });
+        }
+      })
+      .catch(() => {
+        Swal.fire({
+          title: "Error",
+          text: "An error occurred while fetching tracking data.",
+          icon: "error",
+        });
+      });
+  }
+});

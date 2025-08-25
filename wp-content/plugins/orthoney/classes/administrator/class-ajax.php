@@ -17,7 +17,49 @@ class OAM_ADMINISTRATOR_AJAX {
         add_action('wp_ajax_get_org_details_base_id', array($this, 'orthoney_get_org_details_base_id_callback'));
         add_action('wp_ajax_switch_org_to_order', array($this, 'orthoney_switch_org_to_order_callback'));
         add_action('wp_ajax_generate_fulfillment_report', array($this, 'orthoney_generate_fulfillment_report_callback'));
+        add_action('wp_ajax_get_recipient_tracking_orders_popup', array($this, 'get_recipient_tracking_orders_popup_callback'));
 
+    }
+    public function get_recipient_tracking_orders_popup_callback() {
+        check_ajax_referer('oam_nonce', 'security');
+        global $wpdb;
+
+        $recipientno   = sanitize_text_field($_POST['recipientno'] ?? '');
+        $recipientname = sanitize_text_field($_POST['recipientname'] ?? '');
+
+        $html = '';
+
+        $wc_order_relation = $wpdb->prefix . 'oh_wc_jar_order';
+
+        // FIX: use get_results (not get_row)
+        $results = $wpdb->get_results(
+            $wpdb->prepare("
+                SELECT *
+                FROM $wc_order_relation
+                WHERE recipient_order_id = %s
+                 GROUP BY recipient_order_id
+                ", $recipientno)
+        );
+
+        if (!empty($results)) {
+            foreach ($results as $row) {
+                $jar_order_id     = $row->jar_order_id;
+                $tracking_number  = $row->tracking_no ?: '';
+                $tracking_company = $row->tracking_company ?: '';
+                $tracking_url     = $row->tracking_url ?: '';
+                $status           = !empty($tracking_url) ? $row->status : 'Processing';
+
+                $html .= '<tr>';
+                $html .= '<td> '.($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($tracking_number) . '</a>' : '-') . '</td>';
+                $html .= '<td>' . esc_html($tracking_company ?: '-') . '</td>';
+                $html .= '<td>' . esc_html(ucwords($status)) . '</td>';
+                $html .= '</tr>';
+            }
+        } else {
+            $html .= '<tr><td colspan="5">No tracking data found.</td></tr>';
+        }
+
+        wp_send_json_success(['data' => $html]);
     }
 
 
