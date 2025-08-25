@@ -243,7 +243,12 @@ class OAM_TRACKING_ORDER_CRON
             }
 
             // Append status to row and write to new file
-            $row[] = $row_status;
+            if($processed == 1 && $offset == 0){
+                $row[] = 'ProcessStatus';
+            }else{
+                $row[] = $row_status;
+            }
+
             fputcsv($temp_handle, $row);
         }
 
