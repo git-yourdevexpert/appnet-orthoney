@@ -973,10 +973,12 @@ body.woocommerce .quantity input.input-box:focus {
   color: var(--color-header-middle-text-hover);
 }
 
+#tracking-order-upload-form input[type="file"] ,
 .order-process-block input[type="file"] {
   padding: 0 !important;
 }
 
+#tracking-order-upload-form input[type="file"]::file-selector-button ,
 .order-process-block input[type="file"]::file-selector-button {
   border: none;
   color: white;
@@ -987,6 +989,7 @@ body.woocommerce .quantity input.input-box:focus {
   padding: 0 15px;
 }
 
+#tracking-order-upload-form  input[type="file"]::file-selector-button:hover ,
 .order-process-block input[type="file"]::file-selector-button:hover {
   background-color: var(--color-content-secondary);
   color: #fff;

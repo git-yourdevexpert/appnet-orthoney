@@ -231,7 +231,8 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                     <th>Company Name</th>
                     <th>Address</th>
                     <th>Honey Jar</th>
-                    <th>Tracking status</th>
+                    <th>Tracking No.</th>
+                    <th>Carrier Name</th>
                     <th style="width:200px">Status</th>
                 </tr>
             </thead>
@@ -323,7 +324,50 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                     <?php 
                     if(!empty($jarOrderResult)){
                         foreach ($jarOrderResult as $jar_order) {
-                            $tracking_url     = $jar_order->tracking_url ?: '';
+                            $tracking_url = $jar_order->tracking_url ?: '';
+                            $order_status = $jar_order->status ?: 'Processing';
+                            $order_company = $jar_order->tracking_company ?: '-';
+
+                            $tracking_url_html = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($jar_order->tracking_no) . '</a>' : '-'); 
+
+
+                            $tracking_url_array = array();
+                            $tracking_status_array = array();
+                            $tracking_company_array = array();
+                            if($sub_order->quantity > 6){
+                                $results = $wpdb->get_results(
+                                    $wpdb->prepare("
+                                        SELECT tracking_no, COUNT(*) as total
+                                        FROM $oh_wc_jar_order
+                                        WHERE recipient_order_id = %s
+                                        GROUP BY tracking_no
+                                    ", $sub_order->recipient_order_id)
+                                );
+
+                                if (!empty($results)) {
+                                    foreach ($results as $row) {
+                                        $tracking_data = $wpdb->get_row(
+                                            $wpdb->prepare("
+                                                SELECT *
+                                                FROM $oh_wc_jar_order
+                                                WHERE tracking_no = %s
+                                            ", $row->tracking_no)
+                                        );
+
+                                        $tracking_url     = $tracking_data->tracking_url ?: '';
+                                        $tracking_number  = $tracking_data->tracking_no ?: '';
+                                        $tracking_url_array[] = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($tracking_data->tracking_no.' ('.$row->total.' Jar QTY) ') . '</a>' : '-');
+
+                                        $tracking_status_array[] = !empty($tracking_url) ? $tracking_data->status : 'Processing';
+                                        $tracking_company_array[] = !empty($tracking_url) ? $tracking_data->tracking_company ?: '' : '-';
+                                    }
+                                }
+                                $tracking_url_html = implode(' ', $tracking_url_array);
+                                $order_status = implode('<br> ', $tracking_status_array);
+                                $order_company = implode('<br> ', $tracking_company_array);
+
+                            }
+                           
                             ?>
                               <tr data-id="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-group="<?php echo esc_attr($sub_order->recipient_order_id); ?>">
                                 <td><?php echo esc_html($sub_order->recipient_order_id); ?></td>
@@ -332,8 +376,9 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                                 <td><?php echo esc_html(html_entity_decode(stripslashes($sub_order->company_name))); ?></td>
                                 <td><?php echo esc_html(html_entity_decode(stripslashes($address))); ?></td>
                                 <td><?php echo esc_html( ($sub_order->quantity > 6 ? $sub_order->quantity : 1)); ?></td>
-                                <th><?php echo ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($jar_order->tracking_no) . '</a>' : '-'); ?></th>
-                                <td><?php echo $jar_order->status?: 'Processing' ?></td>
+                                <th><?php echo html_entity_decode( $tracking_url_html ) ?></th>
+                                <th><?php echo html_entity_decode( $order_company ) ?></th>
+                                <td><?php echo html_entity_decode( $order_status ) ?></td>
                             </tr>
                             <?php
                         }

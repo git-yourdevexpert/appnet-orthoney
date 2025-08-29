@@ -284,7 +284,8 @@ if ($first_segment == 'sales-representative-dashboard') {
             <thead>
                 <tr>
                     <th>Tracking No.</th>
-                    <th>Tracking Company</th>
+                    <th>Jar Quantity</th>
+                    <th>Carrier Name</th>
                     <th>Status</th>
                 </tr>
             </thead>

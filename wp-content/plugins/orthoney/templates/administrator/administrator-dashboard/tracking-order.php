@@ -23,10 +23,10 @@ if ($redirect_back_user_id) {
                         <div class="file-upload field-block">
                             <label>
                             <span class="title-block">
-                                File Upload: <small>(Accept: .csv, .xlsx, OR .xls)</small>
+                                File Upload: <small>(Accept: .csv)</small>
                             </span>
                             </label>
-                            <input type="file" accept=".csv, .xlsx, .xls" id="fileInput" name="csv_file" required>
+                            <input type="file" accept=".csv" id="fileInput" name="csv_file" required>
                         </div>
                         <br>
                         <button type="submit" class="w-btn us-btn-style_2">Upload File</button>

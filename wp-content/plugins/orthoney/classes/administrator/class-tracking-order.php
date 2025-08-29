@@ -395,20 +395,20 @@ class OAM_TRACKING_ORDER_CRON
 
             $row_status = 'Skipped';
             if (
-                !empty($assoc_row['Trackingnumber']) && 
-                !empty($assoc_row['TrackingCompanyName']) &&
-                !empty($assoc_row['TrackingURL']) && 
-                !empty($assoc_row['TrackingStatus']) && 
+                !empty($assoc_row['TRACKINGNUMBER']) && 
+                !empty($assoc_row['SHIPPINGCARRIERNAME']) &&
+                !empty($assoc_row['TRACKINGURL']) && 
+                !empty($assoc_row['ORDERSTATUS']) && 
                 !empty($assoc_row['RECIPIENTNO']) && 
                 !empty($assoc_row['JARNO'])
             ) {
                 $updated = $wpdb->update(
                     $wc_jar_order,
                     [
-                        'tracking_no'      => $assoc_row['Trackingnumber'],
-                        'tracking_company' => $assoc_row['TrackingCompanyName'],
-                        'tracking_url'     => $assoc_row['TrackingURL'],
-                        'status'           => $assoc_row['TrackingStatus'],
+                        'tracking_no'      => $assoc_row['TRACKINGNUMBER'],
+                        'tracking_company' => $assoc_row['SHIPPINGCARRIERNAME'],
+                        'tracking_url'     => $assoc_row['TRACKINGURL'],
+                        'status'           => $assoc_row['ORDERSTATUS'],
                     ],
                     [
                         'recipient_order_id' => $assoc_row['RECIPIENTNO'],

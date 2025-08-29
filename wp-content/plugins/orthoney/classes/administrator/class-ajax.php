@@ -20,6 +20,7 @@ class OAM_ADMINISTRATOR_AJAX {
         add_action('wp_ajax_get_recipient_tracking_orders_popup', array($this, 'get_recipient_tracking_orders_popup_callback'));
 
     }
+
     public function get_recipient_tracking_orders_popup_callback() {
         check_ajax_referer('oam_nonce', 'security');
         global $wpdb;
@@ -34,23 +35,34 @@ class OAM_ADMINISTRATOR_AJAX {
         // FIX: use get_results (not get_row)
         $results = $wpdb->get_results(
             $wpdb->prepare("
-                SELECT *
+                SELECT tracking_no, COUNT(*) as total
                 FROM $wc_order_relation
                 WHERE recipient_order_id = %s
-                 GROUP BY recipient_order_id
-                ", $recipientno)
+                GROUP BY tracking_no
+            ", $recipientno)
         );
 
         if (!empty($results)) {
             foreach ($results as $row) {
-                $jar_order_id     = $row->jar_order_id;
-                $tracking_number  = $row->tracking_no ?: '';
-                $tracking_company = $row->tracking_company ?: '';
-                $tracking_url     = $row->tracking_url ?: '';
-                $status           = !empty($tracking_url) ? $row->status : 'Processing';
+
+                $tracking_data = $wpdb->get_row(
+                    $wpdb->prepare("
+                        SELECT *
+                        FROM $wc_order_relation
+                        WHERE tracking_no = %s
+                    ", $row->tracking_no)
+                );
+                
+                $jar_order_id     = $tracking_data->jar_order_id;
+                $tracking_number  = $tracking_data->tracking_no ?: '';
+                $tracking_company = $tracking_data->tracking_company ?: '';
+                $total = $row->total ?: '';
+                $tracking_url     = $tracking_data->tracking_url ?: '';
+                $status           = !empty($tracking_url) ? $tracking_data->status : 'Processing';
 
                 $html .= '<tr>';
                 $html .= '<td> '.($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($tracking_number) . '</a>' : '-') . '</td>';
+                $html .= '<td>' . esc_html($total ?: '-') . '</td>';
                 $html .= '<td>' . esc_html($tracking_company ?: '-') . '</td>';
                 $html .= '<td>' . esc_html(ucwords($status)) . '</td>';
                 $html .= '</tr>';
@@ -61,7 +73,6 @@ class OAM_ADMINISTRATOR_AJAX {
 
         wp_send_json_success(['data' => $html]);
     }
-
 
     public function orthoney_generate_fulfillment_report_callback() {
         check_ajax_referer('oam_nonce', 'security');
@@ -705,6 +716,19 @@ class OAM_ADMINISTRATOR_AJAX {
         $progress = round(($processed / $total_orders) * 100);
 
         if($sheet_type == 0){
+
+            // $uploader = new Orthoney_SFTP_Uploader();
+
+            // $localFile  = $fulfillment_path;
+            // $remotePath = "wp-content/all-uploaded-csv/" . basename($localFile);
+
+            // $uploader->upload($localFile, $remotePath);
+
+            // $localgreetingsFile  = $greetings_path;
+            // $remotePath = "wp-content/all-uploaded-csv/" . basename($localgreetingsFile);
+
+            // $uploader->upload($localgreetingsFile, $remotePath);
+
             wp_send_json_success([
                 'progress' => $progress,
                 'done' => false,
