@@ -17,6 +17,8 @@ class OAM_TRACKING_ORDER_CRON
         add_action('init', array($this, 'oam_tracking_file_every_3_hours'));
         add_action('tracking_order_file_for_every_3_hours', array($this, 'tracking_order_file_for_every_3_hours_callback'), 10, 1);
         add_action('tracking_order_insert_mapping', array($this, 'tracking_order_insert_mapping_callback'), 10, 1);
+        add_action('update_wc_order_status', array($this, 'update_wc_order_status_callback'), 10, 1);
+        
     }
     public function next_tracking_order() {
         global $wpdb;
@@ -62,8 +64,111 @@ class OAM_TRACKING_ORDER_CRON
                 "[" . current_time('Y-m-d H:i:s') . "] No pending file found to schedule next chunk",
                 $log_ctx
             );
+
+            $action_id = as_schedule_single_action(
+                time() + 30,
+                'update_wc_order_status',
+                [],
+                'tracking-order-group'
+            );
+
+            OAM_COMMON_Custom::sub_order_error_log(
+                "[" . current_time('Y-m-d H:i:s') . "] Started updating WC order status action_id= $action_id",
+                $log_ctx
+            );
         }
     }
+
+
+    public function update_wc_order_status_callback($offset = 0) {
+        global $wpdb;
+
+        $order_table = $wpdb->prefix . 'wc_orders';
+        $chunk_size  = 1000;
+
+        // Main status aggregation query (unchanged)
+        $sql = $wpdb->prepare("
+            SELECT 
+                order_id,
+                CONCAT(
+                    '{',
+                    GROUP_CONCAT(CONCAT('\"', Status, '\":', cnt) SEPARATOR ','),
+                    '}'
+                ) AS status_counts
+            FROM (
+                SELECT 
+                    order_id,
+                    Status,
+                    COUNT(*) AS cnt
+                FROM {$wpdb->prefix}oh_wc_jar_order
+                WHERE Status <> ''
+                AND YEAR(created_date) = YEAR(CURDATE())
+                GROUP BY order_id, Status
+            ) AS t
+            GROUP BY order_id
+            LIMIT %d OFFSET %d
+        ", $chunk_size, $offset);
+
+        $results = $wpdb->get_results($sql);
+
+        if (empty($results)) {
+            return;
+        }
+
+        // Step 1: Build array of required order_ids
+        $order_ids = array_map(function($row) { return $row->order_id; }, $results);
+
+        // Step 2: Bulk fetch WooCommerce order mapping
+        $placeholders = implode(',', array_fill(0, count($order_ids), '%s'));
+        $meta_query = $wpdb->prepare("
+            SELECT meta_value as oh_order_id, order_id as wc_order_id
+            FROM {$wpdb->prefix}wc_orders_meta
+            WHERE meta_key = '_orthoney_OrderID'
+            AND meta_value IN ($placeholders)
+        ", ...$order_ids);
+
+        $meta_map = [];
+        foreach ($wpdb->get_results($meta_query) as $meta) {
+            $meta_map[$meta->oh_order_id] = $meta->wc_order_id;
+        }
+
+        foreach ($results as $row) {
+            $wc_order_id = isset($meta_map[$row->order_id]) ? $meta_map[$row->order_id] : null;
+            if (empty($wc_order_id)) {
+                continue;
+            }
+            $order_quantity = OAM_AFFILIATE_Helper::get_quantity_by_order_id($wc_order_id);
+            $status_array = json_decode($row->status_counts, true);
+
+            if (!is_array($status_array) || !isset($status_array['Shipped'])) {
+                continue;
+            }
+
+            $shipped_count = (int) $status_array['Shipped'];
+            $update_status = ($shipped_count >= $order_quantity) ? 'wc-shipped' : 'wc-parcel-shipped';
+
+            $wpdb->update(
+                $order_table,
+                [ 'status' => $update_status ],
+                [ 'order_id' => $wc_order_id ],
+                [ '%s' ],
+                [ '%d' ]
+            );
+        }
+
+        // Step 3: Schedule next batch only if this batch was full
+        if (count($results) === $chunk_size) {
+            $next_offset = $offset + $chunk_size;
+            as_schedule_single_action(
+                time() + 30,
+                'update_wc_order_status',
+                [ $next_offset ],
+                'tracking-order-group'
+            );
+        }
+    }
+
+
     public function oam_tracking_order_manual_upload_callback() {
         global $wpdb;
         // check_ajax_referer('oam_ajax_nonce', '_ajax_nonce');
@@ -248,7 +353,7 @@ class OAM_TRACKING_ORDER_CRON
             }else{
                 $row[] = $row_status;
             }
-
+            
             fputcsv($temp_handle, $row);
         }
 
@@ -471,6 +576,13 @@ class OAM_TRACKING_ORDER_CRON
 
         $progress = round(($end / ($total_rows - 1)) * 100);
 
+        $action_id = as_schedule_single_action(
+            time() + 30,
+            'update_wc_order_status',
+            [],
+            'tracking-order-group'
+        );
+
         wp_send_json_success([
             'next_chunk' => $next_chunk,
             'finished'   => $finished,
@@ -478,6 +590,7 @@ class OAM_TRACKING_ORDER_CRON
             'total_rows' => $total_rows - 1
         ]);
     }
+
             
     public function oam_tracking_file_every_3_hours() {
         // Check if ActionScheduler is available

@@ -66,6 +66,46 @@ class OAM_WC_Customizer {
 
         // Hook into WooCommerce payment gateways filter
         add_filter('woocommerce_available_payment_gateways', array($this,'cash_on_carry_gateway_filter'));
+
+        // Register new order status
+        add_action( 'init', array($this,'orthoney_register_parcel_shipped_order_status') );
+        add_filter( 'wc_order_statuses', array($this,'orthoney_add_parcel_shipped_to_order_statuses') );
+    }
+    public function orthoney_register_parcel_shipped_order_status() {
+        register_post_status( 'wc-parcel-shipped', array(
+            'label'                     => 'Parcel Shipped',
+            'public'                    => true,
+            'exclude_from_search'       => false,
+            'show_in_admin_all_list'    => true,
+            'show_in_admin_status_list' => true,
+            'label_count'               => _n_noop( 'Parcel Shipped <span class="count">(%s)</span>', 'Parcel Shipped <span class="count">(%s)</span>' )
+        ) );
+        register_post_status( 'wc-shipped', array(
+            'label'                     => 'Shipped',
+            'public'                    => true,
+            'exclude_from_search'       => false,
+            'show_in_admin_all_list'    => true,
+            'show_in_admin_status_list' => true,
+            'label_count'               => _n_noop( 'Shipped <span class="count">(%s)</span>', 'Shipped <span class="count">(%s)</span>' )
+        ) );
+    }
+
+    // Add to list of WC order statuses
+
+    public function orthoney_add_parcel_shipped_to_order_statuses( $order_statuses ) {
+        $new_statuses = array();
+
+        foreach ( $order_statuses as $key => $status ) {
+            $new_statuses[ $key ] = $status;
+
+            // Add after 'wc-processing' (you can change placement)
+            if ( 'wc-processing' === $key ) {
+                $new_statuses['wc-parcel-shipped'] = 'Parcel Shipped';
+                $new_statuses['wc-shipped'] = 'Shipped';
+            }
+        }
+
+        return $new_statuses;
     }
 
     /**
