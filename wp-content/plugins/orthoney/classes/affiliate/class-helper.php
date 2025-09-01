@@ -528,19 +528,23 @@ class OAM_AFFILIATE_Helper
                 $select_organization = get_user_meta($user_id, 'select_organization', true);
                 $choose_organization = get_user_meta($user_id, 'choose_organization', true);
 
-                if ($select_organization === 'choose_organization' && !empty($choose_organization)) {
-                    $choose_ids_array = array_map('intval', (array) $choose_organization);
-                    
-                    if (!empty($choose_ids_array)) {
-                        $placeholders = implode(',', array_fill(0, count($choose_ids_array), '%d'));
-                        $query = $wpdb->prepare(
-                            "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id IN ($placeholders)",
-                            ...$choose_ids_array
-                        );
-                        $token_array = $wpdb->get_col($query);
-                        $sales_reps_data[$user_id] = $token_array;
+                if ($select_organization === 'choose_organization') {
+                    if(!empty($choose_organization)){
+                        $choose_ids_array = array_map('intval', (array) $choose_organization);
+                        
+                        if (!empty($choose_ids_array)) {
+                            $placeholders = implode(',', array_fill(0, count($choose_ids_array), '%d'));
+                            $query = $wpdb->prepare(
+                                "SELECT token FROM {$wpdb->prefix}yith_wcaf_affiliates WHERE user_id IN ($placeholders)",
+                                ...$choose_ids_array
+                            );
+                            $token_array = $wpdb->get_col($query);
+                            $sales_reps_data[$user_id] = $token_array;
+                        } else {
+                            $sales_reps_data[$user_id] = [];
+                        }
                     } else {
-                        $sales_reps_data[$user_id] = [];
+                         $sales_reps_data[$user_id] = [];
                     }
                 } else {
                     $sales_reps_data[$user_id] = 'all';
