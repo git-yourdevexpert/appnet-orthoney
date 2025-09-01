@@ -145,7 +145,7 @@ class OAM_TRACKING_ORDER_CRON
             }
 
             $shipped_count = (int) $status_array['Shipped'];
-            $update_status = ($shipped_count >= $order_quantity) ? 'wc-shipped' : 'wc-parcel-shipped';
+            $update_status = ($shipped_count >= $order_quantity) ? 'wc-shipped' : 'wc-partial-shipped';
 
             $wpdb->update(
                 $order_table,

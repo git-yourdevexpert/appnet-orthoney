@@ -72,13 +72,13 @@ class OAM_WC_Customizer {
         add_filter( 'wc_order_statuses', array($this,'orthoney_add_parcel_shipped_to_order_statuses') );
     }
     public function orthoney_register_parcel_shipped_order_status() {
-        register_post_status( 'wc-parcel-shipped', array(
-            'label'                     => 'Parcel Shipped',
+        register_post_status( 'wc-partial-shipped', array(
+            'label'                     => 'Partial Shipped',
             'public'                    => true,
             'exclude_from_search'       => false,
             'show_in_admin_all_list'    => true,
             'show_in_admin_status_list' => true,
-            'label_count'               => _n_noop( 'Parcel Shipped <span class="count">(%s)</span>', 'Parcel Shipped <span class="count">(%s)</span>' )
+            'label_count'               => _n_noop( 'Partial Shipped <span class="count">(%s)</span>', 'Partial Shipped <span class="count">(%s)</span>' )
         ) );
         register_post_status( 'wc-shipped', array(
             'label'                     => 'Shipped',
@@ -100,14 +100,13 @@ class OAM_WC_Customizer {
 
             // Add after 'wc-processing' (you can change placement)
             if ( 'wc-processing' === $key ) {
-                $new_statuses['wc-parcel-shipped'] = 'Parcel Shipped';
+                $new_statuses['wc-partial-shipped'] = 'Partial Shipped';
                 $new_statuses['wc-shipped'] = 'Shipped';
             }
         }
 
         return $new_statuses;
     }
-
     /**
      * Filter COD payment gateway based on allowed users
      *

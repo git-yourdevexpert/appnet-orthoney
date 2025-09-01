@@ -3699,7 +3699,7 @@ jQuery(function ($) {
                 <select id="order_status" name="order_status" class="" tabindex="-1" aria-hidden="true">
                     <option value="all">All</option>
                     <option value="wc-processing">Processing</option>
-                    <option value="wc-parcel-shipped">Parcel Shipped</option>
+                    <option value="wc-partial-shipped">Partial shipped</option>
                     <option value="wc-shipped">Shipped</option>
                     <option value="wc-pending">Pending payment</option>
                     <option value="wc-on-hold">On hold</option>
