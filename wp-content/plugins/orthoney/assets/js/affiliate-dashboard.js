@@ -1265,14 +1265,18 @@ document.addEventListener("DOMContentLoaded", function () {
                     icon: "error",
                     title: "Import Failed",
                     text: response.data.message,
-                  });
+                    }).then(() => {
+                    location.reload();
+                    });
                 }
               } catch (err) {
                 Swal.fire({
                   icon: "error",
                   title: "Error",
                   text: "Invalid server response.",
-                });
+                 }).then(() => {
+                    location.reload();
+                    });
               }
             } else {
               Swal.fire({

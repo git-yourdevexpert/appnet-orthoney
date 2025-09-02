@@ -287,6 +287,42 @@ class OAM_TRACKING_ORDER_CRON
             return;
         }
 
+        // --- Validate header on first run (offset == 0) ---
+        $header = fgetcsv($handle);
+        if ($offset === 0) {
+            $required_columns = [
+                'TRACKINGNUMBER',
+                'SHIPPINGCARRIERNAME',
+                'TRACKINGURL',
+                'ORDERSTATUS',
+                'RECIPIENTNO',
+                'JARNO'
+            ];
+
+            $missing_columns = array_diff($required_columns, $header);
+            if (!empty($missing_columns)) {
+                fclose($handle);
+            
+                  $wpdb->update(
+                    $table,
+                    [
+                        'status'  => 'Failed',
+                        'reasons' => 'Missing required columns: ' . implode(', ', $missing_columns)
+                    ],
+                    ['id' => $file_id],
+                    ['%s'],
+                    ['%d']
+                );
+
+                
+                OAM_COMMON_Custom::sub_order_error_log(
+                    "[" . current_time('Y-m-d H:i:s') . "] Missing required columns: " . implode(', ', $missing_columns) . " in file: $path\n",
+                    $log_ctx
+                );
+                return;
+            }
+        }
+
         // Prepare temp file for output
         $temp_path   = $path . '.tmp';
         $temp_handle = fopen($temp_path, 'a'); // append mode across chunks
@@ -468,8 +504,36 @@ class OAM_TRACKING_ORDER_CRON
             wp_send_json_error(['message' => 'File is empty or only has headers']);
         }
 
-        // --- Ensure header has ProcessStatus column ---
+        // --- Validate required columns ---
         $header = $rows[0];
+        $required_columns = [
+            'TRACKINGNUMBER',
+            'SHIPPINGCARRIERNAME',
+            'TRACKINGURL',
+            'ORDERSTATUS',
+            'RECIPIENTNO',
+            'JARNO'
+        ];
+        $missing_columns = array_diff($required_columns, $header);
+        if (!empty($missing_columns)) {
+
+            $wpdb->update(
+                $table_name,
+                [
+                    'status'  => 'Failed',
+                    'reasons' => 'Missing required columns: ' . implode(', ', $missing_columns)
+                ],
+                ['id' => $fileid],
+                ['%s'],
+                ['%d']
+            );
+            
+            wp_send_json_error([
+                'message' => 'Missing required columns: ' . implode(', ', $missing_columns)
+            ]);
+        }
+
+        // --- Ensure ProcessStatus column ---
         if (!in_array('ProcessStatus', $header, true)) {
             $header[] = 'ProcessStatus';
             $rows[0]  = $header;
@@ -590,6 +654,7 @@ class OAM_TRACKING_ORDER_CRON
             'total_rows' => $total_rows - 1
         ]);
     }
+
 
             
     public function oam_tracking_file_every_3_hours() {
