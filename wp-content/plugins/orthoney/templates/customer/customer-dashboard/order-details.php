@@ -232,7 +232,7 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                     <th>Address</th>
                     <th>Honey Jar</th>
                     <th>Tracking No.</th>
-                    <th>Carrier Name</th>
+                    <th>Track Package</th>
                     <th style="width:200px">Status</th>
                 </tr>
             </thead>
@@ -289,7 +289,7 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                     }
                     ?>
                     <tr class="group-header" data-count="<?php echo count($jarOrderResult) ?>" data-group="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-id="<?php echo esc_attr($sub_order->recipient_order_id); ?>">
-                        <td colspan="8" style="background: #cbdac7 !important;">
+                        <td colspan="9" style="background: #cbdac7 !important;">
                             <div class="heading-title" style="margin-bottom: 0px;">
                                 <div>
                                     <strong>
