@@ -205,7 +205,7 @@ class OAM_TRACKING_ORDER_CRON
                 [
                     'updated_file_name' => $newFileName,
                     'status'            => 'pending',
-                    'uploaded_type'     => 'cron'
+                    'uploaded_type'     => 'manually'
                 ],
                 ['file_name' => $originalName],
                 ['%s','%s'],
@@ -219,7 +219,7 @@ class OAM_TRACKING_ORDER_CRON
                     'file_name'         => $originalName,
                     'updated_file_name' => $newFileName,
                     'status'            => 'pending',
-                    'uploaded_type'     => 'cron'
+                    'uploaded_type'     => 'manually'
                 ],
                 ['%s','%s','%s']
             );
@@ -234,6 +234,7 @@ class OAM_TRACKING_ORDER_CRON
         global $wpdb;
         $failed  = isset($args['failed']) ? (int)$args['failed'] : 0;
         $skipped = isset($args['skipped']) ? (int)$args['skipped'] : 0;
+        $not_exists = isset($args['not_exists']) ? (int)$args['not_exists'] : 0;
         $success = isset($args['success']) ? (int)$args['success'] : 0;
 
         $table        = $wpdb->prefix . 'oh_tracking_order';
@@ -357,26 +358,43 @@ class OAM_TRACKING_ORDER_CRON
                 !empty($TrackingURL) && 
                 !empty($TrackingStatus)
             ) {
-                $updated = $wpdb->update(
-                    $wc_jar_order,
-                    [
-                        'tracking_no'      => $Trackingnumber,
-                        'tracking_company' => $TrackingCompanyName,
-                        'tracking_url'     => $TrackingURL,
-                        'status'           => $TrackingStatus,
-                    ],
-                    [
-                        'recipient_order_id' => $RECIPIENTNO,
-                        'jar_order_id'       => $JARNO,
-                    ]
+                $exists = $wpdb->get_var(
+                    $wpdb->prepare(
+                        "SELECT COUNT(*) 
+                        FROM $wc_jar_order 
+                        WHERE recipient_order_id = %s 
+                        AND jar_order_id = %s",
+                        $RECIPIENTNO,
+                        $JARNO
+                    )
                 );
+                
+                
+                if ($exists != 0) {
+                    $updated = $wpdb->update(
+                        $wc_jar_order,
+                        [
+                            'tracking_no'      => $Trackingnumber,
+                            'tracking_company' => $TrackingCompanyName,
+                            'tracking_url'     => $TrackingURL,
+                            'status'           => $TrackingStatus,
+                        ],
+                        [
+                            'recipient_order_id' => $RECIPIENTNO,
+                            'jar_order_id'       => $JARNO,
+                        ]
+                    );
 
-                if ($updated === false) {
-                    $failed++;
-                    $row_status = 'Failed';
-                } else {
-                    $success++;
-                    $row_status = 'Success';
+                    if ($updated === false) {
+                        $failed++;
+                        $row_status = 'Failed';
+                    } else {
+                        $success++;
+                        $row_status = 'Success';
+                    }
+                }else{
+                    $not_exists++;
+                    $row_status = 'Not Exists';
                 }
             } else {
                 $skipped++;
@@ -404,6 +422,7 @@ class OAM_TRACKING_ORDER_CRON
                 'offset'  => $offset + $processed,
                 'failed'  => $failed,
                 'success' => $success,
+                'not_exists' => $not_exists,
                 'skipped' => $skipped
             ];
 
@@ -430,7 +449,7 @@ class OAM_TRACKING_ORDER_CRON
             rename($temp_path, $path); // replace
         }
 
-        $reasons_html = "Success: {$success}, Failed: {$failed}, Skipped: {$skipped}";
+        $reasons_html = "Success: {$success}, Failed: {$failed}, Order Not Exists: {$not_exists}, Skipped: {$skipped}";
 
         $wpdb->update(
             $table, 
@@ -462,15 +481,18 @@ class OAM_TRACKING_ORDER_CRON
         $table_name   = $wpdb->prefix . "oh_tracking_order";
         $wc_jar_order = $wpdb->prefix . "oh_wc_jar_order";
         $reasons_html = '';
-        $failed  = 0;
-        $skipped = 0;
-        $success = 0;
+        
 
         $upload_dir = WP_CONTENT_DIR . '/uploads/fulfillment-reports/tracking-orders/';
 
         $filename      = sanitize_file_name($_POST['filename'] ?? '');
         $fileid        = intval($_POST['fileid'] ?? 0);
         $current_chunk = intval($_POST['current_chunk'] ?? 0);
+
+        $failed  = intval($_POST['failed'] ?? 0);
+        $skipped = intval($_POST['skipped'] ?? 0);
+        $success = intval($_POST['success'] ?? 0);
+        $not_exists = intval($_POST['not_exists'] ?? 0);
         $chunk_size    = 50; // rows per chunk
 
         if (empty($filename)) {
@@ -571,26 +593,42 @@ class OAM_TRACKING_ORDER_CRON
                 !empty($assoc_row['RECIPIENTNO']) && 
                 !empty($assoc_row['JARNO'])
             ) {
-                $updated = $wpdb->update(
-                    $wc_jar_order,
-                    [
-                        'tracking_no'      => $assoc_row['TRACKINGNUMBER'],
-                        'tracking_company' => $assoc_row['SHIPPINGCARRIERNAME'],
-                        'tracking_url'     => $assoc_row['TRACKINGURL'],
-                        'status'           => $assoc_row['ORDERSTATUS'],
-                    ],
-                    [
-                        'recipient_order_id' => $assoc_row['RECIPIENTNO'],
-                        'jar_order_id'       => $assoc_row['JARNO'],
-                    ]
+                $exists = $wpdb->get_var(
+                    $wpdb->prepare(
+                        "SELECT COUNT(*) 
+                        FROM $wc_jar_order 
+                        WHERE recipient_order_id = %s 
+                        AND jar_order_id = %s",
+                        $assoc_row['RECIPIENTNO'],
+                        $assoc_row['JARNO']
+                    )
                 );
+                
+                if ($exists != 0) {
+                    $updated = $wpdb->update(
+                        $wc_jar_order,
+                        [
+                            'tracking_no'      => $assoc_row['TRACKINGNUMBER'],
+                            'tracking_company' => $assoc_row['SHIPPINGCARRIERNAME'],
+                            'tracking_url'     => $assoc_row['TRACKINGURL'],
+                            'status'           => $assoc_row['ORDERSTATUS'],
+                        ],
+                        [
+                            'recipient_order_id' => $assoc_row['RECIPIENTNO'],
+                            'jar_order_id'       => $assoc_row['JARNO'],
+                        ]
+                    );
 
-                if ($updated === false) {
-                    $failed++;
-                    $row_status = 'Failed';
-                } else {
-                    $success++;
-                    $row_status = 'Success';
+                    if ($updated === false) {
+                        $failed++;
+                        $row_status = 'Failed';
+                    } else {
+                        $success++;
+                        $row_status = 'Success';
+                    }
+                }else{
+                    $not_exists++;
+                    $row_status = 'Not Exists';
                 }
             } else {
                 $skipped++;
@@ -621,7 +659,7 @@ class OAM_TRACKING_ORDER_CRON
         }
 
         // --- Completion handling ---
-        $reasons_html = "Success: {$success}, Failed: {$failed}, Skipped: {$skipped}";
+        $reasons_html = "Success: {$success}, Failed: {$failed}, Order Not Exists: {$not_exists}, Skipped: {$skipped}";
 
         $next_chunk = $current_chunk + 1;
         $finished   = $end >= ($total_rows - 1);
@@ -651,7 +689,12 @@ class OAM_TRACKING_ORDER_CRON
             'next_chunk' => $next_chunk,
             'finished'   => $finished,
             'progress'   => $progress,
-            'total_rows' => $total_rows - 1
+            'total_rows' => $total_rows - 1,
+            'success' => $success,
+            'failed' => $failed,
+            'not_exists' => $not_exists,
+            'skipped' => $skipped,
+
         ]);
     }
 

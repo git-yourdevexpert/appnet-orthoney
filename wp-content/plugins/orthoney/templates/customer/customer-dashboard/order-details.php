@@ -316,19 +316,24 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                             ?>
                             </div>
                             </div>
-                            
                             <!-- <button class="deleteRecipient far fa-times" data-order="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-recipientname="<?php echo esc_attr($sub_order->full_name); ?>"></button> -->
                         </td>
                     </tr>
                     
                     <?php 
-                   if(!empty($jarOrderResult)){
+                    if(!empty($jarOrderResult)){
                         foreach ($jarOrderResult as $jar_order) {
                             $tracking_url = $jar_order->tracking_url ?: '';
                             $order_status = $jar_order->status ?: 'Processing';
-                            $order_company = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">Click Here</a>' : '-');
+                            if ( strtolower($tracking_number) === strtolower('PICKED UP IN PERSON') ) {
 
-                            $tracking_url_html = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($jar_order->tracking_no) . '</a>' : '-'); 
+                                $order_company = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">Click Here</a>' : '-');
+    
+                                $tracking_url_html = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($jar_order->tracking_no) . '</a>' : '-'); 
+                            }else{
+                                $order_company = '-';
+                                $tracking_url_html = esc_html($jar_order->tracking_no);
+                            }
 
                             $tracking_url_array = array();
                             $tracking_status_array = array();
@@ -355,9 +360,14 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
 
                                         $tracking_url     = $tracking_data->tracking_url ?: '';
                                         $tracking_number  = $tracking_data->tracking_no ?: '';
-                                        $tracking_url_array[] = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($tracking_data->tracking_no.' ('.$row->total.' Jar QTY) ') . '</a>' : '-');
+                                        if ( strtolower($tracking_number) === strtolower('PICKED UP IN PERSON') ) {
+                                            $tracking_url_array[] = '';
+                                            $tracking_company_array[] = 'PICKED UP IN PERSON';
+                                        }else{
+                                            $tracking_url_array[] = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($tracking_data->tracking_no.' ('.$row->total.' Jar QTY) ') . '</a>' : '');
+                                            $tracking_company_array[] = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">Click Here</a>' : '-');
+                                        }
                                        
-                                        $tracking_company_array[] = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">Click Here</a>' : '-');
 
                                         $tracking_status_array[] = !empty($tracking_url) ? $tracking_data->status : 'Processing';
                                        
@@ -372,7 +382,7 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                             ?>
                               <tr data-id="<?php echo esc_attr($sub_order->recipient_order_id); ?>" data-group="<?php echo esc_attr($sub_order->recipient_order_id); ?>">
                                 <td><?php echo esc_html($sub_order->recipient_order_id); ?></td>
-                                <td><?php echo $jar_order->jar_order_id == 'order_type' ? esc_html($jar_order->jar_order_id) : '-'; ?></td>
+                                <td><?php echo $jar_order->order_type == 'external' ? esc_html($jar_order->jar_order_id) : '-'; ?></td>
                                 <td><?php echo esc_html(html_entity_decode(stripslashes($sub_order->full_name))); ?></td>
                                 <td><?php echo esc_html(html_entity_decode(stripslashes($sub_order->company_name))); ?></td>
                                 <td><?php echo esc_html(html_entity_decode(stripslashes($address))); ?></td>

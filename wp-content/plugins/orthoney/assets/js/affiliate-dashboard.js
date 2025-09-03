@@ -1198,6 +1198,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       let currentChunk = 0;
       let totalRows = 0;
+      let success = 0;
+      let failed = 0;
+      let not_exists = 0;
+      let skipped = 0;
 
       // Start processing after slight delay
       setTimeout(() => {
@@ -1206,6 +1210,10 @@ document.addEventListener("DOMContentLoaded", function () {
           formData.append("action", "tracking_order_number_insert");
           formData.append("security", oam_ajax.nonce);
           formData.append("current_chunk", currentChunk);
+          formData.append("success", success);
+          formData.append("failed", failed);
+          formData.append("not_exists", not_exists);
+          formData.append("skipped", skipped);
           formData.append("filename", filename);
           formData.append("fileid", fileid);
 
@@ -1230,6 +1238,7 @@ document.addEventListener("DOMContentLoaded", function () {
                           <div id="progress-bar" style="width: 0%; height: 10px; background-color: #3085d6;"></div>
                         </div>
                         <p id="progress-text">0%</p>
+                        <p>Success: <span id="success-count">0</span>, Failed: <span id="failed-count">0</span>, Order Not Exists: <span id="not-exists-count">0</span>, Skipped: <span id="skipped-count">0</span></p>
                       `,
                       showConfirmButton: false,
                       allowOutsideClick: false,
@@ -1239,13 +1248,19 @@ document.addEventListener("DOMContentLoaded", function () {
                   }
 
                   const progress = response.data.progress;
-                  document.getElementById("progress-bar").style.width =
-                    progress + "%";
-                  document.getElementById("progress-text").innerText =
-                    progress + "%";
+                  document.getElementById("progress-bar").style.width = progress + "%";
+                  document.getElementById("progress-text").innerText = progress + "%";
+                  document.getElementById("success-count").innerText = success;
+                  document.getElementById("failed-count").innerText = failed;
+                  document.getElementById("not-exists-count").innerText = not_exists;
+                  document.getElementById("skipped-count").innerText = skipped;
 
                   if (!response.data.finished) {
                     currentChunk = response.data.next_chunk;
+                    success = response.data.success;
+                    failed = response.data.failed;
+                    not_exists = response.data.not_exists;
+                    skipped = response.data.skipped;
                     uploadChunk();
                   } else {
                     Swal.fire({
@@ -1303,6 +1318,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
 
 
 
