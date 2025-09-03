@@ -664,6 +664,13 @@ class OAM_TRACKING_ORDER_CRON
         $next_chunk = $current_chunk + 1;
         $finished   = $end >= ($total_rows - 1);
         if ($finished) {
+            $action_id = as_schedule_single_action(
+                time() + 30,
+                'update_wc_order_status',
+                [],
+                'tracking-order-group'
+            );
+            
             $wpdb->update(
                 $table_name,
                 [
