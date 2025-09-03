@@ -150,7 +150,7 @@ class OAM_TRACKING_ORDER_CRON
             $wpdb->update(
                 $order_table,
                 [ 'status' => $update_status ],
-                [ 'order_id' => $wc_order_id ],
+                [ 'id' => $wc_order_id ],
                 [ '%s' ],
                 [ '%d' ]
             );
@@ -670,7 +670,7 @@ class OAM_TRACKING_ORDER_CRON
                 [],
                 'tracking-order-group'
             );
-            
+
             $wpdb->update(
                 $table_name,
                 [
