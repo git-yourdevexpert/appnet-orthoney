@@ -321,18 +321,17 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                     </tr>
                     
                     <?php 
-                    if(!empty($jarOrderResult)){
+                   if(!empty($jarOrderResult)){
                         foreach ($jarOrderResult as $jar_order) {
                             $tracking_url = $jar_order->tracking_url ?: '';
-                            $order_status = $jar_order->status ?: 'Processing';
+                            $order_status = $jar_order->status ?: '';
                             if ( strtolower($tracking_number) === strtolower('PICKED UP IN PERSON') ) {
-
+                                $order_company = '-';
+                                $tracking_url_html = esc_html($jar_order->tracking_no);
+                            }else{
                                 $order_company = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">Click Here</a>' : '-');
     
                                 $tracking_url_html = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($jar_order->tracking_no) . '</a>' : '-'); 
-                            }else{
-                                $order_company = '-';
-                                $tracking_url_html = esc_html($jar_order->tracking_no);
                             }
 
                             $tracking_url_array = array();
