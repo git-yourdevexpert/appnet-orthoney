@@ -366,9 +366,9 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                                             $tracking_url_array[] = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($tracking_data->tracking_no.' ('.$row->total.' Jar QTY) ') . '</a>' : '');
                                             $tracking_company_array[] = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">Click Here</a>' : '');
                                         }
-                                       
-
-                                        $tracking_status_array[] = !empty($tracking_url) ? $tracking_data->status : 'Processing';
+                                       if(!empty($tracking_data->status)){
+                                           $tracking_status_array[] = !empty($tracking_url) ? $tracking_data->status : 'Processing';
+                                       }
                                        
                                     }
                                 }
