@@ -364,7 +364,7 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                                             $tracking_url_array[] = 'PICKED UP IN PERSON';
                                             $tracking_company_array[] = '';
                                         }else{
-                                            $tracking_url_array[] = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($tracking_data->tracking_no.' ('.$row->total.' Jar QTY) ') . '</a>' : '');
+                                            $tracking_url_array[] = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">' . esc_html($tracking_data->tracking_no.' <br><small> ('.$row->total.' Jar QTY) ') . '</small></a>' : '');
                                             $tracking_company_array[] = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">Click Here</a>' : '');
                                         }
                                        if(!empty($tracking_data->status)){
