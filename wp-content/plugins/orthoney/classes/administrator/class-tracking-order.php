@@ -238,14 +238,14 @@ class OAM_TRACKING_ORDER_CRON
 
     public function tracking_order_insert_mapping_callback($args) {
         global $wpdb;
-        $failed  = isset($args['failed']) ? (int)$args['failed'] : 0;
-        $skipped = isset($args['skipped']) ? (int)$args['skipped'] : 0;
+        $failed     = isset($args['failed']) ? (int)$args['failed'] : 0;
+        $skipped    = isset($args['skipped']) ? (int)$args['skipped'] : 0;
         $not_exists = isset($args['not_exists']) ? (int)$args['not_exists'] : 0;
-        $success = isset($args['success']) ? (int)$args['success'] : 0;
+        $success    = isset($args['success']) ? (int)$args['success'] : 0;
 
         $table        = $wpdb->prefix . 'oh_tracking_order';
         $wc_jar_order = $wpdb->prefix . "oh_wc_jar_order";
-        $upload_dir   = WP_CONTENT_DIR . '/uploads/fulfillment-reports/tracking-orders/'; // DIR, not URL
+        $upload_dir   = WP_CONTENT_DIR . '/uploads/fulfillment-reports/tracking-orders/';
         $log_ctx      = 'tracking_order_insert';
         $limit        = 100;
 
@@ -294,7 +294,7 @@ class OAM_TRACKING_ORDER_CRON
             return;
         }
 
-        // --- Validate header on first run (offset == 0) ---
+        // --- Read header ---
         $header = fgetcsv($handle);
         if ($offset === 0) {
             $required_columns = [
@@ -309,8 +309,7 @@ class OAM_TRACKING_ORDER_CRON
             $missing_columns = array_diff($required_columns, $header);
             if (!empty($missing_columns)) {
                 fclose($handle);
-            
-                  $wpdb->update(
+                $wpdb->update(
                     $table,
                     [
                         'status'  => 'Failed',
@@ -321,8 +320,6 @@ class OAM_TRACKING_ORDER_CRON
                     ['%d']
                 );
 
-                $this->next_tracking_order();
-                
                 OAM_COMMON_Custom::sub_order_error_log(
                     "[" . current_time('Y-m-d H:i:s') . "] Missing required columns: " . implode(', ', $missing_columns) . " in file: $path\n",
                     $log_ctx
@@ -333,13 +330,18 @@ class OAM_TRACKING_ORDER_CRON
 
         // Prepare temp file for output
         $temp_path   = $path . '.tmp';
-        $temp_handle = fopen($temp_path, 'a'); // append mode across chunks
+        $temp_handle = fopen($temp_path, 'a');
+
+        // --- If first run, write header + extra column ---
+        if ($offset === 0) {
+            $header[] = 'ProcessStatus';
+            fputcsv($temp_handle, $header);
+        }
 
         // --- Fast-forward to offset ---
         $skipped_lines = 0;
         while ($skipped_lines < $offset && ($row = fgetcsv($handle)) !== false) {
             $skipped_lines++;
-            // also write skipped rows back unchanged (so we don’t lose them)
             fputcsv($temp_handle, $row);
         }
 
@@ -375,8 +377,7 @@ class OAM_TRACKING_ORDER_CRON
                         $JARNO
                     )
                 );
-                
-                
+
                 if ($exists != 0) {
                     $updated = $wpdb->update(
                         $wc_jar_order,
@@ -399,22 +400,17 @@ class OAM_TRACKING_ORDER_CRON
                         $success++;
                         $row_status = 'Success';
                     }
-                }else{
+                } else {
                     $not_exists++;
-                    $row_status = 'Not Exists';
+                    $row_status = 'Order Not Exists';
                 }
             } else {
                 $skipped++;
                 $row_status = 'Skipped';
             }
 
-            // Append status to row and write to new file
-            if($processed == 1 && $offset == 0){
-                $row[] = 'ProcessStatus';
-            }else{
-                $row[] = $row_status;
-            }
-            
+            // Append status column
+            $row[] = $row_status;
             fputcsv($temp_handle, $row);
         }
 
@@ -425,12 +421,12 @@ class OAM_TRACKING_ORDER_CRON
 
         if ($has_more) {
             $next_args = [
-                'id'      => $file_id, 
-                'offset'  => $offset + $processed,
-                'failed'  => $failed,
-                'success' => $success,
-                'not_exists' => $not_exists,
-                'skipped' => $skipped
+                'id'        => $file_id, 
+                'offset'    => $offset + $processed,
+                'failed'    => $failed,
+                'success'   => $success,
+                'not_exists'=> $not_exists,
+                'skipped'   => $skipped
             ];
 
             $existing = as_next_scheduled_action('tracking_order_insert_mapping', [$next_args], 'tracking-order-group');
@@ -450,10 +446,9 @@ class OAM_TRACKING_ORDER_CRON
         }
 
         // --- No more rows: finalize file ---
-        // Replace original with updated temp file
         if (file_exists($temp_path)) {
-            unlink($path); // remove original
-            rename($temp_path, $path); // replace
+            unlink($path); 
+            rename($temp_path, $path);
         }
 
         $reasons_html = "Success: {$success}, Failed: {$failed}, Order Not Exists: {$not_exists}, Skipped: {$skipped}";
@@ -464,9 +459,7 @@ class OAM_TRACKING_ORDER_CRON
                 'status'  => 'success',
                 'reasons' => $reasons_html
             ], 
-            [
-                'id' => $file_id
-            ], 
+            ['id' => $file_id], 
             ['%s','%s'], 
             ['%d']
         );
