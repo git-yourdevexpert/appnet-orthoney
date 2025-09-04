@@ -326,13 +326,14 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                         foreach ($jarOrderResult as $jar_order) {
                             $tracking_url = $jar_order->tracking_url ?: '';
                             $order_status = $jar_order->status ?: '';
+                            $tracking_number  = $jar_order->tracking_no ?: '';
                             if ( strtolower($tracking_number) === strtolower('PICKED UP IN PERSON') ) {
                                 $order_company = '-';
-                                $tracking_url_html = esc_html($jar_order->tracking_no);
+                                $tracking_url_html = esc_html($tracking_number);
                             }else{
                                 $order_company = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">Click Here</a>' : '-');
     
-                                $tracking_url_html = ($tracking_url != '' ? esc_html($jar_order->tracking_no) : '-'); 
+                                $tracking_url_html = ($tracking_url != '' ? esc_html($tracking_number) : '-'); 
                             }
 
                             $tracking_url_array = array();
@@ -364,7 +365,7 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                                             $tracking_url_array[] = 'PICKED UP IN PERSON';
                                             $tracking_company_array[] = '';
                                         }else{
-                                            $tracking_url_array[] = ($tracking_url != '' ? esc_html($tracking_data->tracking_no.' <br><small> ('.$row->total.' Jar QTY) ') . '</small>' : '');
+                                            $tracking_url_array[] = ($tracking_url != '' ? esc_html($tracking_data->tracking_no.' <small> ('.$row->total.' Jar QTY) ') . '</small><br>' : '');
                                             $tracking_company_array[] = ($tracking_url != '' ? '<a class="icon-txt-btn" href="' . esc_url($tracking_url) . '" target="_blank">Click Here</a>' : '');
                                         }
                                        if(!empty($tracking_data->status)){

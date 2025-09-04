@@ -321,6 +321,7 @@ class OAM_TRACKING_ORDER_CRON
                     ['%d']
                 );
 
+                $this->next_tracking_order();
                 
                 OAM_COMMON_Custom::sub_order_error_log(
                     "[" . current_time('Y-m-d H:i:s') . "] Missing required columns: " . implode(', ', $missing_columns) . " in file: $path\n",
@@ -351,8 +352,8 @@ class OAM_TRACKING_ORDER_CRON
             $JARNO               = isset($row[3]) ? trim($row[3]) : '';
             $Trackingnumber      = isset($row[4]) ? trim($row[4]) : '';
             $TrackingCompanyName = isset($row[5]) ? trim($row[5]) : '';
-            $TrackingURL         = isset($row[6]) ? trim($row[6]) : '';
-            $TrackingStatus      = isset($row[7]) ? trim($row[7]) : '';
+            $TrackingStatus      = isset($row[6]) ? trim($row[6]) : '';
+            $TrackingURL         = isset($row[7]) ? trim($row[7]) : '';
 
             $row_status = 'Skipped';
 
@@ -772,7 +773,7 @@ class OAM_TRACKING_ORDER_CRON
         $uploader = new Orthoney_SFTP_Uploader();
         OAM_COMMON_Custom::sub_order_error_log('Initialized Orthoney_SFTP_Uploader', $log_ctx);
 
-        $files = $uploader->listFiles();
+        $files = $uploader->listFiles('Test');
         if (!$files || !is_array($files) || empty($files)) {
             OAM_COMMON_Custom::sub_order_error_log('No files found on SFTP', $log_ctx);
             $this->next_tracking_order();
@@ -813,7 +814,7 @@ class OAM_TRACKING_ORDER_CRON
             // Generate unique local file name
             $newFileName = time() . '_' . $originalName;
             $localPath   = $upload_dir . $newFileName;
-            $remotePath  = 'wp-content/tracking-csv/' . $originalName;
+            $remotePath  = 'Test/' . $originalName;
 
             // Acquire Filesystem handle via reflection (since getFilesystem is private)
             try {

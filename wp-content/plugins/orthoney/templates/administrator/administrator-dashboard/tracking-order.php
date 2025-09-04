@@ -32,6 +32,7 @@ if ($redirect_back_user_id) {
                         <button type="submit" class="w-btn us-btn-style_2">Upload File</button>
                     </form>
                 </div>
+                <p><strong>Note:</strong> After manually uploading a file, please click the “Run” option in the table below to process it right away. <br>If you do not run it manually, the file will be processed automatically during the next scheduled update, which happens every 3 hours.</p>
             </div>
         </div>
     </div>
@@ -42,7 +43,7 @@ if ($redirect_back_user_id) {
 global $wpdb;
  
  $table    = $wpdb->prefix . 'oh_tracking_order';
-$tracking_orders = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table"));
+$tracking_orders = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table ORDER BY id DESC"));
 $upload_dir = WP_CONTENT_URL . '/uploads/fulfillment-reports/tracking-orders/';
 if(!empty($tracking_orders)) {
 ?>
