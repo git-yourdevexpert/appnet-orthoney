@@ -186,6 +186,32 @@ class OAM_TRACKING_ORDER_CRON
 
         $file = $_FILES['csv_file'];
         $originalName = sanitize_file_name($file['name']);
+
+        // 🔹 Check if originalName exists in DB
+        $exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $table WHERE file_name = %s",
+            $originalName
+        ));
+
+        if ($exists > 0) {
+            // Add suffix to avoid duplication: filename-1.csv, filename-2.csv ...
+            $fileInfo = pathinfo($originalName);
+            $base     = $fileInfo['filename'];
+            $ext      = isset($fileInfo['extension']) ? '.' . $fileInfo['extension'] : '';
+            $i = 1;
+
+            do {
+                $newOriginalName = $base . '-' . $i . $ext;
+                $exists = $wpdb->get_var($wpdb->prepare(
+                    "SELECT COUNT(*) FROM $table WHERE file_name = %s",
+                    $newOriginalName
+                ));
+                $i++;
+            } while ($exists > 0);
+
+            $originalName = $newOriginalName; // replace with new safe name
+        }
+
         $newFileName  = time() . '_' . $originalName;
         $localPath    = $upload_dir . $newFileName;
 
@@ -193,38 +219,18 @@ class OAM_TRACKING_ORDER_CRON
             wp_send_json_error(['message' => '❌ Failed to save uploaded file']);
         }
 
-        // Check if originalName already exists in DB
-        $exists = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM $table WHERE file_name = %s",
-            $originalName
-        ));
+        $wpdb->insert(
+            $table,
+            [
+                'file_name'         => $originalName,
+                'updated_file_name' => $newFileName,
+                'status'            => 'pending',
+                'uploaded_type'     => 'manually'
+            ],
+            ['%s','%s','%s','%s']
+        );
 
-        if ($exists > 0) {
-            $wpdb->update(
-                $table,
-                [
-                    'updated_file_name' => $newFileName,
-                    'status'            => 'pending',
-                    'uploaded_type'     => 'manually'
-                ],
-                ['file_name' => $originalName],
-                ['%s','%s'],
-                ['%s']
-            );
-            $msg = "Updated file entry for: $originalName";
-        } else {
-            $wpdb->insert(
-                $table,
-                [
-                    'file_name'         => $originalName,
-                    'updated_file_name' => $newFileName,
-                    'status'            => 'pending',
-                    'uploaded_type'     => 'manually'
-                ],
-                ['%s','%s','%s']
-            );
-            $msg = "✅ Inserted new file entry: $originalName";
-        }
+        $msg = "✅ Inserted new file entry: $originalName";
 
         OAM_COMMON_Custom::sub_order_error_log($msg, 'tracking-order-manual-upload');
         wp_send_json_success(['message' => $msg]);
