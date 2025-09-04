@@ -213,6 +213,7 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                 <strong>Total Price: </strong><?php echo wc_price($order->get_total()); ?><br>
                 <strong>Shipping: </strong><?php echo wc_price($order->get_shipping_total()); ?><br>
                 <strong>Payment Method: </strong><?php echo esc_html($payment_method_title); ?><br>
+                <strong>Order Status: </strong><?php echo esc_html($order->get_status()); ?><br>
                 
             </div>
         </div>
