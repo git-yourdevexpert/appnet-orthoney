@@ -733,21 +733,29 @@ class OAM_AFFILIATE_Helper
         $activate_affiliate_account = get_user_meta($affiliate_id, 'activate_affiliate_account', true);
 
         // Commission details
-        $commission_year_results = $wpdb->get_results($wpdb->prepare("SELECT 
-            c.wc_order_id,
-            SUM(CAST(qty_meta.meta_value AS UNSIGNED)) AS total_quantity,
-            SUM(CAST(line_total_meta.meta_value AS DECIMAL(10,2))) AS line_total,
-            SUM(CAST(line_subtotal_meta.meta_value AS DECIMAL(10,2))) AS line_subtotal
-            FROM {$wpdb->prefix}oh_wc_order_relation  c
-            INNER JOIN {$wpdb->prefix}wc_orders o ON c.wc_order_id = o.id
-            INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_id = o.id AND oi.order_item_type = 'line_item'
-            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta qty_meta ON qty_meta.order_item_id = oi.order_item_id AND qty_meta.meta_key = '_qty'
-            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_total_meta ON line_total_meta.order_item_id = oi.order_item_id AND line_total_meta.meta_key = '_line_total'
-            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_subtotal_meta ON line_subtotal_meta.order_item_id = oi.order_item_id AND line_subtotal_meta.meta_key = '_line_subtotal'
-            WHERE c.affiliate_code = %s 
+        $commission_year_results = $wpdb->get_results($wpdb->prepare("
+            SELECT 
+                c.wc_order_id,
+                oi.order_item_id,
+                MAX(CAST(qty_meta.meta_value AS UNSIGNED)) AS total_quantity,
+                MAX(CAST(line_total_meta.meta_value AS DECIMAL(10,2))) AS line_total,
+                MAX(CAST(line_subtotal_meta.meta_value AS DECIMAL(10,2))) AS line_subtotal
+            FROM {$wpdb->prefix}oh_wc_order_relation c
+            INNER JOIN {$wpdb->prefix}wc_orders o 
+                ON c.wc_order_id = o.id
+            INNER JOIN {$wpdb->prefix}woocommerce_order_items oi 
+                ON oi.order_id = o.id AND oi.order_item_type = 'line_item'
+            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta qty_meta 
+                ON qty_meta.order_item_id = oi.order_item_id AND qty_meta.meta_key = '_qty'
+            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_total_meta 
+                ON line_total_meta.order_item_id = oi.order_item_id AND line_total_meta.meta_key = '_line_total'
+            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_subtotal_meta 
+                ON line_subtotal_meta.order_item_id = oi.order_item_id AND line_subtotal_meta.meta_key = '_line_subtotal'
+            WHERE c.affiliate_code = %s
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
             AND o.status IN ('wc-processing', 'wc-completed')
-            GROUP BY c.wc_order_id", $affiliate_token));
+            GROUP BY c.wc_order_id, oi.order_item_id
+        ", $affiliate_token));
 
         $total_orders_quantity = (int) $wpdb->get_var($wpdb->prepare("SELECT 
             SUM(CAST(om.meta_value AS UNSIGNED))
@@ -770,7 +778,7 @@ class OAM_AFFILIATE_Helper
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) AND o.status IN ('wc-processing', 'wc-completed') GROUP BY c.wc_order_id", $affiliate_token));
 
         $exclude_coupon = EXCLUDE_COUPON;
-        $total_all_quantity = $wholesale_qty + $fundraising_qty = 0;
+        $total_all_quantity = $wholesale_qty = $fundraising_qty = 0;
 
         $ort_cost = $wholesale_cost = $fundraising_cost = 0;
         $ort_profit = $wholesale_profit = $fundraising_profit = 0;
