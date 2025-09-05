@@ -770,7 +770,7 @@ class OAM_AFFILIATE_Helper
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) AND o.status IN ('wc-processing', 'wc-completed') GROUP BY c.wc_order_id", $affiliate_token));
 
         $exclude_coupon = EXCLUDE_COUPON;
-        $total_all_quantity = $wholesale_qty = 0;
+        $total_all_quantity = $wholesale_qty + $fundraising_qty = 0;
 
         $ort_cost = $wholesale_cost = $fundraising_cost = 0;
         $ort_profit = $wholesale_profit = $fundraising_profit = 0;
@@ -785,13 +785,16 @@ class OAM_AFFILIATE_Helper
 
                 if ($affiliate_status === 1) {
                     if (empty($coupons)) {
-                        $total_all_quantity += (int)$value->total_quantity;
+                        $fundraising_qty += (int)$value->total_quantity;
                     } else {
                         $wholesale_qty += (int)$value->total_quantity;
                     }
                 }
             }
-            
+
+            $total_all_quantity = $fundraising_qty + $wholesale_qty;
+        
+
             foreach ($commission_year_results as $commission) {
                 $order_id = $commission->wc_order_id;
                 $total_qty = (int) $commission->total_quantity;
@@ -806,13 +809,13 @@ class OAM_AFFILIATE_Helper
                     $selling_min_price = get_field('selling_minimum_price', 'option') ?: 18;
                     if ($par_jar >= $selling_min_price) {
                         if (OAM_AFFILIATE_Helper::is_user_created_this_year($affiliate_data->user_id)) {
-                            if (($total_all_quantity + $wholesale_qty) < 99) {
+                            if (($total_all_quantity) < 99) {
                                 $minimum_price = get_field('new_minimum_price_50', 'option');
                             } else {
                                 $minimum_price = get_field('new_minimum_price_100', 'option');
                             }
                         } else {
-                            if (($total_all_quantity + $wholesale_qty) < 99) {
+                            if (($total_all_quantity) < 99) {
                                 $minimum_price = get_field('ex_minimum_price_50', 'option');
                             } else {
                                 $minimum_price = get_field('ex_minimum_price_100', 'option');
@@ -821,21 +824,23 @@ class OAM_AFFILIATE_Helper
                     }
 
                     
+                    $commission_total =0 ;
                     if (empty($coupons)) {
-                            // $fundraising_cost += $total_qty * $selling_min_price;
-                            // $fundraising_profit += $total_qty * ($par_jar - $minimum_price);
-                            // $dist_fundraising_profit += $total_qty * $minimum_price;
-                        }else{
+                           $fundraising_profit += $total_qty * ($par_jar - $minimum_price);
+                           $dist_fundraising_profit += $total_qty * $minimum_price;
+                           $fundraising_cost += $total_qty * $selling_min_price;
+                           $commission_total = (($par_jar - $minimum_price) * self::get_quantity_by_order_id($order_id));
+                    }else{
                             $wholesale_profit += $total_qty * ($par_jar - $minimum_price);
                             $dist_wholesale_profit += $total_qty * $minimum_price;
                             $wholesale_cost += $total_qty * $selling_min_price ;
-                        }
+                    }
                     
-                    
+
                     $data = [
-                        'total_exclude_quantity' => $total_exclude_quantity,
                         'total_all_quantity' => $total_all_quantity,
                         'wholesale_qty' => $wholesale_qty,
+                        'fundraising_qty' => $fundraising_qty,
                         'order_id' => $order_id,
                         'custom_order_id' => OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID'),
                         'total_quantity' => $total_orders_quantity,
@@ -847,7 +852,7 @@ class OAM_AFFILIATE_Helper
                         'is_voucher_used' => $coupon_codes,
                         'order_quantity' => self::get_quantity_by_order_id($order_id),
                         'affiliate_account_status' => (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status'),
-                        'commission' => (($par_jar - $minimum_price) * self::get_quantity_by_order_id($order_id))
+                        'commission' => $commission_total
                     ];
 
                     $commission_array[$data['custom_order_id']] = $data;
@@ -855,58 +860,74 @@ class OAM_AFFILIATE_Helper
                 }
             }
         }
-         
+
+        $exclude_coupon = EXCLUDE_COUPON;
+
         $fundraising_orders = $total_orders = $wholesale_order = $unit_price = $unit_cost = 0;
         $product_price = 0;
         $fundraising_qty = 0;
+        $fundraising_cost_final = 0;
+        $fundraising_profit_final = 0;
+        $dist_fundraising_profit = 0;
         $total_order_commission = 0;
         foreach ($commission_array as $data) {
+            $total_orders++;
             if ((int)$data['affiliate_account_status'] === 1) {
                 // echo $data['commission']. "<br>";
                 $unit_price = $data['par_jar'];
                 $product_price = $data['product_price'];
                 
                 $wholesale_qty =  $data['wholesale_qty'];
-                $total_quantity =  $total_quantity + $data['order_quantity'];
+                $total_quantity = $data['total_all_quantity'];
                 $unit_cost = $data['minimum_price'];
-                $total_orders++;
-
-                if ($data['is_voucher_used'] != '' && !empty($data['is_voucher_used'])) {
-                    $wholesale_order++;
-                } else {
-                    $fundraising_profit += $data['order_quantity'] * ($unit_price - $unit_cost);
-                    $dist_fundraising_profit += $data['order_quantity'] * $unit_cost;
-                    $fundraising_cost += $data['order_quantity'] * $unit_price;
-                    $fundraising_qty = $fundraising_qty + $data['order_quantity'];
-                    $total_order_commission += $data['commission'];
+                
+                $coupon_array = !empty($data['is_voucher_used']) ? explode(",", $data['is_voucher_used']) : [];
+                if(count($coupon_array) > 0){
+                    $coupon_array = array_diff($coupon_array, $exclude_coupon);
+                    $coupon_array = array_values($coupon_array);
                 }
+
+                $total_order_commission += $data['commission'];
+                if(count($coupon_array) == 0){
+                    $fundraising_cost_final += $data['order_quantity'] * $unit_price;
+                    $fundraising_profit_final += $data['order_quantity'] * ($unit_price - $unit_cost);
+                    $dist_fundraising_profit += $data['order_quantity'] * $unit_cost;
+                    $fundraising_qty = $fundraising_qty + $data['order_quantity'];
+                }else{
+                    $wholesale_order++;
+                }
+
+            
             }
         }
 
-        $fundraising_orders = $total_orders - $wholesale_order;
-        $total_all_quantity = $wholesale_qty + $fundraising_qty;
+    
+        $fundraising_orders = count($commission_array) - $wholesale_order;
         
         return [
+            'total_quantity' => $total_quantity,
+            'fundraising_orders' => $fundraising_orders,
+            'wholesale_orders' => $wholesale_order,
+            'total_commission' => $total_order_commission,
             'wholesale_cost' => $dist_wholesale_profit,
-            'fundraising_cost' => $fundraising_cost,
-            'ort_cost' => $dist_wholesale_profit + $fundraising_cost,
+            'fundraising_cost' => $fundraising_cost_final,
+            'ort_cost' => $dist_wholesale_profit + $fundraising_cost_final,
+
             'wholesale_profit' => $wholesale_profit,
-            'fundraising_profit' => $fundraising_profit,
-            'ort_profit' => $fundraising_profit,
+            'fundraising_profit' => $fundraising_profit_final,
+            'ort_profit' => $fundraising_profit_final,
+
             'wholesale_dist' => $dist_wholesale_profit,
             'fundraising_dist' => $dist_fundraising_profit,
             'ort_dist' => $dist_fundraising_profit + $dist_wholesale_profit,
             'total_order' => count($commission_array),
             'selling_min_price' => $selling_min_price,
-            'total_quantity' => $total_quantity,
             'wholesale_qty' => $wholesale_qty,
             'product_price' => $product_price,
             'fundraising_qty' => $fundraising_qty,
-            'fundraising_orders' => $fundraising_orders,
             'total_all_quantity' => $total_quantity,
             'unit_cost' => $unit_cost,
             'unit_profit' => ($unit_cost != 0 ) ? $product_price - $unit_cost : 0,
-            'total_commission' => $total_order_commission
         ];
     }
 
