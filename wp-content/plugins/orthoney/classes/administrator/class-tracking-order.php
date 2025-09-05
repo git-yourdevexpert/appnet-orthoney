@@ -328,21 +328,22 @@ class OAM_TRACKING_ORDER_CRON
             }
         }
 
-        // Prepare temp file for output
-        $temp_path   = $path . '.tmp';
-        $temp_handle = fopen($temp_path, 'a');
-
-        // --- If first run, write header + extra column ---
+        // Prepare temp file for output (core fix: only append new data – never copy old lines)
+        $temp_path = $path . '.tmp';
         if ($offset === 0) {
+            $temp_handle = fopen($temp_path, 'w'); // first chunk: overwrite/create new
             $header[] = 'ProcessStatus';
             fputcsv($temp_handle, $header);
+        } else {
+            $temp_handle = fopen($temp_path, 'a'); // subsequent chunks: append only new rows
+            // DO NOT write header again, DO NOT write skipped lines again
         }
 
-        // --- Fast-forward to offset ---
+        // Fast-forward input file only (don't duplicate lines in temp file)
         $skipped_lines = 0;
         while ($skipped_lines < $offset && ($row = fgetcsv($handle)) !== false) {
             $skipped_lines++;
-            fputcsv($temp_handle, $row);
+            // Do NOT write skipped rows in the temp file again! Only process and append new rows.
         }
 
         // --- Process up to $limit rows ---
@@ -409,7 +410,7 @@ class OAM_TRACKING_ORDER_CRON
                 $row_status = 'Skipped';
             }
 
-            // Append status column
+            // Append status column and write only processed rows
             $row[] = $row_status;
             fputcsv($temp_handle, $row);
         }
@@ -421,12 +422,12 @@ class OAM_TRACKING_ORDER_CRON
 
         if ($has_more) {
             $next_args = [
-                'id'        => $file_id, 
-                'offset'    => $offset + $processed,
-                'failed'    => $failed,
-                'success'   => $success,
-                'not_exists'=> $not_exists,
-                'skipped'   => $skipped
+                'id'         => $file_id, 
+                'offset'     => $offset + $processed,
+                'failed'     => $failed,
+                'success'    => $success,
+                'not_exists' => $not_exists,
+                'skipped'    => $skipped
             ];
 
             $existing = as_next_scheduled_action('tracking_order_insert_mapping', [$next_args], 'tracking-order-group');
