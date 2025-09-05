@@ -797,9 +797,9 @@ class OAM_AFFILIATE_Helper
 
             foreach ($commission_year_results as $commission) {
                 $order_id = $commission->wc_order_id;
-                $total_qty = (int) $commission->total_quantity;
                 $affiliate_status = (int) OAM_COMMON_Custom::get_order_meta($order_id, 'affiliate_account_status');
                 if ((int)$affiliate_status === 1) {
+                    $total_qty = (int) $commission->total_quantity;
                    
                     $coupon_codes = OAM_AFFILIATE_Helper::get_applied_coupon_codes_from_order($order_id);
                     $coupons = array_filter(array_diff(explode(',', $coupon_codes), $exclude_coupon));
