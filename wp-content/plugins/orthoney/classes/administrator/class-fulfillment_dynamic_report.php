@@ -14,7 +14,8 @@ class OAM_FULFILLMENT_DYNAMIC_REPORT
         add_action('orthoney_fulfillment_dynamic_report_event', array($this, 'orthoney_fulfillment_dynamic_report_event_callback'), 10, 2);
     }
 
-    public function orthoney_set_fulfillment_dynamic_report_callback() {
+     public function orthoney_set_fulfillment_dynamic_report_callback() {
+
         $season_start_date = get_field('season_start_date', 'option');
         $season_start_ts   = strtotime($season_start_date);
 
@@ -27,9 +28,10 @@ class OAM_FULFILLMENT_DYNAMIC_REPORT
 
         // 🟡 If no batches in ACF
         if (!have_rows('fulfillment_batchs', 'option')) {
+        
             $start_ts = strtotime('+1 day', current_time('timestamp'));
             $today_start_date = date('m/d/Y 00:00:00', $start_ts);
-            $today_end_date   = date('m/d/Y 24:00:00', $start_ts);
+            $today_end_date   = date('m/d/Y 24:59:59', $start_ts);
 
             $args = [
                 'start' => $today_start_date,
@@ -37,9 +39,10 @@ class OAM_FULFILLMENT_DYNAMIC_REPORT
                 'offset' => 0,
             ];
 
+            $end_ts = strtotime($today_end_date . ' +1 hour');
             if (!as_next_scheduled_action('orthoney_fulfillment_dynamic_report_event', [$args], 'batchs_fulfillment')) {
                 as_schedule_recurring_action(
-                    $start_ts,
+                    $end_ts,
                     DAY_IN_SECONDS,
                     'orthoney_fulfillment_dynamic_report_event',
                     [$args],
@@ -78,18 +81,20 @@ class OAM_FULFILLMENT_DYNAMIC_REPORT
             if( $previous_date_ts == $season_start_ts){
                 $start_date = date('m/d/Y 00:00:00', $previous_date_ts);
             }
-            $end_date   = date('m/d/Y 24:00:00', $batch_date_ts);
+
+            $end_date   = date('m/d/Y 24:59:59', $batch_date_ts);
 
             $args = [
                 'start' => $start_date,
                 'end'   => $end_date,
                 'offset' => 0,
             ];
+            $end_ts = strtotime($end_date . ' +1 hour');
 
             if ($schedule_time > time()) {
                 if (!as_has_scheduled_action('orthoney_fulfillment_dynamic_report_event', [$args], 'batchs_fulfillment')) {
                     as_schedule_single_action(
-                        $schedule_time,
+                        $end_ts,
                         'orthoney_fulfillment_dynamic_report_event',
                         [$args],
                         'batchs_fulfillment'
@@ -104,30 +109,43 @@ class OAM_FULFILLMENT_DYNAMIC_REPORT
             $last_batch_date_ts = max($last_batch_date_ts, $batch_date_ts);
         }
 
-        // ✅ Fallback after last batch
         $now_ts = current_time('timestamp');
-        if ($last_batch_date_ts > 0 && $last_batch_date_ts < $now_ts) {
-            $daily_start_ts = strtotime('+1 day', $last_batch_date_ts);
-            $today_start_date = date('m/d/Y 00:00:00', $daily_start_ts);
-            $today_end_date   = date('m/d/Y 24:00:00', $daily_start_ts);
 
-            $args = [
-                'start' => $today_start_date,
-                'end'   => $today_end_date,
-                'offset' => 0,
-            ];
+        if ($last_batch_date_ts > 0 && $last_batch_date_ts <= $now_ts) {
+            $daily_start_ts = $last_batch_date_ts;
 
-            if (!as_next_scheduled_action('orthoney_fulfillment_dynamic_report_event', [$args], 'batchs_fulfillment')) {
-                as_schedule_recurring_action(
-                    $daily_start_ts,
-                    DAY_IN_SECONDS,
-                    'orthoney_fulfillment_dynamic_report_event',
-                    [$args],
-                    'batchs_fulfillment'
-                );
-                file_put_contents($log_file, "[" . current_time('Y-m-d H:i:s') . "] Scheduled recurring fallback after last batch: " . json_encode($args) . "\n", FILE_APPEND);
+            while ($daily_start_ts <= $now_ts) {
+                $today_start_date = date('m/d/Y 00:00:00', $daily_start_ts);
+                $today_end_date   = date('m/d/Y 23:59:59', $daily_start_ts);
+
+                // Schedule at 1 minute after day's end
+                $end_ts = strtotime(date('Y-m-d 23:59:59', $daily_start_ts)) + 60;
+
+                $args = [
+                    'start'  => $today_start_date,
+                    'end'    => $today_end_date,
+                    'offset' => 0,
+                ];
+
+                if (!as_next_scheduled_action('orthoney_fulfillment_dynamic_report_event', [$args], 'batchs_fulfillment')) {
+                    as_schedule_single_action( // use single, not recurring, for backfill
+                        $end_ts,
+                        'orthoney_fulfillment_dynamic_report_event',
+                        [$args],
+                        'batchs_fulfillment'
+                    );
+                    file_put_contents(
+                        $log_file,
+                        "[" . current_time('Y-m-d H:i:s') . "] Scheduled for: " . json_encode($args) . " at " . gmdate('Y-m-d H:i:s', $end_ts) . " UTC\n",
+                        FILE_APPEND
+                    );
+                }
+
+                $daily_start_ts = strtotime('+1 day', $daily_start_ts);
             }
         }
+
+
 
         // ✅ Unschedule removed batches
         $previous_batches = get_option('orthoney_fulfillment_scheduled_batches', []);
