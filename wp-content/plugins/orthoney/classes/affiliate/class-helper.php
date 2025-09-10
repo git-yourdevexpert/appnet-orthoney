@@ -753,7 +753,7 @@ class OAM_AFFILIATE_Helper
                 ON line_subtotal_meta.order_item_id = oi.order_item_id AND line_subtotal_meta.meta_key = '_line_subtotal'
             WHERE c.affiliate_code = %s
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
-            AND o.status IN ('wc-processing', 'wc-completed')
+            AND o.status IN ('wc-processing', 'wc-completed', 'wc-partial-shipped', 'wc-shipped')
             GROUP BY c.wc_order_id, oi.order_item_id
         ", $affiliate_token));
 
@@ -765,7 +765,7 @@ class OAM_AFFILIATE_Helper
             INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
             WHERE c.affiliate_code = %s 
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
-            AND o.status IN ('wc-processing', 'wc-completed') GROUP BY c.wc_order_id", $affiliate_token));
+            AND o.status IN ('wc-processing', 'wc-completed', 'wc-partial-shipped', 'wc-shipped') GROUP BY c.wc_order_id", $affiliate_token));
 
         $total_exclude_quantity = (int) $wpdb->get_var($wpdb->prepare("SELECT 
             SUM(CAST(om.meta_value AS UNSIGNED))
@@ -775,7 +775,7 @@ class OAM_AFFILIATE_Helper
             INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id
             INNER JOIN {$wpdb->prefix}wc_orders_meta wm ON wm.order_id = o.id
             WHERE c.affiliate_code = %s AND om.meta_key = '_qty' AND wm.meta_key = 'affiliate_account_status' AND wm.meta_value = '1'
-            AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) AND o.status IN ('wc-processing', 'wc-completed') GROUP BY c.wc_order_id", $affiliate_token));
+            AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) AND o.status IN ('wc-processing', 'wc-completed', 'wc-partial-shipped', 'wc-shipped') GROUP BY c.wc_order_id", $affiliate_token));
 
         $exclude_coupon = EXCLUDE_COUPON;
         $total_all_quantity = $wholesale_qty = $fundraising_qty = 0;
@@ -1009,7 +1009,7 @@ class OAM_AFFILIATE_Helper
             LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta line_subtotal_meta ON line_subtotal_meta.order_item_id = oi.order_item_id AND line_subtotal_meta.meta_key = '_line_subtotal'
             WHERE c.affiliate_code = %s
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
-            AND o.status IN ('wc-processing', 'wc-completed')
+            AND o.status IN ('wc-processing', 'wc-completed', 'wc-partial-shipped', 'wc-shipped')
             GROUP BY c.wc_order_id
             ",
             $affiliate_token
@@ -1025,7 +1025,7 @@ class OAM_AFFILIATE_Helper
             INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
             WHERE c.affiliate_code = %s
             AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
-            AND o.status IN ('wc-processing', 'wc-completed') GROUP BY c.wc_order_id",
+            AND o.status IN ('wc-processing', 'wc-completed', 'wc-partial-shipped', 'wc-shipped') GROUP BY c.wc_order_id",
             $affiliate_token
         ));
 
@@ -1042,7 +1042,7 @@ class OAM_AFFILIATE_Helper
                 AND wm.meta_key = 'affiliate_account_status'
                 AND wm.meta_value = '1'
                 AND YEAR(o.date_created_gmt) = YEAR(CURDATE())
-                AND o.status IN ('wc-processing', 'wc-completed')
+                AND o.status IN ('wc-processing', 'wc-completed', 'wc-partial-shipped', 'wc-shipped')
                 GROUP BY c.wc_order_id",
            $affiliate_token
         ));
@@ -1194,7 +1194,7 @@ class OAM_AFFILIATE_Helper
                 ) q ON q.order_id = c.wc_order_id
                 WHERE c.affiliate_code = %s
                 AND o.parent_order_id = 0 
-                AND o.status IN ('wc-processing', 'wc-completed')
+                AND o.status IN ('wc-processing', 'wc-completed', 'wc-partial-shipped', 'wc-shipped')
                 GROUP BY c.affiliate_user_id",
                 $affiliate_token
             ));
@@ -1209,7 +1209,7 @@ class OAM_AFFILIATE_Helper
                 INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON o.id = oi.order_id AND oi.order_item_type = 'line_item'
                 INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta om ON oi.order_item_id = om.order_item_id AND om.meta_key = '_qty'
                 WHERE c.affiliate_code = %s
-                AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) AND o.status IN ('wc-processing', 'wc-completed')  GROUP BY c.wc_order_id",
+                AND YEAR(o.date_created_gmt) = YEAR(CURDATE()) AND o.status IN ('wc-processing', 'wc-completed', 'wc-partial-shipped', 'wc-shipped')  GROUP BY c.wc_order_id",
                 $affiliate_token
             ));
 
