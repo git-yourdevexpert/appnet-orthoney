@@ -79,40 +79,42 @@ class OAM_ADMINISTRATOR_AJAX {
         global $wpdb;
 
         $exclude_coupon = EXCLUDE_COUPON;
-        $sheet_type = $_POST['sheet_type'] ?? 0;
+        $sheet_type     = $_POST['sheet_type'] ?? 0;
 
-        $date_range = sanitize_text_field($_POST['date_range'] ?? '');
-        $sendmail_raw = $_POST['sendmail'] ?? '';
-        $session_key = $_POST['session_key'] ?? '';
-        $email_list = array_filter(array_map('sanitize_email', explode(',', $sendmail_raw)));
-        $offset = absint($_POST['offset'] ?? 0);
-        $limit = 100;
+        $date_range     = sanitize_text_field($_POST['date_range'] ?? '');
+        $sendmail_raw   = $_POST['sendmail'] ?? '';
+        $session_key    = $_POST['session_key'] ?? '';
+        $email_list     = array_filter(array_map('sanitize_email', explode(',', $sendmail_raw)));
+        $offset         = absint($_POST['offset'] ?? 0);
+        $limit          = 100;
 
         if (empty($date_range)) {
             wp_send_json_error(['message' => 'Date range is required.']);
         }
 
+        if (strpos($date_range, ' - ') === false) {
+            wp_send_json_error(['message' => 'Invalid date range format.']);
+        }
+
         list($start, $end) = explode(' - ', $date_range);
 
         $ny_timezone = new DateTimeZone('America/New_York');
-        $start_date = DateTime::createFromFormat('m/d/Y', trim($start));
-        $end_date   = DateTime::createFromFormat('m/d/Y', trim($end));
+
+        // Parse start & end in NY timezone
+        $start_date = DateTime::createFromFormat('m/d/Y H:i:s', trim($start) . ' 00:00:00', $ny_timezone);
+        $end_date   = DateTime::createFromFormat('m/d/Y H:i:s', trim($end)   . ' 23:59:59', $ny_timezone);
 
         if (!$start_date || !$end_date) {
-            throw new Exception('Invalid date format.');
+            wp_send_json_error(['message' => 'Invalid date format.']);
         }
 
-        $start_date->setTime(0, 0, 0);
-        $end_date->setTime(23, 59, 59);
+        // Convert to UTC for DB queries
+        $start_date->setTimezone(new DateTimeZone('UTC'));
+        $end_date->setTimezone(new DateTimeZone('UTC'));
 
-        $start_date_utc = clone $start_date;
-        $end_date_utc = clone $end_date;
-        $start_date_utc->setTimezone(new DateTimeZone('UTC'));
-        $end_date_utc->setTimezone(new DateTimeZone('UTC'));
-
-        $start_str = $start_date_utc->format('Y-m-d 00:00:00');
-        $end_str   = $end_date_utc->format('Y-m-d 23:59:59');
-
+        // Final MySQL-ready strings
+        $start_str = $start_date->format('Y-m-d H:i:s');
+        $end_str   = $end_date->format('Y-m-d H:i:s');
         // Create a consistent session key for this report generation
         
         // Initialize file paths and URLs
