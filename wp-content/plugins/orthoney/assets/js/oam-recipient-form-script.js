@@ -2080,9 +2080,10 @@ jQuery(document).ready(function ($) {
     paging: true,
     info: false,
     fixedHeader: true,
+    scrollX: true,   
     scrollCollapse: true,
     searching: true,
-    responsive: true,
+    responsive: false,
     deferRender: false,
     lengthChange: false,
     language: {
