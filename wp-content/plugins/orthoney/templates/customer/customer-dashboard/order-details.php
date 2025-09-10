@@ -388,7 +388,7 @@ if(isset($_GET['return_url']) && $_GET['return_url']=='organization'){
                                 <td><?php echo esc_html(html_entity_decode(stripslashes($sub_order->company_name))); ?></td>
                                 <td><?php echo esc_html(html_entity_decode(stripslashes($address))); ?></td>
                                 <td><?php echo esc_html( ($sub_order->quantity > 6 ? $sub_order->quantity : 1)); ?></td>
-                                <td class="tracking_url_html"><?php echo html_entity_decode( $tracking_url_html ) ?></td>
+                                <td class="tracking_url_html" style="white-space: nowrap;"><?php echo html_entity_decode( $tracking_url_html ) ?></td>
                                 <td><?php echo html_entity_decode( $order_company ) ?></td>
                                 <td><?php echo html_entity_decode( $order_status ) ?></td>
                             </tr>
