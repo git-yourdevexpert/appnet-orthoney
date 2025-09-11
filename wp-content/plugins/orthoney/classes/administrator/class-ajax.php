@@ -80,7 +80,7 @@ class OAM_ADMINISTRATOR_AJAX {
 
         $exclude_coupon = EXCLUDE_COUPON;
         $sheet_type     = $_POST['sheet_type'] ?? 0;
-
+        $season_start_date = get_field('season_start_date', 'option');
         $date_range     = sanitize_text_field($_POST['date_range'] ?? '');
         $sendmail_raw   = $_POST['sendmail'] ?? '';
         $session_key    = $_POST['session_key'] ?? '';
@@ -113,8 +113,10 @@ class OAM_ADMINISTRATOR_AJAX {
         $end_date->setTimezone(new DateTimeZone('UTC'));
 
         // Final MySQL-ready strings
+        
         $start_str = $start_date->format('Y-m-d H:i:s');
         $end_str   = $end_date->format('Y-m-d H:i:s');
+
         // Create a consistent session key for this report generation
         
         // Initialize file paths and URLs
@@ -261,7 +263,8 @@ class OAM_ADMINISTRATOR_AJAX {
             WHERE status IN ('wc-completed', 'wc-processing')
             AND date_created_gmt BETWEEN %s AND %s AND type != 'shop_order_refund'
             ORDER BY date_created_gmt ASC
-        ", $start_str, $end_str));
+        ", $season_start_date, $end_str));
+
 
         if (empty($order_ids)) {
             wp_send_json_error(['message' => 'No orders found.']);
