@@ -17,9 +17,74 @@ class OAM_AFFILIATE_Custom {
        
         add_action('user_register', [$this, 'schedule_user_meta'], 10, 1);
         add_action('set_default_user_meta_after_register', [$this, 'handle_user_meta_and_email']);
+
+
+        // add_action('init', array($this, 'orthoney_org_deactivation_after_season_end_callback'));
+        add_action('orthoney_org_deactivation_after_season_end_cron', array($this, 'orthoney_org_deactivation_after_season_end_cron_callback'));
     }
     
     public static function init() {}
+
+     /**
+     * Deactivate affiliate accounts after season end
+     */
+    public function orthoney_org_deactivation_after_season_end_cron_callback() {
+        global $wpdb;
+        $yith_wcaf_affiliates_table = OAM_helper::$yith_wcaf_affiliates_table;
+        $usermeta_table = "{$wpdb->prefix}usermeta";
+
+        // Correct query execution
+        $OrgUserIds = $wpdb->get_results($wpdb->prepare("
+            SELECT user_id FROM {$yith_wcaf_affiliates_table}
+        "));
+
+        if (!$OrgUserIds) {
+            return;
+        }
+        foreach ($OrgUserIds as $user) {
+
+            $wpdb->update(
+                $usermeta_table, 
+                [
+                    'meta_key' => 'associated_affiliate_id',
+                    'meta_value' => $user->user_id
+                ], 
+                ['meta_value' => 0], 
+                ['%s', '%d'], 
+                ['%d']
+            );
+
+            update_user_meta( $user->user_id, 'activate_affiliate_account', 0 );
+        }
+
+    }
+
+    public function orthoney_org_deactivation_after_season_end_callback() {
+        $today             = current_time('m/d/Y H:i:s');
+        $season_start_date = get_field('season_start_date', 'option');
+        $season_end_date   = get_field('season_end_date', 'option');
+
+        $current_timestamp      = strtotime($today);
+        $season_start_timestamp = strtotime($season_start_date);
+        $season_end_timestamp   = strtotime($season_end_date);
+
+        // If today is within season range
+        if ($current_timestamp <= $season_end_timestamp) {
+            // Schedule event to run 1 hour after season end
+            $schedule_time = $season_end_timestamp + HOUR_IN_SECONDS;
+
+            // Avoid scheduling duplicates
+            if (!as_next_scheduled_action('orthoney_org_deactivation_after_season_end_cron')) {
+                as_schedule_single_action(
+                    $schedule_time,
+                    'orthoney_org_deactivation_after_season_end_cron',
+                    [],
+                    ''
+                );
+            }
+        }
+    }
+
    
     public function affiliate_import_handler() {
          if ( isset($_GET['sales_representative_data_import']) && $_GET['sales_representative_data_import'] == 'import' ) {
