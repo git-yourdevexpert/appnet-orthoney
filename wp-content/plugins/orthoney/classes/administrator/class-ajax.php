@@ -950,12 +950,33 @@ class OAM_ADMINISTRATOR_AJAX {
      * administrator callback
      */
     public function orthoney_orthoney_activate_affiliate_account_ajax_handler() {
-        global $wpdb;
+       global $wpdb;
 
         $user_id = intval($_POST['user_id'] ?? 0);
 
         if (!$user_id) {
             wp_send_json_error(['message' => 'Invalid user ID.']);
+        }
+
+        $today = current_time('m/d/Y H:i:s');
+        $season_start_date = get_field('season_start_date', 'option');
+        $season_end_date = get_field('season_end_date', 'option');
+
+        $current_timestamp      = strtotime($today);
+        $season_start_timestamp = strtotime($season_start_date);
+        $season_end_timestamp   = strtotime($season_end_date);
+
+
+         $is_within_start_range = ($current_timestamp >= $season_start_timestamp);
+         if($is_within_start_range == false){
+            wp_send_json_error(['message' => 'The organization account has not yet been activated, as the season has not started. For further assistance, please contact support.']);
+            
+        }
+
+        $is_within_range = ( $current_timestamp <= $season_end_timestamp);
+
+        if($is_within_range == false){
+            wp_send_json_error(['message' => 'Since the season has not commenced, the organization account remains inactive. Please reach out to support for additional assistance.']);
         }
 
         $yith_wcaf_affiliates_table = $wpdb->prefix . 'yith_wcaf_affiliates';

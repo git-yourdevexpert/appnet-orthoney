@@ -4718,9 +4718,7 @@ jQuery(document).ready(function ($) {
       type: "POST",
       data: requestData,
       success: function (response) {
-        setTimeout(() => {
-          Swal.close();
-        }, 500);
+       
 
         if (response.success) {
           Swal.fire({
@@ -4735,27 +4733,33 @@ jQuery(document).ready(function ($) {
           setTimeout(() => {
             window.location.reload();
           }, 750);
+           setTimeout(() => {
+            Swal.close();
+          }, 500);
         } else {
           Swal.fire({
             title: "Activation Failed",
             text:
               response?.data?.message ||
               "Something went wrong during activation.",
-            icon: "error"
+            icon: "error",
+            showConfirmButton: false,
+            timerProgressBar: false
           });
         }
       },
       error: function () {
-        Swal.close();
+       
         Swal.fire({
           title: "Activation Failed",
-          text: "An AJAX error occurred while activating the account.",
+          text: response?.data?.message || "An AJAX error occurred while activating the account.",
           icon: "error"
         });
       }
     });
   });
 });
+
 
 document.addEventListener("DOMContentLoaded", function () {
   setTimeout(() => {
