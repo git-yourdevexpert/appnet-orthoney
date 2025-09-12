@@ -258,12 +258,21 @@ class OAM_ADMINISTRATOR_AJAX {
             $full_export_filename = $file_data['full_export_filename'];
         }
 
-        $order_ids = $wpdb->get_col($wpdb->prepare("
-            SELECT ID FROM {$wpdb->prefix}wc_orders
-            WHERE status IN ('wc-completed', 'wc-processing')
-            AND date_created_gmt BETWEEN %s AND %s AND type != 'shop_order_refund'
-            ORDER BY date_created_gmt ASC
-        ", $season_start_date, $end_str));
+        if($sheet_type == 0){
+            $order_ids = $wpdb->get_col($wpdb->prepare("
+                SELECT ID FROM {$wpdb->prefix}wc_orders
+                WHERE status IN ('wc-completed', 'wc-processing')
+                AND date_created_gmt BETWEEN %s AND %s AND type != 'shop_order_refund'
+                ORDER BY date_created_gmt ASC
+            ", $start_str, $end_str));
+        }else{
+            $order_ids = $wpdb->get_col($wpdb->prepare("
+                SELECT ID FROM {$wpdb->prefix}wc_orders
+                WHERE status IN ('wc-processing', 'wc-completed', 'wc-partial-shipped', 'wc-shipped')
+                AND date_created_gmt BETWEEN %s AND %s AND type != 'shop_order_refund'
+                ORDER BY date_created_gmt ASC
+            ", $start_str, $end_str));
+        }
 
 
         if (empty($order_ids)) {
