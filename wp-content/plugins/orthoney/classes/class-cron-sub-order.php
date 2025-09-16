@@ -311,8 +311,8 @@ class OAM_WC_CRON_Suborder
             if($wc_order_id_exist->order_id == 0){
                 $wpdb->update(
                     $wc_order_relation_table,
-                    [ 'order_id' => $sanitize_text_field($custom_order_id) ],
-                    [ 'wc_order_id' => $wc_order_id ],
+                    [ 'order_id' => sanitize_text_field($custom_order_id) ],
+                    [ 'wc_order_id' => (int) $order_id ],
                     [ '%d' ],
                     [ '%d' ]
                 );
