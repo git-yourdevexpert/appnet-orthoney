@@ -252,7 +252,6 @@ class OAM_WC_CRON_Suborder
         $process_id     = 0;
         $total_quantity = 0;
 
-       
         foreach ($order_items as $item) {
             $quantity = (int) $item->get_quantity();
             $process_id = $item->get_meta('process_id', true) ?: $process_id;
@@ -266,14 +265,13 @@ class OAM_WC_CRON_Suborder
         
         $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_OrderID');
         $wc_order_id_exist = $wpdb->get_row($wpdb->prepare(
-            "SELECT order_id FROM {$wc_order_relation_table} WHERE wc_order_id = %d",
+            "SELECT id, order_id FROM {$wc_order_relation_table} WHERE wc_order_id = %d",
             $order_id
         ));
-
+      
         if (!empty($wc_order_id_exist->order_id)){
             $custom_order_id = $wc_order_id_exist->order_id;
         }
-
 
         // Update order_process_table
         $wpdb->update(
@@ -281,21 +279,15 @@ class OAM_WC_CRON_Suborder
             ['order_type' => $order_type, 'order_id' => $order_id],
             ['id' => $process_id]
         );
-
-        $wc_order_id_exist = $wpdb->get_row($wpdb->prepare(
-            "SELECT id, order_id FROM {$wc_order_relation_table} WHERE wc_order_id = %d",
-            $order_id
-        ));
-      
+        OAM_COMMON_Custom::sub_order_error_log('Update Order in order_process table: ' . $order_id, $order_id);
+       
         if (empty($wc_order_id_exist->id) OR $wc_order_id_exist->order_id == 0){
-
-          
+  
             // Fetch process data
             $process_data = $wpdb->get_row($wpdb->prepare(
                 "SELECT user_id, name, data FROM {$order_process_table} WHERE id = %d",
                 $process_id
             ));
-
             
             if (!$process_data) return;
 
@@ -357,8 +349,6 @@ class OAM_WC_CRON_Suborder
             ));
             
 
-            
-
             $recipients = OAM_Helper::get_recipient_by_pid($process_id);
             if (empty($recipients)) return;
 
@@ -367,7 +357,7 @@ class OAM_WC_CRON_Suborder
 
             // Update order_id in recipients
             $wpdb->query($wpdb->prepare(
-                "UPDATE {$order_process_recipient_table} SET order_id = %s WHERE id IN ($placeholders)",
+                "UPDATE {$order_process_recipient_table} SET order_id = %d WHERE id IN ($placeholders)",
                 array_merge([$custom_order_id], $recipient_ids)
             ));
 
@@ -382,7 +372,7 @@ class OAM_WC_CRON_Suborder
 
             foreach ($recipient_rows as $recipient) {
                 $exists = $wpdb->get_var($wpdb->prepare(
-                    "SELECT id FROM {$recipient_order_table} WHERE recipient_id = %d AND order_id = %s",
+                    "SELECT id FROM {$recipient_order_table} WHERE recipient_id = %d AND order_id = %d",
                     $recipient->id,
                     $custom_order_id
                 ));
