@@ -252,10 +252,11 @@ class OAM_WC_CRON_Suborder
         $process_id     = 0;
         $total_quantity = 0;
 
+       
         foreach ($order_items as $item) {
             $quantity = (int) $item->get_quantity();
             $process_id = $item->get_meta('process_id', true) ?: $process_id;
-            $single_order |= $item->get_meta('single_order', true) == 1;
+            $single_order = $item->get_meta('single_order', true) == 1;
             $total_quantity += $quantity;
         }
 
@@ -282,18 +283,20 @@ class OAM_WC_CRON_Suborder
         );
 
         $wc_order_id_exist = $wpdb->get_row($wpdb->prepare(
-            "SELECT id FROM {$wc_order_relation_table} WHERE wc_order_id = %d",
+            "SELECT id, order_id FROM {$wc_order_relation_table} WHERE wc_order_id = %d",
             $order_id
         ));
+      
+        if (empty($wc_order_id_exist->id) OR $wc_order_id_exist->order_id == 0){
 
-        if (empty($wc_order_id_exist->id)){
-
+          
             // Fetch process data
             $process_data = $wpdb->get_row($wpdb->prepare(
                 "SELECT user_id, name, data FROM {$order_process_table} WHERE id = %d",
                 $process_id
             ));
 
+            
             if (!$process_data) return;
 
             $decoded_data     = json_decode($process_data->data ?? '', true);
@@ -339,8 +342,9 @@ class OAM_WC_CRON_Suborder
                 "SELECT COUNT(id) FROM {$group_recipient_table} WHERE group_id = %d",
                 $group_id
             ));
+            
 
-            if ($existing_count === $total_quantity) return;
+            
 
             $recipients = OAM_Helper::get_recipient_by_pid($process_id);
             if (empty($recipients)) return;
@@ -362,6 +366,7 @@ class OAM_WC_CRON_Suborder
             if (empty($recipient_rows)) return;
 
             $count = 0;
+
             foreach ($recipient_rows as $recipient) {
                 $exists = $wpdb->get_var($wpdb->prepare(
                     "SELECT id FROM {$recipient_order_table} WHERE recipient_id = %d AND order_id = %s",
@@ -420,7 +425,10 @@ class OAM_WC_CRON_Suborder
                     'address_verified'  => sanitize_text_field($recipient->address_verified),
                     'greeting'          => sanitize_text_field($recipient->greeting),
                 ];
-                $wpdb->insert($group_recipient_table, $group_recipient_data);
+
+                if ($existing_count !== $total_quantity){
+                    $wpdb->insert($group_recipient_table, $group_recipient_data);
+                }
 
                 // Handle Jar Order Creation
                 $jar_order_type = $recipient->quantity > 6 ? 'internal' : 'external';
@@ -461,7 +469,9 @@ class OAM_WC_CRON_Suborder
             $main_order->update_meta_data('_oam_suborders_ready', 1);
             $main_order->save();
 
-            WC()->mailer()->get_emails()['WC_Email_Customer_Processing_Order']->trigger($order_id);
+            if(empty($wc_order_id_exist->id)){
+                WC()->mailer()->get_emails()['WC_Email_Customer_Processing_Order']->trigger($order_id);
+            }
 
             OAM_COMMON_Custom::sub_order_error_log('End create sub order: ' . $order_id, $order_id);
         }
