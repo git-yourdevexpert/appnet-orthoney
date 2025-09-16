@@ -133,6 +133,164 @@ class OAM_ADMINISTRATOR_HELPER {
         </div>
         <?php
     }
+
+      public static function update_wc_order_status_send_mail_callback($update_status_args = 0, $offset = 0) {
+        global $wpdb;
+
+        $order_table = $wpdb->prefix . 'wc_orders';
+        $meta_table = "{$wpdb->prefix}wc_orders_meta";
+        $chunk_size  = 50;
+
+        // Main status aggregation query (unchanged)
+        $sql = $wpdb->prepare("
+            SELECT 
+                order_id,
+                CONCAT(
+                    '{',
+                    GROUP_CONCAT(CONCAT('\"', Status, '\":', cnt) SEPARATOR ','),
+                    '}'
+                ) AS status_counts
+            FROM (
+                SELECT 
+                    order_id,
+                    Status,
+                    COUNT(*) AS cnt
+                FROM {$wpdb->prefix}oh_wc_jar_order
+                WHERE Status <> ''
+                AND YEAR(created_date) = YEAR(CURDATE())
+                GROUP BY order_id, Status
+            ) AS t
+            GROUP BY order_id
+            LIMIT %d OFFSET %d
+        ", $chunk_size, $offset);
+
+        $results = $wpdb->get_results($sql);
+
+        if (empty($results)) {
+            return;
+        }
+
+        // Step 1: Build array of required order_ids
+        $order_ids = array_map(function($row) { return $row->order_id; }, $results);
+
+        // Step 2: Bulk fetch WooCommerce order mapping
+        $placeholders = implode(',', array_fill(0, count($order_ids), '%s'));
+        $meta_query = $wpdb->prepare("
+            SELECT meta_value as oh_order_id, order_id as wc_order_id
+            FROM {$wpdb->prefix}wc_orders_meta
+            WHERE meta_key = '_orthoney_OrderID'
+            AND meta_value IN ($placeholders)
+        ", ...$order_ids);
+
+        $meta_map = [];
+        foreach ($wpdb->get_results($meta_query) as $meta) {
+            $meta_map[$meta->oh_order_id] = $meta->wc_order_id;
+        }
+        
+        $mailer = WC()->mailer();
+        
+        foreach ($results as $row) {
+            $wc_order_id = isset($meta_map[$row->order_id]) ? $meta_map[$row->order_id] : null;
+            if (empty($wc_order_id)) {
+                continue;
+            }
+
+            $order_quantity = OAM_AFFILIATE_Helper::get_quantity_by_order_id($wc_order_id);
+            $status_array = json_decode($row->status_counts, true);
+
+            if (!is_array($status_array) || !isset($status_array['Shipped'])) {
+                continue;
+            }
+
+            $shipped_count = (int) $status_array['Shipped'];
+            $update_status = ($shipped_count >= $order_quantity) ? 'wc-shipped' : 'wc-partial-shipped';
+
+            if($update_status_args == 1){
+                $wpdb->update(
+                    $order_table,
+                    [ 'status' => $update_status ],
+                    [ 'id' => $wc_order_id ],
+                    [ '%s' ],
+                    [ '%d' ]
+                );
+            }
+            
+            $send_mail_customer_status = OAM_COMMON_Custom::get_order_meta($wc_order_id, 'send_mail_customer')?: 0;
+            if ( $send_mail_customer_status != 1 ) {
+                $emails = $mailer->get_emails();
+                $email_sent = false;
+
+                // Trigger email if status changes to shipped
+                if ( $update_status === 'wc-shipped' && !empty( $emails['WC_Email_Shipped'] ) ) {
+                    $email = $emails['WC_Email_Shipped'];
+                    if ( $email->is_enabled() ) {
+                        $email->trigger( $wc_order_id );
+                        $email_sent = true;
+                    }
+                }
+
+                // Trigger email if status changes to partial-shipped
+                if ( $update_status === 'wc-partial-shipped' && !empty( $emails['WC_Email_Partial_Shipped'] ) ) {
+                    $email = $emails['WC_Email_Partial_Shipped'];
+                    if ( $email->is_enabled() ) {
+                        $email->trigger( $wc_order_id );
+                        $email_sent = true;
+                    }
+                }
+
+                 
+
+                // ✅ Mark email as sent
+                if ( $email_sent ) {
+                    $meta_key = 'send_mail_customer';
+                    $meta_value = 1;
+                    $order_id = $wc_order_id;
+
+                    // Check if meta exists
+                    $existing = $wpdb->get_var( $wpdb->prepare(
+                        "SELECT meta_id FROM {$meta_table} WHERE order_id = %d AND meta_key = %s",
+                        $order_id,
+                        $meta_key
+                    ) );
+
+                    if ( $existing ) {
+                        // Update existing meta
+                        $wpdb->update(
+                           $meta_table,
+                            [ 'meta_value' => $meta_value ],
+                            [ 'meta_id' => $existing ],
+                            [ '%d' ],
+                            [ '%d' ]
+                        );
+                    }else{
+                         $wpdb->insert(
+                            $meta_table,
+                            [
+                                'order_id'    => $order_id,
+                                'meta_key'   => $meta_key,
+                                'meta_value' => $meta_value
+                            ],
+                            [ '%d', '%s', '%d' ]
+                        );
+                    }
+                }
+            }else{
+                $wpdb->insert(
+                    $meta_table,
+                    [
+                        'order_id'    => $order_id,
+                        'meta_key'   => $meta_key,
+                        'meta_value' => $meta_value
+                    ],
+                    [ '%d', '%s', '%d' ]
+                );
+            }
+            // Trigger email if status changes to shipped or partial-shipped
+        }
+        
+        return $offset + $chunk_size;
+    }
+
 }
 
 // Initialize the class

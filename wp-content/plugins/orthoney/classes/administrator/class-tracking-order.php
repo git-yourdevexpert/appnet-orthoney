@@ -81,86 +81,14 @@ class OAM_TRACKING_ORDER_CRON
 
 
     public function update_wc_order_status_callback($offset = 0) {
-        global $wpdb;
-
-        $order_table = $wpdb->prefix . 'wc_orders';
-        $chunk_size  = 1000;
-
-        // Main status aggregation query (unchanged)
-        $sql = $wpdb->prepare("
-            SELECT 
-                order_id,
-                CONCAT(
-                    '{',
-                    GROUP_CONCAT(CONCAT('\"', Status, '\":', cnt) SEPARATOR ','),
-                    '}'
-                ) AS status_counts
-            FROM (
-                SELECT 
-                    order_id,
-                    Status,
-                    COUNT(*) AS cnt
-                FROM {$wpdb->prefix}oh_wc_jar_order
-                WHERE Status <> ''
-                AND YEAR(created_date) = YEAR(CURDATE())
-                GROUP BY order_id, Status
-            ) AS t
-            GROUP BY order_id
-            LIMIT %d OFFSET %d
-        ", $chunk_size, $offset);
-
-        $results = $wpdb->get_results($sql);
-
-        if (empty($results)) {
-            return;
-        }
-
-        // Step 1: Build array of required order_ids
-        $order_ids = array_map(function($row) { return $row->order_id; }, $results);
-
-        // Step 2: Bulk fetch WooCommerce order mapping
-        $placeholders = implode(',', array_fill(0, count($order_ids), '%s'));
-        $meta_query = $wpdb->prepare("
-            SELECT meta_value as oh_order_id, order_id as wc_order_id
-            FROM {$wpdb->prefix}wc_orders_meta
-            WHERE meta_key = '_orthoney_OrderID'
-            AND meta_value IN ($placeholders)
-        ", ...$order_ids);
-
-        $meta_map = [];
-        foreach ($wpdb->get_results($meta_query) as $meta) {
-            $meta_map[$meta->oh_order_id] = $meta->wc_order_id;
-        }
-
-        foreach ($results as $row) {
-            $wc_order_id = isset($meta_map[$row->order_id]) ? $meta_map[$row->order_id] : null;
-            if (empty($wc_order_id)) {
-                continue;
-            }
-            $order_quantity = OAM_AFFILIATE_Helper::get_quantity_by_order_id($wc_order_id);
-            $status_array = json_decode($row->status_counts, true);
-
-            if (!is_array($status_array) || !isset($status_array['Shipped'])) {
-                continue;
-            }
-
-            $shipped_count = (int) $status_array['Shipped'];
-            $update_status = ($shipped_count >= $order_quantity) ? 'wc-shipped' : 'wc-partial-shipped';
-
-            $wpdb->update(
-                $order_table,
-                [ 'status' => $update_status ],
-                [ 'id' => $wc_order_id ],
-                [ '%s' ],
-                [ '%d' ]
-            );
-        }
+        $chunk_size = 50; // Make sure this matches the send_mail function
+        $results = OAM_ADMINISTRATOR_HELPER::update_wc_order_status_send_mail_callback(1, $offset);
 
         // Step 3: Schedule next batch only if this batch was full
-        if (count($results) === $chunk_size) {
-            $next_offset = $offset + $chunk_size;
+        if (!empty($results)) {
+            $next_offset = $results;
             as_schedule_single_action(
-                time() + 30,
+                time() + 60,
                 'update_wc_order_status',
                 [ $next_offset ],
                 'tracking-order-group'
