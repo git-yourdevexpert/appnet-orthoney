@@ -256,7 +256,7 @@ class OAM_WC_CRON_Suborder
         foreach ($order_items as $item) {
             $quantity = (int) $item->get_quantity();
             $process_id = $item->get_meta('process_id', true) ?: $process_id;
-            $single_order = $item->get_meta('single_order', true) == 1;
+            $single_order |= $item->get_meta('single_order', true) == 1;
             $total_quantity += $quantity;
         }
 
@@ -308,16 +308,29 @@ class OAM_WC_CRON_Suborder
 
             if ($order_type !== 'multi-recipient-order') return;
 
-            // Insert WC Order Relation
-            $wpdb->insert($wc_order_relation_table, [
-                'user_id'           => (int) $process_data->user_id,
-                'wc_order_id'       => (int) $order_id,
-                'order_id'          => sanitize_text_field($custom_order_id),
-                'quantity'          => (int) $total_quantity,
-                'order_type'        => $single_order ? 'single_address' : 'multi_address',
-                'affiliate_code'    => sanitize_text_field($affiliate_token ?: 'Orthoney'),
-                'affiliate_user_id' => (int) $affiliate_id,
-            ]);
+            if($wc_order_id_exist->order_id == 0){
+                $wpdb->update(
+                    $wc_order_relation_table,
+                    [ 'order_id' => $sanitize_text_field($custom_order_id) ],
+                    [ 'wc_order_id' => $wc_order_id ],
+                    [ '%d' ],
+                    [ '%d' ]
+                );
+
+            }
+            
+            if(empty($wc_order_id_exist->id)){
+                // Insert WC Order Relation
+                $wpdb->insert($wc_order_relation_table, [
+                    'user_id'           => (int) $process_data->user_id,
+                    'wc_order_id'       => (int) $order_id,
+                    'order_id'          => sanitize_text_field($custom_order_id),
+                    'quantity'          => (int) $total_quantity,
+                    'order_type'        => $single_order ? 'single_address' : 'multi_address',
+                    'affiliate_code'    => sanitize_text_field($affiliate_token ?: 'Orthoney'),
+                    'affiliate_user_id' => (int) $affiliate_id,
+                ]);
+            }
 
             // Ensure Group
             $group_id = $wpdb->get_var($wpdb->prepare(
