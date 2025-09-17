@@ -64,13 +64,16 @@ class OAM_TRACKING_ORDER_CRON
                 "[" . current_time('Y-m-d H:i:s') . "] No pending file found to schedule next chunk",
                 $log_ctx
             );
-
-            $action_id = as_schedule_single_action(
-                time() + 30,
-                'update_wc_order_status',
-                [],
-                'tracking-order-group'
-            );
+            
+            $action_id = 0;
+            if ( ! as_has_scheduled_action( 'update_wc_order_status', [], 'tracking-order-group' ) ) {
+                $action_id = as_schedule_single_action(
+                    time() + 30,
+                    'update_wc_order_status',
+                    [],
+                    'tracking-order-group'
+                );
+            }
 
             OAM_COMMON_Custom::sub_order_error_log(
                 "[" . current_time('Y-m-d H:i:s') . "] Started updating WC order status action_id= $action_id",
