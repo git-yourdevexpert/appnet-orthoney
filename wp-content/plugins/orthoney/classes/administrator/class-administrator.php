@@ -12,3 +12,5 @@ require_once OH_PLUGIN_DIR_PATH . 'classes/administrator/class-shortcode.php';
 require_once OH_PLUGIN_DIR_PATH . 'classes/administrator/class-fulfillment_dynamic_report.php';
 require_once OH_PLUGIN_DIR_PATH . 'classes/administrator/class-tracking-order.php';
 require_once OH_PLUGIN_DIR_PATH . 'classes/administrator/class-ftp.php';
+
+require_once OH_PLUGIN_DIR_PATH . 'classes/administrator/class-order-status-mail.php';
