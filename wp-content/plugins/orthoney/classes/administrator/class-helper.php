@@ -275,15 +275,15 @@ class OAM_ADMINISTRATOR_HELPER {
                     }
                 }
             }else{
-                $wpdb->insert(
-                    $meta_table,
-                    [
-                        'order_id'    => $order_id,
-                        'meta_key'   => $meta_key,
-                        'meta_value' => $meta_value
-                    ],
-                    [ '%d', '%s', '%d' ]
-                );
+                // $wpdb->insert(
+                //     $meta_table,
+                //     [
+                //         'order_id'    => $order_id,
+                //         'meta_key'   => $meta_key,
+                //         'meta_value' => $meta_value
+                //     ],
+                //     [ '%d', '%s', '%d' ]
+                // );
             }
             // Trigger email if status changes to shipped or partial-shipped
         }
