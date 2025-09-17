@@ -274,7 +274,9 @@ class OAM_ADMINISTRATOR_HELPER {
                 }
             }else{
                 if ( $update_status === 'wc-shipped' ) {
-                    
+                    $meta_key = 'send_mail_customer';
+                    $meta_value = 1;
+                    $order_id = $wc_order_id;
                     $wpdb->insert(
                         $meta_table,
                         [
