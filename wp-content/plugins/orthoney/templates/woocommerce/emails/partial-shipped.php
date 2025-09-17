@@ -16,7 +16,7 @@ $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_Order
 
 ?>
 
-<p><?php printf( esc_html__( 'Hello %s,', 'orthoney' ), esc_html( $order->get_billing_first_name() ) ); ?></p>
+<p><?php printf( esc_html__( 'Hello %s,', 'orthoney' ) ); ?></p>
 
 <p><?php esc_html_e( 'Sweet news! Part of your honey order has already been shipped, and the rest will be on its way shortly.', 'orthoney' ); ?></p>
 

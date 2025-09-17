@@ -24,7 +24,15 @@ class WC_Email_Shipped extends WC_Email {
     public function trigger( $order_id, $order = false ) {
         if ( $order_id ) {
             $this->object     = wc_get_order( $order_id );
-            $this->recipient  = $this->object->get_billing_email();
+
+            $user = $this->object->get_user();
+            $to_mail = $this->object->get_billing_email();
+
+            if ( $user && ! empty( $user->user_email ) ) {
+                $to_mail = $user->user_email;
+            }
+
+            $this->recipient  = $to_mail;
 
             // ✅ define placeholders
             $this->placeholders = array(

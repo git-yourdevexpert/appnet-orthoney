@@ -38,7 +38,7 @@ if ( $affiliate_code ) {
 }
 
 ?>
-<p><?php printf( esc_html__( 'Hello %s,', 'orthoney' ), esc_html( $order->get_billing_first_name() ) ); ?></p>
+<p><?php printf( esc_html__( 'Hello %s,', 'orthoney' ) ); ?></p>
 
 <p><?php esc_html_e( 'Sweet news, your honey order has been shipped!', 'orthoney' ); ?></p>
 

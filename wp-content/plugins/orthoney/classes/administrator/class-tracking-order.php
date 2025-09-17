@@ -87,12 +87,14 @@ class OAM_TRACKING_ORDER_CRON
         // Step 3: Schedule next batch only if this batch was full
         if (!empty($results)) {
             $next_offset = $results;
-            as_schedule_single_action(
-                time() + 60,
-                'update_wc_order_status',
-                [ $next_offset ],
-                'tracking-order-group'
-            );
+            if (!as_has_scheduled_action('update_wc_order_status', [$next_offset], 'tracking-order-group')) {
+                as_schedule_single_action(
+                    time() + 60,
+                    'update_wc_order_status',
+                    [ $next_offset ],
+                    'tracking-order-group'
+                );
+            }
         }
     }
 
