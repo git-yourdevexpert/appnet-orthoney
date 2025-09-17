@@ -134,7 +134,7 @@ class OAM_ADMINISTRATOR_HELPER {
         <?php
     }
 
-    public static function update_wc_order_status_send_mail_callback($update_status_args = 0, $offset = 0) {
+      public static function update_wc_order_status_send_mail_callback($update_status_args = 0, $offset = 0) {
         global $wpdb;
 
         $order_table = $wpdb->prefix . 'wc_orders';
@@ -191,6 +191,10 @@ class OAM_ADMINISTRATOR_HELPER {
         
         foreach ($results as $row) {
             $wc_order_id = isset($meta_map[$row->order_id]) ? $meta_map[$row->order_id] : null;
+            $meta_key = 'send_mail_customer';
+            $meta_value = 1;
+            $order_id = $wc_order_id;
+
             if (empty($wc_order_id)) {
                 continue;
             }
@@ -220,6 +224,8 @@ class OAM_ADMINISTRATOR_HELPER {
                 $emails = $mailer->get_emails();
                 $email_sent = false;
 
+               
+
                 // Trigger email if status changes to partial-shipped
                 if ( $update_status === 'wc-partial-shipped' && !empty( $emails['WC_Email_Partial_Shipped'] ) ) {
                     $email = $emails['WC_Email_Partial_Shipped'];
@@ -229,7 +235,7 @@ class OAM_ADMINISTRATOR_HELPER {
                     }
                 }
 
-                // Trigger email if status changes to shipped
+                  // Trigger email if status changes to shipped
                 if ( $update_status === 'wc-shipped' && !empty( $emails['WC_Email_Shipped'] ) ) {
                     $email = $emails['WC_Email_Shipped'];
                     if ( $email->is_enabled() ) {
@@ -237,12 +243,9 @@ class OAM_ADMINISTRATOR_HELPER {
                         $email_sent = true;
                     }
                 
+
                     // ✅ Mark email as sent
                     if ( $email_sent ) {
-                        $meta_key = 'send_mail_customer';
-                        $meta_value = 1;
-                        $order_id = $wc_order_id;
-
                         // Check if meta exists
                         $existing = $wpdb->get_var( $wpdb->prepare(
                             "SELECT meta_id FROM {$meta_table} WHERE order_id = %d AND meta_key = %s",
@@ -273,20 +276,15 @@ class OAM_ADMINISTRATOR_HELPER {
                     }
                 }
             }else{
-                if ( $update_status === 'wc-shipped' ) {
-                    $meta_key = 'send_mail_customer';
-                    $meta_value = 1;
-                    $order_id = $wc_order_id;
-                    $wpdb->insert(
-                        $meta_table,
-                        [
-                            'order_id'    => $order_id,
-                            'meta_key'   => $meta_key,
-                            'meta_value' => $meta_value
-                        ],
-                        [ '%d', '%s', '%d' ]
-                    );
-                }
+                $wpdb->insert(
+                    $meta_table,
+                    [
+                        'order_id'    => $order_id,
+                        'meta_key'   => $meta_key,
+                        'meta_value' => $meta_value
+                    ],
+                    [ '%d', '%s', '%d' ]
+                );
             }
             // Trigger email if status changes to shipped or partial-shipped
         }
