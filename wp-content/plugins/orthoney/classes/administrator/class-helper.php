@@ -242,51 +242,50 @@ class OAM_ADMINISTRATOR_HELPER {
                         $email->trigger( $wc_order_id );
                         $email_sent = true;
                     }
+                }
 
-                    // ✅ Mark email as sent
-                    if ( $email_sent ) {
+                // ✅ Mark email as sent
+                if ( $email_sent ) {
+                    
 
-                        // Check if meta exists
-                        $existing = $wpdb->get_var( $wpdb->prepare(
-                            "SELECT meta_id FROM {$meta_table} WHERE order_id = %d AND meta_key = %s",
-                            $order_id,
-                            $meta_key
-                        ) );
+                    // Check if meta exists
+                    $existing = $wpdb->get_var( $wpdb->prepare(
+                        "SELECT meta_id FROM {$meta_table} WHERE order_id = %d AND meta_key = %s",
+                        $order_id,
+                        $meta_key
+                    ) );
 
-                        if ( $existing ) {
-                            // Update existing meta
-                            $wpdb->update(
+                    if ( $existing ) {
+                        // Update existing meta
+                        $wpdb->update(
+                           $meta_table,
+                            [ 'meta_value' => $meta_value ],
+                            [ 'meta_id' => $existing ],
+                            [ '%d' ],
+                            [ '%d' ]
+                        );
+                    }else{
+                         $wpdb->insert(
                             $meta_table,
-                                [ 'meta_value' => $meta_value ],
-                                [ 'meta_id' => $existing ],
-                                [ '%d' ],
-                                [ '%d' ]
-                            );
-                        }else{
-                            $wpdb->insert(
-                                $meta_table,
-                                [
-                                    'order_id'    => $order_id,
-                                    'meta_key'   => $meta_key,
-                                    'meta_value' => $meta_value
-                                ],
-                                [ '%d', '%s', '%d' ]
-                            );
-                        }
+                            [
+                                'order_id'    => $order_id,
+                                'meta_key'   => $meta_key,
+                                'meta_value' => $meta_value
+                            ],
+                            [ '%d', '%s', '%d' ]
+                        );
                     }
                 }
             }else{
-                 if ( $update_status === 'wc-shipped'){
-                    $wpdb->insert(
-                        $meta_table,
-                        [
-                            'order_id'    => $order_id,
-                            'meta_key'   => $meta_key,
-                            'meta_value' => $meta_value
-                        ],
-                        [ '%d', '%s', '%d' ]
-                    );
-                }
+                $wpdb->insert(
+                    $meta_table,
+                    [
+                        'order_id'    => $order_id,
+                        'meta_key'   => $meta_key,
+                        'meta_value' => $meta_value
+                    ],
+                    [ '%d', '%s', '%d' ]
+                );
             }
             // Trigger email if status changes to shipped or partial-shipped
         }
