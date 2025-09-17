@@ -220,15 +220,6 @@ class OAM_ADMINISTRATOR_HELPER {
                 $emails = $mailer->get_emails();
                 $email_sent = false;
 
-                // Trigger email if status changes to shipped
-                if ( $update_status === 'wc-shipped' && !empty( $emails['WC_Email_Shipped'] ) ) {
-                    $email = $emails['WC_Email_Shipped'];
-                    if ( $email->is_enabled() ) {
-                        $email->trigger( $wc_order_id );
-                        $email_sent = true;
-                    }
-                }
-
                 // Trigger email if status changes to partial-shipped
                 if ( $update_status === 'wc-partial-shipped' && !empty( $emails['WC_Email_Partial_Shipped'] ) ) {
                     $email = $emails['WC_Email_Partial_Shipped'];
@@ -238,52 +229,62 @@ class OAM_ADMINISTRATOR_HELPER {
                     }
                 }
 
-                 
+                // Trigger email if status changes to shipped
+                if ( $update_status === 'wc-shipped' && !empty( $emails['WC_Email_Shipped'] ) ) {
+                    $email = $emails['WC_Email_Shipped'];
+                    if ( $email->is_enabled() ) {
+                        $email->trigger( $wc_order_id );
+                        $email_sent = true;
+                    }
+                
+                    // ✅ Mark email as sent
+                    if ( $email_sent ) {
+                        $meta_key = 'send_mail_customer';
+                        $meta_value = 1;
+                        $order_id = $wc_order_id;
 
-                // ✅ Mark email as sent
-                if ( $email_sent ) {
-                    $meta_key = 'send_mail_customer';
-                    $meta_value = 1;
-                    $order_id = $wc_order_id;
+                        // Check if meta exists
+                        $existing = $wpdb->get_var( $wpdb->prepare(
+                            "SELECT meta_id FROM {$meta_table} WHERE order_id = %d AND meta_key = %s",
+                            $order_id,
+                            $meta_key
+                        ) );
 
-                    // Check if meta exists
-                    $existing = $wpdb->get_var( $wpdb->prepare(
-                        "SELECT meta_id FROM {$meta_table} WHERE order_id = %d AND meta_key = %s",
-                        $order_id,
-                        $meta_key
-                    ) );
-
-                    if ( $existing ) {
-                        // Update existing meta
-                        $wpdb->update(
-                           $meta_table,
-                            [ 'meta_value' => $meta_value ],
-                            [ 'meta_id' => $existing ],
-                            [ '%d' ],
-                            [ '%d' ]
-                        );
-                    }else{
-                         $wpdb->insert(
+                        if ( $existing ) {
+                            // Update existing meta
+                            $wpdb->update(
                             $meta_table,
-                            [
-                                'order_id'    => $order_id,
-                                'meta_key'   => $meta_key,
-                                'meta_value' => $meta_value
-                            ],
-                            [ '%d', '%s', '%d' ]
-                        );
+                                [ 'meta_value' => $meta_value ],
+                                [ 'meta_id' => $existing ],
+                                [ '%d' ],
+                                [ '%d' ]
+                            );
+                        }else{
+                            $wpdb->insert(
+                                $meta_table,
+                                [
+                                    'order_id'    => $order_id,
+                                    'meta_key'   => $meta_key,
+                                    'meta_value' => $meta_value
+                                ],
+                                [ '%d', '%s', '%d' ]
+                            );
+                        }
                     }
                 }
             }else{
-                $wpdb->insert(
-                    $meta_table,
-                    [
-                        'order_id'    => $order_id,
-                        'meta_key'   => $meta_key,
-                        'meta_value' => $meta_value
-                    ],
-                    [ '%d', '%s', '%d' ]
-                );
+                if ( $update_status === 'wc-shipped' ) {
+                    
+                    $wpdb->insert(
+                        $meta_table,
+                        [
+                            'order_id'    => $order_id,
+                            'meta_key'   => $meta_key,
+                            'meta_value' => $meta_value
+                        ],
+                        [ '%d', '%s', '%d' ]
+                    );
+                }
             }
             // Trigger email if status changes to shipped or partial-shipped
         }
