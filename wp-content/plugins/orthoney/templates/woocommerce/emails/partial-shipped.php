@@ -27,13 +27,13 @@ $custom_order_id = OAM_COMMON_Custom::get_order_meta($order_id, '_orthoney_Order
 <p>
     <?php esc_html_e( 'Or follow these steps to check your shipment:', 'orthoney' ); ?>
 </p>
-<ul>
+<ol>
     <li>Log in to your customer account: <a href="<?php echo esc_url( home_url( '/login/' ) ); ?>"><?php echo esc_html( home_url( '/login/' ) ); ?></a></li>
     <li>Go to your Order Page: <a href="<?php echo esc_url( home_url( '/dashboard/orders/' ) ); ?>"><?php echo esc_html( home_url( '/dashboard/orders/' ) ); ?></a></li>
     <li>On the order page, you can view your order status and tap <strong>View Order</strong>.</li>
     <li>On the order details page, you will find your Tracking Number and the <strong>Track Package</strong> option.</li>
     <li>Click <strong>Click Here</strong> under Track Package to be redirected to the carrier's tracking URL.</li>
-</ul>
+</ol>
 
 <p>
     <?php esc_html_e( 'We’ll buzz you again as soon as the remaining items are shipped. Thank you for your patience and for letting us bring a little sweetness into your day!', 'orthoney' ); ?>

@@ -49,18 +49,18 @@ if ( $affiliate_code ) {
 <p>
     <?php esc_html_e( 'Or follow these steps to check your shipment:', 'orthoney' ); ?>
 </p>
-<ul>
+<ol>
     <li>Log in to your customer account: <a href="<?php echo esc_url( home_url( '/login/' ) ); ?>"><?php echo esc_html( home_url( '/login/' ) ); ?></a></li>
     <li>Go to your Order Page: <a href="<?php echo esc_url( home_url( '/dashboard/orders/' ) ); ?>"><?php echo esc_html( home_url( '/dashboard/orders/' ) ); ?></a></li>
     <li>On the order page, you can view your order status and tap <strong>View Order</strong>.</li>
     <li>On the order details page, you will find your Tracking Number and the <strong>Track Package</strong> option.</li>
     <li>Click <strong>Click Here</strong> under Track Package to be redirected to the carrier's tracking URL.</li>
-</ul>
+</ol>
 
 <p><?php printf( esc_html__( 'Thank you for choosing %s. we hope our honey brings a little sweetness to your day!', 'orthoney' ),  '<strong>'.$affiliate_html.'</strong>' ); ?></p>
 
 
-<p><?php esc_html_e( 'If you have any questions, just reply to this email or buzz us at our support team. We\'re here to help!', 'orthoney' ); ?></p>
+<p><?php esc_html_e( 'If you have any questions, just reply to this email or buzz us at our support team.', 'orthoney' ); ?></p>
 <p><?php esc_html_e( 'Sweetly yours,', 'orthoney' ); ?></p>
 <p>
     <strong><?php esc_html_e( 'Honey From The Heart Team,', 'orthoney' ); ?></strong><br>
