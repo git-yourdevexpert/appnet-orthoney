@@ -13,9 +13,9 @@ class OAM_ADMINISTRATOR_CUSTOM_ORDER_STATUS_MAIL {
 
     }
     
-    public function send_mail_customer_callback($offset = 0) {
+    public function send_mail_customer_callback($update_status_args = 1,$offset = 0) {
         $chunk_size = 50; // Make sure this matches the send_mail function
-        $results = OAM_ADMINISTRATOR_HELPER::update_wc_order_status_send_mail_callback(1, $offset);
+        $results = OAM_ADMINISTRATOR_HELPER::update_wc_order_status_send_mail_callback($update_status_args, $offset);
 
         // Step 3: Schedule next batch only if this batch was full
         if (!empty($results)) {
@@ -24,7 +24,7 @@ class OAM_ADMINISTRATOR_CUSTOM_ORDER_STATUS_MAIL {
                 as_schedule_single_action(
                     time() + 60,
                     'send_mail_customer',
-                    [ $next_offset ],
+                    [ $update_status_args , $next_offset ],
                     'tracking-order-group'
                 );
             }

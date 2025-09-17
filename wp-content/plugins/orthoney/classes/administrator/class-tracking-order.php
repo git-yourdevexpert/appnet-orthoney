@@ -64,7 +64,7 @@ class OAM_TRACKING_ORDER_CRON
                 "[" . current_time('Y-m-d H:i:s') . "] No pending file found to schedule next chunk",
                 $log_ctx
             );
-            
+
             $action_id = 0;
             if ( ! as_has_scheduled_action( 'update_wc_order_status', [], 'tracking-order-group' ) ) {
                 $action_id = as_schedule_single_action(
@@ -83,9 +83,9 @@ class OAM_TRACKING_ORDER_CRON
     }
 
 
-    public function update_wc_order_status_callback($offset = 0) {
+    public function update_wc_order_status_callback($update_status_args = 1, $offset = 0) {
         $chunk_size = 50; // Make sure this matches the send_mail function
-        $results = OAM_ADMINISTRATOR_HELPER::update_wc_order_status_send_mail_callback(1, $offset);
+        $results = OAM_ADMINISTRATOR_HELPER::update_wc_order_status_send_mail_callback($update_status_args, $offset);
 
         // Step 3: Schedule next batch only if this batch was full
         if (!empty($results)) {
@@ -94,7 +94,7 @@ class OAM_TRACKING_ORDER_CRON
                 as_schedule_single_action(
                     time() + 60,
                     'update_wc_order_status',
-                    [ $next_offset ],
+                    [$update_status_args, $next_offset ],
                     'tracking-order-group'
                 );
             }
