@@ -28,7 +28,7 @@ class WC_Email_Shipped extends WC_Email {
 
             // ✅ define placeholders
             $this->placeholders = array(
-                '{order_number}' => $this->object->get_order_number(),
+                '{order_number}' => OAM_COMMON_Custom::get_order_meta($this->object->get_order_number(), '_orthoney_OrderID'),
                 '{order_date}'   => wc_format_datetime( $this->object->get_date_created() ),
                 '{site_title}'   => $this->get_blogname(),
             );
