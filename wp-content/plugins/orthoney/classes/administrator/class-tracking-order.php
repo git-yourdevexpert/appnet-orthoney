@@ -64,7 +64,6 @@ class OAM_TRACKING_ORDER_CRON
                 "[" . current_time('Y-m-d H:i:s') . "] No pending file found to schedule next chunk",
                 $log_ctx
             );
-
             $action_id = 0;
             if ( ! as_has_scheduled_action( 'update_wc_order_status', [], 'tracking-order-group' ) ) {
                 $action_id = as_schedule_single_action(
@@ -83,18 +82,18 @@ class OAM_TRACKING_ORDER_CRON
     }
 
 
-    public function update_wc_order_status_callback($update_status_args = 1, $offset = 0) {
+    public function update_wc_order_status_callback($offset = 0) {
         $chunk_size = 50; // Make sure this matches the send_mail function
-        $results = OAM_ADMINISTRATOR_HELPER::update_wc_order_status_send_mail_callback($update_status_args, $offset);
+        $results = OAM_ADMINISTRATOR_HELPER::update_wc_order_status_send_mail_callback(1, $offset);
 
         // Step 3: Schedule next batch only if this batch was full
         if (!empty($results)) {
             $next_offset = $results;
-            if (!as_has_scheduled_action('update_wc_order_status', [$next_offset], 'tracking-order-group')) {
+            if (!as_has_scheduled_action('update_wc_order_status')) {
                 as_schedule_single_action(
                     time() + 60,
                     'update_wc_order_status',
-                    [$update_status_args, $next_offset ],
+                    [ $next_offset ],
                     'tracking-order-group'
                 );
             }
@@ -598,7 +597,7 @@ class OAM_TRACKING_ORDER_CRON
         $next_chunk = $current_chunk + 1;
         $finished   = $end >= ($total_rows - 1);
         if ($finished) {
-            if (!as_has_scheduled_action('update_wc_order_status', [], 'tracking-order-group')) {
+            if (!as_has_scheduled_action('update_wc_order_status')) {
                 $action_id = as_schedule_single_action(
                     time() + 30,
                     'update_wc_order_status',
@@ -622,7 +621,7 @@ class OAM_TRACKING_ORDER_CRON
         $progress = round(($end / ($total_rows - 1)) * 100);
 
         $action_id = 0;
-        if (!as_has_scheduled_action('update_wc_order_status', [], 'tracking-order-group')) {
+        if (!as_has_scheduled_action('update_wc_order_status')) {
             $action_id = as_schedule_single_action(
                 time() + 30,
                 'update_wc_order_status',
