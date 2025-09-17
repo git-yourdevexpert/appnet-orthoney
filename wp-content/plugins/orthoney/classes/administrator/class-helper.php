@@ -134,7 +134,7 @@ class OAM_ADMINISTRATOR_HELPER {
         <?php
     }
 
-      public static function update_wc_order_status_send_mail_callback($update_status_args = 0, $offset = 0) {
+    public static function update_wc_order_status_send_mail_callback($update_status_args = 0, $offset = 0) {
         global $wpdb;
 
         $order_table = $wpdb->prefix . 'wc_orders';
