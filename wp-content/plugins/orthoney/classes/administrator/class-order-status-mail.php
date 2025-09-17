@@ -20,14 +20,12 @@ class OAM_ADMINISTRATOR_CUSTOM_ORDER_STATUS_MAIL {
         // Step 3: Schedule next batch only if this batch was full
         if (!empty($results)) {
            $next_offset = $results;
-           if (!as_has_scheduled_action('update_wc_order_status')) {
-                as_schedule_single_action(
-                    time() + 60,
-                    'send_mail_customer',
-                    [ $next_offset ],
-                    'tracking-order-group'
-                );
-            }
+            as_schedule_single_action(
+                time() + 60,
+                'send_mail_customer',
+                [ $next_offset ],
+                'tracking-order-group'
+            );
         }
     }
 

@@ -64,15 +64,13 @@ class OAM_TRACKING_ORDER_CRON
                 "[" . current_time('Y-m-d H:i:s') . "] No pending file found to schedule next chunk",
                 $log_ctx
             );
-            $action_id = 0;
-            if ( ! as_has_scheduled_action( 'update_wc_order_status', [], 'tracking-order-group' ) ) {
-                $action_id = as_schedule_single_action(
-                    time() + 30,
-                    'update_wc_order_status',
-                    [],
-                    'tracking-order-group'
-                );
-            }
+
+            $action_id = as_schedule_single_action(
+                time() + 30,
+                'update_wc_order_status',
+                [],
+                'tracking-order-group'
+            );
 
             OAM_COMMON_Custom::sub_order_error_log(
                 "[" . current_time('Y-m-d H:i:s') . "] Started updating WC order status action_id= $action_id",
@@ -89,14 +87,12 @@ class OAM_TRACKING_ORDER_CRON
         // Step 3: Schedule next batch only if this batch was full
         if (!empty($results)) {
             $next_offset = $results;
-            if (!as_has_scheduled_action('update_wc_order_status')) {
-                as_schedule_single_action(
-                    time() + 60,
-                    'update_wc_order_status',
-                    [ $next_offset ],
-                    'tracking-order-group'
-                );
-            }
+            as_schedule_single_action(
+                time() + 60,
+                'update_wc_order_status',
+                [ $next_offset ],
+                'tracking-order-group'
+            );
         }
     }
 
@@ -597,14 +593,12 @@ class OAM_TRACKING_ORDER_CRON
         $next_chunk = $current_chunk + 1;
         $finished   = $end >= ($total_rows - 1);
         if ($finished) {
-            if (!as_has_scheduled_action('update_wc_order_status')) {
-                $action_id = as_schedule_single_action(
-                    time() + 30,
-                    'update_wc_order_status',
-                    [],
-                    'tracking-order-group'
-                );
-            }
+            $action_id = as_schedule_single_action(
+                time() + 30,
+                'update_wc_order_status',
+                [],
+                'tracking-order-group'
+            );
 
             $wpdb->update(
                 $table_name,
@@ -620,15 +614,12 @@ class OAM_TRACKING_ORDER_CRON
 
         $progress = round(($end / ($total_rows - 1)) * 100);
 
-        $action_id = 0;
-        if (!as_has_scheduled_action('update_wc_order_status')) {
-            $action_id = as_schedule_single_action(
-                time() + 30,
-                'update_wc_order_status',
-                [],
-                'tracking-order-group'
-            );
-        }
+        // $action_id = as_schedule_single_action(
+        //     time() + 30,
+        //     'update_wc_order_status',
+        //     [],
+        //     'tracking-order-group'
+        // );
 
         wp_send_json_success([
             'next_chunk' => $next_chunk,
