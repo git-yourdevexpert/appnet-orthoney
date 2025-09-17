@@ -23,12 +23,21 @@ class WC_Email_Partial_Shipped extends WC_Email {
 
     public function trigger( $order_id, $order = false ) {
         if ( $order_id ) {
+        
             $this->object     = wc_get_order( $order_id );
-            $this->recipient  = $this->object->get_billing_email();
+
+            $user = $this->object->get_user();
+            $to_mail = $this->object->get_billing_email();
+
+            if ( $user && ! empty( $user->user_email ) ) {
+                $to_mail = $user->user_email;
+            }
+
+            $this->recipient  = $to_mail;
 
             // Placeholders for subject/heading
             $this->placeholders = array(
-                '{order_number}' => $this->object->get_order_number(),
+                '{order_number}' => OAM_COMMON_Custom::get_order_meta($this->object->get_order_number(), '_orthoney_OrderID'),
                 '{order_date}'   => wc_format_datetime( $this->object->get_date_created() ),
                 '{site_title}'   => $this->get_blogname(),
             );
