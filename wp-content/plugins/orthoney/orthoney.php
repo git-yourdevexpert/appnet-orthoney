@@ -313,3 +313,13 @@ if ( ! function_exists( 'user_registration_pro_generate_magic_login_link' ) ) {
 // });
 
 
+add_action( 'woocommerce_email_header', 'my_custom_email_styles' );
+
+function my_custom_email_styles() {
+    echo '<style>
+        p, li {
+            font-size: 13px !important;
+            line-height: 1.6 !important;
+        }
+    </style>';
+}

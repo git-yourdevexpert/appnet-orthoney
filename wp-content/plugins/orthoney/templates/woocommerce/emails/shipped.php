@@ -38,13 +38,14 @@ if ( $affiliate_code ) {
 }
 
 ?>
+
 <p><?php printf( esc_html__( 'Hello,', 'orthoney' ) ); ?></p>
 
 <p><?php esc_html_e( 'Sweet news, your honey order has been shipped!', 'orthoney' ); ?></p>
 
 <p><strong><?php esc_html_e( 'Order id: ', 'orthoney' ); ?> <?php echo esc_html( '#'.$custom_order_id.' ( Ref Id: '.$order_id.' )' ); ?></strong></p>
 
-<p><strong><?php esc_html_e( 'You can click here to view tracking details', 'orthoney' ); ?></strong> <a href="<?php echo esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/" . $order_id); ?>"><?php esc_html_e( 'Order details page', 'orthoney' ); ?></a></p>
+<p><strong><?php esc_html_e( 'You can click here to view tracking details: ', 'orthoney' ); ?></strong> <a href="<?php echo esc_url(CUSTOMER_DASHBOARD_LINK . "order-details/" . $order_id); ?>"><?php esc_html_e( 'Order details page', 'orthoney' ); ?></a></p>
 
 <p>
     <?php esc_html_e( 'Or follow these steps to check your shipment:', 'orthoney' ); ?>
