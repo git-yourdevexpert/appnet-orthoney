@@ -202,9 +202,11 @@ class OAM_ADMINISTRATOR_HELPER {
             $order_quantity = OAM_AFFILIATE_Helper::get_quantity_by_order_id($wc_order_id);
             $status_array = json_decode($row->status_counts, true);
 
-            if (!is_array($status_array) || !isset($status_array['Shipped']) || !isset($status_array['Reshipped'])) {
+            if (!is_array($status_array)) {
                 continue;
             }
+
+            $shipped_count = 0;
 
             if (isset($status_array['Shipped'])) {
                 $shipped_count += (int) $status_array['Shipped'];

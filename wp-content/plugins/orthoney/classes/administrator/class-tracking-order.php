@@ -81,9 +81,8 @@ class OAM_TRACKING_ORDER_CRON
 
 
     public function update_wc_order_status_callback($offset = 0) {
-        $chunk_size = 50; // Make sure this matches the send_mail function
-        $results = OAM_ADMINISTRATOR_HELPER::update_wc_order_status_send_mail_callback(1, $offset);
-
+    $results = OAM_ADMINISTRATOR_HELPER::update_wc_order_status_send_mail_callback(1, $offset);
+    if (!empty($results)) {
         // Step 3: Schedule next batch only if this batch was full
         $next_offset = $results;
         as_schedule_single_action(
@@ -92,6 +91,7 @@ class OAM_TRACKING_ORDER_CRON
             [ $next_offset ],
             'tracking-order-group'
         );
+    }
         
     }
 
