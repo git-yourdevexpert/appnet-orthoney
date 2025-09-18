@@ -206,7 +206,12 @@ class OAM_ADMINISTRATOR_HELPER {
                 continue;
             }
 
-            $shipped_count = (int) ($status_array['Shipped'] ?? 0) + (int) ($status_array['Reshipped'] ?? 0);
+            if (isset($status_array['Shipped'])) {
+                $shipped_count += (int) $status_array['Shipped'];
+            }
+            if (isset($status_array['Reshipped'])) {
+                $shipped_count += (int) $status_array['Reshipped'];
+            }
 
             $update_status = ($shipped_count >= $order_quantity) ? 'wc-shipped' : 'wc-partial-shipped';
 
