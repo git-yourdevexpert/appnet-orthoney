@@ -70,6 +70,8 @@ class OAM_WC_Customizer {
         // Register new order status
         add_action( 'init', array($this,'orthoney_register_parcel_shipped_order_status') );
         add_filter( 'wc_order_statuses', array($this,'orthoney_add_parcel_shipped_to_order_statuses') );
+
+         add_action( 'woocommerce_email_header', 'my_custom_email_styles' );
     }
     public function orthoney_register_parcel_shipped_order_status() {
         register_post_status( 'wc-partial-shipped', array(
@@ -397,6 +399,14 @@ class OAM_WC_Customizer {
         }
     }
 
+    public function my_custom_email_styles() {
+        echo '<style>
+            p, li {
+                font-size: 13px !important;
+                line-height: 1.6 !important;
+            }
+        </style>';
+    }
     
     public function add_cc_to_new_order_email( $headers, $email_id, $order ) {
 
