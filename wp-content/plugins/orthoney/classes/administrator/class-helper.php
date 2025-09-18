@@ -224,8 +224,6 @@ class OAM_ADMINISTRATOR_HELPER {
                 $emails = $mailer->get_emails();
                 $email_sent = false;
 
-              
-
                 // Trigger email if status changes to partial-shipped
                 if ( $update_status === 'wc-partial-shipped' && !empty( $emails['WC_Email_Partial_Shipped'] ) ) {
                     $email = $emails['WC_Email_Partial_Shipped'];
@@ -250,7 +248,7 @@ class OAM_ADMINISTRATOR_HELPER {
                     // Check if meta exists
                     $existing = $wpdb->get_var( $wpdb->prepare(
                         "SELECT meta_id FROM {$meta_table} WHERE order_id = %d AND meta_key = %s",
-                        $order_id,
+                        $wc_order_id,
                         $meta_key
                     ) );
 
@@ -276,17 +274,17 @@ class OAM_ADMINISTRATOR_HELPER {
                     }
                 }
             }else{
-                if ( $update_status === 'wc-shipped'){
-                    $wpdb->insert(
-                        $meta_table,
-                        [
-                            'order_id'    => $order_id,
-                            'meta_key'   => $meta_key,
-                            'meta_value' => $meta_value
-                        ],
-                        [ '%d', '%s', '%d' ]
-                    );
-                }
+                // if ( $update_status === 'wc-shipped'){
+                //     $wpdb->insert(
+                //         $meta_table,
+                //         [
+                //             'order_id'    => $order_id,
+                //             'meta_key'   => $meta_key,
+                //             'meta_value' => $meta_value
+                //         ],
+                //         [ '%d', '%s', '%d' ]
+                //     );
+                // }
             }
             // Trigger email if status changes to shipped or partial-shipped
         }
