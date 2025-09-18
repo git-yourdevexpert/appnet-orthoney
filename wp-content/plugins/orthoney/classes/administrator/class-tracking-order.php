@@ -535,34 +535,6 @@ class OAM_TRACKING_ORDER_CRON
                 
                 if ($exists != 0) {
 
-                    $order_id = $wpdb->get_var( $wpdb->prepare("
-                        SELECT m.order_id
-                        FROM {$wpdb->prefix}oh_wc_jar_order j
-                        JOIN {$wpdb->prefix}wc_orders_meta m 
-                            ON m.meta_value = j.order_id
-                        JOIN {$wpdb->prefix}wc_orders o
-                            ON o.id = m.order_id
-                        WHERE j.recipient_order_id = %s
-                        AND o.status = 'wc-partial-shipped'
-                    ", $assoc_row['RECIPIENTNO']) );
-
-                    if($order_id !=0 ){
-                        $meta_table = "{$wpdb->prefix}wc_orders_meta";
-                        $meta_key = 'send_mail_customer';
-                        $meta_value = 0;
-                        
-                        $wpdb->update(
-                            $meta_table,
-                                [ 'meta_value' => $meta_value ],
-                                [ 
-                                    'order_id' => $order_id,
-                                    'meta_key' => $meta_key,
-                                ],
-                                [ '%d' ],
-                                [ '%d', '%s' ]
-                        );
-                    }
-
                     $updated = $wpdb->update(
                         $wc_jar_order,
                         [

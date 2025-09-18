@@ -246,7 +246,6 @@ class OAM_ADMINISTRATOR_HELPER {
 
                 // ✅ Mark email as sent
                 if ( $email_sent ) {
-                    
 
                     // Check if meta exists
                     $existing = $wpdb->get_var( $wpdb->prepare(
@@ -277,15 +276,17 @@ class OAM_ADMINISTRATOR_HELPER {
                     }
                 }
             }else{
-                $wpdb->insert(
-                    $meta_table,
-                    [
-                        'order_id'    => $order_id,
-                        'meta_key'   => $meta_key,
-                        'meta_value' => $meta_value
-                    ],
-                    [ '%d', '%s', '%d' ]
-                );
+                if ( $update_status === 'wc-shipped'){
+                    $wpdb->insert(
+                        $meta_table,
+                        [
+                            'order_id'    => $order_id,
+                            'meta_key'   => $meta_key,
+                            'meta_value' => $meta_value
+                        ],
+                        [ '%d', '%s', '%d' ]
+                    );
+                }
             }
             // Trigger email if status changes to shipped or partial-shipped
         }
