@@ -11,6 +11,12 @@ class OAM_AFFILIATE_Custom {
     public function __construct() {
         add_action('init', array($this, 'affiliate_import_handler'));
         add_action('init', array($this, 'affiliate_dashboard_handler'));
+        
+        
+        add_action('acf/save_post', array($this, 'affiliate_deactive_years_handler'), 20);
+
+        add_action('all_originations_deactive_after_season_end', array($this, 'all_originations_deactive_after_season_end_callback'));
+
         add_filter('yith_wcaf_registration_form_affiliate_pending_text', array($this, 'custom_affiliate_pending_message'));
 
         // add_action('wp_footer', [$this, 'maybe_show_loader_and_redirect']);
@@ -25,6 +31,69 @@ class OAM_AFFILIATE_Custom {
     
     public static function init() {}
 
+    public function all_originations_deactive_after_season_end_callback() {
+        global $wpdb;
+
+        $wpdb->update(
+            $wpdb->usermeta,
+            array(
+                'meta_value' => '0',
+            ),
+            array(
+                'meta_key'   => 'activate_affiliate_account',
+                'meta_value' => '1',
+            ),
+            array(
+                '%s',
+            ),
+            array(
+                '%s',
+                '%s',
+            )
+        );
+
+    }
+
+    public function affiliate_deactive_years_handler() {
+        
+        if ( isset($_GET['page']) && $_GET['page'] === 'general-settings') {
+             $hook = 'all_originations_deactive_after_season_end';
+            if(isset($_POST['publish']) && $_POST['publish'] == 'Update'){
+               $season_end_date = get_field('season_end_date', 'option');
+
+               if (!empty($season_end_date)) {
+
+                $season_end_timestamp = strtotime($season_end_date);
+
+                $today_timestamp      = current_time('timestamp');
+
+                // Check season end date is today or future date
+                if ($season_end_timestamp >= $today_timestamp) {
+
+                    // Add 2 days
+                    $schedule_time = strtotime('+2 days', $season_end_timestamp);
+
+                    // Remove old scheduled action
+                     as_unschedule_all_actions(
+                        $hook,
+                        [],
+                        'oam-sub-order-group'
+                    );
+
+                    // Schedule new action
+                    
+                    as_schedule_single_action(
+                        $schedule_time, 
+                        $hook, 
+                        [], 
+                        'oam-sub-order-group'
+                    );
+                }
+            }
+            }
+        }
+
+    }
      /**
      * Deactivate affiliate accounts after season end
      */
