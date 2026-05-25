@@ -71,7 +71,7 @@ class OAM_AFFILIATE_Custom {
                 if ($season_end_timestamp >= $today_timestamp) {
 
                     // Add 2 days
-                    $schedule_time = strtotime('+2 days', $season_end_timestamp);
+                    $schedule_time = strtotime('+1 days', $season_end_timestamp);
 
                     // Remove old scheduled action
                      as_unschedule_all_actions(
